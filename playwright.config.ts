@@ -7,7 +7,11 @@ export default defineConfig({
   timeout: 60_000,
   use: {
     baseURL: process.env.SITE ?? "http://127.0.0.1:8787",
-    launchOptions: process.env.DJMANZO_CHROMIUM ? { executablePath: process.env.DJMANZO_CHROMIUM } : {},
+    // WebGL through SwiftShader, so the Signal Path's painting is really drawn in the tests.
+    launchOptions: {
+      ...(process.env.DJMANZO_CHROMIUM ? { executablePath: process.env.DJMANZO_CHROMIUM } : {}),
+      args: ["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"],
+    },
   },
   webServer: process.env.SITE
     ? undefined

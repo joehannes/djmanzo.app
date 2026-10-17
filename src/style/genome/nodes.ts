@@ -196,7 +196,7 @@ const FAMILIES: GenomeNode[] = [
       craft: ["cut on the one", "doubles of the same record", "acapellas over instrumentals", "scratching"],
       app: { theme: "Scratch", skin: null },
       motion: { pulse: "half", ease: "power3.out", energy: 0.7 },
-      brush: { radius: 4, grain: 0.45, flow: "cross" },
+      brush: { radius: 6, grain: 0.45, flow: "cross" },
       scene: {
         confluence: "Two turntables on a folding table at a block party.",
         cone: "A speaker stack against a brick wall, a crowd's backs to the camera.",
