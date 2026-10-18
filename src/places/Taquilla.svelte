@@ -7,7 +7,7 @@
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { EDITIONS, MODULES, MODULE_TITLE, NAMED, PLANS, money, type Edition, type Module, type Plan } from "../../shared/catalog";
+  import { EDITIONS, MODULES, MODULE_PRICE, MODULE_TITLE, NAMED, PLANS, money, type Edition, type Module, type Plan } from "../../shared/catalog";
   import { BAND_NAME, band as bandOf, currencyFor, regional } from "../../shared/regions";
   import { catalog } from "../lib/catalog.svelte";
   import { session } from "../lib/session.svelte";
@@ -21,7 +21,7 @@
   import PriceBoard from "../shop/PriceBoard.svelte";
 
   /** `edition`: one the visitor came for (the Signal Path's guide pointed at it); otherwise the profile's recommendation. */
-  let { go, edition: wanted = null }: { go: (id: PlaceId) => void; linkCode?: string | null; edition?: Edition | null } = $props();
+  let { go, edition: wanted = null }: { go: (id: PlaceId) => void; edition?: Edition | null } = $props();
 
   const rec = $derived(recommend(profile.p));
   // svelte-ignore state_referenced_locally
@@ -47,7 +47,14 @@
 
   const currency = $derived(currencyFor(country));
   const b = $derived(bandOf(country));
-  const PER = { monthly: "a month", yearly: "a year", perpetual: "once, for version 1" };
+  const PER = { monthly: "a month", yearly: "a year", perpetual: "once" };
+  // What an empty Custom starts from: its cheapest module.
+  const CHEAPEST_MODULE = MODULES.reduce((a, m) => (MODULE_PRICE[m] < MODULE_PRICE[a] ? m : a));
+  function sleevePrice(e: Edition): string {
+    if (e === "hobbyist") return "Free";
+    if (e === "custom") return `from ${money(regional(e, plan, b, chosenModules.length ? chosenModules : [CHEAPEST_MODULE]), currency)}`;
+    return money(regional(e, plan, b), currency);
+  }
   const chosenModules = $derived(edition === "custom" ? modules : []);
   const toggle = (m: Module) => (modules = modules.includes(m) ? modules.filter((x) => x !== m) : MODULES.filter((x) => x === m || modules.includes(x)));
 
@@ -56,6 +63,8 @@
   $effect(() => {
     const body = { edition, plan, country, promo: promo.trim() || null, modules: chosenModules };
     clearTimeout(timer);
+    // The free edition has no price to ask for.
+    if (edition === "hobbyist") return;
     timer = setTimeout(async () => {
       try {
         quote = await post("/api/quote", body);
@@ -85,7 +94,7 @@
   }
 
   function expires(ms: number | null): string {
-    return ms === null ? "never — version 1 is yours" : new Date(ms).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+    return ms === null ? "for ever — it is yours" : new Date(ms).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
   }
 </script>
 
@@ -96,13 +105,13 @@
     <p>
       <b>djmanzo {catalog.data?.editions[done.licence.edition as Edition]?.name ?? done.licence.edition}</b>{#if done.licence.modules?.length} ({done.licence.modules.map((m: Module) => MODULE_TITLE[m]).join(", ")}){/if},
       {done.licence.plan === "perpetual" ? "bought once" : done.licence.plan === "trial" ? "a free seven-day trial" : done.licence.plan}.
-      Valid until {expires(done.licence.expires)}.{#if done.licence.demo}<span class="demo-badge">demo licence</span>{/if}
+      {done.licence.expires === null ? "Yours for ever." : `Valid until ${expires(done.licence.expires)}.`}{#if done.licence.demo}<span class="demo-badge">demo licence</span>{/if}
     </p>
     <h3>Get it into djmanzo</h3>
     <ol class="steps">
       <li>Download djmanzo for your computer: <a href={catalog.data?.downloads} target="_blank" rel="noopener">the latest release</a>.</li>
-      <li>In djmanzo, open <b>Settings → Account</b> and press <b>Sign in</b>. It opens this site.</li>
-      <li>Sign in here with the same account and say yes. djmanzo picks up the licence by itself and keeps working offline.</li>
+      <li>In djmanzo, open <b>Settings → Licence</b> and sign in with the same account you used here. djmanzo fetches the licence by itself and keeps working offline.</li>
+      <li>On a computer that cannot sign in, paste the licence line from <button class="link" onclick={() => go("pase")}>your pass</button> into the same place.</li>
     </ol>
     <div class="row">
       <button class="btn primary" onclick={() => go("pase")}>🪪 See it in your pass</button>
@@ -117,9 +126,8 @@
         <EditionSleeve
           info={catalog.data.editions[e]}
           facts={catalog.data.facts}
-          price={(e === "custom" ? "from " : "") + money(regional(e, plan, b, e === "custom" ? chosenModules : []), currency)}
-          per={PER[plan]}
-          seats={catalog.data.seats[e]}
+          price={sleevePrice(e)}
+          per={e === "hobbyist" ? "for ever" : PER[plan]}
           chosen={edition === e}
           pick={profile.p.asked.length > 0 && rec.edition === e}
           onchoose={(x) => (edition = x)}
@@ -131,14 +139,14 @@
       <p class="muted">Opening the box office…</p>
     {/if}
   </div>
-  <p class="small muted">One download for every edition, unlocked by signing in. In the beta nothing is locked: the licence records what you bought, and djmanzo opens every feature for now.</p>
+  <p class="small muted">One download for every edition, unlocked by signing in. Each edition shows only what it carries, and what it lacks is a quiet card naming the edition that has it. With no licence djmanzo is the Hobbyist edition, free, for ever.</p>
   {#if profile.p.asked.length}
     <p class="small muted">The MC's pick: {rec.why} <button class="link" onclick={() => go("gigs")}>Compare by kind of night</button>.</p>
   {/if}
 
   {#if edition === "custom" && catalog.data}
     <h2 class="step">Your modules</h2>
-    <p class="small">The Hobbyist foundation ({money(catalog.data.foundation, "USD")}), then each module you pick.</p>
+    <p class="small">The free Hobbyist foundation, then each module you pick.</p>
     <div class="modules">
       {#each catalog.data.modules as m (m.id)}
         <label class="module"><input type="checkbox" checked={modules.includes(m.id)} onchange={() => toggle(m.id)} /> {m.title} <span class="muted">+{money(m.price, "USD")}</span></label>
@@ -152,77 +160,85 @@
     {/if}
   {/if}
 
-  <h2 class="step">How you'd like to pay for it</h2>
-  <div class="plans" role="radiogroup" aria-label="Plan">
-    {#each PLANS as p (p)}
-      <button class="plan" role="radio" aria-checked={plan === p} onclick={() => (plan = p)}>
-        <b>{catalog.data?.plans[p].name ?? p}</b>
-        <span>{money(regional(edition, p, b, chosenModules), currency)} {PER[p]}</span>
-        <small>{catalog.data?.plans[p].about}</small>
-      </button>
-    {/each}
-  </div>
-
-  <h2 class="step">Where you are</h2>
-  <div class="where">
-    <label class="field">
-      <span>Country</span>
-      <select bind:value={country}>
-        {#each list as c (c.code)}<option value={c.code}>{flag(c.code)} {c.name}</option>{/each}
-      </select>
-    </label>
-    <p class="small">
-      {#if b === 1}
-        Full price here. {country === catalog.data?.visitor.country ? "(We guessed from your connection.)" : ""}
-      {:else}
-        <b>{BAND_NAME[b]}</b> in {flag(country)} — prices follow what things cost where you live (the World Bank's income groups). To get it, your <b>card must be issued in</b> and your
-        <b>billing address must be in</b> a country priced the same or lower. Otherwise the checkout tells you the price you can show, and asks before charging it.
-      {/if}
-      <br />Students and teachers pay half, with a school e-mail address — or whichever discount is larger; they never stack.
-    </p>
-  </div>
-
-  <h2 class="step">A promo code?</h2>
-  <div class="promo">
-    <input type="text" bind:value={promo} placeholder="e.g. MANZO-ABCD-EFGH" aria-label="Promo code" autocomplete="off" spellcheck="false" />
-    {#if quote?.promo}
-      <span class={quote.promo.ok ? "good" : "bad"} role="status">{quote.promo.ok ? "✓ " : ""}{quote.promo.reason}</span>
-    {/if}
-  </div>
-
-  <div class="ticket" aria-live="polite">
-    {#if quote}
-      <div class="lines">
-        <span>djmanzo {catalog.data?.editions[edition].name}{edition === "custom" ? ` (${quote.modules.length} modules)` : ""}, {catalog.data?.plans[plan].name.toLowerCase()}</span>
-        {#if quote.regional !== quote.base}
-          <span class="r"><s>{money(quote.base, quote.currency)}</s> {money(quote.regional, quote.currency)} <small>{quote.by === "student" ? "student" : BAND_NAME[quote.band as 1]}</small></span>
-        {:else}
-          <span class="r">{money(quote.regional, quote.currency)}</span>
-        {/if}
-        {#if quote.upgrade}
-          <span>Upgrade from your {catalog.data?.editions[quote.upgrade.edition as Edition]?.name}</span><span class="r">− {money(quote.upgrade.credit, quote.currency)}</span>
-        {/if}
-        {#if quote.discount}
-          <span>Promo {quote.promo.code}</span><span class="r">− {money(quote.discount, quote.currency)}</span>
-        {/if}
-        <span class="total">Total</span><span class="r total">{money(quote.total, quote.currency)}</span>
-      </div>
-      {#if quote.renews && quote.discount}<p class="small muted">The promo applies to the first payment; renewals are {money(quote.regional, quote.currency)}.</p>{/if}
-    {:else if quoteError}
-      <p class="notice">{quoteError}</p>
-    {:else}
-      <p class="muted">Working out the price…</p>
-    {/if}
-  </div>
-
-  <h2 class="step">Pay</h2>
-  {#if !session.user}
-    <SignIn />
+  {#if edition === "hobbyist"}
+    <section class="free" data-free>
+      <h2 class="step">Free, for ever</h2>
+      <p>djmanzo Hobbyist needs no purchase: <a href={catalog.data?.downloads} target="_blank" rel="noopener">download djmanzo</a> and it is yours. It is also what every trial ends in, and what you make in djmanzo stays yours.</p>
+    </section>
   {:else}
-    <p class="small">Signed in as <b>{session.user.name}</b>{session.user.email ? ` (${session.user.email})` : ""}. The licence goes to this account.</p>
-    {#if quote}
-      <Checkout {edition} modules={chosenModules} {plan} {country} {promo} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
+    <h2 class="step">How you'd like to pay for it</h2>
+    <div class="plans" role="radiogroup" aria-label="Plan">
+      {#each PLANS as p (p)}
+        <button class="plan" role="radio" aria-checked={plan === p} onclick={() => (plan = p)}>
+          <b>{catalog.data?.plans[p].name ?? p}</b>
+          <span>{money(regional(edition, p, b, chosenModules), currency)} {PER[p]}</span>
+          <small>{catalog.data?.plans[p].about}</small>
+        </button>
+      {/each}
+    </div>
+
+    <h2 class="step">Where you are</h2>
+    <div class="where">
+      <label class="field">
+        <span>Country</span>
+        <select bind:value={country}>
+          {#each list as c (c.code)}<option value={c.code}>{flag(c.code)} {c.name}</option>{/each}
+        </select>
+      </label>
+      <p class="small">
+        {#if b === 1}
+          Full price here. {country === catalog.data?.visitor.country ? "(We guessed from your connection.)" : ""}
+        {:else}
+          <b>{BAND_NAME[b]}</b> in {flag(country)} — prices follow what things cost where you live (the World Bank's income groups). To get it, your <b>card must be issued in</b> and your
+          <b>billing address must be in</b> a country priced the same or lower. Otherwise the checkout tells you the price you can show, and asks before charging it.
+        {/if}
+        <br />Students and teachers pay half, with a school e-mail address — or whichever discount is larger; they never stack.
+      </p>
+    </div>
+
+    <h2 class="step">A promo code?</h2>
+    <div class="promo">
+      <input type="text" bind:value={promo} placeholder="e.g. MANZO-ABCD-EFGH" aria-label="Promo code" autocomplete="off" spellcheck="false" />
+      {#if quote?.promo}
+        <span class={quote.promo.ok ? "good" : "bad"} role="status">{quote.promo.ok ? "✓ " : ""}{quote.promo.reason}</span>
+      {/if}
+    </div>
+
+    <div class="ticket" aria-live="polite">
+      {#if quote}
+        <div class="lines">
+          <span>djmanzo {catalog.data?.editions[edition].name}{edition === "custom" ? ` (${quote.modules.length} modules)` : ""}, {catalog.data?.plans[plan].name.toLowerCase()}</span>
+          {#if quote.regional !== quote.base}
+            <span class="r"><s>{money(quote.base, quote.currency)}</s> {money(quote.regional, quote.currency)} <small>{quote.by === "student" ? "student" : BAND_NAME[quote.band as 1]}</small></span>
+          {:else}
+            <span class="r">{money(quote.regional, quote.currency)}</span>
+          {/if}
+          {#if quote.upgrade}
+            <span>Upgrade from your {catalog.data?.editions[quote.upgrade.edition as Edition]?.name}</span><span class="r">− {money(quote.upgrade.credit, quote.currency)}</span>
+          {/if}
+          {#if quote.discount}
+            <span>Promo {quote.promo.code}</span><span class="r">− {money(quote.discount, quote.currency)}</span>
+          {/if}
+          <span class="total">Total</span><span class="r total">{money(quote.total, quote.currency)}</span>
+        </div>
+        {#if quote.renews && quote.discount}<p class="small muted">The promo applies to the first payment; renewals are {money(quote.regional, quote.currency)}.</p>{/if}
+      {:else if quoteError}
+        <p class="notice">{quoteError}</p>
+      {:else}
+        <p class="muted">Working out the price…</p>
+      {/if}
+    </div>
+
+    <h2 class="step">Pay</h2>
+    {#if !session.user}
+      <SignIn />
+    {:else}
+      <p class="small">Signed in as <b>{session.user.name}</b>{session.user.email ? ` (${session.user.email})` : ""}. The licence goes to this account.</p>
+      {#if quote}
+        <Checkout {edition} modules={chosenModules} {plan} {country} {promo} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
+      {/if}
     {/if}
+
   {/if}
 
   <section class="trial">

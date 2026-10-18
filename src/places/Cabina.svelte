@@ -14,7 +14,7 @@
   import Knob from "../ui/Knob.svelte";
   import { islandSound } from "../hud/sound.svelte";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   let engine = $state<Engine | null>(null);
   let genres = $state<[string, string]>([profile.genre?.id ?? "house", profile.secondGenre?.id ?? (profile.genre?.id === "bachata" ? "merengue" : "bachata")]);

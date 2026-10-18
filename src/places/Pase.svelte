@@ -1,11 +1,11 @@
 <!--
-  Your pass: who you are on the island, your licences and the machines they
-  are on, the code that links djmanzo to your account, the passport of
+  Your pass: who you are on the island, your licences, the line that carries
+  them into djmanzo on a computer that cannot sign in itself, the passport of
   places you have visited — and what the island remembers about you, with
   the means to make it forget.
 -->
 <script lang="ts">
-  import { onMount, untrack } from "svelte";
+  import { onMount } from "svelte";
   import { api, post } from "../lib/api";
   import { session } from "../lib/session.svelte";
   import { profile } from "../lib/profile.svelte";
@@ -13,9 +13,8 @@
   import { GENRE_BY_ID } from "../lib/genres";
   import { EDITION_INFO, MODULE_TITLE, type Edition, type Module } from "../../shared/catalog";
   import SignIn from "../shop/SignIn.svelte";
-  import { loopbackFrom } from "../lib/link";
 
-  let { go, linkCode = null }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   interface Lic {
     id: string;
@@ -26,36 +25,11 @@
     expires: number | null;
     inForce: boolean;
     demo: boolean;
-    seats: number;
-    activations: { name: string; at: number; seen: number }[];
   }
   let licences = $state<Lic[]>([]);
-  let code = $state(untrack(() => linkCode ?? ""));
-  let machine = $state<string | null>(null);
-  let linkMsg = $state<string | null>(null);
-  let linked = $state(false);
+  let line = $state<{ licence?: string; refused?: string; account?: string } | null>(null);
+  let copied = $state(false);
   let prizeMsg = $state<string | null>(null);
-  // djmanzo waiting on a port of its own for the browser to come back (the loopback way).
-  const loopback = location.pathname === "/link" ? loopbackFrom(location.search) : null;
-  let loopbackMsg = $state<string | null>(null);
-  let loopbackGone = $state(false);
-
-  async function answerLoopback(approve: boolean) {
-    if (!loopback) return;
-    if (!approve) {
-      loopbackGone = true;
-      loopbackMsg = "Refused. That computer got nothing — djmanzo stops waiting after ten minutes.";
-      return;
-    }
-    try {
-      const r = await post("/api/device/loopback", { ...loopback });
-      loopbackGone = true;
-      loopbackMsg = `Linked. "${loopback.machine}" now has your licences — your browser is handing the answer back to djmanzo.`;
-      location.href = r.redirect;
-    } catch (e) {
-      loopbackMsg = (e as Error).message;
-    }
-  }
 
   const stampable = PLACES.filter((p) => p.stamp);
   const NEED = 7;
@@ -69,25 +43,19 @@
     }
   }
 
-  async function lookup() {
-    linkMsg = null;
-    machine = null;
+  async function showLine() {
+    copied = false;
     try {
-      machine = (await api(`/api/device/lookup?code=${encodeURIComponent(code.trim())}`)).machine;
+      line = await api("/api/me/licence-line");
     } catch (e) {
-      linkMsg = (e as Error).message;
+      line = { refused: (e as Error).message };
     }
   }
 
-  async function decide(approve: boolean) {
-    try {
-      await post("/api/device/approve", { code: code.trim(), approve });
-      linked = approve;
-      linkMsg = approve ? `Linked. "${machine}" now has your licences — you can close this and go back to djmanzo.` : "Refused. That machine got nothing.";
-      machine = null;
-    } catch (e) {
-      linkMsg = (e as Error).message;
-    }
+  async function copyLine() {
+    if (!line?.licence) return;
+    await navigator.clipboard.writeText(line.licence);
+    copied = true;
   }
 
   async function claim() {
@@ -103,7 +71,6 @@
   onMount(async () => {
     if (!session.loaded) await session.refresh();
     await loadLicences();
-    if (code && session.user) await lookup();
   });
 
   $effect(() => {
@@ -113,48 +80,8 @@
   const date = (t: number) => new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 </script>
 
-{#if loopback}
-  <section class="link-box" data-loopback>
-    <h2>Link djmanzo</h2>
-    {#if !session.user}
-      <SignIn why={`djmanzo on "${loopback.machine}" is asking to be linked to your account. Sign in with the account you bought with, then say yes.`} />
-    {:else if loopbackGone}
-      <p class="notice ok">{loopbackMsg}</p>
-    {:else}
-      <p>djmanzo on <b>{loopback.machine}</b> is asking for your licences. Did you just press <b>Sign in</b> in djmanzo on that computer?</p>
-      <div class="row">
-        <button class="btn primary" onclick={() => answerLoopback(true)}>Yes — link it</button>
-        <button class="btn quiet" onclick={() => answerLoopback(false)}>No, that wasn't me</button>
-      </div>
-      {#if loopbackMsg}<p class="notice">{loopbackMsg}</p>{/if}
-    {/if}
-  </section>
-{:else if code || linkCode}
-  <section class="link-box">
-    <h2>Link djmanzo</h2>
-    {#if !session.user}
-      <SignIn why="djmanzo is asking to be linked to your account. Sign in with the account you bought with — then check the code and say yes." />
-    {:else if linked}
-      <p class="notice ok">{linkMsg}</p>
-    {:else}
-      <form class="code" onsubmit={(e) => { e.preventDefault(); void lookup(); }}>
-        <input type="text" bind:value={code} placeholder="ABCD-EFGH" aria-label="The code djmanzo shows" autocomplete="off" />
-        <button class="btn">Check the code</button>
-      </form>
-      {#if machine}
-        <p>The code belongs to <b>{machine}</b>. Is that the computer in front of you, showing the same code?</p>
-        <div class="row">
-          <button class="btn primary" onclick={() => decide(true)}>Yes — link it</button>
-          <button class="btn quiet" onclick={() => decide(false)}>No, that isn't mine</button>
-        </div>
-      {/if}
-      {#if linkMsg}<p class="notice">{linkMsg}</p>{/if}
-    {/if}
-  </section>
-{/if}
-
 {#if !session.user}
-  {#if !code && !loopback}<SignIn why="Sign in to see your licences, link djmanzo, and claim the island's prize." />{/if}
+  <SignIn why="Sign in to see your licences, carry them into djmanzo, and claim the island's prize." />
 {:else}
   <section class="who">
     {#if session.user.avatar}<img src={session.user.avatar} alt="" />{/if}
@@ -172,16 +99,20 @@
         <li class:off={!l.inForce}>
           <b>djmanzo {EDITION_INFO[l.edition as Edition]?.name ?? l.edition}</b>{#if l.modules?.length && l.edition === "custom"} ({l.modules.map((m) => MODULE_TITLE[m as Module] ?? m).join(", ")}){/if} — {l.plan === "perpetual" ? "bought once" : l.plan === "trial" ? "a free trial" : l.plan}
           {#if l.demo}<span class="badge">demo</span>{/if}
-          <span class="muted small">{l.inForce ? (l.expires ? `until ${date(l.expires)}` : "for ever (version 1)") : `ended (${l.status})`} · on {l.activations.length} of {l.seats} computers</span>
-          {#if l.activations.length}
-            <ul class="machines">
-              {#each l.activations as a (a.at)}<li>💻 {a.name} <span class="muted small">last seen {date(a.seen)}</span></li>{/each}
-            </ul>
-          {/if}
+          <span class="muted small">{l.inForce ? (l.expires ? `until ${date(l.expires)}` : "bought once, kept for ever") : `ended (${l.status})`}</span>
         </li>
       {/each}
     </ul>
-    <p class="small">To use a licence: in djmanzo, <b>Settings → Account → Sign in</b>. It opens this page; sign in and say yes.</p>
+    <p class="small">To use a licence: in djmanzo, <b>Settings → Licence</b>, sign in with the account you use here. djmanzo fetches it by itself and keeps working offline.</p>
+    <p class="small">A computer that cannot sign in takes the licence as one line of text, pasted in the same place.</p>
+    <button class="btn quiet" onclick={showLine} data-licence-line>Show my licence line</button>
+    {#if line?.licence}
+      <textarea class="line" readonly rows="3" aria-label="Your licence line">{line.licence}</textarea>
+      <button class="btn" onclick={copyLine}>{copied ? "Copied" : "Copy it"}</button>
+      <p class="small muted">It names your {line.account?.split(":")[0]} account and is checked by djmanzo offline; anyone you give it to gets your licence.</p>
+    {:else if line?.refused}
+      <p class="notice">{line.refused}</p>
+    {/if}
   {:else}
     <p class="muted">None yet. <button class="link" onclick={() => go("taquilla")}>The box office is at the harbour.</button></p>
   {/if}
@@ -223,27 +154,11 @@
 <button class="btn quiet" onclick={() => profile.reset()}>Forget all of it</button>
 
 <style>
-  .link-box {
-    padding: 14px;
-    border-radius: 14px;
-    border: 3px solid var(--primary);
-    margin-bottom: 18px;
-  }
-  .code {
-    display: flex;
-    gap: 8px;
-    max-width: 360px;
-  }
-  .code input {
-    text-transform: uppercase;
-    font-size: 1.3rem;
-    letter-spacing: 0.08em;
-    font-weight: 800;
-  }
-  .row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+  .line {
+    width: 100%;
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    word-break: break-all;
   }
   .who {
     display: flex;
@@ -283,11 +198,6 @@
   }
   .lics li.off {
     opacity: 0.6;
-  }
-  .machines {
-    list-style: none;
-    padding: 0;
-    margin: 4px 0 0;
   }
   .stamps {
     display: grid;

@@ -16,7 +16,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { EDITION_INFO, MODULE_TITLE, type Edition } from "../shared/catalog";
-import { FACTS, STATUS_LINE } from "../shared/facts";
+import { FACTS, STATUS_LINE, moduleWords } from "../shared/facts";
 import type { AppEnv } from "./env";
 import { fail, text } from "./http";
 import { modelFor } from "./model";
@@ -58,7 +58,7 @@ export function slugify(s: string): string {
 }
 
 function facts(): string {
-  const lines = FACTS.map((f) => `- ${f.name} [${f.status}; ${f.module === "foundation" ? "every edition" : `module: ${MODULE_TITLE[f.module]}`}]: ${f.about}${f.caveat ? ` (${f.caveat})` : ""}`);
+  const lines = FACTS.map((f) => `- ${f.name} [${f.status}; ${moduleWords(f, (m) => MODULE_TITLE[m])}]: ${f.about}${f.caveat ? ` (${f.caveat})` : ""}`);
   const eds = Object.values(EDITION_INFO).map((e) => `- ${e.name}: ${e.tagline} For: ${e.forWho}`);
   return `${STATUS_LINE}\n\nWhat djmanzo does (status in brackets: "shipped" is built and tested but has not been through a real gig; "part" is partly built; "planned" means NOT in the app yet; caveats in parentheses must be kept when the feature is mentioned):\n${lines.join("\n")}\n\nThe seven editions, one download unlocked by signing in, with a free seven-day trial of any of them:\n${eds.join("\n")}`;
 }

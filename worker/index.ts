@@ -3,7 +3,7 @@
  * `/auth`, and the island (static assets) for everything else.
  */
 
-import { CHEAPEST_WITH, EDITION_INFO, FOUNDATION, MARKET, MODULES, MODULE_PRICE, MODULE_TITLE, NAMED, PLANS, PLAN_INFO, PRO_MONTH, REASON, SEATS, TRIAL_DAYS, listPrice } from "../shared/catalog";
+import { CHEAPEST_WITH, EDITION_INFO, FOUNDATION, MARKET, MODULES, MODULE_PRICE, MODULE_TITLE, NAMED, PLANS, PLAN_INFO, PRO_MONTH, REASON, TRIAL_DAYS, listPrice } from "../shared/catalog";
 import { FACTS, STATUS_LINE } from "../shared/facts";
 import { BAND_NAME, BAND_SHARE, STUDENT_SHARE, band, currencyFor } from "../shared/regions";
 import type { AppEnv } from "./env";
@@ -11,12 +11,12 @@ import * as auth from "./auth";
 import * as blog from "./blog";
 import * as checkout from "./checkout";
 import * as community from "./community";
-import * as device from "./device";
+import * as applicence from "./applicence";
 import * as guide from "./guide";
 import * as sense from "./sense";
 import * as promo from "./promo";
-import { keys } from "./licence";
-import { HttpError, body, brake, clientIp, country, fail, json, text } from "./http";
+import { inForce, keys } from "./licence";
+import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
 import { get, list, put, saveLicence, type Licence, type Order, type Promo, type User, type Video } from "./store";
 
 type Handler = (ctx: Ctx) => Promise<Response | unknown>;
@@ -33,10 +33,9 @@ const routes: { method: string; pattern: RegExp; keys: string[]; handler: Handle
 
 /**
  * What djmanzo itself calls, from no web page: the only mutating requests
- * that may arrive from another origin. Approving a link is a signed-in
- * browser's act on this site, so it is not among them.
+ * that may arrive from another origin (`worker/applicence.ts`).
  */
-const APP_CALLS = ["/api/device/start", "/api/device/token", "/api/device/exchange", "/api/app/"];
+const APP_CALLS = ["/licence", "/renew", "/signout"];
 
 function route(method: string, path: string, handler: Handler) {
   const keys: string[] = [];
@@ -54,13 +53,13 @@ function route(method: string, path: string, handler: Handler) {
 const user = (c: Ctx) => auth.whoami(c.req, c.env);
 const needUser = (c: Ctx) => auth.required(c.req, c.env);
 const needAdmin = (c: Ctx) => auth.adminRequired(c.req, c.env);
-const bearer = (c: Ctx) => (c.req.headers.get("authorization") || "").replace(/^Bearer /, "");
 
 // --- Sign-in -----------------------------------------------------------------
 
 route("GET", "/auth/start/:provider", (c) => auth.start(c.req, c.env, c.params.provider));
-route("GET", "/auth/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
-route("POST", "/auth/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
+// One address per provider for the browser and djmanzo alike; Apple posts its answer.
+route("GET", "/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
+route("POST", "/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
 route("POST", "/api/auth/demo", async (c) => auth.demoSignIn(c.req, c.env, (await body<{ name?: string }>(c.req)).name ?? ""));
 route("POST", "/api/auth/owner", async (c) => auth.ownerSignIn(c.req, c.env, (await body<{ token?: string }>(c.req)).token ?? ""));
 route("POST", "/api/auth/signout", (c) => auth.signOut(c.req, c.env));
@@ -77,12 +76,10 @@ route("GET", "/api/me", async (c) => {
 
 route("GET", "/api/me/licences", async (c) => {
   const u = await needUser(c);
-  return (await device.appMe(c.env, u)).licences;
+  return (await checkout.userLicences(c.env, u.id)).map((l) => ({ ...l, inForce: inForce(l) }));
 });
-route("POST", "/api/me/licences/:lid/deactivate", async (c) => {
-  const u = await needUser(c);
-  return device.deactivate(c.env, u, c.params.lid, String((await body<{ machine?: string }>(c.req)).machine || ""));
-});
+// The licence line to paste into djmanzo, for a machine that cannot sign in itself.
+route("GET", "/api/me/licence-line", async (c) => applicence.lineFor(c.env, await needUser(c)));
 route("GET", "/api/me/orders", async (c) => {
   const u = await needUser(c);
   const keys = await list<{ u: string }>(c.env.KV, "order:", 5000);
@@ -103,7 +100,6 @@ route("GET", "/api/catalog", async (c) => {
     plans: PLAN_INFO,
     prices: Object.fromEntries(NAMED.map((e) => [e, Object.fromEntries(PLANS.map((p) => [p, listPrice(e, p)]))])),
     reasons: REASON,
-    seats: SEATS,
     facts: FACTS,
     status: STATUS_LINE,
     market: MARKET,
@@ -160,34 +156,17 @@ route("POST", "/api/checkout/transfer", async (c) => {
   return checkout.transferCheckout(c.env, await needUser(c), { ...checkout.checkInput(input), billing: text(input.billing, 2).toUpperCase() });
 });
 
-// --- djmanzo, the application ------------------------------------------------
+// --- djmanzo, the application: its own licence protocol (`worker/applicence.ts`) --
 
-route("POST", "/api/device/start", async (c) => device.startLink(c.env, c.url.origin, String((await body<{ machine?: string }>(c.req)).machine || "")));
-route("POST", "/api/device/token", async (c) => device.pollLink(c.env, String((await body<{ device_code?: string }>(c.req)).device_code || "")));
-route("POST", "/api/device/loopback", async (c) => device.approveLoopback(c.env, await needUser(c), await body(c.req)));
-route("POST", "/api/device/exchange", async (c) => {
-  const b = await body<{ code?: string; verifier?: string }>(c.req);
-  return device.exchangeLoopback(c.env, String(b.code || ""), String(b.verifier || ""));
+route("GET", "/login/:provider", (c) => auth.start(c.req, c.env, c.params.provider, applicence.appLogin(c.url)));
+route("POST", "/licence", (c) => applicence.licence(c.env, c.req));
+route("POST", "/renew", (c) => applicence.renew(c.env, c.req));
+route("POST", "/signout", (c) => applicence.signout(c.env, c.req));
+// `standard` is what a release is built with (DJMANZO_LICENCE_KEY): the same 32 bytes in plain base64.
+route("GET", "/api/licence/public-key", async (c) => {
+  const raw = (await keys(c.env)).publicRaw;
+  return { alg: "Ed25519", key: raw, standard: btoa(String.fromCharCode(...unb64url(raw))), development: !c.env.LICENCE_PRIVATE_KEY };
 });
-route("GET", "/api/device/lookup", async (c) => {
-  await needUser(c);
-  return device.lookupLink(c.env, c.url.searchParams.get("code") || "");
-});
-route("POST", "/api/device/approve", async (c) => {
-  const b = await body<{ code?: string; approve?: boolean }>(c.req);
-  return device.decideLink(c.env, await needUser(c), String(b.code || ""), b.approve !== false);
-});
-route("GET", "/api/app/me", async (c) => device.appMe(c.env, await needUser(c)));
-route("POST", "/api/app/activate", async (c) => {
-  const b = await body<{ licence?: string; machine?: string; name?: string }>(c.req);
-  return device.activate(c.env, await needUser(c), String(b.licence || ""), b.machine, b.name);
-});
-route("POST", "/api/app/deactivate", async (c) => {
-  const b = await body<{ licence?: string; machine?: string }>(c.req);
-  return device.deactivate(c.env, await needUser(c), String(b.licence || ""), String(b.machine || ""));
-});
-route("POST", "/api/app/signout", async (c) => device.revokeAppToken(c.env, bearer(c)));
-route("GET", "/api/licence/public-key", async (c) => ({ alg: "Ed25519", key: (await keys(c.env)).publicRaw, development: !c.env.LICENCE_PRIVATE_KEY }));
 
 // --- The community -------------------------------------------------------------
 
@@ -417,7 +396,7 @@ export async function handle(req: Request, env: AppEnv, exec: ExecutionContext):
       return json({ error: "Something went wrong on our side." }, 500);
     }
   }
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/")) return json({ error: "No such thing." }, 404);
+  if (["/api/", "/auth/", "/login/", "/callback/"].some((p) => url.pathname.startsWith(p)) || APP_CALLS.includes(url.pathname)) return json({ error: "No such thing." }, 404);
   return env.ASSETS.fetch(req);
 }
 

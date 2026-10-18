@@ -13,7 +13,7 @@
   import { islandSound } from "../hud/sound.svelte";
   import type { PlaceId } from "../lib/places";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   type Preset = "sea" | "tunnel" | "rings";
   let preset = $state<Preset>("sea");
@@ -211,7 +211,7 @@
   <li><b>MIDI clock out</b>, so a light desk or a drum machine follows djmanzo's tempo.</li>
   <li><b>An overlay for live streams</b> — the record the room hears, on OBS for Twitch, YouTube, TikTok or Kick.</li>
 </ul>
-<p class="muted small">Art-Net / DMX lighting output and full VJ video mixing are on the roadmap, not in the app yet — they are on <button class="link" onclick={() => go("muro")}>the wall of wishes</button>.</p>
+<p class="muted small">Art-Net / DMX lighting output is on the roadmap, not in the app yet — it is on <button class="link" onclick={() => go("muro")}>the wall of wishes</button>.</p>
 
 <style>
   .stage {

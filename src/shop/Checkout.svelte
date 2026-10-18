@@ -23,7 +23,7 @@
     promo: string;
     total: number;
     display: string;
-    ondone: (r: { licence: { id: string; edition: string; modules?: string[]; plan: string; expires: number | null; demo?: boolean }; token?: string }) => void;
+    ondone: (r: { licence: { id: string; edition: string; modules?: string[]; plan: string; expires: number | null; demo?: boolean } }) => void;
   }
   let { edition, modules, plan, country, promo, total, display, ondone }: Props = $props();
 

@@ -7,7 +7,7 @@
   import type { PlaceId } from "../lib/places";
   import { profile } from "../lib/profile.svelte";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   const CRATE = [
     { t: "Your collection, imported", b: "rekordbox, Serato, Traktor and iTunes collections come in with their cues, loops and beat grids. Serato's hot cues are read straight out of the files.", c: "#ff7eb6" },

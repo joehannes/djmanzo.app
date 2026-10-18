@@ -1,7 +1,7 @@
 /**
  * Pictures of the real application for a stage's reveal.
  *
- * The owner's rule (§133): screenshots come from `docs/screenshots/`, named
+ * The owner's rule (§134): screenshots come from `docs/screenshots/`, named
  * `<screen>--<theme>[--<skin>][--<state>].png`. Until that folder fills,
  * these — taken from the running application earlier — stand in, each named
  * the same way, and the reveal says which theme it shows. A stage asks for

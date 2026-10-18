@@ -14,7 +14,7 @@
  * §130): half of what the professional competitors charge on average, each
  * edition below the same modules bought one by one, an upgrade the
  * difference between two editions. EDITIONS.md prices buying once; the
- * owner also asked for monthly and yearly plans (§132), which follow from
+ * owner also asked for monthly and yearly plans (§133), which follow from
  * those prices by one rule, below, and wait for the owner's nod.
  */
 
@@ -82,43 +82,47 @@ export function within(a: readonly Module[], b: readonly Module[]): boolean {
 /** In US cents. */
 export const BUY_ONCE: Record<Exclude<Edition, "custom">, number> = {
   autopilot: 4900,
-  hobbyist: 3900,
+  // The owner's choice (§131): what every DJ keeps without a purchase, and what a trial ends in.
+  hobbyist: 0,
   apprentice: 6900,
   karaoke: 5500,
   pro: 11900,
   full: 14900,
 };
 
-/** Custom is the Hobbyist foundation, then each module at the owner's "5–10 USD each or similar". */
-export const FOUNDATION = 3900;
+/**
+ * Custom is the free foundation and the modules chosen. With the foundation
+ * free, a module that carries an edition costs what that edition costs, or
+ * Custom would undercut it (EDITIONS.md, proposed for the owner to settle).
+ */
+export const FOUNDATION = 0;
 export const MODULE_PRICE: Record<Module, number> = {
-  four_decks: 500,
-  dvs: 500,
-  plugins: 500,
-  events: 500,
-  replay: 500,
-  controllers: 1000,
-  sources: 1000,
-  video: 1000,
-  streaming: 1000,
-  crowd: 1000,
-  // The five that each carry an edition: at $10 they would undercut it.
-  stems: 2000,
-  assistant: 2000,
-  teacher: 2000,
-  karaoke: 2000,
-  autopilot: 2000,
+  four_decks: 1000,
+  dvs: 1000,
+  plugins: 1000,
+  events: 1000,
+  replay: 1000,
+  controllers: 1500,
+  sources: 1500,
+  video: 1500,
+  streaming: 1500,
+  crowd: 1500,
+  stems: 2500,
+  assistant: 3900,
+  teacher: 3900,
+  autopilot: 4900,
+  karaoke: 5500,
 };
 
 /** How EDITIONS.md reached each price, in its words. */
 export const REASON: Record<Edition, string> = {
-  autopilot: "Below the same modules bought in Custom ($59).",
-  hobbyist: "Half of the first year of a paid entry tier: djay Pro $50 and rekordbox Core about $120, average $85.",
-  apprentice: "The Hobbyist's, with the two largest modules, below their Custom price ($79).",
-  karaoke: "Below the same modules bought in Custom ($59); a karaoke host alone sells at $80–99.",
+  autopilot: "The autopilot alone, on the free foundation.",
+  hobbyist: "The owner's choice: what every DJ keeps without a purchase, and what a trial ends in — the way VirtualDJ (free for home use) and rekordbox (free Core) work.",
+  apprentice: "The assistant and the teacher, below their Custom price ($78).",
+  karaoke: "Karaoke alone; a karaoke host alone sells at $80–99.",
   pro: "Half of the professional average: Serato DJ Pro $299, VirtualDJ Pro Infinity $299, Traktor Pro 4 $149, DEX 4 Pro $199 → $236.50.",
   full: "Half of VirtualDJ Pro Infinity, the all-in-one that also carries karaoke and video; and Pro DJ plus $30.",
-  custom: "The Hobbyist foundation at $39, then $5, $10 or $20 a module.",
+  custom: "The modules chosen, on the free foundation: $10, $15, $25, $39, $49 or $55 a module.",
 };
 
 /** A competitor's published price, with its source (EDITIONS.md, October 2026). */
@@ -172,10 +176,10 @@ export const PRO_MONTH = (() => {
 })();
 const MONTH_SHARE = PRO_MONTH / BUY_ONCE.pro;
 
-/** The list price, in US cents, of an edition (Custom: of its modules) on a plan. */
+/** The list price, in US cents, of an edition (Custom: of its modules) on a plan. What is free is free on every plan. */
 export function listPrice(edition: Edition, plan: Exclude<Plan, "trial">, chosen: readonly string[] = []): number {
   const once = edition === "custom" ? FOUNDATION + modulesOf("custom", chosen).reduce((sum, m) => sum + MODULE_PRICE[m], 0) : BUY_ONCE[edition];
-  if (plan === "perpetual") return once;
+  if (plan === "perpetual" || once === 0) return once;
   const month = psychological(Math.round(once * MONTH_SHARE));
   return plan === "monthly" ? month : psychological(month * 10);
 }
@@ -192,9 +196,6 @@ export function betterThanCustom(chosen: readonly string[]): Edition | null {
   fits.sort((a, b) => BUY_ONCE[a] - BUY_ONCE[b]);
   return fits[0] ?? null;
 }
-
-/** How many computers one licence may be on at once. */
-export const SEATS: Record<Edition, number> = { autopilot: 2, hobbyist: 2, apprentice: 2, karaoke: 3, pro: 3, full: 5, custom: 3 };
 
 /** Days of the free trial, once per account (EDITIONS.md "The 7-day trial"). */
 export const TRIAL_DAYS = 7;
@@ -213,7 +214,7 @@ export interface EditionInfo {
 
 const INFO: Record<Edition, Omit<EditionInfo, "id" | "modules">> = {
   autopilot: { name: "Auto-Pilot", emoji: "🛫", colour: "#22d3ee", tagline: "Two decks the application mixes; take over whenever you like.", forWho: "Parties, bars, anyone who wants the music to run itself." },
-  hobbyist: { name: "Hobbyist", emoji: "🎧", colour: "#38bdf8", tagline: "Everything basic a DJ needs, and a look at what more there is.", forWho: "A DJ playing for fun." },
+  hobbyist: { name: "Hobbyist", emoji: "🎧", colour: "#38bdf8", tagline: "Everything basic a DJ needs, and a look at what more there is. Free, for ever.", forWho: "A DJ playing for fun." },
   apprentice: { name: "Apprentice", emoji: "🎓", colour: "#a3e635", tagline: "The Hobbyist's, with an assistant and a teacher.", forWho: "Someone learning to DJ: the craft, the music behind it, the crowd, the first gigs and the road ahead." },
   karaoke: { name: "Karaoke", emoji: "🎤", colour: "#e879f9", tagline: "The Hobbyist's, with karaoke.", forWho: "Karaoke hosts and bars." },
   pro: { name: "Pro DJ", emoji: "🔥", colour: "#f97316", tagline: "Everything except karaoke and the teacher.", forWho: "The working DJ." },
@@ -226,10 +227,10 @@ export const EDITION_INFO: Record<Edition, EditionInfo> = Object.fromEntries(
 ) as Record<Edition, EditionInfo>;
 
 export const PLAN_INFO: Record<Plan, { name: string; per: string; about: string }> = {
-  perpetual: { name: "Buy once", per: "once", about: "Version 1 for ever, with every 1.x update." },
+  perpetual: { name: "Buy once", per: "once", about: "Paid once, and it keeps working — offline too." },
   monthly: { name: "Monthly", per: "/ month", about: "Every update while it runs. Cancel any time." },
   yearly: { name: "Yearly", per: "/ year", about: "Every update while it runs; ten months' price." },
-  trial: { name: "Trial", per: "free", about: "Seven days, once per account." },
+  trial: { name: "Trial", per: "free", about: "Seven days of any edition, once per account; then the Hobbyist edition, free, for ever." },
 };
 
 export function money(cents: number, currency: Currency): string {

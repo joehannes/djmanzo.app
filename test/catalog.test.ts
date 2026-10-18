@@ -42,7 +42,10 @@ describe("the editions are the application's", () => {
 
 describe("prices are EDITIONS.md's", () => {
   it("buying once costs what EDITIONS.md proposes", () => {
-    expect(BUY_ONCE).toEqual({ autopilot: 4900, hobbyist: 3900, apprentice: 6900, karaoke: 5500, pro: 11900, full: 14900 });
+    expect(BUY_ONCE).toEqual({ autopilot: 4900, hobbyist: 0, apprentice: 6900, karaoke: 5500, pro: 11900, full: 14900 });
+    // Custom is the modules chosen, on the free foundation.
+    expect(FOUNDATION).toBe(0);
+    expect(Object.values(MODULE_PRICE).sort((a, b) => a - b)).toEqual([1000, 1000, 1000, 1000, 1000, 1500, 1500, 1500, 1500, 1500, 2500, 3900, 3900, 4900, 5500]);
   });
 
   it("Pro DJ is half of the professional average", () => {
@@ -52,13 +55,11 @@ describe("prices are EDITIONS.md's", () => {
     expect(Math.abs(BUY_ONCE.pro / 100 - avg / 2)).toBeLessThan(1);
   });
 
-  it("every edition costs less than the same modules bought in Custom", () => {
-    for (const e of NAMED) {
-      if (e === "hobbyist") continue;
-      expect(BUY_ONCE[e], e).toBeLessThan(listPrice("custom", "perpetual", modulesOf(e)));
-    }
-    expect(listPrice("custom", "perpetual", MODULES)).toBe(21400);
-    expect(FOUNDATION).toBe(BUY_ONCE.hobbyist);
+  it("no edition costs more than the same modules bought in Custom", () => {
+    for (const e of NAMED) expect(BUY_ONCE[e], e).toBeLessThanOrEqual(listPrice("custom", "perpetual", modulesOf(e)));
+    // EDITIONS.md: Pro DJ's thirteen modules $238 against $119; every module $332 against Full's $149.
+    expect(listPrice("custom", "perpetual", modulesOf("pro"))).toBe(23800);
+    expect(listPrice("custom", "perpetual", MODULES)).toBe(33200);
   });
 
   it("a Custom choice that reaches an edition's price is pointed at the edition", () => {
@@ -72,7 +73,10 @@ describe("prices are EDITIONS.md's", () => {
   it("a month is no more than half the competitors', and a year is ten months", () => {
     expect(PRO_MONTH).toBeCloseTo(((11.99 + 19 + 15) / 3 / 2) * 100, 0);
     expect(listPrice("pro", "monthly")).toBeLessThanOrEqual(PRO_MONTH);
-    for (const e of NAMED) {
+    // What is free is free on every plan.
+    expect(listPrice("hobbyist", "monthly")).toBe(0);
+    expect(listPrice("hobbyist", "yearly")).toBe(0);
+    for (const e of NAMED.filter((x) => BUY_ONCE[x] > 0)) {
       const m = listPrice(e, "monthly");
       expect([49, 99], `${e} monthly`).toContain(m % 100);
       expect(listPrice(e, "yearly"), `${e} yearly`).toBe(psychological(m * 10));

@@ -10,7 +10,7 @@
   import type { PlaceId } from "../lib/places";
   import { profile, type Venue } from "../lib/profile.svelte";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   interface Night {
     id: string;

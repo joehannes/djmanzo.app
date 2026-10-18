@@ -3,7 +3,7 @@
  *
  * It asks what the visitor plays and does, dresses the path in their music,
  * walks them through the stages, and answers what djmanzo does — from
- * `shared/facts.ts` and the catalogue, never from memory (DIRECTIVE §133).
+ * `shared/facts.ts` and the catalogue, never from memory (DIRECTIVE §134).
  *
  * A reply is structured: what the guide says, up to four quick answers for
  * the visitor to tap, and actions. The model *proposes* actions; this file
@@ -24,7 +24,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { EDITIONS, EDITION_INFO, FOUNDATION, MODULES, MODULE_PRICE, MODULE_TITLE, TRIAL_DAYS, listPrice, money } from "../shared/catalog";
-import { FACTS, STATUS_LINE } from "../shared/facts";
+import { FACTS, STATUS_LINE, moduleWords } from "../shared/facts";
 import { ASKS, KINDS, ROLES, type Action, type GuideAnswer, type GuideContext, type Reply, type Turn } from "../shared/guide";
 import { BAND_SHARE, STUDENT_SHARE } from "../shared/regions";
 import { NODES, resolveStyle } from "../src/style/genome";
@@ -100,22 +100,23 @@ function stagesSheet(): string {
 }
 
 function factsSheet(): string {
-  return FACTS.map((f) => `- ${f.name} [${f.status}; ${f.module === "foundation" ? "every edition" : `module: ${MODULE_TITLE[f.module]}`}]: ${f.about}${f.caveat ? ` (Caveat, keep it: ${f.caveat})` : ""}`).join("\n");
+  return FACTS.map((f) => `- ${f.name} [${f.status}; ${moduleWords(f, (m) => MODULE_TITLE[m])}]: ${f.about}${f.caveat ? ` (Caveat, keep it: ${f.caveat})` : ""}`).join("\n");
 }
 
 function pricesSheet(): string {
   const usd = (c: number) => money(c, "USD");
   const named = EDITIONS.filter((e) => e !== "custom").map((e) => {
     const i = EDITION_INFO[e];
-    return `- ${e} "${i.name}": ${usd(listPrice(e, "perpetual"))} once (version 1 and its updates), or ${usd(listPrice(e, "monthly"))} a month, or ${usd(listPrice(e, "yearly"))} a year. ${i.tagline} For: ${i.forWho}`;
+    if (listPrice(e, "perpetual") === 0) return `- ${e} "${i.name}": free, for ever, with no purchase; what every trial ends in. ${i.tagline} For: ${i.forWho}`;
+    return `- ${e} "${i.name}": ${usd(listPrice(e, "perpetual"))} once, or ${usd(listPrice(e, "monthly"))} a month, or ${usd(listPrice(e, "yearly"))} a year. ${i.tagline} For: ${i.forWho}`;
   });
   const modules = MODULES.map((m) => `${MODULE_TITLE[m]} ${usd(MODULE_PRICE[m])}`).join(", ");
   const bands = Object.entries(BAND_SHARE)
     .map(([b, share]) => `band ${b} pays ${Math.round(share * 100)} %`)
     .join(", ");
   return `${named.join("\n")}
-- custom "Custom": the Hobbyist foundation for ${usd(FOUNDATION)}, plus the modules chosen: ${modules}.
-Every edition is the same download, unlocked by signing in. A free ${TRIAL_DAYS}-day trial of any edition, once per account. An upgrade costs the difference between the two editions. Prices follow the World Bank's income groups (${bands}), proven by the card's country and the billing address at checkout. Students and teachers pay ${Math.round(STUDENT_SHARE * 100)} %. Discounts never stack. These prices are the owner's proposal and may change.`;
+- custom "Custom": the free Hobbyist foundation${FOUNDATION ? ` (${usd(FOUNDATION)})` : ""} and the modules chosen: ${modules}.
+Every edition is the same download, unlocked by signing in. A free ${TRIAL_DAYS}-day trial of any edition, once per account. An upgrade costs the difference between the two editions. The monthly and yearly plans are the owner's proposal and may change. Prices follow the World Bank's income groups (${bands}), proven by the card's country and the billing address at checkout. Students and teachers pay ${Math.round(STUDENT_SHARE * 100)} %. Discounts never stack. These prices are the owner's proposal and may change.`;
 }
 
 const ACTIONS_DOC = `Actions you may propose (the page checks every one and ignores any that names nothing real):

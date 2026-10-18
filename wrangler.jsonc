@@ -3,13 +3,13 @@
   "name": "djmanzo",
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-16",
-  // The Svelte build. The Worker runs first only for the API and the
-  // sign-in routes; everything else is the single-page island.
+  // The Svelte build. The Worker runs first only for the API, the sign-in
+  // routes and djmanzo's licence protocol; everything else is the island.
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/auth/*"]
+    "run_worker_first": ["/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout"]
   },
   "kv_namespaces": [{ "binding": "KV", "id": "63033c23be2046b08d74b2dc6d3902b1" }],
   // Workers AI writes blog drafts when no ANTHROPIC_API_KEY secret is set.

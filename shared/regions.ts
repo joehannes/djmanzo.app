@@ -8,7 +8,7 @@
  * stack: the larger one applies.**
  *
  * A regional price is given only where the buyer shows they are there
- * (DIRECTIVE §132): the country their card was issued in **and** the
+ * (DIRECTIVE §133): the country their card was issued in **and** the
  * country of their billing address must both be in the group. An IP address
  * is only a hint; it decides what the site *shows*, never what anyone pays.
  * Where the two disagree, the buyer pays the higher of the two prices. That

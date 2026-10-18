@@ -50,43 +50,26 @@ test("a regional price must be proven, and a licence comes out", async ({ page }
   await expect(sleeve.getByText("demo licence")).toBeVisible();
 });
 
-test("djmanzo's code is approved on the /link page", async ({ page, request }) => {
-  const start = await (await request.post("/api/device/start", { data: { machine: "Booth laptop" } })).json();
+test("djmanzo signs in with its own protocol; the pass offers the licence line only to an account a provider vouches for", async ({ page, request }) => {
+  // The application's sign-in: a damaged link is refused, and a provider with no keys is not offered.
+  const challenge = "c".repeat(43);
+  expect((await request.get(`/login/github?state=state-0123456789abcdef&code_challenge=${challenge}&port=80`, { maxRedirects: 0 })).status()).toBe(400);
+  expect((await request.get(`/login/github?state=state-0123456789abcdef&code_challenge=${challenge}&port=53682`, { maxRedirects: 0 })).status()).toBe(404);
+  expect((await request.post("/licence", { data: { code: "nothing", verifier: "nothing" } })).status()).toBe(400);
+
   await page.goto("/#/pase");
   const pass = page.getByRole("region", { name: "Tu Pase" });
   await pass.getByRole("textbox", { name: "Your DJ name" }).fill("Linker");
   await pass.getByRole("button", { name: "Sign in for the demo" }).click();
-  await page.goto(`/link?code=${start.user_code}`);
-  const link = page.getByRole("region", { name: "Tu Pase" });
-  await expect(link.getByText("Booth laptop")).toBeVisible();
-  await link.getByRole("button", { name: "Yes — link it" }).click();
-  await expect(link.getByText("Linked.")).toBeVisible();
-  const token = await (await request.post("/api/device/token", { data: { device_code: start.device_code } })).json();
-  expect(token.access_token).toMatch(/^djm_/);
-  expect(token.user.name).toBe("Linker");
-});
-
-test("djmanzo's loopback: the DJ says yes and the browser carries the answer back", async ({ page, request }) => {
-  const verifier = "loopback-verifier-0123456789-abcdefghijklmnop";
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
-  const challenge = Buffer.from(digest).toString("base64url");
-  const port = 53682;
-  let back: URL | null = null;
-  // djmanzo's own port, played by the test: record where the browser was sent.
-  await page.route(`http://127.0.0.1:${port}/**`, (route) => {
-    back = new URL(route.request().url());
-    return route.fulfill({ status: 200, contentType: "text/html", body: "<p>djmanzo is linked</p>" });
-  });
-  await page.goto(`/link?port=${port}&challenge=${challenge}&state=state-0123456789&machine=Booth%20laptop`);
-  const pass = page.getByRole("region", { name: "Tu Pase" });
-  await expect(pass.getByText("Booth laptop").first()).toBeVisible();
-  await pass.getByRole("textbox", { name: "Your DJ name" }).fill("Loop");
-  await pass.getByRole("button", { name: "Sign in for the demo" }).click();
-  await pass.getByRole("button", { name: "Yes — link it" }).click();
-  await expect.poll(() => back?.searchParams.get("state")).toBe("state-0123456789");
-  const token = await (await request.post("/api/device/exchange", { data: { code: back!.searchParams.get("code"), verifier } })).json();
-  expect(token.access_token).toMatch(/^djm_/);
-  expect(token.user.name).toBe("Loop");
+  await expect(pass.getByText("None yet.")).toBeVisible();
+  // A trial, started from the same browser: the pass lists it and says how it reaches djmanzo.
+  const started = await page.evaluate(async () => (await fetch("/api/trial", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ edition: "full" }) })).status);
+  expect(started).toBe(200);
+  await page.reload();
+  await expect(pass.getByText(/a free trial/)).toBeVisible();
+  await expect(pass.getByText(/Settings → Licence/)).toBeVisible();
+  await pass.locator("[data-licence-line]").click();
+  await expect(pass.getByText(/Sign in with Google, Apple, GitHub, Microsoft or Discord/)).toBeVisible();
 });
 
 test("the phone gets the same island", async ({ browser }) => {

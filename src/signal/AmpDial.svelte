@@ -23,7 +23,7 @@
     <input type="range" min="0" max={ORDER.length - 1} step="1" bind:value={at} style="--k:{at / (ORDER.length - 1)}" />
   </label>
   <p class="reading" aria-live="polite">
-    <b>{info.name}</b> — {info.tagline} <span class="price">{money(BUY_ONCE[ORDER[at]], "USD")} once</span>
+    <b>{info.name}</b> — {info.tagline} <span class="price">{BUY_ONCE[ORDER[at]] ? `${money(BUY_ONCE[ORDER[at]], "USD")} once` : "free, for ever"}</span>
   </p>
 </div>
 

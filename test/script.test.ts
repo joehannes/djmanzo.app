@@ -19,8 +19,8 @@ describe("the stage script", () => {
   });
 
   it("names a planned feature only where its fact says so", () => {
-    // The Apprentice curriculum is planned: the Cue stage may show it, and the fact carries the status.
-    expect(FACT_BY_ID.curriculum.status).toBe("planned");
+    // The Apprentice course was planned and is built now (main, 18 October): the fact moved, and the Cue stage with it.
+    expect(FACT_BY_ID.curriculum.status).toBe("shipped");
     expect(FACT_BY_ID.gig.status).toBe("planned");
   });
 });

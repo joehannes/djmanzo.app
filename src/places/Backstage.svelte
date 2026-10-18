@@ -12,7 +12,7 @@
   import { GENRES } from "../lib/genres";
   import type { PlaceId } from "../lib/places";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   let token = $state("");
   let error = $state<string | null>(null);

@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { handle } from "../worker/index";
 import { quote } from "../worker/checkout";
 import type { User } from "../worker/store";
-import { keys, verify, type LicenceClaims } from "../worker/licence";
 import { testEnv } from "./kv";
+import { afterEach, vi } from "vitest";
 
 const exec = { waitUntil: () => {}, passThroughOnException: () => {} } as unknown as ExecutionContext;
 
 function client(env: never) {
   let cookie = "";
-  return async (path: string, init: RequestInit & { json?: unknown } = {}) => {
+  return async (path: string, init: RequestInit & { json?: unknown } = {}): Promise<{ status: number; data: any; location: string | null }> => {
     const headers = new Headers(init.headers);
     if (cookie) headers.set("cookie", cookie);
     if (init.json !== undefined) headers.set("content-type", "application/json");
@@ -18,12 +18,14 @@ function client(env: never) {
     const set = res.headers.get("set-cookie");
     if (set) cookie = set.split(";")[0];
     const text = await res.text();
-    return { status: res.status, data: text ? JSON.parse(text) : null };
+    return { status: res.status, data: text ? JSON.parse(text) : null, location: res.headers.get("location") };
   };
 }
 
+afterEach(() => vi.unstubAllGlobals());
+
 describe("a visitor buys a licence and djmanzo picks it up", () => {
-  it("demo sign-in, a regional quote, a proven purchase, a device link and an activation", async () => {
+  it("demo sign-in, a regional quote, a proven purchase", async () => {
     const env = testEnv();
     const web = client(env);
     expect((await web("/api/me")).data).toMatchObject({ user: null, demo: true });
@@ -46,37 +48,14 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
     expect(bought.status).toBe(200);
     expect(bought.data.order.total).toBe(q.data.total);
     expect(bought.data.licence).toMatchObject({ edition: "karaoke", plan: "yearly", demo: true });
+    // A demo purchase is not a licence for djmanzo.
+    expect((await web("/api/me/licence-line")).data.refused).toMatch(/Google, Apple, GitHub/);
+  });
 
-    // djmanzo asks to be linked; the person approves in the browser; djmanzo receives its token.
-    const app = client(env);
-    const start = await app("/api/device/start", { method: "POST", json: { machine: "Booth laptop" } });
-    expect(start.data.user_code).toMatch(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/);
-    expect((await app("/api/device/token", { method: "POST", json: { device_code: start.data.device_code } })).data.error).toBe("authorization_pending");
-    expect((await web(`/api/device/lookup?code=${start.data.user_code}`)).data.machine).toBe("Booth laptop");
-    await web("/api/device/approve", { method: "POST", json: { code: start.data.user_code, approve: true } });
-    const tok = await app("/api/device/token", { method: "POST", json: { device_code: start.data.device_code } });
-    expect(tok.data.access_token).toMatch(/^djm_/);
-
-    const bearer = { authorization: `Bearer ${tok.data.access_token}` };
-    const me = await app("/api/app/me", { headers: bearer });
-    expect(me.data.user.name).toBe("Yolanda");
-    expect(me.data.licences).toHaveLength(1);
-    const { publicRaw } = await keys(env);
-    const claims = await verify<LicenceClaims>(me.data.licences[0].token, publicRaw, "DJM1");
-    expect(claims?.edition).toBe("karaoke");
-
-    const lid = me.data.licences[0].id;
-    for (let i = 0; i < 3; i++) {
-      const a = await app("/api/app/activate", { method: "POST", headers: bearer, json: { licence: lid, machine: `machine-${i}-0123456789abcdef`, name: `Laptop ${i}` } });
-      expect(a.status).toBe(200);
-    }
-    // Karaoke has three seats; a fourth machine is refused, the first again is a renewal.
-    expect((await app("/api/app/activate", { method: "POST", headers: bearer, json: { licence: lid, machine: "machine-9-0123456789abcdef" } })).status).toBe(409);
-    expect((await app("/api/app/activate", { method: "POST", headers: bearer, json: { licence: lid, machine: "machine-0-0123456789abcdef" } })).status).toBe(200);
-
-    // Signing out on the machine revokes its token.
-    await app("/api/app/signout", { method: "POST", headers: bearer });
-    expect((await app("/api/app/me", { headers: bearer })).status).toBe(401);
+  it("the Hobbyist edition is free, and not sold", async () => {
+    const web = client(testEnv());
+    await web("/api/auth/demo", { method: "POST", json: { name: "Ana" } });
+    expect((await web("/api/quote", { method: "POST", json: { edition: "hobbyist", plan: "perpetual", country: "US" } })).data.error).toMatch(/free, for ever/);
   });
 
   it("a promo code and a voucher", async () => {
@@ -114,10 +93,6 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
     const days = (t.data.licence.expires - Date.now()) / 86400_000;
     expect(days).toBeGreaterThan(6.99);
     expect(days).toBeLessThanOrEqual(7);
-    const { publicRaw } = await keys(env);
-    const claims = await verify<LicenceClaims>(t.data.token, publicRaw, "DJM1");
-    expect(claims?.plan).toBe("trial");
-    expect(claims?.modules).toHaveLength(15);
     const again = await web("/api/trial", { method: "POST", json: { edition: "karaoke" } });
     expect(again.status).toBe(409);
     expect((await web("/api/trial")).data.had.edition).toBe("full");
@@ -127,11 +102,8 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
     const env = testEnv();
     const web = client(env);
     await web("/api/auth/demo", { method: "POST", json: { name: "Rosa" } });
-    const hob = await web("/api/checkout/demo", { method: "POST", json: { edition: "hobbyist", plan: "perpetual", country: "US", instrument: "US", billing: "US" } });
-    expect(hob.data.order.total).toBe(3900);
     const kar = await web("/api/checkout/demo", { method: "POST", json: { edition: "karaoke", plan: "perpetual", country: "US", instrument: "US", billing: "US" } });
-    expect(kar.data.order.total).toBe(5500 - 3900);
-    expect(kar.data.order.upgrade.credit).toBe(3900);
+    expect(kar.data.order.total).toBe(5500);
     // Karaoke is inside Full, not inside Pro DJ: an upgrade to Pro DJ pays in full.
     const pro = await web("/api/quote", { method: "POST", json: { edition: "pro", plan: "perpetual", country: "US" } });
     expect(pro.data.upgrade).toBeNull();
@@ -141,49 +113,88 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
     expect(full.data.total).toBe(14900 - 5500);
     // Subscriptions are not upgrades.
     expect((await web("/api/quote", { method: "POST", json: { edition: "full", plan: "monthly", country: "US" } })).data.upgrade).toBeNull();
+    const bought = await web("/api/checkout/demo", { method: "POST", json: { edition: "full", plan: "perpetual", country: "US", instrument: "US", billing: "US" } });
+    expect(bought.data.order.upgrade.credit).toBe(5500);
     // The licence it was priced against is folded into the new one.
     const lics = await web("/api/me/licences");
-    expect(lics.data.find((l: { edition: string }) => l.edition === "hobbyist").status).toBe("upgraded");
+    expect(lics.data.find((l: { edition: string }) => l.edition === "karaoke").status).toBe("upgraded");
   });
 
-  it("Custom is priced by its modules and points at an edition that costs no more", async () => {
+  it("Custom is priced by its modules alone and points at an edition that costs no more", async () => {
     const env = testEnv();
     const web = client(env);
     expect((await web("/api/quote", { method: "POST", json: { edition: "custom", plan: "perpetual", country: "US", modules: [] } })).status).toBe(400);
     const q = await web("/api/quote", { method: "POST", json: { edition: "custom", plan: "perpetual", country: "US", modules: ["dvs", "stems", "nonsense"] } });
     expect(q.data.modules).toEqual(["stems", "dvs"]);
-    expect(q.data.total).toBe(3900 + 2000 + 500);
+    expect(q.data.total).toBe(2500 + 1000);
     expect(q.data.better).toBeNull();
     const ap = await web("/api/quote", { method: "POST", json: { edition: "custom", plan: "perpetual", country: "US", modules: ["autopilot"] } });
     expect(ap.data.better).toBe("autopilot");
   });
 
-  it("djmanzo links by the loopback redirect, and the code is good once, with its verifier", async () => {
-    const env = testEnv();
-    const web = client(env);
-    await web("/api/auth/demo", { method: "POST", json: { name: "Lena" } });
+  it("djmanzo signs in through the site, as the application's protocol has it, and gets what the shop sold", async () => {
+    const env = testEnv({ GITHUB_CLIENT_ID: "gh-id", GITHUB_CLIENT_SECRET: "gh-secret", ADMIN_TOKEN: "crew-secret" });
+    // GitHub, played here: a token for any code, and Lena with a verified address.
+    vi.stubGlobal("fetch", async (url: string) => {
+      const u = String(url);
+      if (u.startsWith("https://github.com/login/oauth/access_token")) return Response.json({ access_token: "gh-token" });
+      if (u === "https://api.github.com/user") return Response.json({ id: 583231, login: "lena", name: "Lena" });
+      if (u === "https://api.github.com/user/emails") return Response.json([{ email: "lena@example.com", primary: true, verified: true }]);
+      throw new Error(`unexpected fetch ${u}`);
+    });
+    const app = client(env);
     const verifier = "v".repeat(20) + "erifier-0123456789-abcdefghij";
     const challenge = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)))))
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
       .replace(/=+$/, "");
-    const approve = { port: 53682, challenge, state: "state-0123456789", machine: "Booth laptop" };
-    expect((await web("/api/device/loopback", { method: "POST", headers: { origin: "https://evil.example" }, json: approve })).status).toBe(403);
-    expect((await web("/api/device/loopback", { method: "POST", json: { ...approve, port: 80 } })).status).toBe(400);
-    const ok = await web("/api/device/loopback", { method: "POST", json: approve });
-    const back = new URL(ok.data.redirect);
-    expect(back.origin).toBe("http://127.0.0.1:53682");
-    expect(back.searchParams.get("state")).toBe("state-0123456789");
-    const code = back.searchParams.get("code")!;
-    const app = client(env);
-    expect((await app("/api/device/exchange", { method: "POST", json: { code, verifier: "wrong" } })).status).toBe(400);
-    // A wrong verifier spends the code: it cannot be guessed at.
-    expect((await app("/api/device/exchange", { method: "POST", json: { code, verifier } })).status).toBe(400);
-    const again = await web("/api/device/loopback", { method: "POST", json: approve });
-    const code2 = new URL(again.data.redirect).searchParams.get("code")!;
-    const tok = await app("/api/device/exchange", { method: "POST", json: { code: code2, verifier } });
-    expect(tok.data.access_token).toMatch(/^djm_/);
-    expect((await app("/api/app/me", { headers: { authorization: `Bearer ${tok.data.access_token}` } })).data.user.name).toBe("Lena");
+    const state = "state-0123456789abcdef";
+    async function signIn() {
+      expect((await app(`/login/github?state=${state}&code_challenge=${challenge}&port=80`)).status).toBe(400);
+      const login = await app(`/login/github?state=${state}&code_challenge=${challenge}&port=53682`);
+      const to = new URL(login.location!);
+      expect(to.origin + to.pathname).toBe("https://github.com/login/oauth/authorize");
+      expect(to.searchParams.get("redirect_uri")).toBe("https://djmanzo.test/callback/github");
+      expect(to.searchParams.get("state")).toBe(state);
+      const back = new URL((await app(`/callback/github?code=gh-code&state=${state}`)).location!);
+      expect(back.origin).toBe("http://127.0.0.1:53682");
+      expect(back.searchParams.get("state")).toBe(state);
+      return back.searchParams.get("code")!;
+    }
+
+    // Nothing bought yet: djmanzo is told so, and keeps its sign-in for later.
+    const first = await app("/licence", { method: "POST", json: { code: await signIn(), verifier } });
+    expect(first.data).toMatchObject({ refused: "this account has no licence yet", account: "github:583231" });
+    // A grant is good once, and only with the verifier that made its challenge.
+    const code = await signIn();
+    expect((await app("/licence", { method: "POST", json: { code, verifier: "wrong" } })).status).toBe(400);
+    expect((await app("/licence", { method: "POST", json: { code, verifier } })).status).toBe(400);
+
+    // Lena buys three months of Pro DJ in the browser, signed in with the same GitHub account.
+    const crew = client(env);
+    const v = await crew("/api/admin/promos", { method: "POST", headers: { authorization: "Bearer crew-secret" }, json: { kind: "voucher", grants: { edition: "pro", plan: "monthly", months: 3 }, count: 1, prefix: "GIFT" } });
+    const web = client(env);
+    const to = new URL((await web("/auth/start/github")).location!);
+    await web(`/callback/github?code=web-code&state=${to.searchParams.get("state")}`);
+    expect((await web("/api/me")).data.user.name).toBe("Lena");
+    expect((await web("/api/redeem", { method: "POST", json: { code: v.data.codes[0].code } })).status).toBe(200);
+
+    // djmanzo renews in the background and gets Pro DJ, dated to the end of what was paid.
+    const renewed = await app("/renew", { method: "POST", json: { renew: first.data.renew } });
+    const [, body] = renewed.data.licence.split(".");
+    const payload = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(body.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0))));
+    expect(payload).toMatchObject({ v: 1, account: "github:583231", edition: "pro" });
+    expect(payload.paid_until).toBeGreaterThan(Date.now() / 1000 + 85 * 86400);
+    // Signed with the development key here, as no key is set: the key a debug djmanzo believes (dj_app::licence::DEV_KEY).
+    const raw = (s: string) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+    const devPublic = await crypto.subtle.importKey("raw", raw("twAB0cH0SC2jfnUNk8epDhSWQAXvQhymLQcLAkwr9r4="), { name: "Ed25519" }, false, ["verify"]);
+    const [, b64, sig] = renewed.data.licence.split(".");
+    expect(await crypto.subtle.verify({ name: "Ed25519" }, devPublic, raw(sig), raw(b64))).toBe(true);
+    // The same line is there to paste, for a computer that cannot sign in.
+    expect((await web("/api/me/licence-line")).data).toMatchObject({ account: "github:583231" });
+    // Signing out forgets the renewal token.
+    await app("/signout", { method: "POST", json: { renew: first.data.renew } });
+    expect((await app("/renew", { method: "POST", json: { renew: first.data.renew } })).status).toBe(401);
   });
 
   it("the student price and the regional price never stack: the larger discount applies", async () => {

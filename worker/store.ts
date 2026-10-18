@@ -7,8 +7,8 @@
  * | `ident:<provider>:<sub>` | which person a provider's account belongs to |
  * | `email:<address>` | which person a verified address belongs to |
  * | `session:<sid>` | a browser's sign-in (30 days) |
- * | `apptoken:<sha256>` | djmanzo's sign-in on one machine (a year) |
- * | `device:<sha256>` / `usercode:<code>` | a machine waiting to be linked (15 minutes) |
+ * | `grant:<code>` | djmanzo's sign-in, waiting for it to fetch its licence (2 minutes) |
+ * | `renew:<sha256>` | the account a renewal token belongs to (`worker/applicence.ts`) |
  * | `order:<oid>` | a purchase, paid or not |
  * | `licence:<lid>` / `licences:<uid>` | a licence, and a person's list of them |
  * | `trial:<uid>` | that a person has had their seven days (never expires) |
@@ -108,13 +108,6 @@ export interface Order {
   name?: string | null;
 }
 
-export interface Activation {
-  machine: string;
-  name: string;
-  at: number;
-  seen: number;
-}
-
 export interface Licence {
   id: string;
   uid: string;
@@ -129,7 +122,6 @@ export interface Licence {
   expires: number | null;
   order: string;
   demo?: boolean;
-  activations: Activation[];
   createdAt: number;
   /** Stripe's subscription id, so a renewal can find its licence. */
   subscription?: string | null;

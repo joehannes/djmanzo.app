@@ -133,7 +133,7 @@ export function recommend(p: Pick<Profile, "role" | "venues" | "gear" | "experie
     const because = proGear ? "you play on turntables or CDJs" : paid ? "you play for a paying room" : "you play professionally";
     return { edition: "pro", why: `Because ${because}: Pro DJ adds stems, decks three to six, timecode vinyl, any controller, video and going live, the assistant and the autopilot.` };
   }
-  return { edition: "hobbyist", why: "You're mixing for yourself and your friends — Hobbyist is everything basic a DJ needs, and it costs least." };
+  return { edition: "hobbyist", why: "You're mixing for yourself and your friends — Hobbyist is everything basic a DJ needs, and it is free, for ever." };
 }
 
 /**

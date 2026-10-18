@@ -1,7 +1,7 @@
 <!-- What the application does here: from shared/facts.ts, with each fact's status and caveat. -->
 <script lang="ts">
-  import { FACT_BY_ID } from "../../shared/facts";
-  import { CHEAPEST_WITH, EDITION_INFO } from "../../shared/catalog";
+  import { FACT_BY_ID, cheapestFor } from "../../shared/facts";
+  import { EDITION_INFO } from "../../shared/catalog";
 
   let { ids }: { ids: string[] } = $props();
   const facts = $derived(ids.map((id) => FACT_BY_ID[id]).filter(Boolean));
@@ -12,7 +12,7 @@
     <li data-fact={f.id} data-status={f.status}>
       <b>{f.name}</b>
       {#if f.status !== "shipped"}<em>{f.status === "planned" ? "planned" : "part-built"}</em>{/if}
-      {#if f.module !== "foundation"}<span class="ed">from {EDITION_INFO[CHEAPEST_WITH[f.module]].name}</span>{/if}
+      {#if cheapestFor(f)}<span class="ed">from {EDITION_INFO[cheapestFor(f)!].name}</span>{/if}
       <span>{f.about}</span>
       {#if f.caveat}<small>{f.caveat}</small>{/if}
     </li>

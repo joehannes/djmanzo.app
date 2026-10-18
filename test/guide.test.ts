@@ -66,7 +66,7 @@ describe("what the guide is told", () => {
     const p = systemPrompt();
     for (const f of FACTS) expect(p).toContain(`${f.name} [${f.status}`);
     for (const e of EDITIONS) expect(p).toContain(`"${EDITION_INFO[e].name}"`);
-    expect(p).toMatch(/has not yet played a real gig/);
+    expect(p).toMatch(/not yet through a real gig/);
   });
 
   it("is the same for every visitor, so it can be cached", () => {

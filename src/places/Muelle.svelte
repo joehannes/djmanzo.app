@@ -7,7 +7,7 @@
   import { profile, recommend } from "../lib/profile.svelte";
   import { EDITION_INFO } from "../../shared/catalog";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
   const rec = $derived(recommend(profile.p));
   const told = $derived(profile.p.asked.length > 0);
 </script>

@@ -13,7 +13,7 @@
   import type { PlaceId } from "../lib/places";
   import { islandSound } from "../hud/sound.svelte";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   // Four lines of eight syllables each, one syllable a beat, two bars a line.
   // A syllable ending in "-" runs into the next one without a space.

@@ -32,7 +32,7 @@ import { academic, band, currencyFor, proven, regional, studentPrice, type Band,
 import type { AppEnv } from "./env";
 import { demoMode } from "./auth";
 import { fail, randomId } from "./http";
-import { inForce, licenceToken, termEnd } from "./licence";
+import { inForce, termEnd } from "./licence";
 import { consume, judge, lookup, usedBy, type Judgement } from "./promo";
 import { stripe, verifyWebhook } from "./stripe";
 import { paypal } from "./paypal";
@@ -77,6 +77,7 @@ export interface Quote {
 export function checkInput(input: Partial<QuoteInput>): QuoteInput {
   if (!EDITIONS.includes(input.edition as Edition)) fail(400, `Pick an edition: ${EDITIONS.join(", ")}.`);
   if (!PLANS.includes(input.plan as Bought)) fail(400, "Pick a plan: buy once, monthly or yearly.");
+  if (input.edition === "hobbyist") fail(400, "The Hobbyist edition is free, for ever: download djmanzo and it is yours.");
   const country = input.country ? String(input.country).toUpperCase().slice(0, 2) : null;
   if (country && EMBARGOED.has(country)) fail(451, "We cannot take payment for this country.");
   const modules = input.edition === "custom" ? modulesOf("custom", (Array.isArray(input.modules) ? input.modules : []).filter(isModule)) : undefined;
@@ -207,10 +208,10 @@ export async function userLicences(env: AppEnv, uid: string): Promise<Licence[]>
  * one returns it, so a webhook and a browser finishing the same payment
  * cannot make two.
  */
-export async function issue(env: AppEnv, order: Order, user: User, opts: { expires?: number | null; subscription?: string | null; months?: number } = {}): Promise<{ licence: Licence; token: string }> {
+export async function issue(env: AppEnv, order: Order, user: User, opts: { expires?: number | null; subscription?: string | null; months?: number } = {}): Promise<{ licence: Licence }> {
   if (order.licence) {
     const existing = await get<Licence>(env.KV, `licence:${order.licence}`);
-    if (existing) return { licence: existing, token: await licenceToken(env, existing, user) };
+    if (existing) return { licence: existing };
   }
   const licence: Licence = {
     id: `l_${randomId(12)}`,
@@ -223,7 +224,6 @@ export async function issue(env: AppEnv, order: Order, user: User, opts: { expir
     expires: opts.expires !== undefined ? opts.expires : termEnd(order.plan, Date.now(), opts.months),
     order: order.id,
     demo: order.provider === "demo" || !!user.demo,
-    activations: [],
     createdAt: Date.now(),
     subscription: opts.subscription ?? null,
   };
@@ -244,7 +244,7 @@ export async function issue(env: AppEnv, order: Order, user: User, opts: { expir
       await saveLicence(env.KV, old);
     }
   }
-  return { licence, token: await licenceToken(env, licence, user) };
+  return { licence };
 }
 
 function needsConfirm(q: Quote, reason: string) {
@@ -302,6 +302,8 @@ export async function startTrial(env: AppEnv, user: User, edition: string) {
   if (!(NAMED as string[]).includes(edition)) fail(400, `A trial is of one edition: ${NAMED.join(", ")}.`);
   const had = await get<{ edition: Edition; at: number }>(env.KV, `trial:${user.id}`);
   if (had) fail(409, `This account has had its seven days (${EDITION_INFO[had.edition].name}, from ${new Date(had.at).toISOString().slice(0, 10)}). Any edition can be bought at any time.`);
+  // As the licence service rules: a trial is for someone who has not bought djmanzo yet.
+  if ((await userLicences(env, user.id)).some((l) => l.plan !== "trial" && !l.demo && l.status === "active")) fail(409, "This account has already bought djmanzo; an upgrade costs the difference.");
   await put(env.KV, `trial:${user.id}`, { edition, at: Date.now() });
   const order: Order = {
     id: `o_${randomId(12)}`,

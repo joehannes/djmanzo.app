@@ -64,8 +64,10 @@ test("the map leads into a stage and back, and a reveal says what djmanzo does, 
 
   await stage.getByRole("button", { name: "Reveal" }).click();
   await expect(stage.locator('[data-fact="decks"]')).toContainText("Two decks and the mixer");
-  // Planned is said so; a module names the edition that has it.
-  await expect(stage.locator('[data-fact="autopilot-surface"]')).toContainText("planned");
+  // Part-built is said so, with what is missing; a module names the edition that has it.
+  await expect(stage.locator('[data-fact="replay"]')).toContainText("part-built");
+  await expect(stage.locator('[data-fact="replay"]')).toContainText("a command with no button yet");
+  await expect(stage.locator('[data-fact="autopilot-surface"]')).toContainText("from Auto-Pilot");
   await expect(stage.locator('[data-fact="stems"]')).toHaveCount(0);
   await expect(stage.locator('[data-fact="decks6"]')).toContainText("from Pro DJ");
   await expect(stage.locator('[data-fact="dvs"]')).toContainText("Not yet run against a pressed record");

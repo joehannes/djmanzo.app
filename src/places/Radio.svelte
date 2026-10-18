@@ -9,7 +9,7 @@
   import { markdown } from "../lib/markdown";
   import type { PlaceId } from "../lib/places";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  let { go }: { go: (id: PlaceId) => void } = $props();
 
   interface Summary {
     slug: string;

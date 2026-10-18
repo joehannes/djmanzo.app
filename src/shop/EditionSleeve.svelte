@@ -4,22 +4,21 @@
 -->
 <script lang="ts">
   import type { Edition, EditionInfo } from "../../shared/catalog";
-  import type { Fact } from "../../shared/facts";
+  import { carriedBy, type Fact } from "../../shared/facts";
 
   interface Props {
     info: EditionInfo;
     facts: Fact[];
     price: string;
     per: string;
-    seats: number;
     chosen: boolean;
     pick: boolean;
     onchoose: (e: Edition) => void;
   }
-  let { info, facts, price, per, seats, chosen, pick, onchoose }: Props = $props();
+  let { info, facts, price, per, chosen, pick, onchoose }: Props = $props();
   let flipped = $state(false);
   // What is on it: the foundation's and its modules' — shipped first, and what is planned said so.
-  const has = (f: Fact) => f.module === "foundation" || info.modules.includes(f.module);
+  const has = (f: Fact) => carriedBy(f, info.modules);
   const shown = $derived(facts.filter((f) => f.status !== "planned" || has(f)));
 </script>
 
@@ -52,7 +51,7 @@
           </li>
         {/each}
       </ol>
-      <p class="small">On {seats} computers at once. djmanzo is in beta — tested thoroughly, not yet through a real gig — and nothing is locked yet: every edition opens every feature for now, and the licence records what you bought.</p>
+      <p class="small">One download for every edition; signing in in djmanzo (Settings → Licence) unlocks what you bought, and it keeps working offline. djmanzo is in beta: tested in its own repository, not yet through a real gig.</p>
       <button class="btn quiet" onclick={() => (flipped = false)} tabindex={flipped ? 0 : -1}>Turn it over</button>
     </div>
   </div>

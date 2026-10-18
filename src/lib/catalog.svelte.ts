@@ -14,7 +14,6 @@ export interface Catalog {
   /** List prices in US cents, for every edition but Custom. */
   prices: Record<Exclude<Edition, "custom">, Record<Bought, number>>;
   reasons: Record<Edition, string>;
-  seats: Record<Edition, number>;
   facts: Fact[];
   status: string;
   market: Reference[];

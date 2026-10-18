@@ -14,10 +14,17 @@
  * Accounts are linked by *verified* e-mail address: signing in with Google
  * and later with GitHub under the same address is one person with one set of
  * licences. An address a provider does not vouch for links nothing.
+ *
+ * djmanzo signs in through the same door (`worker/applicence.ts`): its
+ * `/login/:provider` starts the same sign-in with djmanzo's own state and
+ * PKCE challenge kept beside it, and the one callback per provider,
+ * `/callback/:provider`, hands djmanzo a grant on `127.0.0.1` instead of
+ * starting a browser session.
  */
 
 import type { AppEnv } from "./env";
-import { cookie, cookies, fail, randomId, same, sha256, b64url, unb64url, text } from "./http";
+import { grant, type AppLogin } from "./applicence";
+import { cookie, cookies, fail, randomId, same, b64url, unb64url, text } from "./http";
 import { get, put, type Session, type User } from "./store";
 
 export const SESSION_DAYS = 30;
@@ -202,18 +209,34 @@ export function safeReturn(path: string | null): string {
   return path && path.startsWith("/") && !path.startsWith("//") && !path.startsWith("/\\") ? path.slice(0, 600) : "/";
 }
 
-export async function start(req: Request, env: AppEnv, providerId: string): Promise<Response> {
+/** The one address each provider sends a person back to, for the browser and for djmanzo alike. */
+const back = (origin: string, provider: string) => `${origin}/callback/${provider}`;
+
+interface Pending {
+  provider: string;
+  verifier: string;
+  back: string;
+  /** djmanzo's own sign-in, waiting on a port of this machine. */
+  app?: AppLogin;
+}
+
+/**
+ * Off to the provider. In the browser the state is the site's own; for
+ * djmanzo (`app`) it is djmanzo's, as the loopback hands it back unchanged.
+ */
+export async function start(req: Request, env: AppEnv, providerId: string, app?: { state: string; app: AppLogin }): Promise<Response> {
   const provider = PROVIDERS.find((p) => p.id === providerId);
   const creds = provider && credentials(env, provider.id);
   if (!provider || !creds) fail(404, "That sign-in is not offered here.");
   const url = new URL(req.url);
-  const state = randomId();
+  const state = app?.state ?? randomId();
   const verifier = randomId(32);
   const challenge = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
-  await put(env.KV, `oauth:${state}`, { provider: provider.id, verifier, back: safeReturn(url.searchParams.get("return")) }, 600);
+  const pending: Pending = { provider: provider.id, verifier, back: safeReturn(url.searchParams.get("return")), ...(app ? { app: app.app } : {}) };
+  await put(env.KV, `oauth:${state}`, pending, 600);
   const auth = new URL(provider.authorize);
   auth.searchParams.set("client_id", creds.clientId);
-  auth.searchParams.set("redirect_uri", `${url.origin}/auth/callback/${provider.id}`);
+  auth.searchParams.set("redirect_uri", back(url.origin, provider.id));
   auth.searchParams.set("response_type", "code");
   auth.searchParams.set("scope", provider.scope);
   auth.searchParams.set("state", state);
@@ -232,7 +255,7 @@ export async function callback(req: Request, env: AppEnv, providerId: string): P
   const form = req.method === "POST" ? new URLSearchParams(await req.text()) : url.searchParams;
   const state = form.get("state") || "";
   const code = form.get("code") || "";
-  const saved = await get<{ provider: string; verifier: string; back: string }>(env.KV, `oauth:${state}`);
+  const saved = await get<Pending>(env.KV, `oauth:${state}`);
   if (!saved || saved.provider !== providerId || !code) {
     return Response.redirect(`${url.origin}/?signin=failed`, 302);
   }
@@ -242,7 +265,7 @@ export async function callback(req: Request, env: AppEnv, providerId: string): P
   const exchange = new URLSearchParams({
     grant_type: "authorization_code",
     code,
-    redirect_uri: `${url.origin}/auth/callback/${providerId}`,
+    redirect_uri: back(url.origin, providerId),
     client_id: creds.clientId,
     client_secret: providerId === "apple" ? await appleSecret(env) : creds.secret,
   });
@@ -257,6 +280,8 @@ export async function callback(req: Request, env: AppEnv, providerId: string): P
   const profile = provider.fromToken ? provider.fromToken(tok, form) : await provider.profile!(String(tok.access_token));
   if (!profile) return Response.redirect(`${url.origin}/?signin=failed`, 302);
   const user = await findOrCreate(env, providerId, profile);
+  // djmanzo asked: the grant goes back to it on this machine, and no browser session is made.
+  if (saved.app) return grant(env, user.id, `${providerId}:${profile.sub}`, saved.app, state);
   return signedIn(env, user, `${url.origin}${saved.back}`);
 }
 
@@ -302,13 +327,8 @@ export async function signOut(req: Request, env: AppEnv): Promise<Response> {
   });
 }
 
-/** The person behind a request: a browser's session cookie, or djmanzo's bearer token. */
+/** The person behind a request: a browser's session cookie. */
 export async function whoami(req: Request, env: AppEnv): Promise<User | null> {
-  const auth = req.headers.get("authorization") || "";
-  if (auth.startsWith("Bearer djm_")) {
-    const rec = await get<{ uid: string }>(env.KV, `apptoken:${await sha256(auth.slice(7))}`);
-    return rec ? get<User>(env.KV, `user:${rec.uid}`) : null;
-  }
   const sid = cookies(req).djm_sid;
   if (!sid) return null;
   const session = await get<Session>(env.KV, `session:${sid}`);
@@ -323,7 +343,7 @@ export async function required(req: Request, env: AppEnv): Promise<User> {
 
 export async function isAdmin(req: Request, env: AppEnv, user: User | null): Promise<boolean> {
   const auth = req.headers.get("authorization") || "";
-  if (env.ADMIN_TOKEN && auth.startsWith("Bearer ") && !auth.startsWith("Bearer djm_")) {
+  if (env.ADMIN_TOKEN && auth.startsWith("Bearer ")) {
     if (await same(auth.slice(7), env.ADMIN_TOKEN)) return true;
   }
   if (!user) return false;

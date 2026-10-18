@@ -46,7 +46,6 @@
   let setlistOpen = $state(false);
   let mcOpen = $state(!profile.p.welcomed);
   let tour = $state<{ order: PlaceId[]; i: number } | null>(null);
-  let linkCode = $state<string | null>(null);
 
   const COMPONENTS = { muelle: Muelle, cabina: Cabina, tienda: Tienda, tarima: Tarima, faro: Faro, taquilla: Taquilla, muro: Muro, radio: Radio, arena: Arena, gigs: Gigs, plaza: Plaza, pase: Pase, backstage: Backstage };
 
@@ -115,7 +114,7 @@
     camera.tokenY = p.y;
     open = { kind: "place", id };
     if (p.stamp) profile.stamp(id);
-    history.replaceState(null, "", id === "pase" && location.pathname === "/link" ? location.pathname + location.search : id === "pase" && linkCode ? `/link?code=${linkCode}` : `#/${id}`);
+    history.replaceState(null, "", `#/${id}`);
   }
 
   async function goGenre(g: Genre) {
@@ -131,7 +130,7 @@
 
   function close() {
     open = null;
-    history.replaceState(null, "", location.pathname === "/link" ? "/" : "#");
+    history.replaceState(null, "", "#");
   }
 
   function startTour() {
@@ -152,12 +151,6 @@
   }
 
   function fromAddress() {
-    if (location.pathname === "/link") {
-      linkCode = new URLSearchParams(location.search).get("code");
-      mcOpen = false;
-      void goPlace("pase");
-      return;
-    }
     const m = location.hash.match(/^#\/(genre\/)?([a-z-]+)/);
     if (!m) return;
     if (m[1] && GENRE_BY_ID[m[2]]) {
@@ -233,7 +226,7 @@
 {#if currentPlace && Current}
   {#key currentPlace.id}
     <Sleeve title={currentPlace.name} subtitle={currentPlace.what} emoji={currentPlace.emoji} onclose={close} wide={["taquilla", "arena", "backstage", "cabina"].includes(currentPlace.id)}>
-      <Current go={(id: PlaceId) => goPlace(id)} {linkCode} />
+      <Current go={(id: PlaceId) => goPlace(id)} />
     </Sleeve>
   {/key}
 {:else if currentGenre}
