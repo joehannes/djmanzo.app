@@ -1,0 +1,145 @@
+{
+  "art": [
+    "neon-glow",
+    "chromatic",
+    "exclusion",
+    "soft-shadow"
+  ],
+  "blends": [
+    "over",
+    "add",
+    "screen"
+  ],
+  "events": [
+    "line",
+    "glow",
+    "flash",
+    "glitch"
+  ],
+  "format": 1,
+  "long": 600,
+  "look_kinds": [
+    "wash",
+    "pulse",
+    "ripple",
+    "sparks",
+    "halo",
+    "milkdrop",
+    "artist"
+  ],
+  "most_bytes": 20971520,
+  "most_file": 2097152,
+  "most_files": 200,
+  "most_tile": 65536,
+  "motion": [
+    "audio-stroke",
+    "glitch",
+    "pulse",
+    "sway"
+  ],
+  "readable": [
+    [
+      "--text",
+      "--bg",
+      4.5
+    ],
+    [
+      "--text",
+      "--panel",
+      4.5
+    ],
+    [
+      "--on-accent",
+      "--accent",
+      4.5
+    ],
+    [
+      "--text-dim",
+      "--panel",
+      3.0
+    ],
+    [
+      "--warn",
+      "--panel",
+      3.0
+    ],
+    [
+      "--danger",
+      "--panel",
+      3.0
+    ]
+  ],
+  "shapes": [
+    "circle",
+    "stone",
+    "triangle",
+    "square",
+    "pentagon",
+    "hexagon",
+    "octagon"
+  ],
+  "short": 80,
+  "signals": [
+    "loudness",
+    "band.bass",
+    "band.low_mid",
+    "band.high_mid",
+    "band.treble",
+    "beat",
+    "stem.vocal",
+    "stem.drums",
+    "stem.bass",
+    "stem.other",
+    "voice"
+  ],
+  "skin_motion": [
+    "still",
+    "drift",
+    "breathe"
+  ],
+  "themes": [
+    "pkg-studio",
+    "pkg-booth",
+    "pkg-daylight",
+    "pkg-club",
+    "pkg-festival",
+    "pkg-sunset",
+    "pkg-caribbean",
+    "pkg-latin",
+    "pkg-wedding",
+    "pkg-lounge",
+    "pkg-scratch",
+    "pkg-stemlab",
+    "pkg-cyber",
+    "pkg-watershed",
+    "pkg-organic",
+    "pkg-industrial",
+    "pkg-legible",
+    "pkg-spectrum",
+    "pkg-signal",
+    "pkg-aurora",
+    "pkg-neon",
+    "pkg-spotlight",
+    "pkg-velvet",
+    "pkg-malecon",
+    "pkg-carnaval",
+    "pkg-biobay",
+    "pkg-rosa"
+  ],
+  "tokens": [
+    "--bg",
+    "--panel",
+    "--panel-raised",
+    "--panel-hover",
+    "--border",
+    "--border-strong",
+    "--text",
+    "--text-dim",
+    "--accent",
+    "--accent-2",
+    "--warn",
+    "--danger",
+    "--on-accent",
+    "--scrim"
+  ]
+}
