@@ -49,6 +49,32 @@ export interface Secrets {
   BLOG_MODEL: string;
   /** How many guide turns a day the site pays for, all visitors together (default 400). */
   GUIDE_DAILY: string;
+  /** The model that screens new accounts' posts in Talkback; the same rule as the guide's. */
+  MOD_MODEL: string;
+  /** How many posts a day Claude screens, all together (default 200). */
+  MOD_DAILY: string;
+
+  /**
+   * The imprint (Austria's ECG §5 and MedienG §25), set as variables. Until
+   * all three are set nobody can upload, post, comment or vote (the owner's
+   * choice, 18 October): a site that hosts what others write must say who
+   * runs it.
+   */
+  IMPRINT_NAME: string;
+  IMPRINT_ADDRESS: string;
+  IMPRINT_EMAIL: string;
+  /** Turnstile, when set: a new account proves it is a person before posting. */
+  TURNSTILE_SITE_KEY: string;
+  TURNSTILE_SECRET: string;
+  /** The owner's own donation page, offered as "Support djmanzo" when set. */
+  SUPPORT_URL: string;
 }
 
-export type AppEnv = Omit<Env, keyof Secrets> & Partial<Secrets>;
+/** Bindings that exist once the owner has made them: D1 for Outboard and Talkback, R2 for their files. */
+export interface Optional {
+  DB: D1Database;
+  /** The bucket `djmanzo-media`: packs and pictures. Until R2 is enabled, uploads stay closed (the owner's choice). */
+  MEDIA: R2Bucket;
+}
+
+export type AppEnv = Omit<Env, keyof Secrets> & Partial<Secrets> & Partial<Optional>;

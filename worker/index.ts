@@ -7,6 +7,8 @@
 import { CHEAPEST_WITH, EDITION_INFO, FOUNDATION, MARKET, MODULES, MODULE_PRICE, MODULE_TITLE, NAMED, PLANS, PLAN_INFO, PRO_MONTH, REASON, TRIAL_DAYS, listPrice } from "../shared/catalog";
 import { FACTS, STATUS_LINE } from "../shared/facts";
 import { STAGE_BY_ID } from "../src/stages/script";
+import { COMING_KINDS, LISTED_KINDS } from "../shared/outboard";
+import { COMMUNITIES, FLAIRS, RULES, TRUST } from "../shared/talkback";
 import { BAND_NAME, BAND_SHARE, STUDENT_SHARE, band, currencyFor } from "../shared/regions";
 import type { AppEnv } from "./env";
 import * as auth from "./auth";
@@ -15,6 +17,10 @@ import * as checkout from "./checkout";
 import * as community from "./community";
 import * as applicence from "./applicence";
 import * as guide from "./guide";
+import * as market from "./market";
+import * as moderation from "./moderation";
+import * as people from "./people";
+import * as talkback from "./talkback";
 import * as sense from "./sense";
 import * as promo from "./promo";
 import { inForce, keys } from "./licence";
@@ -191,6 +197,104 @@ route("POST", "/api/journey/reward", async (c) => community.claimReward(c.env, a
 route("GET", "/api/blog", (c) => blog.posts(c.env, { lang: c.url.searchParams.get("lang") || "en" }));
 route("GET", "/api/blog/:slug", (c) => blog.post(c.env, c.params.slug, c.url.searchParams.get("lang") || "en"));
 route("GET", "/api/blog-languages", async () => blog.LANGUAGES);
+
+// --- Outboard, the marketplace, and Talkback, the discussion space (§134) ---------------
+
+const contributor = (c: Ctx) => people.contributor(c.req, c.env);
+
+route("GET", "/api/imprint", async (c) => ({ imprint: people.imprint(c.env), support: c.env.SUPPORT_URL || null }));
+
+route("GET", "/api/outboard", async (c) => ({ kinds: LISTED_KINDS, coming: COMING_KINDS, standing: await people.standing(c.req, c.env) }));
+route("GET", "/api/outboard/items", (c) => market.listing(c.env, c.url.searchParams.get("kind"), c.url.searchParams.get("q")));
+route("GET", "/api/outboard/packs.json", (c) => market.index(c.env, c.url.origin));
+route("GET", "/api/outboard/items/:id", async (c) => {
+  const u = await user(c);
+  return market.item(c.env, c.params.id, u?.id ?? null, await auth.isAdmin(c.req, c.env, u));
+});
+route("GET", "/api/outboard/items/:id/v/:file", async (c) => {
+  if (!c.params.file.endsWith(".djpack")) fail(404, "No such version.");
+  return market.download(c.env, c.params.id, c.params.file.slice(0, -".djpack".length), (await user(c))?.id ?? null);
+});
+route("GET", "/api/outboard/makers/:uid", (c) => market.maker(c.env, c.params.uid));
+route("POST", "/api/outboard/upload", async (c) => {
+  const who = await contributor(c);
+  const size = Number(c.req.headers.get("content-length") || 0);
+  if (size > market.MOST_UPLOAD) fail(413, `A pack is at most ${market.MOST_UPLOAD / 1024 / 1024} MB.`);
+  const bytes = new Uint8Array(await c.req.arrayBuffer());
+  return market.upload(c.env, who, bytes, c.url.searchParams.get("changelog") ?? "");
+});
+route("POST", "/api/outboard/items/:id/rating", async (c) => {
+  const b = await body<{ stars?: number; review?: string }>(c.req);
+  return market.rate(c.env, await contributor(c), c.params.id, Number(b.stars), String(b.review ?? ""));
+});
+route("PUT", "/api/outboard/profile", async (c) => {
+  const b = await body<{ about?: string; links?: unknown }>(c.req);
+  return market.setProfile(c.env, await contributor(c), String(b.about ?? ""), b.links);
+});
+
+route("POST", "/api/report", async (c) => {
+  const b = await body<{ kind?: string; target?: string; reason?: string }>(c.req);
+  return moderation.report(c.env, await contributor(c), String(b.kind), String(b.target), String(b.reason ?? ""));
+});
+route("GET", "/api/me/notices", async (c) => moderation.notices(c.env, (await needUser(c)).id));
+route("POST", "/api/me/notices/:id/appeal", async (c) => moderation.appeal(c.env, await needUser(c), c.params.id, String((await body<{ text?: string }>(c.req)).text ?? "")));
+
+route("GET", "/api/talkback", async (c) => {
+  const u = await user(c);
+  return {
+    communities: c.env.DB ? await talkback.communities(c.env) : COMMUNITIES.map((x) => ({ ...x, posts: 0 })),
+    flairs: FLAIRS,
+    rules: RULES,
+    trust: TRUST,
+    turnstile: c.env.TURNSTILE_SITE_KEY || null,
+    standing: await people.standing(c.req, c.env),
+    me: u && c.env.DB && people.vouched(u) ? await talkback.standing(c.env, u) : null,
+  };
+});
+route("GET", "/api/talkback/posts", async (c) =>
+  talkback.posts(c.env, {
+    community: c.url.searchParams.get("c"),
+    sort: c.url.searchParams.get("sort"),
+    q: c.url.searchParams.get("q"),
+    item: c.url.searchParams.get("item"),
+    uid: (await user(c))?.id ?? null,
+  }),
+);
+route("GET", "/api/talkback/posts/:id", async (c) => talkback.thread(c.env, c.params.id, (await user(c))?.id ?? null));
+route("POST", "/api/talkback/posts", async (c) => talkback.post(c.env, c.req, await contributor(c), await body(c.req)));
+route("POST", "/api/talkback/posts/:id/comments", async (c) => talkback.comment(c.env, await contributor(c), c.params.id, await body(c.req)));
+route("POST", "/api/talkback/vote", async (c) => {
+  const b = await body<{ kind?: string; id?: string; value?: number }>(c.req);
+  return talkback.vote(c.env, await contributor(c), String(b.kind), String(b.id), Number(b.value));
+});
+
+route("GET", "/api/admin/outboard/queue", async (c) => {
+  await needAdmin(c);
+  return market.queue(c.env);
+});
+route("POST", "/api/admin/outboard/review", async (c) => {
+  await needAdmin(c);
+  const b = await body<{ id?: string; version?: string; approve?: boolean; reason?: string }>(c.req);
+  return market.review(c.env, String(b.id), String(b.version), b.approve === true, String(b.reason ?? ""));
+});
+route("POST", "/api/admin/outboard/remove", async (c) => {
+  await needAdmin(c);
+  const b = await body<{ id?: string; reason?: string }>(c.req);
+  return market.remove(c.env, String(b.id), String(b.reason ?? ""));
+});
+route("GET", "/api/admin/crew", async (c) => {
+  await needAdmin(c);
+  return moderation.crewQueue(c.env);
+});
+route("POST", "/api/admin/crew/decide", async (c) => {
+  await needAdmin(c);
+  const b = await body<{ kind?: string; target?: string; keep?: boolean; reason?: string }>(c.req);
+  return moderation.decide(c.env, String(b.kind), String(b.target), b.keep === true, String(b.reason ?? ""));
+});
+route("POST", "/api/admin/talkback/promote", async (c) => {
+  await needAdmin(c);
+  return talkback.promote(c.env, c.req, c.url.origin, String((await body<{ id?: string }>(c.req)).id));
+});
 
 // --- The Signal Path: where, the sky, and the guide ---------------------------------
 

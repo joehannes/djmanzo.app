@@ -24,7 +24,7 @@ export function anthropic(env: AppEnv): Anthropic {
   return new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, defaultHeaders: workspace ? { "anthropic-workspace-id": workspace } : undefined });
 }
 
-export async function modelFor(env: AppEnv, client: Anthropic, which: "GUIDE_MODEL" | "BLOG_MODEL"): Promise<string> {
+export async function modelFor(env: AppEnv, client: Anthropic, which: "GUIDE_MODEL" | "BLOG_MODEL" | "MOD_MODEL"): Promise<string> {
   const named = env[which]?.trim();
   if (named) return named;
   const known = await env.KV.get(NEWEST);
