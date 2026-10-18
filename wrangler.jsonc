@@ -23,7 +23,16 @@
     // ADMIN_EMAILS and ADMIN_TOKEN are secrets, never committed.
     "DEMO_MODE": "auto",
     "MAJOR_VERSION": "1",
-    "DOWNLOAD_BASE": "https://github.com/joehannes/djmanzo/releases/latest"
+    "DOWNLOAD_BASE": "https://github.com/joehannes/djmanzo/releases/latest",
+    // What a djmanzo release names to sign in here (the owner set them on the
+    // Worker, 18 October). The Worker itself does not read them; a release
+    // takes them from the repository variables of the same names. Both are
+    // public: the site's address, and the `standard` field of
+    // /api/licence/public-key.
+    "DJMANZO_LICENCE_SERVICE": "https://djmanzo.johannes-neugschwentner.workers.dev",
+    "DJMANZO_LICENCE_KEY": "v/49WdbmMIr+dpxWg/bHppIJdOZqBJzGYnyrvUwzqoQ="
   },
+  // A variable set in the dashboard survives a deploy.
+  "keep_vars": true,
   "observability": { "enabled": true, "traces": { "enabled": true } }
 }
