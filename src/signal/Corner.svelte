@@ -1,8 +1,9 @@
 <!--
   The top right corner, on the map and on every stage: the guide, which
   follows the visitor along the path, and "Your night" — what the path
-  knows about them, each sense to switch, their constellation, and "Forget
-  me", which removes all of it from this browser.
+  knows about them, each sense to switch, their constellation, "Forget
+  me", which removes all of it from this browser, and the way to what is
+  still only on the island.
 -->
 <script lang="ts">
   import { NODES } from "../style/genome";
@@ -97,6 +98,13 @@
     </div>
     {#if forgotten}<p class="note" role="status">Forgotten: this browser holds nothing of your visit now.</p>{/if}
     {#if poster}<Poster />{/if}
+
+    <h2>Elsewhere on the site</h2>
+    <p class="elsewhere" data-elsewhere>
+      Still on <a class="link" href="/island/">the island</a>, the site before this one: <a class="link" href="/island/#/pase">your pass</a> — your licences, and the licence line
+      for djmanzo — <a class="link" href="/island/#/radio">the blog</a>, <a class="link" href="/island/#/muro">the wishlist</a> and
+      <a class="link" href="/island/#/arena">honest comparisons</a>.
+    </p>
   </aside>
 {/if}
 
@@ -172,6 +180,11 @@
     font-size: 12.5px;
     opacity: 0.75;
     margin: 8px 0 0;
+  }
+  .elsewhere {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
   }
   .link {
     font: inherit;

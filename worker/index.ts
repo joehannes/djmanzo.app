@@ -1,6 +1,7 @@
 /**
  * The djmanzo website's Worker: the API under `/api`, sign-in under
- * `/auth`, and the island (static assets) for everything else.
+ * `/auth`, djmanzo's licence protocol, and the pages (static assets) for
+ * everything else — the Signal Path at `/`, the island at `/island/`.
  */
 
 import { CHEAPEST_WITH, EDITION_INFO, FOUNDATION, MARKET, MODULES, MODULE_PRICE, MODULE_TITLE, NAMED, PLANS, PLAN_INFO, PRO_MONTH, REASON, TRIAL_DAYS, listPrice } from "../shared/catalog";
@@ -375,6 +376,8 @@ route("DELETE", "/api/admin/blog/:slug/:lang", async (c) => {
 
 export async function handle(req: Request, env: AppEnv, exec: ExecutionContext): Promise<Response> {
   const url = new URL(req.url);
+  // The Signal Path was previewed at /signal/ before it became the site; old links still land.
+  if (url.pathname === "/signal" || url.pathname.startsWith("/signal/")) return Response.redirect(`${url.origin}/${url.search}`, 301);
   // Mutating requests from a browser must come from this site.
   if (req.method !== "GET" && req.method !== "HEAD" && !url.pathname.startsWith("/api/webhooks/")) {
     const origin = req.headers.get("origin");

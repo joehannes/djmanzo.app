@@ -20,7 +20,7 @@
  * say so. Nothing a visitor types is stored here.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
+import type Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { EDITIONS, EDITION_INFO, FOUNDATION, MODULES, MODULE_PRICE, MODULE_TITLE, TRIAL_DAYS, listPrice, money } from "../shared/catalog";
@@ -32,7 +32,7 @@ import { STAGES, STAGE_BY_ID } from "../src/stages/script";
 import { SHOTS } from "../src/signal/shots";
 import type { AppEnv } from "./env";
 import { HttpError, brake, clientIp, sha256, text } from "./http";
-import { modelFor } from "./model";
+import { anthropic, modelFor } from "./model";
 import { where } from "./sense";
 
 export type { Action, GuideAnswer, GuideContext, Reply, Turn };
@@ -220,7 +220,7 @@ export async function caps(env: AppEnv, req: Request): Promise<boolean> {
 export type Speak = (env: AppEnv, system: string, msgs: Anthropic.MessageParam[]) => Promise<Reply | null>;
 
 async function claude(env: AppEnv, system: string, msgs: Anthropic.MessageParam[]): Promise<Reply | null> {
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const client = anthropic(env);
   const response = await client.messages.parse({
     model: await modelFor(env, client, "GUIDE_MODEL"),
     max_tokens: 1024,

@@ -1,5 +1,5 @@
 /**
- * The Signal Path (the website's second iteration, at /signal/), driven in
+ * The Signal Path (the website itself, at /), driven in
  * a browser with its painting really drawn: the first visit lands on
  * Silence and the guide re-dresses everything; the map leads into a stage
  * and back; a stage's reveal says what djmanzo does from the fact sheet,
@@ -21,7 +21,7 @@ const accent = (page: Page) => page.evaluate(() => getComputedStyle(document.doc
 
 test("a first visit lands on Silence, and the guide dresses the path in the visitor's music", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/signal/");
+  await page.goto("/");
   const silence = page.locator('[data-stage="silence"]');
   await expect(silence).toBeVisible({ timeout: 15_000 });
   await expect(silence).toContainText("Before the first note");
@@ -48,7 +48,7 @@ test("a first visit lands on Silence, and the guide dresses the path in the visi
 test("the map leads into a stage and back, and a reveal says what djmanzo does, with its status", async ({ page }) => {
   const errs = errors(page);
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "bachata", role: "dj", visited: ["silence", "groove"] })));
-  await page.goto("/signal/");
+  await page.goto("/");
   // A returning visitor starts on the map, with the stages they have seen lit.
   const meter = page.getByRole("navigation", { name: "The stages" });
   await expect(meter).toBeVisible({ timeout: 15_000 });
@@ -82,7 +82,7 @@ test("the map leads into a stage and back, and a reveal says what djmanzo does, 
 
 test("a link to a stage opens it, and the keys walk its beats", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "hiphop", role: "dj", visited: ["silence"] })));
-  await page.goto("/signal/#/voice");
+  await page.goto("/#/voice");
   const stage = page.locator('[data-stage="voice"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   await page.keyboard.press("ArrowRight");
@@ -98,7 +98,7 @@ test("a link to a stage opens it, and the keys walk its beats", async ({ page })
 test("with reduced motion the path is the same, and nothing waits on an animation", async ({ browser }) => {
   const page = await browser.newPage({ reducedMotion: "reduce" });
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "electroswing", role: "dj", visited: ["silence"] })));
-  await page.goto("/signal/#/cone");
+  await page.goto("/#/cone");
   const stage = page.locator('[data-stage="cone"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   // The words are there at once, not arriving.
@@ -111,7 +111,7 @@ test("a phone gets the same path", async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const errs = errors(page);
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "house", role: "dj", visited: ["silence"] })));
-  await page.goto("/signal/");
+  await page.goto("/");
   const meter = page.getByRole("navigation", { name: "The stages" });
   await expect(meter).toBeVisible({ timeout: 15_000 });
   await meter.locator('[data-meter="needle"]').click();
@@ -128,7 +128,7 @@ test("a phone gets the same path", async ({ browser }) => {
 test("the Amp's reveal is the real box office: a licence can be bought from inside the stage", async ({ page }) => {
   const errs = errors(page);
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "latin", role: "dj", visited: ["silence"] })));
-  await page.goto("/signal/#/amp");
+  await page.goto("/#/amp");
   const stage = page.locator('[data-stage="amp"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   await stage.getByRole("button", { name: "Reveal" }).click();
@@ -147,7 +147,7 @@ test("the Amp's reveal is the real box office: a licence can be bought from insi
 
 test("the plays answer the hand: the Amp's dial runs through the editions", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "edm", role: "dj", visited: ["silence"] })));
-  await page.goto("/signal/#/amp");
+  await page.goto("/#/amp");
   const stage = page.locator('[data-stage="amp"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   await stage.getByRole("button", { name: "Play" }).click();
@@ -159,4 +159,17 @@ test("the plays answer the hand: the Amp's dial runs through the editions", asyn
   await expect(stage.locator("[data-amp]")).toContainText("$149 once");
   // The dial's arrows turn the dial; they do not leave the beat.
   await expect(stage).toHaveAttribute("data-beat", "2");
+});
+
+test("the path is the site: its old address still lands, and the island is one link away", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "house", role: "dj", visited: ["silence"] })));
+  // A link from the preview days keeps its stage.
+  await page.goto("/signal/#/amp");
+  await expect(page).toHaveURL(/^http:\/\/[^/]+\/#\/amp$/);
+  await expect(page.locator('[data-stage="amp"]')).toBeVisible({ timeout: 15_000 });
+  // The pass, the blog and the wishlist are still the island's.
+  await page.locator('[data-corner="you"]').click();
+  await page.locator("[data-elsewhere]").getByRole("link", { name: "your pass" }).click();
+  await expect(page).toHaveURL(/\/island\/#\/pase$/);
+  await expect(page.getByRole("region", { name: "Tu Pase" })).toBeVisible({ timeout: 15_000 });
 });

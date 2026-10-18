@@ -6,7 +6,7 @@
 import { expect, test } from "@playwright/test";
 
 test("the MC's answers repaint the island and pick the edition", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/island/");
   const mc = page.getByRole("complementary", { name: "The MC" });
   await expect(mc).toContainText("Bienvenido");
   await mc.getByRole("textbox", { name: "Your name" }).fill("DJ Rosa");
@@ -30,7 +30,7 @@ test("the MC's answers repaint the island and pick the edition", async ({ page }
 });
 
 test("a regional price must be proven, and a licence comes out", async ({ page }) => {
-  await page.goto("/#/taquilla");
+  await page.goto("/island/#/taquilla");
   const sleeve = page.getByRole("region", { name: "La Taquilla" });
   await expect(sleeve.getByRole("heading", { name: "Pick your edition" })).toBeVisible();
   await sleeve.locator(".slot", { has: page.getByRole("heading", { name: "Pro DJ", exact: true }) }).getByRole("button", { name: "Choose" }).click();
@@ -57,7 +57,7 @@ test("djmanzo signs in with its own protocol; the pass offers the licence line o
   expect((await request.get(`/login/github?state=state-0123456789abcdef&code_challenge=${challenge}&port=53682`, { maxRedirects: 0 })).status()).toBe(404);
   expect((await request.post("/licence", { data: { code: "nothing", verifier: "nothing" } })).status()).toBe(400);
 
-  await page.goto("/#/pase");
+  await page.goto("/island/#/pase");
   const pass = page.getByRole("region", { name: "Tu Pase" });
   await pass.getByRole("textbox", { name: "Your DJ name" }).fill("Linker");
   await pass.getByRole("button", { name: "Sign in for the demo" }).click();
@@ -74,7 +74,7 @@ test("djmanzo signs in with its own protocol; the pass offers the licence line o
 
 test("the phone gets the same island", async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.goto("/");
+  await page.goto("/island/");
   await expect(page.getByRole("navigation", { name: /Hot cues/ })).toBeVisible();
   // Nothing wider than the screen.
   const overflow = await page.evaluate(() => [...document.querySelectorAll("header *, nav *")].filter((e) => e.getBoundingClientRect().right > innerWidth + 1).length);

@@ -41,6 +41,8 @@ export interface Secrets {
 
   /** When set, blog drafts are written by Claude (otherwise by Workers AI), and the Signal Path's guide speaks. */
   ANTHROPIC_API_KEY: string;
+  /** The workspace a key made outside any workspace spends from (`wrkspc_…`); a key made inside one needs none. */
+  ANTHROPIC_WORKSPACE_ID: string;
   /** The model the guide speaks through; without one, the newest the key can use (`worker/model.ts`). */
   GUIDE_MODEL: string;
   /** The model that drafts blog posts; the same rule. */

@@ -7,13 +7,22 @@
  * Models API for the newest model the key can use and remembers the answer
  * for a day. A smaller model for the guide costs less per visitor; that is
  * the owner's call, made without a deploy.
+ *
+ * A key made outside any workspace must name the workspace each request
+ * spends from; `ANTHROPIC_WORKSPACE_ID` does, for every client made here.
  */
 
-import type Anthropic from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import type { AppEnv } from "./env";
 import { fail } from "./http";
 
 const NEWEST = "config:model:newest";
+
+/** A client on the owner's key, naming their workspace when one is set. */
+export function anthropic(env: AppEnv): Anthropic {
+  const workspace = env.ANTHROPIC_WORKSPACE_ID?.trim();
+  return new Anthropic({ apiKey: env.ANTHROPIC_API_KEY, defaultHeaders: workspace ? { "anthropic-workspace-id": workspace } : undefined });
+}
 
 export async function modelFor(env: AppEnv, client: Anthropic, which: "GUIDE_MODEL" | "BLOG_MODEL"): Promise<string> {
   const named = env[which]?.trim();

@@ -95,7 +95,7 @@
         {:else if stage.id === "amp"}
           <p class="punch">{stage.reveal}</p>
           <div class="shop" data-shop>
-            <Taquilla go={(id) => (location.href = `/#/${id}`)} edition={signal.pick} />
+            <Taquilla go={(id) => (location.href = `/island/#/${id}`)} edition={signal.pick} />
           </div>
         {:else}
           <p class="punch">{stage.reveal}</p>

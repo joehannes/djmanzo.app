@@ -233,3 +233,13 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
     expect(list.data.find((x: { id: string }) => x.id === w.data.id).status).toBe("idea");
   });
 });
+
+describe("the site's addresses", () => {
+  it("sends the Signal Path's preview address to the site itself, keeping what it asked", async () => {
+    for (const path of ["/signal", "/signal/", "/signal/index.html"]) {
+      const res = await handle(new Request(`https://djmanzo.test${path}?sky=snow`), testEnv(), exec);
+      expect(res.status, path).toBe(301);
+      expect(res.headers.get("location"), path).toBe("https://djmanzo.test/?sky=snow");
+    }
+  });
+});

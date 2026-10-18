@@ -12,14 +12,13 @@
  * cannot promise a feature the application does not have.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { z } from "zod";
 import { EDITION_INFO, MODULE_TITLE, type Edition } from "../shared/catalog";
 import { FACTS, STATUS_LINE, moduleWords } from "../shared/facts";
 import type { AppEnv } from "./env";
 import { fail, text } from "./http";
-import { modelFor } from "./model";
+import { anthropic, modelFor } from "./model";
 import { get, put, type Post, type PostSummary } from "./store";
 
 export const LANGUAGES: Record<string, string> = {
@@ -77,7 +76,7 @@ Write natively in the requested language — idiomatic, with that scene's own wo
 ${facts()}`;
 
 async function draftWithClaude(env: AppEnv, brief: string, language: string): Promise<Draft> {
-  const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
+  const client = anthropic(env);
   const response = await client.beta.messages.parse({
     model: await modelFor(env, client, "BLOG_MODEL"),
     max_tokens: 16000,

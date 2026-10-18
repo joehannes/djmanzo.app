@@ -6,8 +6,10 @@ export default defineConfig({
   build: {
     target: "es2022",
     chunkSizeWarningLimit: 900,
-    // The island (live) and the Signal Path (the second iteration, at /signal/).
-    rollupOptions: { input: { island: "index.html", signal: "signal/index.html" } },
+    // The Signal Path is the site; the first iteration, the island, stays at /island/.
+    rollupOptions: { input: { signal: "index.html", island: "island/index.html" } },
   },
-  server: { proxy: { "/api": "http://127.0.0.1:8787", "/auth": "http://127.0.0.1:8787" } },
+  server: {
+    proxy: Object.fromEntries(["/api", "/auth", "/login", "/callback", "/licence", "/renew", "/signout"].map((p) => [p, "http://127.0.0.1:8787"])),
+  },
 });
