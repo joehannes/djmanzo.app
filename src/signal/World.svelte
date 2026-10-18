@@ -4,17 +4,19 @@
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { Engine } from "./world/engine";
+  import { Engine, type Night } from "./world/engine";
   import type { StageId, StyleTokens } from "../style/genome/types";
 
   interface Props {
     order: StageId[];
     style: StyleTokens;
+    /** The visitor's hour and sky. */
+    night: Night;
     onpick: (s: StageId) => void;
     onhover: (s: StageId | null) => void;
     engine?: Engine | null;
   }
-  let { order, style, onpick, onhover, engine = $bindable(null) }: Props = $props();
+  let { order, style, night, onpick, onhover, engine = $bindable(null) }: Props = $props();
   let canvas: HTMLCanvasElement;
   let failed = $state(false);
 
@@ -30,6 +32,9 @@
 
   $effect(() => {
     engine?.setStyle(style);
+  });
+  $effect(() => {
+    engine?.setNight(night);
   });
 </script>
 

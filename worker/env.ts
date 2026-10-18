@@ -39,8 +39,14 @@ export interface Secrets {
   /** Bank details shown for a manual transfer; the transfer option is offered only when set. */
   BANK_TRANSFER_DETAILS: string;
 
-  /** When set, blog drafts are written by Claude; otherwise by Workers AI. */
+  /** When set, blog drafts are written by Claude (otherwise by Workers AI), and the Signal Path's guide speaks. */
   ANTHROPIC_API_KEY: string;
+  /** The model the guide speaks through; without one, the newest the key can use (`worker/model.ts`). */
+  GUIDE_MODEL: string;
+  /** The model that drafts blog posts; the same rule. */
+  BLOG_MODEL: string;
+  /** How many guide turns a day the site pays for, all visitors together (default 400). */
+  GUIDE_DAILY: string;
 }
 
 export type AppEnv = Omit<Env, keyof Secrets> & Partial<Secrets>;

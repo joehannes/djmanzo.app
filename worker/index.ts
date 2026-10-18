@@ -12,9 +12,11 @@ import * as blog from "./blog";
 import * as checkout from "./checkout";
 import * as community from "./community";
 import * as device from "./device";
+import * as guide from "./guide";
+import * as sense from "./sense";
 import * as promo from "./promo";
 import { keys } from "./licence";
-import { HttpError, body, country, fail, json, text } from "./http";
+import { HttpError, body, brake, clientIp, country, fail, json, text } from "./http";
 import { get, list, put, saveLicence, type Licence, type Order, type Promo, type User, type Video } from "./store";
 
 type Handler = (ctx: Ctx) => Promise<Response | unknown>;
@@ -208,6 +210,17 @@ route("POST", "/api/journey/reward", async (c) => community.claimReward(c.env, a
 route("GET", "/api/blog", (c) => blog.posts(c.env, { lang: c.url.searchParams.get("lang") || "en" }));
 route("GET", "/api/blog/:slug", (c) => blog.post(c.env, c.params.slug, c.url.searchParams.get("lang") || "en"));
 route("GET", "/api/blog-languages", async () => blog.LANGUAGES);
+
+// --- The Signal Path: where, the sky, and the guide ---------------------------------
+
+// Asked for only after the visitor said yes; nothing here is stored.
+route("GET", "/api/where", async (c) => sense.where(c.req));
+route("GET", "/api/weather", async (c) => {
+  await brake(c.env.KV, `weather:${clientIp(c.req)}`, 30, 3600);
+  return sense.weather(c.url.searchParams.get("lat"), c.url.searchParams.get("lon"));
+});
+route("GET", "/api/guide", async (c) => ({ on: !!c.env.ANTHROPIC_API_KEY }));
+route("POST", "/api/guide", async (c) => guide.guide(c.env, c.req, await body(c.req, 48 * 1024)));
 
 // --- Backstage -----------------------------------------------------------------
 

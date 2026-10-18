@@ -19,16 +19,22 @@
   import Taquilla from "../places/Taquilla.svelte";
   import "./shop.css";
   import { shotFor } from "./shots";
+  import { signal } from "./state.svelte";
+  import { senses, clock } from "./sense/senses.svelte";
+  import Poster from "./poster/Poster.svelte";
+  import type { StageId } from "../style/genome/types";
 
   interface Props {
     stage: Stage;
     style: StyleTokens;
     onnext: () => void;
     onmap: () => void;
+    /** Go to another stage (an offer of the guide's). */
+    ongo: (s: StageId) => void;
     /** The stage's play, 0–1: where the visitor leans, or how far they turn it up. */
     onplay: (k: number) => void;
   }
-  let { stage, style, onnext, onmap, onplay }: Props = $props();
+  let { stage, style, onnext, onmap, ongo, onplay }: Props = $props();
 
   const BEATS = ["Mystery", "Reveal", "Play", "Pass it on"];
   let beat = $state(0);
@@ -77,16 +83,19 @@
           {#each stage.mystery.split(" ") as word, i (i)}<span style="--i:{i}">{word}&nbsp;</span>{/each}
         </p>
         <p class="scene">{style.name}: {style.scene[stage.id]}</p>
+        {#if stage.id === "afterglow" && senses.nextSunrise}
+          <p class="scene sunrise" data-sunrise>{senses.city ? `In ${senses.city}` : "Where you are"}, the sun rises at {clock(senses.nextSunrise)}.</p>
+        {/if}
       </div>
     {:else if beat === 1}
       <div class="panel reveal">
         {#if stage.id === "silence"}
           <p class="punch">{stage.reveal}</p>
-          <Guide ondone={onnext} />
+          <Guide stage="silence" {ongo} ondone={onnext} />
         {:else if stage.id === "amp"}
           <p class="punch">{stage.reveal}</p>
           <div class="shop" data-shop>
-            <Taquilla go={(id) => (location.href = `/#/${id}`)} />
+            <Taquilla go={(id) => (location.href = `/#/${id}`)} edition={signal.pick} />
           </div>
         {:else}
           <p class="punch">{stage.reveal}</p>
@@ -106,6 +115,8 @@
         <p class="punch">{stage.play}</p>
         {#if stage.id === "amp"}
           <AmpDial {onplay} />
+        {:else if stage.id === "afterglow"}
+          <Poster />
         {/if}
         <p class="aside">Beside the music, in {style.name}: <b>{complement.what}</b> — {complement.why}</p>
       </div>
@@ -143,7 +154,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
+    /* The corner's buttons (the guide, your night) stand at the right. */
+    right: 220px;
     display: flex;
     align-items: center;
     gap: 16px;
@@ -304,6 +316,10 @@
     box-shadow: 0 0 40px color-mix(in srgb, var(--glow) 60%, transparent);
   }
   @media (max-width: 760px) {
+    .top {
+      right: 0;
+      top: 44px;
+    }
     .cols {
       grid-template-columns: 1fr;
     }

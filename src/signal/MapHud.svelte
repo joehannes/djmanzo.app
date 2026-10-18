@@ -7,6 +7,7 @@
   import { STAGES, STAGE_BY_ID } from "../stages/script";
   import type { StageId, StyleTokens } from "../style/genome/types";
   import { signal } from "./state.svelte";
+  import { senses } from "./sense/senses.svelte";
   import type { Engine } from "./world/engine";
 
   interface Props {
@@ -48,6 +49,9 @@
 <header class="brand">
   <b>djmanzo</b>
   <span>the Signal Path · {style.name}</span>
+  {#if senses.city || senses.sky}
+    <span class="tonight" data-tonight>Tonight{senses.city ? ` in ${senses.city}` : ""}{senses.sky ? ` · ${senses.sky}` : ""}</span>
+  {/if}
 </header>
 
 <p class="hint" aria-live="polite">
@@ -92,6 +96,10 @@
   .brand span {
     font-size: 13px;
     opacity: 0.8;
+  }
+  .brand .tonight {
+    font-style: italic;
+    opacity: 0.95;
   }
   .hint {
     position: fixed;

@@ -19,6 +19,7 @@ import { EDITION_INFO, MODULE_TITLE, type Edition } from "../shared/catalog";
 import { FACTS, STATUS_LINE } from "../shared/facts";
 import type { AppEnv } from "./env";
 import { fail, text } from "./http";
+import { modelFor } from "./model";
 import { get, put, type Post, type PostSummary } from "./store";
 
 export const LANGUAGES: Record<string, string> = {
@@ -78,7 +79,7 @@ ${facts()}`;
 async function draftWithClaude(env: AppEnv, brief: string, language: string): Promise<Draft> {
   const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
   const response = await client.beta.messages.parse({
-    model: "claude-opus-5-5",
+    model: await modelFor(env, client, "BLOG_MODEL"),
     max_tokens: 16000,
     betas: ["server-side-fallback-2026-07-01"],
     fallbacks: "default",

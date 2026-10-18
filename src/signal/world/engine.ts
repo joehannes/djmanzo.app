@@ -20,6 +20,7 @@ import { Painter, type Flow } from "./painter";
 import { MAP_H, MAP_SPOTS, MAP_W, mapCanvas, stageLayers } from "./textures";
 import { tween, easeInOut, easeOut, easeIn } from "./tween";
 import { Quality, type Tier } from "./quality";
+import type { Sky } from "../../../shared/sense";
 
 const MAP_WORLD_W = 30;
 const MAP_WORLD_H = MAP_WORLD_W * (MAP_H / MAP_W);
@@ -28,6 +29,44 @@ const STAGE_CAM_Z = 10;
 const PIECES: [number, number] = [5, 3];
 /** The brush while travelling: big enough that the world dissolves into strokes. */
 const TRAVEL_RADIUS = 18;
+
+/** The visitor's night, where they shared it (`sense/senses.svelte.ts`). */
+export interface Night {
+  /** 0 night … 1 day. */
+  daylight: number;
+  sky: Sky | null;
+}
+
+/** What a sky does to the painting: rain, snow and fog, 0–1 each. */
+export function weatherOf(sky: Sky | null): [number, number, number] {
+  switch (sky) {
+    case "rain":
+      return [1, 0, 0.25];
+    case "thunder":
+      return [1, 0, 0.35];
+    case "snow":
+      return [0, 1, 0.3];
+    case "fog":
+      return [0, 0, 1];
+    case "cloudy":
+      return [0, 0, 0.3];
+    default:
+      return [0, 0, 0];
+  }
+}
+
+/** The hour's light as a tint: a cool night, a warm dawn and dusk, a plain day. */
+export function tintOf(daylight: number): [number, number, number] {
+  const d = Math.max(0, Math.min(1, daylight));
+  const warmth = Math.max(0, 1 - Math.abs(d - 0.5) * 2);
+  const cool: [number, number, number] = [0.94, 0.97, 1.05];
+  const day: [number, number, number] = [1.04, 1.03, 1.0];
+  const warm: [number, number, number] = [1.1, 0.99, 0.86];
+  return [0, 1, 2].map((i) => {
+    const base = cool[i] + (day[i] - cool[i]) * d;
+    return base + (warm[i] - base) * warmth * 0.8;
+  }) as [number, number, number];
+}
 
 export interface EngineEvents {
   pick?: (stage: StageId) => void;
@@ -81,6 +120,8 @@ export class Engine {
   private playValue = 0.5;
   private playTarget = 0.5;
   private style: StyleTokens | null = null;
+  /** The night's own light: a little more in the day, a little less at night. Never a flash (WEBSITE-ART.md). */
+  private light = 1;
   private order: StageId[];
   private mode: "map" | "stage" = "map";
   private stage: StageId | null = null;
@@ -151,6 +192,12 @@ export class Engine {
     });
     this.painter.radius = this.mode === "map" ? style.brush.radius * 1.3 : style.brush.radius;
     if (this.mode === "stage" && this.stage) this.buildStage(this.stage, true);
+  }
+
+  /** The visitor's sky and hour over the whole painting. */
+  setNight(night: Night): void {
+    this.painter.setSky(weatherOf(night.sky), tintOf(night.daylight));
+    this.light = 0.94 + 0.12 * Math.max(0, Math.min(1, night.daylight));
   }
 
   // --- Moving between the map and a stage ----------------------------------------------
@@ -427,6 +474,9 @@ export class Engine {
     const t = (now - this.start) / 1000;
     if (this.quality.tick(now)) this.resize();
     const sway = this.reduced ? 0 : 1;
+    const light = this.light;
+    // With reduced motion the weather and the grain hold still.
+    const clock = this.reduced ? 0 : t;
     if (this.mode === "map") {
       // Seen at a tilt, drifting a little with the pointer.
       this.mapCamera.position.set(this.look.x + this.pointer.x * 0.4 * sway, this.look.y - this.height * 0.62 - this.pointer.y * 0.3 * sway, this.height);
@@ -438,15 +488,15 @@ export class Engine {
         this.marker.material.opacity = 0.85;
         this.marker.scale.setScalar(1 + Math.sin(t * 4) * 0.06 * sway);
       } else this.marker.material.opacity = 0;
-      this.painter.exposure = 1;
-      this.painter.render(this.renderer, this.mapScene, this.mapCamera, t);
+      this.painter.exposure = light;
+      this.painter.render(this.renderer, this.mapScene, this.mapCamera, clock);
     } else {
       this.playValue += (this.playTarget - this.playValue) * 0.12;
       for (const p of this.pieces) p.mesh.material.opacity = p.alpha * roleOpacity(p.role, this.playValue);
-      this.painter.exposure = this.stage === "amp" ? 0.7 + this.playValue * 0.6 : 1;
+      this.painter.exposure = light * (this.stage === "amp" ? 0.7 + this.playValue * 0.6 : 1);
       this.stageCamera.position.set(this.pointer.x * 0.35 * sway, -this.pointer.y * 0.22 * sway, STAGE_CAM_Z);
       this.stageCamera.lookAt(0, 0, 0);
-      this.painter.render(this.renderer, this.stageScene, this.stageCamera, t);
+      this.painter.render(this.renderer, this.stageScene, this.stageCamera, clock);
     }
   };
 

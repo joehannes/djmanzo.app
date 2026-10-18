@@ -10,7 +10,9 @@
  * speaker cone and along a cable instead of in one direction everywhere.
  *
  * After the brush: a gradient map that pulls every photograph into the
- * style's palette, paper or film grain, and a vignette. The brush radius is
+ * style's palette, paper or film grain, and a vignette — and the visitor's
+ * own sky over it, where they shared it: rain running down the glass, snow,
+ * a fog that lifts the darks, and the light of their hour as a tint. The brush radius is
  * the transition between map and stage — large while the camera travels,
  * falling as it arrives: the painting resolves.
  *
@@ -50,6 +52,8 @@ const fragment = /* glsl */ `
   uniform float vignette;
   uniform float fade;        // 0 painted scene … 1 the night colour
   uniform float exposure;    // how much light the room has
+  uniform vec3 weather;      // rain, snow, fog: 0 … 1 each
+  uniform vec3 tint;         // the hour's light: cool at night, warm at the edges of the day
 
   const int SECTORS = 8;
   const int RADIAL = 3;
@@ -151,7 +155,21 @@ const fragment = /* glsl */ `
     float mottle = noise(vUv * resolution / 180.0) - 0.5;
     col += (fine * 0.09 + mottle * 0.05) * grain;
 
-    col *= exposure;
+    // The visitor's sky, over the painting like weather on a window.
+    if (weather.z > 0.0) col = mix(col, mix(ramp[1], ramp[3], 0.35), weather.z * 0.35 * (1.0 - vUv.y * 0.6));
+    if (weather.x > 0.0) {
+      vec2 rp = vec2(vUv.x * resolution.x / 3.0 + vUv.y * resolution.y / 40.0, vUv.y * resolution.y / 70.0 + time * 7.0);
+      float drop = step(0.975, hash(floor(rp)));
+      col = mix(col, ramp[3], drop * fract(rp.y) * 0.22 * weather.x);
+    }
+    if (weather.y > 0.0) {
+      vec2 sp = vUv * resolution / 30.0 + vec2(sin(time * 0.6 + vUv.y * 9.0) * 0.35, time * 0.8);
+      vec2 cell = floor(sp);
+      vec2 f = fract(sp) - 0.5 - (vec2(hash(cell), hash(cell + 7.0)) - 0.5) * 0.6;
+      float flake = step(0.72, hash(cell + 3.0)) * smoothstep(0.14, 0.02, length(f));
+      col = mix(col, ramp[3], flake * 0.7 * weather.y);
+    }
+    col *= tint * exposure;
     vec2 c = vUv - 0.5;
     col *= 1.0 - vignette * dot(c, c) * 1.6;
     col = mix(col, ramp[0], fade);
@@ -195,6 +213,8 @@ export class Painter {
         vignette: { value: 0.6 },
         fade: { value: 0 },
         exposure: { value: 1 },
+        weather: { value: new THREE.Vector3(0, 0, 0) },
+        tint: { value: new THREE.Vector3(1, 1, 1) },
       },
     });
     this.quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.material);
@@ -221,6 +241,12 @@ export class Painter {
   }
   set exposure(e: number) {
     this.material.uniforms.exposure.value = e;
+  }
+
+  /** The visitor's sky: rain, snow and fog from 0 to 1, and the hour's light as an RGB multiplier. */
+  setSky(weather: [number, number, number], tint: [number, number, number]): void {
+    this.material.uniforms.weather.value.set(...weather);
+    this.material.uniforms.tint.value.set(...tint);
   }
 
   setStyle(style: PainterStyle): void {

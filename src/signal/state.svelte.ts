@@ -5,10 +5,12 @@
  * their music before.
  */
 
+import type { Edition } from "../../shared/catalog";
+import type { Role } from "../../shared/guide";
 import { NODES } from "../style/genome";
 import type { StageId } from "../style/genome/types";
 
-export type Role = "dj" | "karaoke" | "learning" | "listening";
+export type { Role };
 
 interface Saved {
   style: string;
@@ -32,6 +34,8 @@ function load(): Saved {
 
 class SignalState {
   private s = $state<Saved>(load());
+  /** The edition the guide pointed at and the visitor followed to the box office. */
+  pick = $state<Edition | null>(null);
 
   get style() {
     return this.s.style;
@@ -57,6 +61,7 @@ class SignalState {
   }
   forget() {
     this.s = { style: "music", role: null, visited: [] };
+    this.pick = null;
     try {
       localStorage.removeItem(KEY);
     } catch {

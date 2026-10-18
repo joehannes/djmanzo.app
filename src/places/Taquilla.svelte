@@ -20,13 +20,16 @@
   import Checkout from "../shop/Checkout.svelte";
   import PriceBoard from "../shop/PriceBoard.svelte";
 
-  let { go }: { go: (id: PlaceId) => void; linkCode?: string | null } = $props();
+  /** `edition`: one the visitor came for (the Signal Path's guide pointed at it); otherwise the profile's recommendation. */
+  let { go, edition: wanted = null }: { go: (id: PlaceId) => void; linkCode?: string | null; edition?: Edition | null } = $props();
 
   const rec = $derived(recommend(profile.p));
-  let edition = $state<Edition>(recommend(profile.p).edition);
+  // svelte-ignore state_referenced_locally
+  let edition = $state<Edition>(wanted ?? recommend(profile.p).edition);
   let plan = $state<Exclude<Plan, "trial">>("perpetual");
   let modules = $state<Module[]>(["stems"]);
-  let trialEdition = $state<Edition>(recommend(profile.p).edition);
+  // svelte-ignore state_referenced_locally
+  let trialEdition = $state<Edition>(wanted ?? recommend(profile.p).edition);
   let trialMsg = $state<string | null>(null);
   let country = $state("US");
   let promo = $state("");

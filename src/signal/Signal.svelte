@@ -8,17 +8,20 @@
   import World from "./World.svelte";
   import MapHud from "./MapHud.svelte";
   import StageScreen from "./StageScreen.svelte";
+  import Corner from "./Corner.svelte";
   import { STAGES, STAGE_BY_ID } from "../stages/script";
   import { resolveStyle } from "../style/genome";
   import type { StageId } from "../style/genome/types";
   import type { Engine } from "./world/engine";
   import { signal } from "./state.svelte";
+  import { senses } from "./sense/senses.svelte";
 
   const ORDER = STAGES.map((s) => s.id);
   let engine = $state<Engine | null>(null);
   let stage = $state<StageId | null>(null);
   let hovered = $state<StageId | null>(null);
   const style = $derived(resolveStyle(signal.style));
+  const night = $derived({ daylight: senses.daylight, sky: senses.sky });
 
   // The style's colours and type, for everything drawn in HTML over the canvas.
   $effect(() => {
@@ -76,11 +79,12 @@
   });
 </script>
 
-<World order={ORDER} {style} bind:engine onpick={(s) => enter(s)} onhover={(s) => (hovered = s)} />
+<World order={ORDER} {style} {night} bind:engine onpick={(s) => enter(s)} onhover={(s) => (hovered = s)} />
+<Corner {stage} ongo={(s) => enter(s)} />
 
 {#if stage}
   {#key stage}
-    <StageScreen stage={STAGE_BY_ID[stage]} {style} onnext={nextStage} onmap={toMap} onplay={(k) => engine?.play(k)} />
+    <StageScreen stage={STAGE_BY_ID[stage]} {style} onnext={nextStage} onmap={toMap} ongo={(s) => enter(s)} onplay={(k) => engine?.play(k)} />
   {/key}
 {:else}
   <MapHud {hovered} {style} {engine} onenter={(s) => enter(s)} />

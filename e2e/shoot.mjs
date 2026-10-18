@@ -6,6 +6,10 @@ const page = await browser.newPage({ viewport: { width: +w, height: +h }, device
 const logs = [];
 page.on("console", (m) => logs.push(`${m.type()}: ${m.text()}`));
 page.on("pageerror", (e) => logs.push(`pageerror: ${e.message}`));
+// MOCK='{"/api/guide": {...}}' answers those paths from the page's side, for a look at a state the server here cannot reach (the guide with a key).
+for (const [path, answer] of Object.entries(JSON.parse(process.env.MOCK || "{}"))) {
+  await page.route(`**${path}`, (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify(r.request().method() === "GET" ? (answer.get ?? answer) : (answer.post ?? answer)) }));
+}
 await page.goto(url, { waitUntil: "networkidle" });
 await page.waitForTimeout(1500);
 if (script) {
