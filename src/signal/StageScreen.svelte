@@ -19,6 +19,7 @@
   import Taquilla from "../places/Taquilla.svelte";
   import "./shop.css";
   import { shotFor } from "./shots";
+  import { playerSrc, videoFor, videos, type Video } from "./videos";
   import { signal } from "./state.svelte";
   import { senses, clock } from "./sense/senses.svelte";
   import Poster from "./poster/Poster.svelte";
@@ -38,7 +39,15 @@
 
   const BEATS = ["Mystery", "Reveal", "Play", "Pass it on"];
   let beat = $state(0);
-  const shot = $derived(shotFor(stage.screens, style.app.theme));
+  const shot = $derived(shotFor(stage.screens, style.app.theme, style.app.skin));
+  // The owner's video of this stage, looked for once its reveal opens; YouTube is reached only on "Watch".
+  let video = $state<Video | null>(null);
+  let playing = $state(false);
+  $effect(() => {
+    if (beat !== 1 || stage.id === "silence" || stage.id === "amp") return;
+    const [id, s] = [stage.id, signal.style];
+    void videos().then((list) => (video = videoFor(list, id, s)));
+  });
   const next = $derived(stage.next ? STAGE_BY_ID[stage.next] : null);
   const complement = $derived(style.complements[(stage.id.length + style.id.length) % style.complements.length]);
 
@@ -100,10 +109,19 @@
         {:else}
           <p class="punch">{stage.reveal}</p>
           <div class="cols">
-            {#if shot}
+            {#if shot || video}
               <figure>
-                <img src={shot.src} alt={shot.alt} loading="lazy" />
-                <figcaption>The real application{shot.theme ? ` — the ${shot.theme} theme` : ""}.</figcaption>
+                {#if playing && video}
+                  <iframe class="player" src={playerSrc(video)} title={video.title} allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+                  <figcaption>{video.title} — the owner's own video, from YouTube.</figcaption>
+                {:else if shot}
+                  <img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} loading="lazy" data-shot={shot.screen} />
+                  <figcaption>The real application: {shot.shows.split(":")[0]}, in the {shot.theme} theme{shot.skin ? `, with the ${shot.skin} skin` : ""}.</figcaption>
+                {/if}
+                {#if video && !playing}
+                  <button class="watch" onclick={() => (playing = true)} data-watch>▶ Watch it: {video.title}</button>
+                  <p class="note">The owner's video plays from YouTube once you press it; nothing comes from there before.</p>
+                {/if}
               </figure>
             {/if}
             <Facts ids={stage.facts} />
@@ -286,6 +304,32 @@
     margin-top: 10px;
     font-size: 13px;
     opacity: 0.8;
+  }
+  figure img {
+    height: auto;
+  }
+  .player {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    border-radius: 3px;
+  }
+  .watch {
+    font: inherit;
+    font-weight: 700;
+    margin-top: 12px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--night);
+    cursor: pointer;
+  }
+  .note {
+    font-size: 12px;
+    opacity: 0.7;
+    margin: 6px 0 0;
   }
   .aside {
     opacity: 0.85;

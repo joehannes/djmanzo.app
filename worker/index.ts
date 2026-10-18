@@ -6,6 +6,7 @@
 
 import { CHEAPEST_WITH, EDITION_INFO, FOUNDATION, MARKET, MODULES, MODULE_PRICE, MODULE_TITLE, NAMED, PLANS, PLAN_INFO, PRO_MONTH, REASON, TRIAL_DAYS, listPrice } from "../shared/catalog";
 import { FACTS, STATUS_LINE } from "../shared/facts";
+import { STAGE_BY_ID } from "../src/stages/script";
 import { BAND_NAME, BAND_SHARE, STUDENT_SHARE, band, currencyFor } from "../shared/regions";
 import type { AppEnv } from "./env";
 import * as auth from "./auth";
@@ -342,7 +343,7 @@ route("PUT", "/api/admin/videos", async (c) => {
   const clean = (Array.isArray(b) ? b : [])
     .filter((v) => /^[A-Za-z0-9_-]{6,20}$/.test(String(v.id)))
     .slice(0, 60)
-    .map((v) => ({ id: v.id, title: text(v.title, 120), edition: v.edition ?? null, genre: v.genre ? text(v.genre, 30) : null }));
+    .map((v) => ({ id: v.id, title: text(v.title, 120), edition: v.edition ?? null, genre: v.genre ? text(v.genre, 30) : null, stage: v.stage && v.stage in STAGE_BY_ID ? v.stage : null }));
   await put(c.env.KV, "config:videos", clean);
   return clean;
 });

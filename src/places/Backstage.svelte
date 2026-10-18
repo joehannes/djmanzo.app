@@ -11,6 +11,7 @@
   import { EDITIONS, PLANS, money, type Edition, type Plan } from "../../shared/catalog";
   import { GENRES } from "../lib/genres";
   import type { PlaceId } from "../lib/places";
+  import { STAGES } from "../stages/script";
 
   let { go }: { go: (id: PlaceId) => void } = $props();
 
@@ -181,13 +182,15 @@
   }
 
   // --- Videos ---------------------------------------------------------------------
-  let videos = $state<{ id: string; title: string }[]>([]);
+  type Video = { id: string; title: string; stage?: string | null; genre?: string | null };
+  let videos = $state<Video[]>([]);
   let vUrl = $state("");
   let vTitle = $state("");
+  let vStage = $state("");
   async function loadVideos() {
     videos = await api("/api/videos");
   }
-  async function saveVideos(next: { id: string; title: string }[]) {
+  async function saveVideos(next: Video[]) {
     videos = await api("/api/admin/videos", { method: "PUT", json: next });
   }
   function ytId(s: string): string {
@@ -402,11 +405,16 @@
   </details>
 
   <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadVideos()}>
-    <summary>🎬 Videos in the plaza</summary>
-    <ul>{#each videos as v, i (v.id)}<li>{v.title} <code>{v.id}</code> <button class="link" onclick={() => saveVideos(videos.filter((_, j) => j !== i))}>remove</button></li>{/each}</ul>
-    <form class="inline" onsubmit={(e) => { e.preventDefault(); void saveVideos([...videos, { id: ytId(vUrl), title: vTitle }]); vUrl = ""; vTitle = ""; }}>
+    <summary>🎬 Videos in the plaza and on the Signal Path</summary>
+    <p class="small muted">A video tagged with a stage is offered in that stage's reveal, beside the screenshot; YouTube is reached only when a visitor presses play.</p>
+    <ul>{#each videos as v, i (v.id)}<li>{v.title} <code>{v.id}</code>{#if v.stage} · {STAGES.find((st) => st.id === v.stage)?.name ?? v.stage}{/if} <button class="link" onclick={() => saveVideos(videos.filter((_, j) => j !== i))}>remove</button></li>{/each}</ul>
+    <form class="inline" onsubmit={(e) => { e.preventDefault(); void saveVideos([...videos, { id: ytId(vUrl), title: vTitle, stage: vStage || null }]); vUrl = ""; vTitle = ""; vStage = ""; }}>
       <input type="text" bind:value={vUrl} placeholder="YouTube link or id" required />
       <input type="text" bind:value={vTitle} placeholder="Title" required />
+      <select bind:value={vStage} aria-label="The stage it shows">
+        <option value="">The plaza only</option>
+        {#each STAGES as st (st.id)}<option value={st.id}>{st.name}</option>{/each}
+      </select>
       <button class="btn">Add</button>
     </form>
   </details>

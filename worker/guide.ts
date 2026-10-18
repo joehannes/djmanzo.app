@@ -49,6 +49,8 @@ export const PER_VISITOR = 30;
 export const LONGEST = 40;
 
 const SCREENS = new Set(SHOTS.map((s) => s.screen));
+/** Each pictured screen and what its picture shows, for the guide to choose by. */
+const SCREEN_LIST = [...new Map(SHOTS.map((s) => [s.screen, s.shows])).entries()].map(([screen, shows]) => `${screen} (${shows})`).join("; ");
 
 function valid(a: Action): boolean {
   switch (a.kind) {
@@ -123,7 +125,7 @@ const ACTIONS_DOC = `Actions you may propose (the page checks every one and igno
 - set_style <style id>: dress the whole path in that music. Use it as soon as the visitor names their music; pick the deepest id that fits, or the family.
 - set_role <dj|karaoke|learning|listening>: what the visitor does with music.
 - go_to <stage id>: offer to take them to a stage (they press to go).
-- show <screen>: show a real screenshot. Screens there are pictures of: ${[...SCREENS].join(", ")}.
+- show <screen>: show a real screenshot of djmanzo. The screens there are pictures of: ${SCREEN_LIST}.
 - recommend <edition id>: point at the edition that fits what they told you.
 - start_trial <edition id>: offer the free trial of that edition.
 - open_checkout <edition id>: offer the box office for that edition.

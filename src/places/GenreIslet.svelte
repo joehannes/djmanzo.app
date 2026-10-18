@@ -4,6 +4,7 @@
   that room. "Make this my island" repaints everything.
 -->
 <script lang="ts">
+  import { SHOTS, shotFor } from "../signal/shots";
   import type { Genre } from "../lib/genres";
   import type { PlaceId } from "../lib/places";
   import { profile } from "../lib/profile.svelte";
@@ -36,8 +37,12 @@
     previewing = true;
   }
 
-  const SHOTS: Record<string, string> = { "Bachata Rosa": "bachata", "Industrial Techno": "techno", "Bioluminescent Bay": "bay", "Karaoke Neon": "neon", "Malecón Night": "malecon" };
-  const shot = $derived(SHOTS[genre.theme]);
+  // From docs/screenshots: the library in this room's theme (and skin, where it was pictured so).
+  const SCREENS = ["dig", ...new Set(SHOTS.map((s) => s.screen))];
+  const shot = $derived.by(() => {
+    const s = shotFor(SCREENS, genre.theme, genre.skin ?? null);
+    return s?.theme === genre.theme ? s : null;
+  });
 </script>
 
 
@@ -67,8 +72,8 @@
 <p>The theme for this room is <b>{genre.theme}</b>{#if genre.skin}, worn with the <b>{genre.skin}</b> skin{/if}. {genre.skin ? "Both ship" : "It ships"} with the application.</p>
 {#if shot}
   <figure>
-    <img class="shot" src="/shots/{shot}.webp" alt="djmanzo in the {genre.theme} theme" loading="lazy" width="1280" height="800" />
-    <figcaption>djmanzo in {genre.theme}, as it looks today.</figcaption>
+    <img class="shot" src={shot.src} alt={shot.alt} loading="lazy" width={shot.width} height={shot.height} />
+    <figcaption>djmanzo in {genre.theme}{shot.skin ? ` with ${shot.skin}` : ""}, as it looks today.</figcaption>
   </figure>
 {/if}
 

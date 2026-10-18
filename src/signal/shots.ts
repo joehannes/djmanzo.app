@@ -1,40 +1,52 @@
 /**
- * Pictures of the real application for a stage's reveal.
+ * Pictures of the real application for a stage's reveal and the guide.
  *
- * The owner's rule (§134): screenshots come from `docs/screenshots/`, named
- * `<screen>--<theme>[--<skin>][--<state>].png`. Until that folder fills,
- * these — taken from the running application earlier — stand in, each named
- * the same way, and the reveal says which theme it shows. A stage asks for
- * screens; the visitor's own theme is preferred.
+ * The owner's rule (§134): screenshots come only from `docs/screenshots/`,
+ * named `<screen>--<theme>[--<skin>].png`. `npm run shots` turns that folder
+ * into `public/shots/app/` and `shared/shots.json`, with each picture's
+ * caption from the folder's README. A stage asks for screens; one shown in
+ * the visitor's own theme (and skin) is preferred, then the application's
+ * own look.
  */
+import index from "../../shared/shots.json";
 
 export interface Shot {
   src: string;
+  /** The `<screen>` part of the file name: `dig`, `mix`, `karaoke`, … */
   screen: string;
-  /** The theme package's name as the application's picker shows it, when the picture was taken in a chosen theme. */
-  theme: string | null;
+  /** The theme's name as the application's picker shows it. */
+  theme: string;
+  /** The skin worn over the theme, by the picker's name, if any. */
+  skin: string | null;
+  /** What the picture shows, from the folder's README. */
+  shows: string;
   alt: string;
+  width: number;
+  height: number;
 }
 
-export const SHOTS: Shot[] = [
-  { src: "/shots/cockpit.webp", screen: "cockpit", theme: null, alt: "djmanzo's cockpit: two decks, their waveforms, the mixer between them" },
-  { src: "/shots/techno.webp", screen: "cockpit", theme: "Industrial Techno", alt: "djmanzo in the Industrial Techno theme, two decks playing" },
-  { src: "/shots/bachata.webp", screen: "cockpit", theme: "Bachata Rosa", alt: "djmanzo in the Bachata Rosa theme" },
-  { src: "/shots/malecon.webp", screen: "cockpit", theme: "Malecón Night", alt: "djmanzo in the Malecón Night theme" },
-  { src: "/shots/bay.webp", screen: "cockpit", theme: "Bioluminescent Bay", alt: "djmanzo in the Bioluminescent Bay theme" },
-  { src: "/shots/neon.webp", screen: "cockpit", theme: "Karaoke Neon", alt: "djmanzo in the Karaoke Neon theme" },
-  { src: "/shots/bachata-next.webp", screen: "next", theme: "Bachata Rosa", alt: "The Next rail: records that would follow the one playing, each with its reasons" },
-  { src: "/shots/karaoke.webp", screen: "karaoke", theme: null, alt: "The Singers panel beside the decks: the queue, break music between singers, the quiz, singers from their phones" },
-  { src: "/shots/palette.webp", screen: "palette", theme: null, alt: "The command palette: every verb djmanzo understands" },
-];
+export const SHOTS: Shot[] = index;
 
-/** The best picture for a stage: one of its screens, in the visitor's theme if there is one. */
-export function shotFor(screens: string[], theme: string): Shot | null {
-  // In the order the stage names its screens, then the visitor's theme first.
+/** The look djmanzo starts in: the one to show when the visitor's own is not pictured. */
+export const HOME_THEME = "Organic Base";
+
+/** How well a picture fits a visitor dressed in `theme` and `skin`: their look first, then no skin, then djmanzo's own. */
+function fit(s: Shot, theme: string, skin: string | null): number {
+  const theirs = s.theme === theme;
+  return (theirs ? 8 : 0) + (theirs && s.skin === skin ? 4 : 0) + (s.skin ? 0 : 2) + (s.theme === HOME_THEME ? 1 : 0);
+}
+
+/** The best picture for a stage: any of its screens in the visitor's look, else its first screen that is pictured. */
+export function shotFor(screens: string[], theme: string, skin: string | null = null): Shot | null {
+  let best: Shot | null = null;
+  let bestFit = -1;
+  // In the stage's order, so of two that fit as well the earlier screen is shown.
   for (const screen of screens) {
-    const fits = SHOTS.filter((s) => s.screen === screen);
-    const pick = fits.find((s) => s.theme === theme) ?? fits[0];
-    if (pick) return pick;
+    for (const s of SHOTS) {
+      if (s.screen !== screen) continue;
+      const f = fit(s, theme, skin);
+      if (f > bestFit) [best, bestFit] = [s, f];
+    }
   }
-  return null;
+  return best;
 }

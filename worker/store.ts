@@ -233,6 +233,8 @@ export interface Video {
   title: string;
   edition?: Edition | null;
   genre?: string | null;
+  /** The Signal Path stage it shows the application for; that stage's reveal offers it beside the screenshot. */
+  stage?: string | null;
 }
 
 /**

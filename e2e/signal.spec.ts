@@ -173,3 +173,26 @@ test("the path is the site: its old address still lands, and the island is one l
   await expect(page).toHaveURL(/\/island\/#\/pase$/);
   await expect(page.getByRole("region", { name: "Tu Pase" })).toBeVisible({ timeout: 15_000 });
 });
+
+test("a reveal shows djmanzo in the visitor's own look, and the owner's video only when asked", async ({ page }) => {
+  const youtube: string[] = [];
+  page.on("request", (r) => {
+    if (/youtube/.test(r.url())) youtube.push(r.url());
+  });
+  await page.route("**/api/videos", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify([{ id: "groovevideo", title: "A crate, dug", stage: "groove" }]) }));
+  await page.route("https://www.youtube-nocookie.com/**", (r) => r.fulfill({ contentType: "text/html", body: "<p>the player</p>" }));
+  await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "bachata", role: "dj", visited: ["silence"] })));
+  await page.goto("/#/groove");
+  const stage = page.locator('[data-stage="groove"]');
+  await expect(stage).toBeVisible({ timeout: 15_000 });
+  await stage.getByRole("button", { name: "Reveal" }).click();
+  // A picture from docs/screenshots, in the theme the visitor's music wears in djmanzo.
+  await expect(stage.locator("figure img[data-shot]")).toHaveAttribute("src", "/shots/app/dig--bachata-rosa.webp");
+  await expect(stage.locator("figcaption")).toContainText("Dig, in the Bachata Rosa theme");
+  // The owner's video is offered, and YouTube is not reached until it is asked for.
+  const watch = stage.locator("[data-watch]");
+  await expect(watch).toContainText("A crate, dug");
+  expect(youtube).toEqual([]);
+  await watch.click();
+  await expect(stage.locator("iframe.player")).toHaveAttribute("src", /^https:\/\/www\.youtube-nocookie\.com\/embed\/groovevideo\?/);
+});

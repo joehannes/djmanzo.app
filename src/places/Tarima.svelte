@@ -205,8 +205,8 @@
 
 <h2>In djmanzo</h2>
 <figure>
-  <img class="shot" src="/shots/karaoke.webp" alt="djmanzo in its Karaoke activity: two decks, the library, and the Singers panel with break music, a quiz and the songbook" loading="lazy" width="1280" height="800" />
-  <figcaption>The Karaoke activity in djmanzo today: the Singers panel with break music between singers, a music quiz for the room, and the songbook.</figcaption>
+  <img class="shot" src="/shots/app/karaoke--organic-base.webp" alt="djmanzo's Karaoke screen: the singers' panel and the library" loading="lazy" width="1600" height="900" />
+  <figcaption>The Karaoke screen in djmanzo: the Singers panel — the queue, break music between singers, a music quiz for the room, the songbook — beside the decks and the library.</figcaption>
 </figure>
 <ul class="feat">
   <li><b>A rotation that is fair</b> — one song each, in turn; djmanzo says who is next and fades break music under them.</li>

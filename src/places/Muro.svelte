@@ -143,7 +143,7 @@
 
 <h2>Paste a wish</h2>
 <form class="paste" onsubmit={paste}>
-  <label class="field"><span>What should djmanzo do?</span><input type="text" bind:value={title} maxlength="100" required placeholder="e.g. Pioneer DDJ-FLX4 mapping" /></label>
+  <label class="field"><span>What should djmanzo do?</span><input type="text" bind:value={title} maxlength="100" required placeholder="e.g. Traktor Kontrol S4 mapping" /></label>
   <label class="field"><span>Tell us more (optional)</span><textarea bind:value={body} maxlength="1200" placeholder="What would it let you do at your gigs?"></textarea></label>
   {#if !session.user}<label class="field"><span>Your name (optional)</span><input type="text" bind:value={author} maxlength="40" /></label>{/if}
   <button class="btn primary">Paste it on the wall</button>

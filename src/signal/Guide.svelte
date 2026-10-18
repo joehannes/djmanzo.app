@@ -44,7 +44,8 @@
   const path = $derived(lineage(signal.style));
   const family = $derived(path[1] ?? null);
   const genres = $derived(family ? children(family) : []);
-  const shot = $derived(talk.showing ? shotFor([talk.showing], resolveStyle(signal.style).app.theme) : null);
+  const look = $derived(resolveStyle(signal.style).app);
+  const shot = $derived(talk.showing ? shotFor([talk.showing], look.theme, look.skin) : null);
   let typed = $state("");
   let log = $state<HTMLOListElement>();
 
@@ -129,8 +130,8 @@
 
     {#if shot}
       <figure>
-        <img src={shot.src} alt={shot.alt} />
-        <figcaption>The real application{shot.theme ? ` — the ${shot.theme} theme` : ""}.</figcaption>
+        <img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} />
+        <figcaption>The real application: {shot.shows.split(":")[0]}, in the {shot.theme} theme{shot.skin ? `, with the ${shot.skin} skin` : ""}.</figcaption>
       </figure>
     {/if}
 
@@ -311,6 +312,7 @@
   }
   figure img {
     width: 100%;
+    height: auto;
     max-width: 30rem;
     border-radius: 3px;
   }

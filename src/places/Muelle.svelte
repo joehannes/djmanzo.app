@@ -18,8 +18,8 @@
 </p>
 
 <figure>
-  <img class="shot" src="/shots/cockpit.webp" alt="djmanzo's main screen: two decks with waveforms, stems, pads and a mixer" width="1280" height="800" loading="lazy" />
-  <figcaption>The real application (photographed at version 0.45), with two test tracks loaded. Nothing on this island is a mock-up of the app.</figcaption>
+  <img class="shot" src="/shots/app/mix--organic-base.webp" alt="djmanzo's Mix screen: two decks with their waveforms, stems and pads, and the mixer" width="1600" height="900" loading="lazy" />
+  <figcaption>The real application, from its own screenshots: two records from a demo collection made for the purpose, playing. Nothing on this island is a mock-up of the app.</figcaption>
 </figure>
 
 <h2>What it does differently</h2>

@@ -228,8 +228,8 @@
   loop rolls, a slicer, a sampler, and up to six decks. The transition planner proposes where a mix should start and how long it should be, and shows its reasons.
 </p>
 <figure>
-  <img class="shot" src="/shots/palette.webp" alt="djmanzo's command palette listing actions that match 'bach'" loading="lazy" width="1280" height="800" />
-  <figcaption>Ctrl/Cmd + K: every action djmanzo knows, typed. Here, a Bachata EQ preset per deck and the Bachata Rosa theme.</figcaption>
+  <img class="shot" src="/shots/app/palette--organic-base.webp" alt="djmanzo's command palette (Ctrl/Cmd + K) offering Show Stems for the word 'stems'" loading="lazy" width="1600" height="900" />
+  <figcaption>Ctrl/Cmd + K: type what you want — here, “stems” — and djmanzo offers the action. Only what your hands need right now; a name reaches anything else.</figcaption>
 </figure>
 <div class="next">
   <button class="btn" onclick={() => go("tienda")}>💿 The record shop: your library</button>

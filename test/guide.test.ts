@@ -37,7 +37,7 @@ describe("what the guide may make the page do", () => {
         actions: [
           { kind: "set_style", value: "polka-metal" },
           { kind: "go_to", value: "backstage" },
-          { kind: "show", value: "settings" },
+          { kind: "show", value: "backstage" },
           { kind: "recommend", value: "enterprise" },
           { kind: "open_checkout", value: "free" },
           { kind: "start_trial", value: "lifetime" },
