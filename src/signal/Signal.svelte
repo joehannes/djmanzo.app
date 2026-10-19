@@ -9,6 +9,8 @@
   import MapHud from "./MapHud.svelte";
   import StageScreen from "./StageScreen.svelte";
   import Corner from "./Corner.svelte";
+  import Aux from "./aux/Aux.svelte";
+  import { auxRoute, type AuxRoute } from "./aux/routes";
   import { STAGES, STAGE_BY_ID } from "../stages/script";
   import { resolveStyle } from "../style/genome";
   import type { StageId } from "../style/genome/types";
@@ -20,8 +22,15 @@
   let engine = $state<Engine | null>(null);
   let stage = $state<StageId | null>(null);
   let hovered = $state<StageId | null>(null);
+  // A send beside the main line (Outboard, Talkback, the site's own pages), over the map.
+  let aux = $state<AuxRoute | null>(null);
   const style = $derived(resolveStyle(signal.style));
   const night = $derived({ daylight: senses.daylight, sky: senses.sky });
+
+  // A send's page hides the painting, so the painting rests while it is open.
+  $effect(() => {
+    engine?.cover(aux !== null);
+  });
 
   // The style's colours and type, for everything drawn in HTML over the canvas.
   $effect(() => {
@@ -47,6 +56,7 @@
 
   async function enter(id: StageId) {
     hovered = null;
+    aux = null;
     stage = null;
     history.replaceState(null, "", `#/${id}`);
     // Without WebGL there is no painting to travel through, but every stage still opens.
@@ -57,6 +67,12 @@
 
   async function toMap() {
     const was = stage;
+    if (aux && !was) {
+      aux = null;
+      history.replaceState(null, "", "#/");
+      return;
+    }
+    aux = null;
     stage = null;
     history.replaceState(null, "", "#/");
     await engine?.leave();
@@ -69,20 +85,43 @@
     else void toMap();
   }
 
-  onMount(() => {
+  /** Where the address bar says to be: a send, or a stage. */
+  function follow() {
+    const route = auxRoute(location.hash);
+    if (route) {
+      if (stage) void engine?.leave();
+      stage = null;
+      aux = route;
+      return true;
+    }
     const id = location.hash.match(/^#\/([a-z]+)/)?.[1] as StageId | undefined;
+    if (id && STAGE_BY_ID[id] && id !== stage) {
+      void enter(id);
+      return true;
+    }
+    return false;
+  }
+
+  onMount(() => {
+    // Links inside the sends (an item, a post, a community) and the browser's back button.
+    const changed = () => {
+      if (!follow() && aux) aux = null;
+    };
+    addEventListener("hashchange", changed);
     // Wait a frame for the engine, then go where the address says — or start at Silence.
     requestAnimationFrame(() => {
-      if (id && STAGE_BY_ID[id]) void enter(id);
-      else if (!signal.visited.length) void enter("silence");
+      if (!follow() && !signal.visited.length) void enter("silence");
     });
+    return () => removeEventListener("hashchange", changed);
   });
 </script>
 
 <World order={ORDER} {style} {night} bind:engine onpick={(s) => enter(s)} onhover={(s) => (hovered = s)} />
 <Corner {stage} ongo={(s) => enter(s)} />
 
-{#if stage}
+{#if aux}
+  <Aux route={aux} onmap={toMap} />
+{:else if stage}
   {#key stage}
     <StageScreen stage={STAGE_BY_ID[stage]} {style} onnext={nextStage} onmap={toMap} ongo={(s) => enter(s)} onplay={(k) => engine?.play(k)} />
   {/key}

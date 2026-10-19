@@ -117,6 +117,36 @@
     await loadPending();
   }
 
+  // --- Outboard and Talkback (§134) ------------------------------------------------
+  let packQueue = $state<any[]>([]);
+  let crewWork = $state<{ reports: any[]; held: any[]; appeals: any[] }>({ reports: [], held: [], appeals: [] });
+  let why = $state<Record<string, string>>({});
+  let crewNote = $state<string | null>(null);
+  async function loadOutboard() {
+    packQueue = await api("/api/admin/outboard/queue");
+  }
+  async function reviewPack(id: string, version: string, approve: boolean) {
+    try {
+      await post("/api/admin/outboard/review", { id, version, approve, reason: why[`${id}@${version}`] ?? "" });
+      crewNote = null;
+      await loadOutboard();
+    } catch (e) {
+      crewNote = (e as Error).message;
+    }
+  }
+  async function loadCrew() {
+    crewWork = await api("/api/admin/crew");
+  }
+  async function decide(kind: string, target: string, keep: boolean) {
+    try {
+      await post("/api/admin/crew/decide", { kind, target, keep, reason: why[`${kind}:${target}`] ?? "" });
+      crewNote = null;
+      await loadCrew();
+    } catch (e) {
+      crewNote = (e as Error).message;
+    }
+  }
+
   // --- Orders ---------------------------------------------------------------------
   let orders = $state<any[]>([]);
   let bankCountry = $state<Record<string, string>>({});
@@ -332,6 +362,62 @@
         <button class="btn primary" onclick={() => moderate(c.key, true)}>Publish</button>
         <button class="btn quiet" onclick={() => moderate(c.key, false)}>Delete</button>
       </div>
+    {/each}
+  </details>
+
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadOutboard()} data-outboard-queue>
+    <summary>📦 Outboard: packs waiting ({packQueue.length})</summary>
+    {#if crewNote}<p class="notice" role="alert">{crewNote}</p>{/if}
+    {#each packQueue as p (`${p.id}@${p.version}`)}
+      <div class="wish" data-queued={p.id}>
+        <b>{p.name}</b> {p.version} · {p.kind} · by {p.author} · key <code>{p.fingerprint}</code>
+        <p class="small">{p.manifest.description} · licence: {p.manifest.licence} · {Math.round(p.size / 1024)} KB{p.changelog ? ` · new: ${p.changelog}` : ""}</p>
+        {#if p.kind === "theme"}<p class="small">Worn on {p.preview.base}. Every colour pair passed its contrast when it was checked.</p>{/if}
+        <a class="link small" href={`/#/outboard/${p.id}`} target="_blank" rel="noopener">See it as its maker does</a>
+        <input type="text" bind:value={why[`${p.id}@${p.version}`]} placeholder="If not: why, in a sentence the maker is told" aria-label="Why not" />
+        <button class="btn primary" onclick={() => reviewPack(p.id, p.version, true)}>List it</button>
+        <button class="btn" onclick={() => reviewPack(p.id, p.version, false)}>Do not list</button>
+      </div>
+    {:else}
+      <p class="muted">Nothing waiting.</p>
+    {/each}
+  </details>
+
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadCrew()} data-crew-queue>
+    <summary>🚩 Talkback: reports, held posts, appeals ({crewWork.reports.length + crewWork.held.length + crewWork.appeals.length})</summary>
+    {#if crewNote}<p class="notice" role="alert">{crewNote}</p>{/if}
+    <h4>Held, waiting to be read</h4>
+    {#each crewWork.held as h (h.target)}
+      <div class="wish" data-held={h.target}>
+        <b>{h.title ?? "A comment"}</b> · {h.author}
+        <p class="small">{h.body}</p>
+        <input type="text" bind:value={why[`${h.kind}:${h.target}`]} placeholder="If removed: why, in a sentence the author is told" aria-label="Why removed" />
+        <button class="btn primary" onclick={() => decide(h.kind, h.target, true)}>Let it through</button>
+        <button class="btn" onclick={() => decide(h.kind, h.target, false)}>Remove</button>
+      </div>
+    {:else}
+      <p class="muted">Nothing held.</p>
+    {/each}
+    <h4>Reported</h4>
+    {#each crewWork.reports as r (`${r.kind}:${r.target}`)}
+      <div class="wish">
+        <b>{r.kind}</b> {r.target} · {r.reports} report{r.reports === 1 ? "" : "s"}: {r.reasons}
+        {#if r.kind === "post" || r.kind === "comment"}
+          <input type="text" bind:value={why[`${r.kind}:${r.target}`]} placeholder="If removed: why" aria-label="Why removed" />
+          <button class="btn" onclick={() => decide(r.kind, r.target, true)}>Keep it</button>
+          <button class="btn" onclick={() => decide(r.kind, r.target, false)}>Remove</button>
+        {:else}
+          <span class="small muted">Items are removed from their own page's queue above, with a reason.</span>
+        {/if}
+      </div>
+    {:else}
+      <p class="muted">No open reports.</p>
+    {/each}
+    <h4>Appeals</h4>
+    {#each crewWork.appeals as a (a.id)}
+      <div class="wish"><b>{a.action}</b> — {a.reason}<p class="small">Their reply: {a.appeal}</p></div>
+    {:else}
+      <p class="muted">No appeals.</p>
     {/each}
   </details>
 

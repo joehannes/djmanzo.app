@@ -132,6 +132,8 @@ export class Engine {
   private pointer = new THREE.Vector2(0, 0);
   private drag: { x: number; lookX: number; moved: boolean } | null = null;
   private raf = 0;
+  // A page laid over the painting (Outboard, Talkback): nothing to paint until it closes.
+  private covered = false;
   private start = performance.now();
   private width = 1;
   private heightPx = 1;
@@ -435,8 +437,17 @@ export class Engine {
 
   private onVisibility = () => {
     cancelAnimationFrame(this.raf);
-    if (!document.hidden) this.loop();
+    this.raf = 0;
+    if (!document.hidden && !this.covered) this.loop();
   };
+
+  /** Stop painting while a page covers the canvas, and pick up again once it is gone. */
+  cover(on: boolean): void {
+    if (on === this.covered) return;
+    this.covered = on;
+    this.canvas.toggleAttribute("data-resting", on);
+    this.onVisibility();
+  }
 
   resize = () => {
     const w = this.canvas.clientWidth || window.innerWidth;

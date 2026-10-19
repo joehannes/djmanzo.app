@@ -68,6 +68,11 @@
   {/each}
 </div>
 
+<nav class="sends" aria-label="Sends">
+  <a href="#/outboard" data-send="outboard"><b>Outboard</b><span>the marketplace</span></a>
+  <a href="#/talkback" data-send="talkback"><b>Talkback</b><span>the discussion</span></a>
+</nav>
+
 <nav class="meter" aria-label="The stages">
   {#each STAGES as s, i (s.id)}
     <button class:lit={signal.visited.includes(s.id)} class:on={hovered === s.id} onclick={() => onenter(s.id)} data-meter={s.id}>
@@ -78,6 +83,39 @@
 </nav>
 
 <style>
+  /* Bottom left, above the meter: the one corner the path never runs through. */
+  .sends {
+    position: fixed;
+    left: 14px;
+    bottom: 92px;
+    display: grid;
+    grid-auto-flow: column;
+    gap: 8px;
+    z-index: 3;
+  }
+  .sends a {
+    display: grid;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--ink) 30%, transparent);
+    background: color-mix(in srgb, var(--night) 75%, transparent);
+    backdrop-filter: blur(6px);
+    color: var(--ink);
+    text-decoration: none;
+    font-family: var(--text);
+  }
+  .sends a:hover,
+  .sends a:focus-visible {
+    border-color: var(--glow);
+  }
+  .sends b {
+    font-family: var(--display);
+    font-weight: 400;
+  }
+  .sends span {
+    font-size: 12px;
+    opacity: 0.8;
+  }
   .brand {
     position: fixed;
     top: 14px;
@@ -187,7 +225,8 @@
   @media (max-width: 760px) {
     .hint {
       top: auto;
-      bottom: 96px;
+      /* Above the sends, which sit above the meter. */
+      bottom: 156px;
       max-width: 90vw;
     }
   }

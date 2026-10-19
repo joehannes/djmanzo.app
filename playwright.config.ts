@@ -15,5 +15,5 @@ export default defineConfig({
   },
   webServer: process.env.SITE
     ? undefined
-    : { command: "npx wrangler dev --port 8787 --ip 127.0.0.1", url: "http://127.0.0.1:8787/api/me", reuseExistingServer: true, timeout: 60_000 },
+    : { command: "npx wrangler d1 migrations apply djmanzo --local --env test && npx wrangler dev --env test --port 8787 --ip 127.0.0.1", url: "http://127.0.0.1:8787/api/me", reuseExistingServer: true, timeout: 60_000 },
 });

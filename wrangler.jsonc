@@ -13,6 +13,11 @@
     "run_worker_first": ["/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/signal", "/signal/*"]
   },
   "kv_namespaces": [{ "binding": "KV", "id": "63033c23be2046b08d74b2dc6d3902b1" }],
+  // Outboard and Talkback (§134): migrations/ applied with
+  // `npx wrangler d1 migrations apply djmanzo --remote`.
+  "d1_databases": [{ "binding": "DB", "database_name": "djmanzo", "database_id": "cf50ba3d-cc96-45d5-b8af-9ba9ea48658f", "migrations_dir": "migrations" }],
+  // R2 (binding MEDIA, bucket djmanzo-media) is added once the owner enables
+  // it on the account; until then uploads stay closed, as the owner chose.
   // Workers AI writes blog drafts when no ANTHROPIC_API_KEY secret is set.
   "ai": { "binding": "AI" },
   "vars": {
@@ -34,5 +39,28 @@
   },
   // A variable set in the dashboard survives a deploy.
   "keep_vars": true,
-  "observability": { "enabled": true, "traces": { "enabled": true } }
+  "observability": { "enabled": true, "traces": { "enabled": true } },
+  // The browser tests' site (`wrangler dev --env test`, local only, never
+  // deployed): stand-in R2 and an imprint, so uploading and posting can be
+  // driven. A named environment inherits none of the bindings above. Its ids
+  // are placeholders that exist only locally, so it cannot reach the real
+  // site's data even if deployed by mistake.
+  "env": {
+    "test": {
+      "kv_namespaces": [{ "binding": "KV", "id": "00000000000000000000000000000000" }],
+      "d1_databases": [{ "binding": "DB", "database_name": "djmanzo", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "djmanzo-media-test" }],
+      "ai": { "binding": "AI" },
+      "vars": {
+        "SITE_NAME": "djmanzo",
+        "DEMO_MODE": "auto",
+        "MAJOR_VERSION": "1",
+        "DOWNLOAD_BASE": "https://github.com/joehannes/djmanzo/releases/latest",
+        "IMPRINT_NAME": "Test Owner",
+        "IMPRINT_ADDRESS": "Teststraße 1, 4020 Linz, Austria",
+        "IMPRINT_EMAIL": "owner@example.test",
+        "ADMIN_TOKEN": "crew-secret"
+      }
+    }
+  }
 }
