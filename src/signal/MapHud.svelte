@@ -69,8 +69,8 @@
 </div>
 
 <nav class="sends" aria-label="Sends">
-  <a href="#/outboard" data-send="outboard"><b>Outboard</b><span>the marketplace</span></a>
-  <a href="#/talkback" data-send="talkback"><b>Talkback</b><span>the discussion</span></a>
+  <a href="/outboard" data-send="outboard"><b>Outboard</b><span>the marketplace</span></a>
+  <a href="/talkback" data-send="talkback"><b>Talkback</b><span>the discussion</span></a>
 </nav>
 
 <nav class="meter" aria-label="The stages">

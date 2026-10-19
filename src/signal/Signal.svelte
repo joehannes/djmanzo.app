@@ -1,7 +1,10 @@
 <!--
   The Signal Path: the map, a stage, and the moves between them. The
   address bar keeps up (#/groove), so a link to a stage works, and the
-  browser's back button returns to the map.
+  browser's back button returns to the map. The sends beside the stages
+  (Outboard, Talkback, the site's own pages) have paths of their own
+  (/outboard/<id>), which the Worker also renders for readers that run no
+  script.
 -->
 <script lang="ts">
   import { onMount } from "svelte";
@@ -10,7 +13,7 @@
   import StageScreen from "./StageScreen.svelte";
   import Corner from "./Corner.svelte";
   import Aux from "./aux/Aux.svelte";
-  import { auxRoute, type AuxRoute } from "./aux/routes";
+  import { auxPath, auxRoute, type AuxRoute } from "./aux/routes";
   import { STAGES, STAGE_BY_ID } from "../stages/script";
   import { resolveStyle } from "../style/genome";
   import type { StageId } from "../style/genome/types";
@@ -24,6 +27,8 @@
   let hovered = $state<StageId | null>(null);
   // A send beside the main line (Outboard, Talkback, the site's own pages), over the map.
   let aux = $state<AuxRoute | null>(null);
+  // The address last followed: a hash link fires both popstate and hashchange, and is followed once.
+  let seen = "";
   const style = $derived(resolveStyle(signal.style));
   const night = $derived({ daylight: senses.daylight, sky: senses.sky });
 
@@ -58,7 +63,8 @@
     hovered = null;
     aux = null;
     stage = null;
-    history.replaceState(null, "", `#/${id}`);
+    seen = "";
+    history.replaceState(null, "", `/#/${id}`);
     // Without WebGL there is no painting to travel through, but every stage still opens.
     await engine?.enter(id);
     stage = id;
@@ -67,14 +73,15 @@
 
   async function toMap() {
     const was = stage;
+    seen = "";
     if (aux && !was) {
       aux = null;
-      history.replaceState(null, "", "#/");
+      history.pushState(null, "", "/#/");
       return;
     }
     aux = null;
     stage = null;
-    history.replaceState(null, "", "#/");
+    history.replaceState(null, "", "/#/");
     await engine?.leave();
     if (was) engine?.showOnMap(was);
   }
@@ -85,10 +92,14 @@
     else void toMap();
   }
 
-  /** Where the address bar says to be: a send, or a stage. */
+  /** Where the address bar says to be: a send (by its path, or an older hash link), or a stage. */
   function follow() {
-    const route = auxRoute(location.hash);
+    const named = location.hash.match(/^#\/([a-z]+)/)?.[1];
+    const route = auxRoute(location.hash) ?? (named && named in STAGE_BY_ID ? null : auxRoute(location.pathname));
     if (route) {
+      // An older #/outboard link, or /talkback/: the page's own address.
+      const path = auxPath(route);
+      if (location.pathname !== path || location.hash) history.replaceState(null, "", path + location.search);
       if (stage) void engine?.leave();
       stage = null;
       aux = route;
@@ -103,16 +114,38 @@
   }
 
   onMount(() => {
-    // Links inside the sends (an item, a post, a community) and the browser's back button.
+    // The browser's back button, a hash link, and `navigate` (aux/routes.ts).
     const changed = () => {
+      if (location.href === seen) return;
+      seen = location.href;
       if (!follow() && aux) aux = null;
+      seen = location.href;
+    };
+    // A link to one of the sends' paths opens it here, without loading the page again.
+    const click = (e: MouseEvent) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = (e.target as Element | null)?.closest?.("a");
+      const href = a?.getAttribute("href");
+      if (!a || !href?.startsWith("/") || href.startsWith("//") || a.target || a.hasAttribute("download")) return;
+      const url = new URL(href, location.origin);
+      const route = auxRoute(url.pathname);
+      if (!route) return;
+      e.preventDefault();
+      history.pushState(null, "", auxPath(route) + url.search);
+      changed();
     };
     addEventListener("hashchange", changed);
+    addEventListener("popstate", changed);
+    document.addEventListener("click", click);
     // Wait a frame for the engine, then go where the address says — or start at Silence.
     requestAnimationFrame(() => {
       if (!follow() && !signal.visited.length) void enter("silence");
     });
-    return () => removeEventListener("hashchange", changed);
+    return () => {
+      removeEventListener("hashchange", changed);
+      removeEventListener("popstate", changed);
+      document.removeEventListener("click", click);
+    };
   });
 </script>
 

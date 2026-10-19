@@ -4,13 +4,18 @@
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-16",
   // The Svelte build: the Signal Path at /, the island at /island/. The Worker
-  // runs first only for the API, the sign-in routes, djmanzo's licence
-  // protocol and the old /signal/ address; everything else is a page.
+  // runs first for the API, the sign-in routes, djmanzo's licence protocol,
+  // the old /signal/ address, and the pages it renders for search engines and
+  // link previews; everything else is a static file.
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/signal", "/signal/*"]
+    "run_worker_first": [
+      "/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/signal", "/signal/*",
+      // Pages with an address of their own, rendered with their words (worker/seo.ts).
+      "/", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
+    ]
   },
   "kv_namespaces": [{ "binding": "KV", "id": "63033c23be2046b08d74b2dc6d3902b1" }],
   // Outboard and Talkback (§134): migrations/ applied with

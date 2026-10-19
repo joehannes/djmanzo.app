@@ -12,6 +12,7 @@
   import Join from "./Join.svelte";
   import Report from "./Report.svelte";
   import { ago, type Standing } from "./routes";
+  import { navigate } from "./navigate";
 
   let { rest }: { rest: string[] } = $props();
 
@@ -140,7 +141,7 @@
       posted = r.status === "held" ? `Posted. It waits for the crew before others see it${r.note ? `: ${r.note}` : "."}` : null;
       writing = false;
       draft = { community: "", title: "", body: "", flair: "" };
-      location.hash = `#/talkback/${r.id}`;
+      navigate(`/talkback/${r.id}`);
     } catch (e) {
       posted = (e as Error).message;
     }
@@ -265,7 +266,7 @@
 {/if}
 
 {#if postId}
-  <p><a class="link" href={thread ? `#/talkback/c/${thread.post.community}` : "#/talkback"}>← {thread ? name(thread.post.community) : "Talkback"}</a></p>
+  <p><a class="link" href={thread ? `/talkback/c/${thread.post.community}` : "/talkback"}>← {thread ? name(thread.post.community) : "Talkback"}</a></p>
   {#if thread}
     <article class="post" data-post={thread.post.id}>
       <div class="line">
@@ -301,11 +302,11 @@
 {:else}
   <div class="layout">
     <nav class="communities" aria-label="Communities">
-      <a href="#/talkback" class:on={!community}>Everything</a>
+      <a href="/talkback" class:on={!community}>Everything</a>
       {#each groups as g (g)}
         <h3>{g}</h3>
         {#each info?.communities.filter((c) => c.group === g) ?? [] as c (c.id)}
-          <a href={`#/talkback/c/${c.id}`} class:on={community?.id === c.id} data-community={c.id}>{c.name}{c.posts ? ` · ${c.posts}` : ""}</a>
+          <a href={`/talkback/c/${c.id}`} class:on={community?.id === c.id} data-community={c.id}>{c.name}{c.posts ? ` · ${c.posts}` : ""}</a>
         {/each}
       {/each}
     </nav>
@@ -339,7 +340,7 @@
           </select>
           {#if info?.turnstile && (info.me?.level ?? 0) === 0}<div class="cf-turnstile" data-sitekey={info.turnstile}></div>{/if}
           <button class="go" disabled={draft.title.trim().length < 4 || (!draft.community && !community)}>Post</button>
-          <p class="note">Keep to the <a class="link" href="#/rules">community rules</a>.</p>
+          <p class="note">Keep to the <a class="link" href="/rules">community rules</a>.</p>
         </form>
       {/if}
 
@@ -348,10 +349,10 @@
           <li data-post-row={p.id}>
             {@render votes("post", p.id, p.score, 0, p.uid === info?.standing.uid)}
             <div>
-              <a class="title" href={`#/talkback/${p.id}`}>{p.title}</a>
+              <a class="title" href={`/talkback/${p.id}`}>{p.title}</a>
               <p class="by">
                 {#if flairName(p.flair)}<span class="flair">{flairName(p.flair)}</span>{/if}
-                <a class="link" href={`#/talkback/c/${p.community}`}>{name(p.community)}</a> · {p.author} · {ago(p.created)} · {p.comments} comment{p.comments === 1 ? "" : "s"}{p.status === "held" ? " · waiting for the crew" : ""}
+                <a class="link" href={`/talkback/c/${p.community}`}>{name(p.community)}</a> · {p.author} · {ago(p.created)} · {p.comments} comment{p.comments === 1 ? "" : "s"}{p.status === "held" ? " · waiting for the crew" : ""}
               </p>
             </div>
           </li>

@@ -101,12 +101,12 @@
 
     <h2>Elsewhere on the site</h2>
     <p class="elsewhere" data-elsewhere>
-      <a class="link" href="#/outboard">Outboard</a>, the marketplace, and <a class="link" href="#/talkback">Talkback</a>, the discussion. Still on
-      <a class="link" href="/island/">the island</a>, the site before this one: <a class="link" href="/island/#/pase">your pass</a> — your licences, and the licence line
-      for djmanzo — <a class="link" href="/island/#/radio">the blog</a>, <a class="link" href="/island/#/muro">the wishlist</a> and
-      <a class="link" href="/island/#/arena">honest comparisons</a>.
+      <a class="link" href="/outboard">Outboard</a>, the marketplace, <a class="link" href="/talkback">Talkback</a>, the discussion, and
+      <a class="link" href="/blog">the blog</a>. Still on <a class="link" href="/island/">the island</a>, the site before this one:
+      <a class="link" href="/island/#/pase">your pass</a> — your licences, and the licence line for djmanzo —
+      <a class="link" href="/island/#/muro">the wishlist</a> and <a class="link" href="/island/#/arena">honest comparisons</a>.
     </p>
-    <p class="elsewhere small"><a class="link" href="#/imprint">Imprint</a> · <a class="link" href="#/terms">Terms</a> · <a class="link" href="#/rules">Rules</a> · <a class="link" href="#/privacy">Privacy</a></p>
+    <p class="elsewhere small"><a class="link" href="/imprint">Imprint</a> · <a class="link" href="/terms">Terms</a> · <a class="link" href="/rules">Rules</a> · <a class="link" href="/privacy">Privacy</a></p>
   </aside>
 {/if}
 

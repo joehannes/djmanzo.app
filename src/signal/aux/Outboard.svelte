@@ -142,7 +142,7 @@
 {#if error}<p class="note" role="alert">{error}</p>{/if}
 
 {#if rest[0] === "maker"}
-  <p><a class="link" href="#/outboard">← Everything in Outboard</a></p>
+  <p><a class="link" href="/outboard">← Everything in Outboard</a></p>
   {#if maker}
     <section data-maker>
       <h2>{maker.name ?? "A maker"}</h2>
@@ -152,7 +152,7 @@
       {/if}
       <div class="grid">
         {#each maker.items as c (c.id)}
-          <a class="card" href={`#/outboard/${c.id}`}><Preview kind={c.kind} preview={c.preview} /><b>{c.name}</b><span class="note">{meanText(c.rating)}</span></a>
+          <a class="card" href={`/outboard/${c.id}`}><Preview kind={c.kind} preview={c.preview} /><b>{c.name}</b><span class="note">{meanText(c.rating)}</span></a>
         {:else}
           <p class="note">Nothing listed yet.</p>
         {/each}
@@ -160,7 +160,7 @@
     </section>
   {/if}
 {:else if rest[0]}
-  <p><a class="link" href="#/outboard">← Everything in Outboard</a></p>
+  <p><a class="link" href="/outboard">← Everything in Outboard</a></p>
   {#if !item}
     <p class="note">…</p>
   {:else}
@@ -170,7 +170,7 @@
         <div>
           <p class="kind">{KIND_NAME[item.kind]}{item.version ? ` · version ${item.version}` : ""}</p>
           <h2>{item.name}</h2>
-          <p>by <a class="link" href={`#/outboard/maker/${item.owner}`}>{item.author}</a> · {item.licence}</p>
+          <p>by <a class="link" href={`/outboard/maker/${item.owner}`}>{item.author}</a> · {item.licence}</p>
           {#if item.description}<p>{item.description}</p>{/if}
           {#if item.status !== "listed"}
             <p class="note" data-status>{item.status === "pending" ? "Waiting for the crew: only you see it." : `Removed: ${item.reason}`}</p>
@@ -221,7 +221,7 @@
           <li class="note">No ratings yet.</li>
         {/each}
       </ul>
-      <p class="acts-row"><a class="link" href="#/talkback/c/outboard">Talk about it in Talkback</a> <Report kind="item" target={item.id} standing={info?.standing ?? null} /></p>
+      <p class="acts-row"><a class="link" href="/talkback/c/outboard">Talk about it in Talkback</a> <Report kind="item" target={item.id} standing={info?.standing ?? null} /></p>
     </article>
   {/if}
 {:else}
@@ -245,7 +245,7 @@
 
   <div class="grid" data-items>
     {#each items ?? [] as c (c.id)}
-      <a class="card" href={`#/outboard/${c.id}`} data-card={c.id}>
+      <a class="card" href={`/outboard/${c.id}`} data-card={c.id}>
         <Preview kind={c.kind} preview={c.preview} />
         <b>{c.name}</b>
         <span>{KIND_NAME[c.kind]} · by {c.author}</span>

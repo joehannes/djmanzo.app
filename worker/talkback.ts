@@ -242,7 +242,7 @@ export async function promote(env: AppEnv, req: Request, origin: string, id: str
   const p = await store.prepare("SELECT * FROM posts WHERE id = ?").bind(id).first<PostRow>();
   if (!p || p.status !== "live") fail(404, "No such post.");
   if (p!.wish) fail(409, "It is on the wishlist already.");
-  const w = await addWish(env, req, null, { title: p!.title.slice(0, 100), body: `${p!.body.slice(0, 1000)}\n\nProposed by ${p!.author} in Talkback: ${origin}/#/talkback/${p!.id}`.slice(0, 1200), author: p!.author, tag: "talkback" });
+  const w = await addWish(env, req, null, { title: p!.title.slice(0, 100), body: `${p!.body.slice(0, 1000)}\n\nProposed by ${p!.author} in Talkback: ${origin}/talkback/${p!.id}`.slice(0, 1200), author: p!.author, tag: "talkback" });
   await store.prepare("UPDATE posts SET wish = ? WHERE id = ?").bind(w.id, id).run();
   return { wish: w.id };
 }

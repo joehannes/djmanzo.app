@@ -134,6 +134,50 @@ test("a new account's post waits for the crew; a member's goes up, is answered, 
   expect(crew.reports.map((r: { target: string }) => r.target)).toContain(postId);
 });
 
+test("an item and a post have addresses of their own: opened from a link, kept in the address bar, and the back button works", async ({ page, request }) => {
+  const item = (await (await request.get("/api/outboard/items")).json())[0];
+  const post = (await (await request.get("/api/talkback/posts?c=mixing")).json())[0];
+  expect(item && post).toBeTruthy();
+
+  // What a crawler reads is in the page before the painting opens over it.
+  const html = await (await request.get(`/outboard/${item.id}`)).text();
+  expect(html).toContain(`<link rel="canonical" href="http://127.0.0.1:8787/outboard/${item.id}" />`);
+  expect(html).toMatch(new RegExp(`<main id="static">[\\s\\S]*${item.name}`));
+
+  await page.goto(`/outboard/${item.id}`);
+  await expect(page.locator(`[data-item="${item.id}"]`)).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("#static")).toHaveCount(0);
+  await expect(page).toHaveURL(new RegExp(`/outboard/${item.id}$`));
+  // Within the app a link changes the address without loading the page again.
+  await page.evaluate(() => ((window as unknown as { stayed: boolean }).stayed = true));
+  await page.locator('[data-aux="outboard"] a', { hasText: "Everything in Outboard" }).first().click();
+  await expect(page).toHaveURL(/\/outboard$/);
+  await page.locator(`[data-card="${item.id}"]`).click();
+  await expect(page).toHaveURL(new RegExp(`/outboard/${item.id}$`));
+  await page.goBack();
+  await expect(page).toHaveURL(/\/outboard$/);
+  await expect(page.locator(`[data-card="${item.id}"]`)).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { stayed?: boolean }).stayed)).toBe(true);
+
+  await page.goto(`/talkback/${post.id}`);
+  await expect(page.locator(`[data-post="${post.id}"]`)).toBeVisible({ timeout: 15_000 });
+  // An older link by its hash lands on the page's own address.
+  await page.goto("/#/talkback/c/mixing");
+  await expect(page).toHaveURL(/\/talkback\/c\/mixing$/);
+  await expect(page.locator('[data-community="mixing"]')).toBeVisible();
+});
+
+test("a blog post is a page to read, without the painting", async ({ page, request }) => {
+  const r = await request.post("/api/admin/blog", { headers: CREW, data: { title: "Reading the room", slug: "reading-the-room-e2e", lang: "en", excerpt: "What a floor tells you.", body: "The **floor** speaks.", published: true } });
+  expect(r.ok()).toBe(true);
+  await page.goto("/blog/reading-the-room-e2e");
+  await expect(page.getByRole("heading", { name: "Reading the room" })).toBeVisible();
+  await expect(page.locator("#static strong")).toHaveText("floor");
+  await expect(page.locator("canvas")).toHaveCount(0);
+  await page.getByRole("link", { name: "Blog", exact: true }).click();
+  await expect(page.locator("#static")).toContainText("Reading the room");
+});
+
 /** How many animation frames the page asks for in two seconds. */
 async function framesIn2s(page: Page): Promise<number> {
   return page.evaluate(async () => {

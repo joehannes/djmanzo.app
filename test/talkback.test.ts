@@ -131,7 +131,7 @@ describe("reports, the crew, and the wishlist", () => {
     const r = await crew(env)("/api/admin/talkback/promote", { method: "POST", json: { id: p.data.id } });
     const wish = (await browser(env)(`/api/wishes/${r.data.wish}`)).data;
     expect(wish.title).toBe("Rekordbox playlist sync");
-    expect(wish.body).toContain(`/#/talkback/${p.data.id}`);
+    expect(wish.body).toContain(`https://djmanzo.test/talkback/${p.data.id}`);
     expect((await crew(env)("/api/admin/talkback/promote", { method: "POST", json: { id: p.data.id } })).status).toBe(409);
   });
 });

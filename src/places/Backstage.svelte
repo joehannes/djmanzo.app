@@ -373,7 +373,7 @@
         <b>{p.name}</b> {p.version} · {p.kind} · by {p.author} · key <code>{p.fingerprint}</code>
         <p class="small">{p.manifest.description} · licence: {p.manifest.licence} · {Math.round(p.size / 1024)} KB{p.changelog ? ` · new: ${p.changelog}` : ""}</p>
         {#if p.kind === "theme"}<p class="small">Worn on {p.preview.base}. Every colour pair passed its contrast when it was checked.</p>{/if}
-        <a class="link small" href={`/#/outboard/${p.id}`} target="_blank" rel="noopener">See it as its maker does</a>
+        <a class="link small" href={`/outboard/${p.id}`} target="_blank" rel="noopener">See it as its maker does</a>
         <input type="text" bind:value={why[`${p.id}@${p.version}`]} placeholder="If not: why, in a sentence the maker is told" aria-label="Why not" />
         <button class="btn primary" onclick={() => reviewPack(p.id, p.version, true)}>List it</button>
         <button class="btn" onclick={() => reviewPack(p.id, p.version, false)}>Do not list</button>

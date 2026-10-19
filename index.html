@@ -3,16 +3,62 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- The Worker replaces this block with each page's own (worker/seo.ts); this is the map's. -->
+    <!--seo-->
     <title>djmanzo — the Signal Path</title>
     <meta name="description" content="djmanzo, a DJ and karaoke application for macOS and Linux — followed from the groove of a record to the bodies on the floor." />
-    <meta name="theme-color" content="#0b0b10" />
     <meta property="og:title" content="djmanzo — the Signal Path" />
     <meta property="og:description" content="A DJ and karaoke application for macOS and Linux, followed from the groove of a record to the bodies on the floor." />
     <meta property="og:image" content="/shots/share.jpg" />
+    <!--/seo-->
+    <meta name="theme-color" content="#0b0b10" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Figtree:ital,wght@0,400;0,500;0,700;0,800;1,400&display=swap" rel="stylesheet" />
+    <!-- The page's words, rendered by the Worker, give way to the painting where the painting will show the same place; the blog stays a page. -->
+    <script>
+      if (!/^\/blog(\/|$)/.test(location.pathname)) document.documentElement.classList.add("painted");
+    </script>
+    <style>
+      html.painted #static {
+        display: none;
+      }
+      #static {
+        max-width: 44rem;
+        margin: 0 auto;
+        padding: 24px 18px 48px;
+        font: 17px/1.6 "Figtree", system-ui, sans-serif;
+        color: #ece9f6;
+      }
+      html:not(.painted) body {
+        background: #0b0b10;
+      }
+      #static h1,
+      #static h2 {
+        font-family: "Bungee", system-ui, sans-serif;
+        font-weight: 400;
+        line-height: 1.2;
+      }
+      #static a {
+        color: #ff8ad8;
+      }
+      #static nav,
+      #static footer,
+      #static .byline {
+        font-size: 14px;
+        opacity: 0.8;
+      }
+      #static footer {
+        margin-top: 40px;
+      }
+      #static pre,
+      #static code {
+        background: #1c1b26;
+        border-radius: 4px;
+        padding: 0 4px;
+      }
+    </style>
   </head>
   <body>
     <div id="signal"></div>

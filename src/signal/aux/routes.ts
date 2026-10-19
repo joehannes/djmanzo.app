@@ -12,12 +12,21 @@ export interface AuxRoute {
   rest: string[];
 }
 
-/** The page an address names, if it names one of these. */
-export function auxRoute(hash: string): AuxRoute | null {
-  const parts = hash.replace(/^#\/?/, "").split("?")[0].split("/").filter(Boolean).map(decodeURIComponent);
+/** The page an address names (`/talkback/c/mixing`, or the older `#/talkback/c/mixing`), if it names one of these. */
+export function auxRoute(address: string): AuxRoute | null {
+  const parts = address.replace(/^#?\/?/, "").split(/[?#]/)[0].split("/").filter(Boolean).map(decodeURIComponent);
   const id = parts[0] as AuxId;
   return (AUX as readonly string[]).includes(id) ? { id, rest: parts.slice(1) } : null;
 }
+
+/**
+ * A page's own address: a path, so that it can be linked, shared and found
+ * (the Worker renders each one for whoever reads it without running it).
+ */
+export function auxPath(route: AuxRoute): string {
+  return "/" + [route.id, ...route.rest].map(encodeURIComponent).join("/");
+}
+
 
 export const TITLE: Record<AuxId, string> = {
   outboard: "Outboard",

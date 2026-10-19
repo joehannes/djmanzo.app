@@ -28,8 +28,8 @@
   <header>
     <button class="back" onclick={onmap}>← The map</button>
     <nav aria-label="Sends">
-      <a href="#/outboard" class:on={route.id === "outboard"}>Outboard</a>
-      <a href="#/talkback" class:on={route.id === "talkback"}>Talkback</a>
+      <a href="/outboard" class:on={route.id === "outboard"}>Outboard</a>
+      <a href="/talkback" class:on={route.id === "talkback"}>Talkback</a>
     </nav>
   </header>
   <main>
@@ -44,7 +44,7 @@
     {/if}
   </main>
   <footer>
-    <a href="#/imprint">Imprint</a> · <a href="#/terms">Terms</a> · <a href="#/rules">Community rules</a> · <a href="#/privacy">Privacy</a>
+    <a href="/imprint">Imprint</a> · <a href="/terms">Terms</a> · <a href="/rules">Community rules</a> · <a href="/privacy">Privacy</a>
   </footer>
 </div>
 

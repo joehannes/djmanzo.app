@@ -22,6 +22,7 @@ import * as moderation from "./moderation";
 import * as people from "./people";
 import * as talkback from "./talkback";
 import * as sense from "./sense";
+import * as seo from "./seo";
 import * as promo from "./promo";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
@@ -477,6 +478,11 @@ route("DELETE", "/api/admin/blog/:slug/:lang", async (c) => {
   return blog.deletePost(c.env, c.params.slug, c.params.lang);
 });
 
+// --- For crawlers (worker/seo.ts) -------------------------------------------------------
+
+route("GET", "/robots.txt", async (c) => seo.robots(c.url.origin));
+route("GET", "/sitemap.xml", (c) => seo.sitemap(c.env, c.url.origin));
+
 // --- Dispatch ------------------------------------------------------------------
 
 export async function handle(req: Request, env: AppEnv, exec: ExecutionContext): Promise<Response> {
@@ -505,6 +511,16 @@ export async function handle(req: Request, env: AppEnv, exec: ExecutionContext):
     }
   }
   if (["/api/", "/auth/", "/login/", "/callback/"].some((p) => url.pathname.startsWith(p)) || APP_CALLS.includes(url.pathname)) return json({ error: "No such thing." }, 404);
+  // A page with an address of its own, rendered with its words; the painting opens over it.
+  if (req.method === "GET") {
+    try {
+      const page = await seo.serve(req, env);
+      if (page) return page;
+    } catch (e) {
+      // The page still opens without its rendered words.
+      console.error(JSON.stringify({ at: url.pathname, seo: String((e as Error)?.stack ?? e) }));
+    }
+  }
   return env.ASSETS.fetch(req);
 }
 
