@@ -4,10 +4,11 @@
  * statement of reasons to whoever's work is held or removed (Art. 17), and
  * their reply as an appeal; the crew decides, in Backstage.
  *
- * New accounts' posts may be screened by Claude first, with the community
- * rules, within a daily budget. Screening only holds or lets through — a
- * person removes. Without a key, credits or budget, or on any failure, a new
- * account's post simply waits for the crew.
+ * New accounts' posts may be screened by a model first (Workers AI within its
+ * free daily share, or Claude when the owner asks for it), with the community
+ * rules. Screening only holds or lets through — a person removes. With no AI,
+ * past the day's share or budget, or on any failure, a new account's post
+ * simply waits for the crew.
  */
 
 import type Anthropic from "@anthropic-ai/sdk";
@@ -16,7 +17,7 @@ import { z } from "zod";
 import { RULES } from "../shared/talkback";
 import type { AppEnv } from "./env";
 import { HttpError, brake, fail, randomId, text } from "./http";
-import { anthropic, modelFor } from "./model";
+import { OverBudget, anthropic, modelFor, provider, workersJson } from "./model";
 import type { User } from "./store";
 
 export type Target = "item" | "post" | "comment" | "profile";
@@ -155,9 +156,16 @@ async function claudeScreen(env: AppEnv, title: string, body: string): Promise<V
   return r.parsed_output ?? null;
 }
 
-/** Claude's first read of a new account's post, within the day's budget; null when there is none to be had. */
-export async function screen(env: AppEnv, title: string, body: string, read: Screen = claudeScreen): Promise<Verdict | null> {
-  if (!env.ANTHROPIC_API_KEY) return null;
+/** The same first read on Workers AI, within the day's free share. */
+async function workersScreen(env: AppEnv, title: string, body: string): Promise<Verdict | null> {
+  return workersJson(env, VerdictSchema, [{ role: "system", content: SYSTEM }, { role: "user", content: `<post>\n<title>${title}</title>\n<body>${body}</body>\n</post>` }], 300);
+}
+
+/** A model's first read of a new account's post, within the day's budget; null when there is none to be had. */
+export async function screen(env: AppEnv, title: string, body: string, read?: Screen): Promise<Verdict | null> {
+  const who = provider(env);
+  if (who === "off") return null;
+  read ??= who === "claude" ? claudeScreen : workersScreen;
   try {
     await brake(env.KV, "screen:day", Number(env.MOD_DAILY) || 200, 86400);
   } catch (e) {
@@ -167,7 +175,7 @@ export async function screen(env: AppEnv, title: string, body: string, read: Scr
   try {
     return await read(env, title, body);
   } catch (e) {
-    console.error(JSON.stringify({ at: "screen", error: String((e as Error)?.message ?? e) }));
+    if (!(e instanceof OverBudget)) console.error(JSON.stringify({ at: "screen", error: String((e as Error)?.message ?? e) }));
     return null;
   }
 }

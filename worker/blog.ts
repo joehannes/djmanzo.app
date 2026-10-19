@@ -18,7 +18,7 @@ import { EDITION_INFO, MODULE_TITLE, type Edition } from "../shared/catalog";
 import { FACTS, STATUS_LINE, moduleWords } from "../shared/facts";
 import type { AppEnv } from "./env";
 import { fail, text } from "./http";
-import { anthropic, modelFor } from "./model";
+import { OverBudget, anthropic, modelFor, provider, workersJson } from "./model";
 import { get, put, type Post, type PostSummary } from "./store";
 
 export const LANGUAGES: Record<string, string> = {
@@ -92,21 +92,22 @@ async function draftWithClaude(env: AppEnv, brief: string, language: string): Pr
 }
 
 async function draftWithWorkersAi(env: AppEnv, brief: string, language: string): Promise<Draft> {
-  const result = (await env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast" as keyof AiModels, {
-    messages: [
-      { role: "system", content: SYSTEM },
-      {
-        role: "user",
-        content: `Write one blog post in ${language}.\n\n${brief}\n\nAnswer with JSON only: {"title": string, "excerpt": string, "body": markdown string of 500-800 words, "tags": [3-6 strings]}.`,
-      },
-    ],
-    max_tokens: 3000,
-  } as never)) as { response?: string | object };
-  const raw = typeof result.response === "string" ? result.response : JSON.stringify(result.response ?? {});
-  const json = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
-  const parsed = Draft.safeParse(JSON.parse(json || "{}"));
-  if (!parsed.success) fail(502, "The draft did not come back in shape.");
-  return parsed.data;
+  try {
+    const d = await workersJson(
+      env,
+      Draft,
+      [
+        { role: "system", content: SYSTEM },
+        { role: "user", content: `Write one blog post in ${language}.\n\n${brief}\n\nReturn the title, a one-sentence excerpt, the markdown body (500–800 words), and 3–6 short tags in the same language.` },
+      ],
+      3000,
+    );
+    if (!d) fail(502, "The draft did not come back in shape.");
+    return d;
+  } catch (e) {
+    if (e instanceof OverBudget) fail(429, "Today's free AI is used up; try again tomorrow.");
+    throw e;
+  }
 }
 
 export interface Brief {
@@ -136,7 +137,9 @@ export async function generate(env: AppEnv, b: Brief, author: string) {
   if (!langs.length) fail(400, "Pick at least one language.");
   if (text(b.topic, 300).length < 4) fail(400, "Give the post a topic.");
   const brief = briefText({ ...b, topic: text(b.topic, 300), angle: b.angle ? text(b.angle, 600) : undefined });
-  const useClaude = !!env.ANTHROPIC_API_KEY;
+  const who = provider(env);
+  if (who === "off") fail(503, "No AI is set up to draft posts; write one by hand.");
+  const useClaude = who === "claude";
   const slug = slugify(b.topic);
   const results = await Promise.allSettled(
     langs.map(async (lang) => {

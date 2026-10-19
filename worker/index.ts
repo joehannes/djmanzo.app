@@ -23,6 +23,7 @@ import * as people from "./people";
 import * as talkback from "./talkback";
 import * as sense from "./sense";
 import * as seo from "./seo";
+import * as model from "./model";
 import * as promo from "./promo";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
@@ -305,7 +306,7 @@ route("GET", "/api/weather", async (c) => {
   await brake(c.env.KV, `weather:${clientIp(c.req)}`, 30, 3600);
   return sense.weather(c.url.searchParams.get("lat"), c.url.searchParams.get("lon"));
 });
-route("GET", "/api/guide", async (c) => ({ on: !!c.env.ANTHROPIC_API_KEY }));
+route("GET", "/api/guide", async (c) => ({ on: model.provider(c.env) !== "off", by: model.provider(c.env) }));
 route("POST", "/api/guide", async (c) => guide.guide(c.env, c.req, await body(c.req, 48 * 1024)));
 
 // --- Backstage -----------------------------------------------------------------
@@ -339,7 +340,7 @@ route("GET", "/api/admin/overview", async (c) => {
     wishes: wishes.length,
     pending: pendingT.length + pendingC.length + pendingS.length,
     promos: promos.length,
-    ai: c.env.ANTHROPIC_API_KEY ? "claude" : "workers-ai",
+    ai: model.provider(c.env),
     signing: c.env.LICENCE_PRIVATE_KEY ? "secret" : "development key in KV",
     providers: auth.enabledProviders(c.env).map((p) => p.id),
     payments: { stripe: !!c.env.STRIPE_SECRET_KEY, paypal: !!c.env.PAYPAL_CLIENT_ID, transfer: !!c.env.BANK_TRANSFER_DETAILS, demo: auth.demoMode(c.env) },

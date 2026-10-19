@@ -31,7 +31,7 @@ describe("a new account grows into Talkback", () => {
   });
 
   it("is let through at once when the screen allows it, and held with its reason when it hesitates", async () => {
-    const env = openSite({ ANTHROPIC_API_KEY: "k" }) as never;
+    const env = openSite({ AI_PROVIDER: "claude", ANTHROPIC_API_KEY: "k" }) as never;
     const fresh = await person(env, "Fresh", 0);
     const allow: Screen = async () => ({ verdict: "allow", rule: "", reason: "On topic." });
     const hold: Screen = async () => ({ verdict: "hold", rule: "5", reason: "It reads as an advertisement." });

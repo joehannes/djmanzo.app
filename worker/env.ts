@@ -53,6 +53,16 @@ export interface Secrets {
   MOD_MODEL: string;
   /** How many posts a day Claude screens, all together (default 200). */
   MOD_DAILY: string;
+  /**
+   * Who speaks for the guide, screens posts and drafts the blog: "claude" (only
+   * with a key, and only when set to it), "off", or by default Workers AI
+   * within its free daily allowance (`worker/model.ts`).
+   */
+  AI_PROVIDER: string;
+  /** The Workers AI model; without one, the default in `worker/model.ts`. */
+  WORKERS_AI_MODEL: string;
+  /** The neurons a day this site may spend of Workers AI's free 10,000 (default 6,000). */
+  AI_NEURONS_DAILY: string;
 
   /**
    * The imprint (Austria's ECG §5 and MedienG §25), set as variables. Until

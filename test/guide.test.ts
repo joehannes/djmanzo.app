@@ -104,26 +104,26 @@ describe("the guide's caps and its fallback", () => {
   });
 
   it("answers, cleaned, while there is budget", async () => {
-    const env = testEnv({ ANTHROPIC_API_KEY: "k" });
+    const env = testEnv({ AI_PROVIDER: "claude", ANTHROPIC_API_KEY: "k" });
     const r = await guide(env, visitor(), { turns: [{ from: "visitor", text: "hip-hop" }] }, speak);
     expect(r).toMatchObject({ actions: [{ kind: "set_style", value: "hiphop" }] });
   });
 
   it("stops one visitor after their turns for the hour, while another still gets answers", async () => {
-    const env = testEnv({ ANTHROPIC_API_KEY: "k" });
+    const env = testEnv({ AI_PROVIDER: "claude", ANTHROPIC_API_KEY: "k" });
     for (let i = 0; i < PER_VISITOR; i++) expect(await guide(env, visitor("198.51.100.1"), { turns: [] }, speak)).toHaveProperty("say");
     expect(await guide(env, visitor("198.51.100.1"), { turns: [] }, speak)).toEqual({ fallback: "limit" });
     expect(await guide(env, visitor("198.51.100.2"), { turns: [] }, speak)).toHaveProperty("say");
   });
 
   it("stops everyone once the day's budget is spent", async () => {
-    const env = testEnv({ ANTHROPIC_API_KEY: "k", GUIDE_DAILY: "3" });
+    const env = testEnv({ AI_PROVIDER: "claude", ANTHROPIC_API_KEY: "k", GUIDE_DAILY: "3" });
     for (let i = 0; i < 3; i++) await guide(env, visitor(`192.0.2.${i}`), { turns: [] }, speak);
     expect(await guide(env, visitor("192.0.2.99"), { turns: [] }, speak)).toEqual({ fallback: "limit" });
   });
 
   it("does not run on for ever, and falls back when the model fails or declines", async () => {
-    const env = testEnv({ ANTHROPIC_API_KEY: "k" });
+    const env = testEnv({ AI_PROVIDER: "claude", ANTHROPIC_API_KEY: "k" });
     const long = Array.from({ length: LONGEST + 1 }, (_, i) => ({ from: i % 2 ? "guide" : "visitor", text: "hi" }) as const);
     expect(await guide(env, visitor(), { turns: [...long] }, speak)).toEqual({ fallback: "long" });
     expect(await guide(env, visitor(), { turns: [] }, async () => null)).toEqual({ fallback: "error" });
@@ -137,7 +137,7 @@ describe("the guide's caps and its fallback", () => {
   it("is reachable at /api/guide, and says whether it is on", async () => {
     const env = testEnv();
     const on = await handle(new Request("https://djmanzo.test/api/guide"), env, exec);
-    expect(await on.json()).toEqual({ on: false });
+    expect(await on.json()).toEqual({ on: false, by: "off" });
     const res = await handle(new Request("https://djmanzo.test/api/guide", { method: "POST", body: JSON.stringify({ turns: [] }), headers: { "content-type": "application/json" } }), env, exec);
     expect(await res.json()).toEqual({ fallback: "off" });
   });

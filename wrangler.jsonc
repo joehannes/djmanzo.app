@@ -21,8 +21,9 @@
   // Outboard and Talkback (§134): migrations/ applied with
   // `npx wrangler d1 migrations apply djmanzo --remote`.
   "d1_databases": [{ "binding": "DB", "database_name": "djmanzo", "database_id": "cf50ba3d-cc96-45d5-b8af-9ba9ea48658f", "migrations_dir": "migrations" }],
-  // R2 (binding MEDIA, bucket djmanzo-media) is added once the owner enables
-  // it on the account; until then uploads stay closed, as the owner chose.
+  // Outboard's packs (and later the owner's loops and videos), served through
+  // the Worker; R2 was enabled on the account on 19 October.
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "djmanzo-media" }],
   // Workers AI writes blog drafts when no ANTHROPIC_API_KEY secret is set.
   "ai": { "binding": "AI" },
   "vars": {
@@ -64,7 +65,9 @@
         "IMPRINT_NAME": "Test Owner",
         "IMPRINT_ADDRESS": "Teststraße 1, 4020 Linz, Austria",
         "IMPRINT_EMAIL": "owner@example.test",
-        "ADMIN_TOKEN": "crew-secret"
+        "ADMIN_TOKEN": "crew-secret",
+        // The browser tests drive the scripted guide; no real AI is called, and none of the free share spent.
+        "AI_PROVIDER": "off"
       }
     }
   }

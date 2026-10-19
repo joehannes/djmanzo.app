@@ -1,5 +1,6 @@
 /**
- * The guide on the Signal Path: Claude, on the owner's key, at the door.
+ * The guide on the Signal Path, at the door: Workers AI within its free daily
+ * share by default, Claude when the owner asks for it (`worker/model.ts`).
  *
  * It asks what the visitor plays and does, dresses the path in their music,
  * walks them through the stages, and answers what djmanzo does — from
@@ -13,9 +14,10 @@
  * going somewhere, asking for a location, opening the box office — becomes
  * a button the visitor presses or not.
  *
- * It costs money, so it is capped twice, through `brake()`: a number of turns
- * per visitor an hour, and a number per day for everyone together
- * (`GUIDE_DAILY`). Past either, or without a key, or on any failure, the
+ * It is capped twice, through `brake()`: a number of turns per visitor an
+ * hour, and a number per day for everyone together (`GUIDE_DAILY`); on
+ * Workers AI the day's free share caps it too. Past any of them, with no AI
+ * at all, or on any failure, the
  * answer is `{ fallback }` and the page offers the scripted questions, which
  * say so. Nothing a visitor types is stored here.
  */
@@ -32,7 +34,7 @@ import { STAGES, STAGE_BY_ID } from "../src/stages/script";
 import { SHOTS } from "../src/signal/shots";
 import type { AppEnv } from "./env";
 import { HttpError, brake, clientIp, sha256, text } from "./http";
-import { anthropic, modelFor } from "./model";
+import { OverBudget, anthropic, modelFor, provider, workersJson } from "./model";
 import { where } from "./sense";
 
 export type { Action, GuideAnswer, GuideContext, Reply, Turn };
@@ -234,8 +236,16 @@ async function claude(env: AppEnv, system: string, msgs: Anthropic.MessageParam[
   return response.parsed_output ?? null;
 }
 
-export async function guide(env: AppEnv, req: Request, input: { turns?: Turn[]; context?: GuideContext }, speak: Speak = claude): Promise<GuideAnswer> {
-  if (!env.ANTHROPIC_API_KEY) return { fallback: "off" };
+/** The guide on Workers AI, within the day's free share (`worker/model.ts`). */
+async function workers(env: AppEnv, system: string, msgs: Anthropic.MessageParam[]): Promise<Reply | null> {
+  const said = msgs.map((m) => ({ role: m.role, content: typeof m.content === "string" ? m.content : m.content.map((b) => ("text" in b ? b.text : "")).join("\n") }));
+  return workersJson(env, ReplySchema, [{ role: "system", content: system }, ...said], 1024);
+}
+
+export async function guide(env: AppEnv, req: Request, input: { turns?: Turn[]; context?: GuideContext }, speak?: Speak): Promise<GuideAnswer> {
+  const who = provider(env);
+  if (who === "off") return { fallback: "off" };
+  speak ??= who === "claude" ? claude : workers;
   const turns = Array.isArray(input.turns) ? input.turns.filter((t) => t && (t.from === "visitor" || t.from === "guide")) : [];
   if (turns.length > LONGEST) return { fallback: "long" };
   if (!(await caps(env, req))) return { fallback: "limit" };
@@ -243,6 +253,7 @@ export async function guide(env: AppEnv, req: Request, input: { turns?: Turn[]; 
     const reply = await speak(env, systemPrompt(), messages(turns, context(req, input.context ?? {})));
     return reply ? clean(reply) : { fallback: "error" };
   } catch (e) {
+    if (e instanceof OverBudget) return { fallback: "limit" };
     console.error(JSON.stringify({ at: "guide", error: String((e as Error)?.message ?? e) }));
     return { fallback: "error" };
   }
