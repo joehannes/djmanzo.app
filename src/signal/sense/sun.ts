@@ -33,6 +33,16 @@ function solar(ms: number): Solar {
   return { decl, eqTime };
 }
 
+/** Where the sun stands straight overhead at a moment: its latitude and longitude, in degrees. */
+export function subsolar(at: Date): { lat: number; lon: number } {
+  const ms = at.getTime();
+  const { decl, eqTime } = solar(ms);
+  const minutes = (((ms % DAY) + DAY) % DAY) / 60_000;
+  // Solar noon is where the true solar time is 720 minutes.
+  const lon = (720 - minutes - eqTime) / 4;
+  return { lat: decl / RAD, lon: ((((lon + 180) % 360) + 360) % 360) - 180 };
+}
+
 /** The sun's height over the horizon, in degrees. */
 export function sunAltitude(at: Date, lat: number, lon: number): number {
   const ms = at.getTime();

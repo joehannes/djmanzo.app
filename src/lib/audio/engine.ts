@@ -16,6 +16,10 @@ import { GENRE_BY_ID, scaleNotes, type Genre } from "../genres";
 
 export type FxName = "echo" | "reverb" | "filter" | "flanger" | "crush" | "gate";
 
+/** The parts of a deck's groove, each of which can be switched off (the record shop's band plays them one by one). */
+export type Part = "drums" | "perc" | "bass" | "keys";
+export const PARTS: Part[] = ["drums", "perc", "bass", "keys"];
+
 const PROGRESSIONS: Record<Genre["scale"], number[]> = {
   minor: [0, 8, 3, 10],
   major: [0, 7, 9, 5],
@@ -39,6 +43,12 @@ class Deck {
   step = 0;
   nextTime = 0;
   bar = 0;
+  /** Which parts sound; all of them unless someone says otherwise. */
+  parts: Record<Part, boolean> = { drums: true, perc: true, bass: true, keys: true };
+  /** The pitch fader, as a fraction (0.04 is +4 %); it applies when the engine is not syncing. */
+  pitch = 0;
+  /** This deck's own key shift, in semitones, on top of the engine's. */
+  shift = 0;
 
   constructor(
     private engine: Engine,
@@ -90,7 +100,7 @@ class Deck {
   }
 
   get bpm(): number {
-    return this.engine.sync ? this.engine.tempo : (this.genre.bpm[0] + this.genre.bpm[1]) / 2;
+    return this.engine.sync ? this.engine.tempo : ((this.genre.bpm[0] + this.genre.bpm[1]) / 2) * (1 + this.pitch);
   }
 
   get stepDur(): number {
@@ -118,17 +128,18 @@ class Deck {
     const v = this.engine.voices;
     const out = this.input;
     const prog = PROGRESSIONS[g.scale];
-    const barOffset = prog[Math.floor(this.step / p.steps) % prog.length] + this.engine.transpose;
-    if (p.kick.includes(s)) v.kick(t, out);
-    if (p.snare.includes(s)) v.snare(t, out);
-    if (p.hat.includes(s)) v.hat(t, out, s % 4 === 2 ? 0.5 : 0.3);
-    if (p.perc.includes(s)) v.perc(p.percVoice, t, out);
-    const bi = p.bass.indexOf(s);
+    const barOffset = prog[Math.floor(this.step / p.steps) % prog.length] + this.engine.transpose + this.shift;
+    const on = this.parts;
+    if (on.drums && p.kick.includes(s)) v.kick(t, out);
+    if (on.drums && p.snare.includes(s)) v.snare(t, out);
+    if (on.drums && p.hat.includes(s)) v.hat(t, out, s % 4 === 2 ? 0.5 : 0.3);
+    if (on.perc && p.perc.includes(s)) v.perc(p.percVoice, t, out);
+    const bi = on.bass ? p.bass.indexOf(s) : -1;
     if (bi >= 0) {
       const note = p.bassNotes[bi % p.bassNotes.length] + barOffset;
       v.bass(t, out, (g.root / 2) * midiRatio(note), this.stepDur * 2);
     }
-    const ci = p.chordSteps.indexOf(s);
+    const ci = on.keys ? p.chordSteps.indexOf(s) : -1;
     if (ci >= 0) {
       const root = g.root * midiRatio(barOffset);
       if (p.chordVoice === "pluck") {
