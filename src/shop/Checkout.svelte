@@ -21,11 +21,13 @@
     plan: Exclude<Plan, "trial">;
     country: string;
     promo: string;
+    /** A signed discount voucher's line, brought from /redeem. */
+    voucher?: string;
     total: number;
     display: string;
     ondone: (r: { licence: { id: string; edition: string; modules?: string[]; plan: string; expires: number | null; demo?: boolean } }) => void;
   }
-  let { edition, modules, plan, country, promo, total, display, ondone }: Props = $props();
+  let { edition, modules, plan, country, promo, voucher = "", total, display, ondone }: Props = $props();
 
   type Method = "card" | "paypal" | "transfer" | "demo";
   const pay = $derived(catalog.data?.pay);
@@ -47,7 +49,7 @@
   let demoCard = $state(untrack(() => country));
   let demoBilling = $state(untrack(() => country));
 
-  const input = $derived({ edition, modules, plan, country, promo: promo || null });
+  const input = $derived({ edition, modules, plan, country, promo: promo || null, voucher: voucher || null });
 
   function handle(e: unknown) {
     if (e instanceof ApiError && e.status === 409 && e.data.needsConfirm) {

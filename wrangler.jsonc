@@ -13,6 +13,8 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": [
       "/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/signal", "/signal/*",
+      // Taking a signed voucher (worker/redeem.ts).
+      "/redeem",
       // Pages with an address of their own, rendered with their words (worker/seo.ts).
       "/", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
     ]
@@ -41,7 +43,11 @@
     // public: the site's address, and the `standard` field of
     // /api/licence/public-key.
     "DJMANZO_LICENCE_SERVICE": "https://djmanzo.johannes-neugschwentner.workers.dev",
-    "DJMANZO_LICENCE_KEY": "v/49WdbmMIr+dpxWg/bHppIJdOZqBJzGYnyrvUwzqoQ="
+    "DJMANZO_LICENCE_KEY": "v/49WdbmMIr+dpxWg/bHppIJdOZqBJzGYnyrvUwzqoQ=",
+    // Public keys besides the shop's own whose vouchers /redeem believes
+    // (worker/voucher.ts): the desktop side's gift key, so the gift it made,
+    // MANZO-GIFT-LT5VUK, is honoured here as djmanzo honours it.
+    "DJMANZO_GIFT_KEYS": "D3CJiHuiUTvveveS69VWZJohTjd6i216vrgSFH6d4gg="
   },
   // A variable set in the dashboard survives a deploy.
   "keep_vars": true,

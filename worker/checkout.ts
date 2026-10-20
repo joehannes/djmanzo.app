@@ -35,6 +35,7 @@ import { fail, randomId } from "./http";
 import { inForce, termEnd } from "./licence";
 import { consume, judge, lookup, usedBy, type Judgement } from "./promo";
 import { stripe, verifyWebhook } from "./stripe";
+import * as voucher from "./voucher";
 import { paypal } from "./paypal";
 import { get, put, saveLicence, type Licence, type Order, type User } from "./store";
 
@@ -46,6 +47,8 @@ export interface QuoteInput {
   /** Custom's modules. */
   modules?: Module[];
   promo?: string | null;
+  /** A signed discount voucher's line (`worker/voucher.ts`). */
+  voucher?: string | null;
   /** The country the buyer says they are in. */
   country?: string | null;
 }
@@ -65,10 +68,12 @@ export interface Quote {
   by: "list" | "region" | "student";
   /** An upgrade from a licence already held: what it is worth here. */
   upgrade: { from: string; edition: Edition; credit: number } | null;
-  /** The promo code's discount. */
+  /** The promo code's or the voucher's discount, whichever takes more: they never stack. */
   discount: number;
   total: number;
   promo: (Judgement & { code: string }) | null;
+  /** A signed voucher's judgement; `ok` only when it is the discount applied. */
+  voucher: (Judgement & { id: string; percent: number }) | null;
   renews: boolean;
   /** For Custom: an edition carrying the same for no more money. */
   better: Edition | null;
@@ -82,7 +87,10 @@ export function checkInput(input: Partial<QuoteInput>): QuoteInput {
   if (country && EMBARGOED.has(country)) fail(451, "We cannot take payment for this country.");
   const modules = input.edition === "custom" ? modulesOf("custom", (Array.isArray(input.modules) ? input.modules : []).filter(isModule)) : undefined;
   if (input.edition === "custom" && !modules!.length) fail(400, "Pick at least one module for Custom — the Hobbyist edition is the foundation alone.");
-  return { edition: input.edition as Edition, plan: input.plan as Bought, modules, promo: input.promo ? String(input.promo) : null, country };
+  // A voucher line typed into the promo box is a voucher.
+  const line = input.voucher ? String(input.voucher) : voucher.isVoucherLine(input.promo) ? String(input.promo) : null;
+  const promo = input.promo && !voucher.isVoucherLine(input.promo) ? String(input.promo) : null;
+  return { edition: input.edition as Edition, plan: input.plan as Bought, modules, promo, voucher: line ? line.slice(0, 4096) : null, country };
 }
 
 /** Whether a buyer pays the student and teacher price: marked by the crew, or a verified school address. */
@@ -139,6 +147,21 @@ export async function quote(env: AppEnv, user: User | null, input: QuoteInput, a
     promo = { ...j, code: p?.code ?? input.promo.toUpperCase() };
     if (j.ok) discount = j.discount;
   }
+  let v: Quote["voucher"] = null;
+  if (input.voucher) {
+    v = await judgeVoucher(env, user, input);
+    // A voucher's percentage is off the list price, in place of the regional, student and promo discounts: the larger applies.
+    const list = regional(input.edition, input.plan, 1, chosen);
+    const after = list - Math.round((list * v.percent) / 100);
+    const owed = Math.max(0, after - (upgrade ? Math.min(upgrade.credit, after) : 0));
+    if (v.ok && due - owed > discount) {
+      discount = due - owed;
+      v = { ...v, discount };
+      if (promo?.ok) promo = { ...promo, ok: false, discount: 0, reason: "The voucher takes more off; discounts do not stack." };
+    } else if (v.ok) {
+      v = { ...v, ok: false, reason: `${v.reason} Your price is already lower; discounts do not stack.` };
+    }
+  }
   return {
     edition: input.edition,
     modules: modulesOf(input.edition, chosen),
@@ -153,9 +176,37 @@ export async function quote(env: AppEnv, user: User | null, input: QuoteInput, a
     discount,
     total: due - discount,
     promo,
+    voucher: v,
     renews: input.plan !== "perpetual",
     better: input.edition === "custom" ? betterThanCustom(chosen) : null,
   };
+}
+
+/** Whether a signed discount voucher may be used on this purchase by this person, and the percentage it takes off the list price. */
+async function judgeVoucher(env: AppEnv, user: User | null, input: QuoteInput): Promise<Judgement & { id: string; percent: number }> {
+  const line = input.voucher ?? "";
+  const read = await voucher.readVoucher(line, await voucher.trustedKeys(env));
+  const no = (reason: string, id = "") => ({ ok: false, discount: 0, reason, id, percent: 0 });
+  if (!read.payload) return no(read.refused);
+  const p = read.payload;
+  if (voucher.gives(p) === "gift") return no("That voucher is a gift: take it at /redeem, with nothing to pay.", p.id);
+  const { record, refused } = await voucher.standing(env, p, line);
+  if (refused) return no(refused, p.id);
+  if (p.edition !== input.edition) return no(`That voucher is for djmanzo ${EDITION_INFO[p.edition].name}.`, p.id);
+  if (p.edition === "custom" && [...modulesOf("custom", (p.modules ?? "").split(",") as Module[])].sort().join() !== [...(input.modules ?? [])].sort().join()) {
+    return no(`That voucher is for Custom with ${p.modules!.split(",").join(", ")}.`, p.id);
+  }
+  if (p.for?.length) {
+    if (!user) return no("That voucher was made for somebody: sign in with the account or address it was sent to.", p.id);
+    if (!voucher.allows(p, { account: accountsOf(user), email: user.email })) return no("That voucher was made for somebody else — sign in with the account or address it was sent to.", p.id);
+  }
+  if (user && record.taken.some((t) => t.uid === user.id)) return no("You have already used that voucher.", p.id);
+  return { ok: true, discount: 0, reason: `${p.percent} % off the list price${input.plan === "perpetual" ? "" : ", on the first payment"}.`, id: p.id, percent: p.percent };
+}
+
+/** The accounts a person signs in to djmanzo as, the way a licence names them. */
+export function accountsOf(user: User): string[] {
+  return user.identities.filter((i) => i.provider !== "demo" && i.provider !== "owner").map((i) => `${i.provider}:${i.sub}`);
 }
 
 function describe(q: Quote): string {
@@ -182,6 +233,7 @@ async function newOrder(env: AppEnv, user: User, q: Quote, claimed: Band, proof:
     claimedBand: claimed,
     proof,
     promo: q.promo?.ok ? q.promo.code : null,
+    voucher: q.voucher?.ok ? q.voucher.id : null,
     provider,
     status: "pending",
     renews,
@@ -236,6 +288,7 @@ export async function issue(env: AppEnv, order: Order, user: User, opts: { expir
   order.licence = licence.id;
   await saveOrder(env, order);
   if (order.promo) await consume(env, order.promo, user);
+  if (order.voucher) await voucher.take(env, order.voucher, { uid: user.id, account: accountsOf(user)[0] ?? null, at: Date.now(), order: order.id });
   // The licence an upgrade was priced against is now inside the new one.
   if (order.upgrade?.from) {
     const old = await get<Licence>(env.KV, `licence:${order.upgrade.from}`);
@@ -550,7 +603,7 @@ export async function paypalCapture(env: AppEnv, user: User, orderId: string, ac
   const proof = proven({ instrument, billing }, order.claimedBand);
   const proved = proof.refused
     ? null
-    : await quote(env, user, { edition: order.edition, plan: order.plan as Bought, modules: order.modules, promo: order.promo, country: instrument }, proof.band);
+    : await quote(env, user, { edition: order.edition, plan: order.plan as Bought, modules: order.modules, promo: order.promo, voucher: order.voucher ? ((await voucher.record(env, order.voucher))?.line ?? null) : null, country: instrument }, proof.band);
   const holds = proof.granted || (proved !== null && proved.total <= order.total);
   if (proof.refused || (!holds && !acceptHigher)) {
     if (authorization?.id) await paypal(env, "POST", `/v2/payments/authorizations/${authorization.id}/void`).catch(() => null);

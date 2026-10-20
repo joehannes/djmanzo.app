@@ -10,8 +10,14 @@ export interface Secrets {
   ADMIN_EMAILS: string;
   /** A bearer token that opens Backstage before any sign-in provider exists. */
   ADMIN_TOKEN: string;
-  /** Ed25519 private key, PKCS#8, base64. Signs every licence. */
+  /** Ed25519 private key, PKCS#8, base64. Signs every licence, and every voucher (`worker/voucher.ts`). */
   LICENCE_PRIVATE_KEY: string;
+  /**
+   * A variable: more public keys (raw 32 bytes, base64, comma-separated)
+   * whose vouchers `/redeem` believes besides the shop's own — for a gift
+   * signed outside this site with a key the owner trusts.
+   */
+  DJMANZO_GIFT_KEYS: string;
 
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;

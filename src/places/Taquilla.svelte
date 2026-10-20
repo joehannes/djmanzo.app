@@ -40,6 +40,16 @@
   let voucherMsg = $state<string | null>(null);
   const list = countries();
 
+  // A signed discount voucher, brought from /redeem (`worker/redeem.ts`): it opens on its own edition.
+  const signed = new URLSearchParams(location.search).get("voucher")?.replace(/\s+/g, "") ?? "";
+  try {
+    const said = JSON.parse(atob(signed.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if ((EDITIONS as string[]).includes(said.edition)) edition = said.edition;
+    if (said.edition === "custom") modules = MODULES.filter((m) => String(said.modules).split(",").includes(m));
+  } catch {
+    // No voucher, or not one: the Worker says which when it quotes.
+  }
+
   onMount(async () => {
     await catalog.load();
     if (catalog.data?.visitor.country) country = catalog.data.visitor.country;
@@ -61,7 +71,7 @@
   // Ask the Worker for the real quote whenever the choice changes; the page's own arithmetic is only a preview.
   let timer: ReturnType<typeof setTimeout>;
   $effect(() => {
-    const body = { edition, plan, country, promo: promo.trim() || null, modules: chosenModules };
+    const body = { edition, plan, country, promo: promo.trim() || null, voucher: signed || null, modules: chosenModules };
     clearTimeout(timer);
     // The free edition has no price to ask for.
     if (edition === "hobbyist") return;
@@ -203,6 +213,9 @@
         <span class={quote.promo.ok ? "good" : "bad"} role="status">{quote.promo.ok ? "✓ " : ""}{quote.promo.reason}</span>
       {/if}
     </div>
+    {#if quote?.voucher}
+      <p class={quote.voucher.ok ? "good" : "bad"} role="status">Voucher {quote.voucher.id}: {quote.voucher.ok ? "✓ " : ""}{quote.voucher.reason}</p>
+    {/if}
 
     <div class="ticket" aria-live="polite">
       {#if quote}
@@ -217,7 +230,7 @@
             <span>Upgrade from your {catalog.data?.editions[quote.upgrade.edition as Edition]?.name}</span><span class="r">− {money(quote.upgrade.credit, quote.currency)}</span>
           {/if}
           {#if quote.discount}
-            <span>Promo {quote.promo.code}</span><span class="r">− {money(quote.discount, quote.currency)}</span>
+            <span>{quote.voucher?.ok ? `Voucher ${quote.voucher.id}` : `Promo ${quote.promo.code}`}</span><span class="r">− {money(quote.discount, quote.currency)}</span>
           {/if}
           <span class="total">Total</span><span class="r total">{money(quote.total, quote.currency)}</span>
         </div>
@@ -235,7 +248,7 @@
     {:else}
       <p class="small">Signed in as <b>{session.user.name}</b>{session.user.email ? ` (${session.user.email})` : ""}. The licence goes to this account.</p>
       {#if quote}
-        <Checkout {edition} modules={chosenModules} {plan} {country} {promo} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
+        <Checkout {edition} modules={chosenModules} {plan} {country} {promo} voucher={signed} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
       {/if}
     {/if}
 

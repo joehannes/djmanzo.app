@@ -13,6 +13,8 @@
  * | `licence:<lid>` / `licences:<uid>` | a licence, and a person's list of them |
  * | `trial:<uid>` | that a person has had their seven days (never expires) |
  * | `promo:<CODE>` / `promouse:<CODE>:<who>` | a promo code or voucher, and who used it |
+ * | `voucher:<ID>` | a signed voucher (`worker/voucher.ts`): its line, who took it, whether it was withdrawn |
+ * | `cache:release` / `cache:updater:<tag>` | GitHub's latest release and its updater manifest, for ten minutes (`worker/update.ts`) |
  * | `wish:<id>` / `vote:<id>:<who>` | the wishlist, and its votes |
  * | `comment:<kind>:<inverted time>:<id>` | testimonials, comments and samples, newest first |
  * | `post:<slug>:<lang>` / `index:posts` | blog posts, and the list of them |
@@ -96,6 +98,8 @@ export interface Order {
   claimedBand: Band;
   proof: { instrument?: string | null; billing?: string | null; reason: string };
   promo?: string | null;
+  /** The signed voucher that paid for it, or took money off it (`worker/voucher.ts`). */
+  voucher?: string | null;
   provider: "stripe" | "paypal" | "transfer" | "demo" | "free" | "voucher" | "trial";
   providerRef?: string | null;
   status: "pending" | "paid" | "failed" | "refunded" | "cancelled";

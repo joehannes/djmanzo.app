@@ -25,6 +25,9 @@ import * as sense from "./sense";
 import * as seo from "./seo";
 import * as model from "./model";
 import * as promo from "./promo";
+import * as redeem from "./redeem";
+import * as update from "./update";
+import * as voucher from "./voucher";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
 import { get, list, put, saveLicence, type Licence, type Order, type Promo, type User, type Video } from "./store";
@@ -126,6 +129,8 @@ route("GET", "/api/catalog", async (c) => {
     },
     major: Number(c.env.MAJOR_VERSION || 1),
     downloads: c.env.DOWNLOAD_BASE,
+    // Where djmanzo asks for updates, in the Tauri updater's own template (`worker/update.ts`).
+    updates: `${c.url.origin}/api/update/{{target}}/{{arch}}/{{current_version}}`,
   };
 });
 
@@ -177,6 +182,11 @@ route("GET", "/api/licence/public-key", async (c) => {
   const raw = (await keys(c.env)).publicRaw;
   return { alg: "Ed25519", key: raw, standard: btoa(String.fromCharCode(...unb64url(raw))), development: !c.env.LICENCE_PRIVATE_KEY };
 });
+// Taking a signed voucher (`worker/redeem.ts`): djmanzo opens this in the browser.
+route("GET", "/redeem", (c) => redeem.show(c.req, c.env));
+route("POST", "/redeem", (c) => redeem.takeGift(c.req, c.env));
+// Whether there is a newer djmanzo, for its updater (`worker/update.ts`).
+route("GET", "/api/update/:target/:arch/:current", (c) => update.check(c.env, c.params.target, c.params.arch, c.params.current));
 
 // --- The community -------------------------------------------------------------
 
@@ -379,6 +389,32 @@ route("DELETE", "/api/admin/promos/:code", async (c) => {
   await needAdmin(c);
   await c.env.KV.delete(`promo:${promo.normalise(c.params.code)}`);
   return { ok: true };
+});
+
+// Signed vouchers (`worker/voucher.ts`): made here, given away, taken at /redeem or read by djmanzo itself.
+route("GET", "/api/admin/vouchers", async (c) => {
+  await needAdmin(c);
+  const keys = await list<ReturnType<typeof voucher.meta>>(c.env.KV, "voucher:", 10000);
+  return keys
+    .map((k) => ({ id: k.name.slice(8), edition: k.metadata?.e, percent: k.metadata?.p, made: k.metadata?.m ?? null, issued: k.metadata?.i, until: k.metadata?.u ?? null, for: k.metadata?.f ?? 0, taken: k.metadata?.t ?? 0, revoked: !!k.metadata?.r }))
+    .sort((a, b) => Number(b.issued) - Number(a.issued));
+});
+route("GET", "/api/admin/vouchers/:id", async (c) => {
+  await needAdmin(c);
+  return voucher.record(c.env, c.params.id);
+});
+route("POST", "/api/admin/vouchers", async (c) => {
+  const admin = await needAdmin(c);
+  const made = await voucher.make(c.env, await body<voucher.VoucherSpec>(c.req), admin.name);
+  return { vouchers: made.map((r) => ({ id: r.payload.id, line: r.line })) };
+});
+route("POST", "/api/admin/vouchers/:id/revoke", async (c) => {
+  await needAdmin(c);
+  const r = await voucher.record(c.env, c.params.id);
+  if (!r) fail(404, "No such voucher.");
+  r.revoked = true;
+  await voucher.save(c.env, r);
+  return { id: r.payload.id, revoked: true };
 });
 
 route("PATCH", "/api/admin/wishes/:id", async (c) => {

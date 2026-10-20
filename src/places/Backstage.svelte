@@ -1,5 +1,6 @@
 <!--
-  Backstage, for the crew: how the shop is doing, codes to mint, wishes to
+  Backstage, for the crew: how the shop is doing, codes to mint, signed
+  vouchers to give away, wishes to
   stamp, words to read before they go public, orders waiting on a transfer,
   the blog desk where drafts are written in many languages, and the videos
   the plaza shows. Each is a flight case: open the one you need.
@@ -8,7 +9,7 @@
   import { onMount } from "svelte";
   import { api, post } from "../lib/api";
   import { session } from "../lib/session.svelte";
-  import { EDITIONS, PLANS, money, type Edition, type Plan } from "../../shared/catalog";
+  import { EDITIONS, MODULES, PLANS, money, type Edition, type Plan } from "../../shared/catalog";
   import { GENRES } from "../lib/genres";
   import type { PlaceId } from "../lib/places";
   import { STAGES } from "../stages/script";
@@ -90,6 +91,55 @@
   }
   function csv(): string {
     return "code,bound_to\n" + minted.map((m) => `${m.code},${m.boundTo ?? ""}`).join("\n");
+  }
+
+  // --- Signed vouchers (worker/voucher.ts) ----------------------------------------
+  let vEdition = $state<Edition>("full");
+  let vModules = $state<string[]>([]);
+  let vPercent = $state(100);
+  let vUntil = $state("");
+  let vFor = $state("");
+  let vNote = $state("");
+  let vCount = $state(1);
+  let made = $state<{ id: string; line: string }[]>([]);
+  let vouchers = $state<any[]>([]);
+  let copied = $state<string | null>(null);
+
+  async function makeVouchers(e: SubmitEvent) {
+    e.preventDefault();
+    error = null;
+    try {
+      const r = await post("/api/admin/vouchers", {
+        edition: vEdition,
+        ...(vEdition === "custom" ? { modules: vModules } : {}),
+        percent: vPercent,
+        // The last day, to its last second, UTC.
+        until: vUntil ? Math.floor(new Date(`${vUntil}T23:59:59Z`).getTime() / 1000) : null,
+        for: vFor.split("\n").map((s) => s.trim()).filter(Boolean),
+        note: vNote,
+        count: vCount,
+      });
+      made = r.vouchers;
+      await loadVouchers();
+    } catch (e2) {
+      error = (e2 as Error).message;
+    }
+  }
+  async function loadVouchers() {
+    vouchers = await api("/api/admin/vouchers");
+  }
+  async function revoke(id: string) {
+    if (!confirm(`Withdraw ${id}? Nobody can take it at the shop after this.`)) return;
+    await post(`/api/admin/vouchers/${encodeURIComponent(id)}/revoke`);
+    await loadVouchers();
+  }
+  async function copy(line: string, id: string) {
+    await navigator.clipboard.writeText(line);
+    copied = id;
+  }
+  async function copyKept(id: string) {
+    const r = await api(`/api/admin/vouchers/${encodeURIComponent(id)}`);
+    await copy(r.line, id);
   }
 
   // --- Wishes ---------------------------------------------------------------------
@@ -333,6 +383,60 @@
     {/if}
   </details>
 
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadVouchers()} data-vouchers>
+    <summary>🎁 Vouchers</summary>
+    <p class="small muted">A signed line to give away: djmanzo reads it by itself and knows it is real. 100 % is a gift — the edition outright; less is a discount at the box office. One held to somebody is taken at the shop, signed in as them.</p>
+    <form onsubmit={makeVouchers} class="grid">
+      <div class="two">
+        <label class="field"><span>Edition</span><select bind:value={vEdition}>{#each EDITIONS.filter((e) => e !== "hobbyist") as e (e)}<option value={e}>{e}</option>{/each}</select></label>
+        <label class="field"><span>Percent off (100 = gift)</span><input type="number" min="1" max="100" bind:value={vPercent} /></label>
+      </div>
+      {#if vEdition === "custom"}
+        <fieldset><legend>Modules</legend><div class="chips">{#each MODULES as m (m)}<button type="button" class="chip" aria-pressed={vModules.includes(m)} onclick={() => (vModules = toggle(vModules, m))}>{m}</button>{/each}</div></fieldset>
+      {/if}
+      <div class="two">
+        <label class="field"><span>Last day it can be taken (optional)</span><input type="date" bind:value={vUntil} /></label>
+        <label class="field"><span>How many</span><input type="number" min="1" max="50" bind:value={vCount} /></label>
+      </div>
+      <label class="field"><span>Only for (optional) — one account (github:1234567) or e-mail address per line; empty = anybody</span><textarea bind:value={vFor} placeholder="dj@example.org&#10;github:1234567"></textarea></label>
+      <label class="field"><span>Note (optional, shown with it)</span><input type="text" maxlength="280" bind:value={vNote} placeholder="Happy birthday" /></label>
+      <button class="btn primary">Make {vCount === 1 ? "a voucher" : `${vCount} vouchers`}</button>
+    </form>
+    {#if made.length}
+      <p><b>{made.length} made.</b> Each line is the voucher: send it as it is.</p>
+      <ul class="lines">
+        {#each made as m (m.id)}
+          <li><b>{m.id}</b> <button class="btn quiet" onclick={() => copy(m.line, m.id)}>{copied === m.id ? "Copied" : "Copy"}</button><code>{m.line}</code></li>
+        {/each}
+      </ul>
+    {/if}
+    {#if vouchers.length}
+      <h3>All vouchers</h3>
+      <div class="scroll">
+        <table>
+          <thead><tr><th>Voucher</th><th>Edition</th><th>Gives</th><th>For</th><th>Until</th><th>Taken</th><th></th></tr></thead>
+          <tbody>
+            {#each vouchers as v (v.id)}
+              <tr class:off={v.revoked}>
+                <td><code>{v.id}</code></td>
+                <td>{v.edition}</td>
+                <td>{v.percent >= 100 ? "gift" : `${v.percent}%`}</td>
+                <td>{v.for ? `${v.for} named` : "anybody"}</td>
+                <td>{v.until ? new Date(v.until * 1000).toISOString().slice(0, 10) : ""}</td>
+                <td>{v.taken}</td>
+                <td>
+                  <button class="btn quiet" onclick={() => copyKept(v.id)}>{copied === v.id ? "Copied" : "Copy"}</button>
+                  {#if v.revoked}withdrawn{:else}<button class="btn quiet" onclick={() => revoke(v.id)}>Withdraw</button>{/if}
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted">Withdrawing stops a voucher at the shop; a gift for anybody that djmanzo already wears offline stays worn.</p>
+    {/if}
+  </details>
+
   <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadWishes()}>
     <summary>🧱 Wishes</summary>
     {#each wishes as w (w.id)}
@@ -568,6 +672,18 @@
   }
   .scroll {
     overflow-x: auto;
+  }
+  .lines {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .lines code {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    word-break: break-all;
   }
   tr.off {
     opacity: 0.5;
