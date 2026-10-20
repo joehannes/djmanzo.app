@@ -74,6 +74,26 @@ function valid(a: Action): boolean {
 }
 
 /** What the page may act on: the model's reply, with anything that names nothing real thrown away. */
+/** What may stand before "edition" in a reply: an edition's own name, or a word that names none ("every edition", "seven editions"). */
+const EDITION_WORDS = new Set(
+  [
+    ...EDITIONS.flatMap((e) => [e, EDITION_INFO[e].name]),
+    ...["pro", "autopilot", "auto-pilot", "free", "paid", "any", "each", "every", "one", "your", "this", "that", "the", "an", "which", "other", "same", "seven", "all", "both", "two", "these", "those", "cheaper", "bigger", "larger", "right", "best", "whole", "named", "an", "new", "first", "trial"],
+  ].map((w) => w.toLowerCase()),
+);
+
+/**
+ * A reply without the sentences that name an edition djmanzo does not have.
+ * The free model can invent one (asked about bachata at weddings, it offered
+ * "the Wedding edition"); no page may show it.
+ */
+export function withoutInventedEditions(say: string): string {
+  const sentences = say.match(/[^.!?]+[.!?]*\s*/g) ?? [say];
+  const kept = sentences.filter((s) => [...s.matchAll(/([A-Za-z][\w-]*(?:\s+DJ)?)\s+editions?\b/gi)].every((m) => EDITION_WORDS.has(m[1].toLowerCase())));
+  const out = kept.join("").trim();
+  return out || "I'm not sure which edition that would be — the shop lists all seven, and what each carries.";
+}
+
 export function clean(r: Reply): Reply {
   const actions: Action[] = [];
   for (const a of r.actions) {
@@ -82,7 +102,7 @@ export function clean(r: Reply): Reply {
     if (KINDS.includes(action.kind) && valid(action) && !actions.some((b) => b.kind === action.kind)) actions.push(action);
   }
   return {
-    say: text(r.say, 600),
+    say: withoutInventedEditions(text(r.say, 600)),
     options: r.options.map((o) => text(o, 48)).filter(Boolean).slice(0, 4),
     actions: actions.slice(0, 4),
   };

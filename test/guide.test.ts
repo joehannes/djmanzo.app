@@ -61,6 +61,24 @@ describe("what the guide may make the page do", () => {
   });
 });
 
+describe("what the guide may say", () => {
+  it("never names an edition djmanzo does not have", () => {
+    // Seen live: asked about bachata at weddings, the free model offered "the Wedding edition".
+    const r = clean(reply({ say: "Bachata brings the warmth. For that, the Wedding edition covers every generation. The Pro DJ edition carries the stems, and the Hobbyist edition is free." }));
+    expect(r.say).not.toContain("Wedding edition");
+    expect(r.say).toContain("Bachata brings the warmth.");
+    expect(r.say).toContain("The Pro DJ edition carries the stems");
+    for (const e of EDITIONS) expect(clean(reply({ say: `The ${EDITION_INFO[e].name} edition fits.` })).say, e).toContain(EDITION_INFO[e].name);
+    expect(clean(reply({ say: "All seven editions are one download." })).say).toBe("All seven editions are one download.");
+  });
+
+  it("says it is unsure rather than nothing when every sentence was invented", () => {
+    const r = clean(reply({ say: "Take the Club edition." }));
+    expect(r.say).not.toContain("Club edition");
+    expect(r.say.length).toBeGreaterThan(10);
+  });
+});
+
 describe("what the guide is told", () => {
   it("knows every fact, at its status, and every edition", () => {
     const p = systemPrompt();
