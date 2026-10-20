@@ -12,7 +12,6 @@
 
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import { gsap } from "gsap";
 import { subsolar } from "../../signal/sense/sun";
 import { ARM, PLACES, armFor, cue, gleason, needle, rotate, under, type Place, genreOf } from "./places";
 import { paintSurface } from "./surface";
@@ -27,6 +26,15 @@ export interface EarthEvents {
 }
 
 const DISC_Y = 0.05;
+
+interface Move {
+  from: { turn: number; arm: number };
+  to: { turn: number; arm: number };
+  at: number;
+  ms: number;
+  done: () => void;
+  timer: number;
+}
 /** The glass dome's radius: wide enough to cover the tonearm too. */
 const DOME = 1.52;
 /** Disc coordinates (x right, y down on the map) to the world: the map's down is towards the viewer. */
@@ -55,7 +63,7 @@ export class RecordEarth {
   private drag: { kind: "disc" | "arm"; startAngle: number; startTurn: number; moved: boolean; lastAngle: number; lastT: number; spin: number } | null = null;
   private spin = 0;
   /** The arm's or the record's current move, if one is running. */
-  private tween: gsap.core.Tween | null = null;
+  private move: Move | null = null;
   private reduced: boolean;
   /** Frames have been slow (a software renderer, a weak device): draw fewer pixels, and only when asked. */
   private slow = false;
@@ -257,42 +265,52 @@ export class RecordEarth {
 
   /** Bring a place under the needle, and play it. */
   play(p: Place) {
-    this.tween?.kill();
     const target = cue(gleason(p.lat, p.lon), this.turn);
-    const state = { turn: this.turn, arm: this.armAngle, lift: 1 };
-    const d = this.reduced ? 0.01 : 1.3;
     this.spin = 0;
-    this.tween = gsap.to(state, {
-      turn: target.turn,
-      arm: target.arm,
-      duration: d,
-      ease: "power2.inOut",
-      onUpdate: () => {
-        this.setTurn(state.turn);
-        this.setArm(state.arm, true);
-      },
-      onComplete: () => {
-        this.setArm(target.arm, false);
-        this.land();
-      },
+    this.start({ turn: target.turn, arm: target.arm }, this.reduced ? 0.01 : 1.3, () => {
+      this.setArm(target.arm, false);
+      this.land();
     });
-    this.wake();
   }
 
   /** Lift the needle and swing the arm home. */
   stop() {
-    this.tween?.kill();
-    const state = { arm: this.armAngle };
-    this.tween = gsap.to(state, {
-      arm: ARM.rest,
-      duration: this.reduced ? 0.01 : 0.8,
-      ease: "power2.inOut",
-      onUpdate: () => this.setArm(state.arm, true),
-      onComplete: () => this.setArm(ARM.rest),
-    });
+    this.start({ arm: ARM.rest }, this.reduced ? 0.01 : 0.8, () => this.setArm(ARM.rest));
     this.playing = null;
     this.events.lift?.();
+  }
+
+  /**
+   * A move of the record and the arm, timed by the clock rather than by
+   * frames: on a slow device it is choppier but lands on time, and it lands
+   * even when nothing is drawn (the room scrolled out of view).
+   */
+  private start(to: { turn?: number; arm: number }, seconds: number, done: () => void) {
+    this.halt();
+    const ms = seconds * 1000;
+    const m: Move = { from: { turn: this.turn, arm: this.armAngle }, to: { turn: to.turn ?? this.turn, arm: to.arm }, at: performance.now(), ms, done, timer: 0 };
+    m.timer = window.setTimeout(() => this.advance(performance.now()), ms + 30);
+    this.move = m;
     this.wake();
+  }
+
+  private advance(now: number) {
+    const m = this.move;
+    if (!m) return;
+    const t = Math.min(1, (now - m.at) / m.ms);
+    // Ease in and out, as power2.inOut does.
+    const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    this.setTurn(m.from.turn + (m.to.turn - m.from.turn) * e);
+    this.setArm(m.from.arm + (m.to.arm - m.from.arm) * e, t < 1);
+    if (t < 1) return;
+    clearTimeout(m.timer);
+    this.move = null;
+    m.done();
+  }
+
+  private halt() {
+    if (this.move) clearTimeout(this.move.timer);
+    this.move = null;
   }
 
   /** The needle comes down where it is. */
@@ -446,12 +464,13 @@ export class RecordEarth {
       this.renderer.setPixelRatio(1);
       this.resize();
     }
-    let moving = !!this.tween?.isActive() || !!this.drag;
+    if (this.move) this.advance(now);
+    let moving = !!this.move || !!this.drag;
     if (!this.drag && Math.abs(this.spin) > 0.002) {
       this.setTurn(this.turn + this.spin * dt);
       this.spin *= Math.pow(0.25, dt);
       moving = true;
-    } else if (!this.drag && !this.playing && !this.reduced && !this.slow) {
+    } else if (!this.drag && !this.move && !this.playing && !this.reduced && !this.slow) {
       // Idle, the record turns slowly by itself.
       this.setTurn(this.turn + 0.06 * dt);
       moving = true;
@@ -479,7 +498,7 @@ export class RecordEarth {
   dispose() {
     cancelAnimationFrame(this.raf);
     this.resizeObserver.disconnect();
-    this.tween?.kill();
+    this.halt();
     this.renderer.dispose();
   }
 }

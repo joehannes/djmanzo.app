@@ -76,6 +76,9 @@ describe("prices are EDITIONS.md's", () => {
     // What is free is free on every plan.
     expect(listPrice("hobbyist", "monthly")).toBe(0);
     expect(listPrice("hobbyist", "yearly")).toBe(0);
+    // In every band and for students too: a readable price is never made out of nothing.
+    for (const b of [1, 2, 3, 4] as const) for (const p of ["perpetual", "monthly", "yearly"] as const) expect(regional("hobbyist", p, b), `band ${b} ${p}`).toBe(0);
+    expect(studentPrice("hobbyist", "perpetual")).toBe(0);
     for (const e of NAMED.filter((x) => BUY_ONCE[x] > 0)) {
       const m = listPrice(e, "monthly");
       expect([49, 99], `${e} monthly`).toContain(m % 100);

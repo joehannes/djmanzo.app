@@ -61,6 +61,8 @@ export function currencyFor(country: string | null | undefined): Currency {
 }
 
 function share(cents: number, s: number): number {
+  // Free stays free: a readable price (.49 or .99) must never be made out of nothing.
+  if (cents === 0) return 0;
   return s === 1 ? cents : psychological(Math.round(cents * s));
 }
 

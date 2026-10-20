@@ -70,9 +70,16 @@
     const start = location.hash.slice(1) as RoomId;
     if (ROOM_BY_ID[start]) requestAnimationFrame(() => go(start, false));
     addEventListener("shop:walk", walk);
+    // A link to a room (`/shop/#cafe`) from inside the shop changes only the hash; follow it.
+    const followHash = () => {
+      const id = location.hash.slice(1) as RoomId;
+      if (ROOM_BY_ID[id] && id !== current) go(id);
+    };
+    addEventListener("hashchange", followHash);
     return () => {
       io.disconnect();
       removeEventListener("shop:walk", walk);
+      removeEventListener("hashchange", followHash);
     };
   });
 </script>
