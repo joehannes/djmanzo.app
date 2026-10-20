@@ -3,16 +3,17 @@
   "name": "djmanzo",
   "main": "worker/index.ts",
   "compatibility_date": "2026-10-16",
-  // The Svelte build: the Signal Path at /, the island at /island/. The Worker
-  // runs first for the API, the sign-in routes, djmanzo's licence protocol,
-  // the old /signal/ address, and the pages it renders for search engines and
-  // link previews; everything else is a static file.
+  // The Svelte build: the professional site at /, the earlier versions at
+  // /signal/, /shop/ and /island/. The Worker runs first for the API, the
+  // sign-in routes, djmanzo's licence protocol, the old /v4/ preview address,
+  // and the pages it renders for search engines and link previews; everything
+  // else is a static file.
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": [
-      "/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/signal", "/signal/*",
+      "/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/v4", "/v4/", "/v4/index.html",
       // Taking a signed voucher (worker/redeem.ts).
       "/redeem",
       // Pages with an address of their own, rendered with their words (worker/seo.ts).

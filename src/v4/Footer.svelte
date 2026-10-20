@@ -18,7 +18,7 @@
     </div>
     <nav aria-label="Product">
       <h2>Product</h2>
-      <a href="#/">Features</a>
+      <a href="/#tour">Features</a>
       <a href={href("pricing")}>Pricing and editions</a>
       <a href={RELEASES}>Download and release notes</a>
       <a href="/api/outboard/packs.json">Pack index for djmanzo</a>
@@ -44,7 +44,7 @@
     </nav>
     <nav aria-label="Other versions of this site">
       <h2>Also here</h2>
-      <a href="/">The Signal Path</a>
+      <a href="/signal/">The Signal Path</a>
       <a href="/shop/">The record shop</a>
       <a href="/island/">Isla Manzo</a>
     </nav>

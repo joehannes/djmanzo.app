@@ -199,7 +199,7 @@ test("the sends are on the map, and the site's own pages say who runs it", async
       return raf(cb);
     };
   });
-  await page.goto("/");
+  await page.goto("/signal/");
   await page.locator('[data-send="talkback"]').click();
   await expect(page.locator('[data-aux="talkback"]')).toBeVisible({ timeout: 15_000 });
   // The page hides the painting, so the painting rests under it.
@@ -228,7 +228,7 @@ test("the sends cover neither a stage on the map nor its hint, on a wide screen 
   for (const [w, h, mobile] of [[1400, 900, false], [1024, 640, false], [390, 844, true], [375, 667, true]] as const) {
     const page = await browser.newPage({ viewport: { width: w, height: h }, isMobile: mobile, hasTouch: mobile });
     await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "house", role: "dj", visited: ["silence"] })));
-    await page.goto("/");
+    await page.goto("/signal/");
     await expect(page.locator('[data-send="talkback"]')).toBeVisible({ timeout: 15_000 });
     // The labels follow the painting; let it settle.
     await page.waitForTimeout(1500);

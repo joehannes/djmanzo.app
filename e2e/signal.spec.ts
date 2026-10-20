@@ -21,7 +21,7 @@ const accent = (page: Page) => page.evaluate(() => getComputedStyle(document.doc
 
 test("a first visit lands on Silence, and the guide dresses the path in the visitor's music", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/");
+  await page.goto("/signal/");
   const silence = page.locator('[data-stage="silence"]');
   await expect(silence).toBeVisible({ timeout: 15_000 });
   await expect(silence).toContainText("Before the first note");
@@ -41,14 +41,14 @@ test("a first visit lands on Silence, and the guide dresses the path in the visi
 
   await guide.getByRole("button", { name: /Drop the needle/ }).click();
   await expect(page.locator('[data-stage="groove"]')).toBeVisible({ timeout: 15_000 });
-  await expect(page).toHaveURL(/#\/groove$/);
+  await expect(page).toHaveURL(/\/signal\/#\/groove$/);
   expect(errs).toEqual([]);
 });
 
 test("the map leads into a stage and back, and a reveal says what djmanzo does, with its status", async ({ page }) => {
   const errs = errors(page);
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "bachata", role: "dj", visited: ["silence", "groove"] })));
-  await page.goto("/");
+  await page.goto("/signal/");
   // A returning visitor starts on the map, with the stages they have seen lit.
   const meter = page.getByRole("navigation", { name: "The stages" });
   await expect(meter).toBeVisible({ timeout: 15_000 });
@@ -75,14 +75,14 @@ test("the map leads into a stage and back, and a reveal says what djmanzo does, 
 
   await page.keyboard.press("Escape");
   await expect(meter).toBeVisible({ timeout: 15_000 });
-  await expect(page).toHaveURL(/#\/$/);
+  await expect(page).toHaveURL(/\/signal\/#\/$/);
   await expect(meter.locator('[data-meter="confluence"]')).toHaveClass(/lit/);
   expect(errs).toEqual([]);
 });
 
 test("a link to a stage opens it, and the keys walk its beats", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "hiphop", role: "dj", visited: ["silence"] })));
-  await page.goto("/#/voice");
+  await page.goto("/signal/#/voice");
   const stage = page.locator('[data-stage="voice"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   await page.keyboard.press("ArrowRight");
@@ -98,7 +98,7 @@ test("a link to a stage opens it, and the keys walk its beats", async ({ page })
 test("with reduced motion the path is the same, and nothing waits on an animation", async ({ browser }) => {
   const page = await browser.newPage({ reducedMotion: "reduce" });
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "electroswing", role: "dj", visited: ["silence"] })));
-  await page.goto("/#/cone");
+  await page.goto("/signal/#/cone");
   const stage = page.locator('[data-stage="cone"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   // The words are there at once, not arriving.
@@ -111,7 +111,7 @@ test("a phone gets the same path", async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   const errs = errors(page);
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "house", role: "dj", visited: ["silence"] })));
-  await page.goto("/");
+  await page.goto("/signal/");
   const meter = page.getByRole("navigation", { name: "The stages" });
   await expect(meter).toBeVisible({ timeout: 15_000 });
   await meter.locator('[data-meter="needle"]').click();
@@ -128,7 +128,7 @@ test("a phone gets the same path", async ({ browser }) => {
 test("the Amp's reveal is the real box office: a licence can be bought from inside the stage", async ({ page }) => {
   const errs = errors(page);
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "latin", role: "dj", visited: ["silence"] })));
-  await page.goto("/#/amp");
+  await page.goto("/signal/#/amp");
   const stage = page.locator('[data-stage="amp"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   await stage.getByRole("button", { name: "Reveal" }).click();
@@ -147,7 +147,7 @@ test("the Amp's reveal is the real box office: a licence can be bought from insi
 
 test("the plays answer the hand: the Amp's dial runs through the editions", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "edm", role: "dj", visited: ["silence"] })));
-  await page.goto("/#/amp");
+  await page.goto("/signal/#/amp");
   const stage = page.locator('[data-stage="amp"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   await stage.getByRole("button", { name: "Play" }).click();
@@ -161,11 +161,11 @@ test("the plays answer the hand: the Amp's dial runs through the editions", asyn
   await expect(stage).toHaveAttribute("data-beat", "2");
 });
 
-test("the path is the site: its old address still lands, and the island is one link away", async ({ page }) => {
+test("the path lives at /signal/: an old link to a stage still lands there, and the island is one link away", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "house", role: "dj", visited: ["silence"] })));
-  // A link from the preview days keeps its stage.
-  await page.goto("/signal/#/amp");
-  await expect(page).toHaveURL(/^http:\/\/[^/]+\/#\/amp$/);
+  // A link from the days when the path was the site, at /, is sent to the path's own address with its stage.
+  await page.goto("/#/amp");
+  await expect(page).toHaveURL(/^http:\/\/[^/]+\/signal\/#\/amp$/);
   await expect(page.locator('[data-stage="amp"]')).toBeVisible({ timeout: 15_000 });
   // The pass, the blog and the wishlist are still the island's.
   await page.locator('[data-corner="you"]').click();
@@ -182,7 +182,7 @@ test("a reveal shows djmanzo in the visitor's own look, and the owner's video on
   await page.route("**/api/videos", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify([{ id: "groovevideo", title: "A crate, dug", stage: "groove" }]) }));
   await page.route("https://www.youtube-nocookie.com/**", (r) => r.fulfill({ contentType: "text/html", body: "<p>the player</p>" }));
   await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "bachata", role: "dj", visited: ["silence"] })));
-  await page.goto("/#/groove");
+  await page.goto("/signal/#/groove");
   const stage = page.locator('[data-stage="groove"]');
   await expect(stage).toBeVisible({ timeout: 15_000 });
   await stage.getByRole("button", { name: "Reveal" }).click();

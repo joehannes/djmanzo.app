@@ -59,12 +59,19 @@
     }
   });
 
+  /**
+   * Where the Signal Path is served: /signal/ since the professional site took / (20 October). There,
+   * its sends keep their place in the hash (`/signal/#/outboard/x`), since the paths are the new site's.
+   */
+  const BASE = location.pathname.startsWith("/signal") ? "/signal/" : "/";
+  const sendAt = (route: AuxRoute, search = "") => (BASE === "/" ? auxPath(route) + search : `${BASE}${search}#${auxPath(route)}`);
+
   async function enter(id: StageId) {
     hovered = null;
     aux = null;
     stage = null;
     seen = "";
-    history.replaceState(null, "", `/#/${id}`);
+    history.replaceState(null, "", `${BASE}#/${id}`);
     // Without WebGL there is no painting to travel through, but every stage still opens.
     await engine?.enter(id);
     stage = id;
@@ -76,12 +83,12 @@
     seen = "";
     if (aux && !was) {
       aux = null;
-      history.pushState(null, "", "/#/");
+      history.pushState(null, "", `${BASE}#/`);
       return;
     }
     aux = null;
     stage = null;
-    history.replaceState(null, "", "/#/");
+    history.replaceState(null, "", `${BASE}#/`);
     await engine?.leave();
     if (was) engine?.showOnMap(was);
   }
@@ -98,8 +105,8 @@
     const route = auxRoute(location.hash) ?? (named && named in STAGE_BY_ID ? null : auxRoute(location.pathname));
     if (route) {
       // An older #/outboard link, or /talkback/: the page's own address.
-      const path = auxPath(route);
-      if (location.pathname !== path || location.hash) history.replaceState(null, "", path + location.search);
+      const at = sendAt(route, location.search);
+      if (location.pathname + location.search + location.hash !== at) history.replaceState(null, "", at);
       if (stage) void engine?.leave();
       stage = null;
       aux = route;
@@ -131,7 +138,7 @@
       const route = auxRoute(url.pathname);
       if (!route) return;
       e.preventDefault();
-      history.pushState(null, "", auxPath(route) + url.search);
+      history.pushState(null, "", sendAt(route, url.search));
       changed();
     };
     addEventListener("hashchange", changed);

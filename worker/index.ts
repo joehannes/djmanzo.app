@@ -524,8 +524,9 @@ route("GET", "/sitemap.xml", (c) => seo.sitemap(c.env, c.url.origin));
 
 export async function handle(req: Request, env: AppEnv, exec: ExecutionContext): Promise<Response> {
   const url = new URL(req.url);
-  // The Signal Path was previewed at /signal/ before it became the site; old links still land.
-  if (url.pathname === "/signal" || url.pathname.startsWith("/signal/")) return Response.redirect(`${url.origin}/${url.search}`, 301);
+  // The professional site was previewed at /v4/ before it became the site; old links still land
+  // (the browser keeps an old #/pricing, and the page turns it into /pricing). Its pictures stay at /v4/art/.
+  if (url.pathname === "/v4" || url.pathname === "/v4/" || url.pathname === "/v4/index.html") return Response.redirect(`${url.origin}/${url.search}`, 301);
   // Mutating requests from a browser must come from this site.
   if (req.method !== "GET" && req.method !== "HEAD" && !url.pathname.startsWith("/api/webhooks/")) {
     const origin = req.headers.get("origin");

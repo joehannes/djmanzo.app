@@ -119,7 +119,7 @@
       const where = region.country ?? catalog.data?.visitor.country;
       if (where) country = where;
     });
-    const want = new URLSearchParams(location.hash.split("?")[1] ?? "").get("edition") as Edition | null;
+    const want = new URLSearchParams(location.search).get("edition") as Edition | null;
     if (want && EDITIONS.includes(want)) edition = want;
     return animate(root);
   });

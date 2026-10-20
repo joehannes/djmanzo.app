@@ -103,26 +103,39 @@ describe("the waveforms are drawn from what the deck plays", () => {
   });
 });
 
-import { fromSitePath, href, parse, stageOf, STAGE_TO } from "../src/v4/router";
+import { fromHash, href, isOwn, parse, signalStage, stageOf, SIGNAL_STAGES, STAGE_TO } from "../src/v4/router";
 import { STAGES } from "../src/stages/script";
 
 describe("the site's addresses", () => {
-  it("reads its pages from the hash, and anything else is home", () => {
-    expect(parse("#/pricing")).toEqual({ page: "pricing", rest: [] });
-    expect(parse("#/market/abc%20d")).toEqual({ page: "market", rest: ["abc d"] });
-    expect(parse("#/community/c/mixing")).toEqual({ page: "community", rest: ["c", "mixing"] });
-    expect(parse("")).toEqual({ page: "home", rest: [] });
-    expect(parse("#/nowhere")).toEqual({ page: "home", rest: [] });
-    expect(href("market", ["a b"])).toBe("#/market/a%20b");
+  it("reads its pages from real paths, and anything else is home", () => {
+    expect(parse("/")).toEqual({ page: "home", rest: [] });
+    expect(parse("/pricing?edition=pro")).toEqual({ page: "pricing", rest: [] });
+    expect(parse("/outboard/abc%20d")).toEqual({ page: "market", rest: ["abc d"] });
+    expect(parse("/talkback/c/mixing")).toEqual({ page: "community", rest: ["c", "mixing"] });
+    expect(parse("/imprint")).toEqual({ page: "read", rest: ["imprint"] });
+    expect(parse("/blog/a-post")).toEqual({ page: "read", rest: ["blog", "a-post"] });
+    expect(parse("/nowhere")).toEqual({ page: "home", rest: [] });
+    expect(href("market", ["a b"])).toBe("/outboard/a%20b");
+    expect(href("community", ["c", "mixing"])).toBe("/talkback/c/mixing");
+    expect(href("pricing")).toBe("/pricing");
+    expect(href("home")).toBe("/");
   });
 
-  it("takes the marketplace's and forum's own links in, and leaves everything else alone", () => {
-    expect(fromSitePath("/outboard")).toBe("#/market");
-    expect(fromSitePath("/outboard/xyz")).toBe("#/market/xyz");
-    expect(fromSitePath("/outboard/maker/u1")).toBe("#/market/maker/u1");
-    expect(fromSitePath("/talkback/c/mixing?x=1")).toBe("#/community/c/mixing");
-    expect(fromSitePath("/api/outboard/items/1/v/1.djpack")).toBeNull();
-    expect(fromSitePath("/rules")).toBeNull();
+  it("follows its own pages in place, and lets everything else load as a page", () => {
+    for (const p of ["/", "/pricing", "/outboard", "/outboard/x", "/talkback/c/mixing"]) expect(isOwn(p), p).toBe(true);
+    for (const p of ["/blog", "/imprint", "/api/outboard/items/1/v/1.djpack", "/island/", "/signal/", "/v4/art/club-hero.webp"]) expect(isOwn(p), p).toBe(false);
+  });
+
+  it("turns older hash addresses into paths, and sends the Signal Path's stages home to /signal/", () => {
+    expect(fromHash("#/pricing")).toBe("/pricing");
+    expect(fromHash("#/market/xyz")).toBe("/outboard/xyz");
+    expect(fromHash("#/community/c/mixing")).toBe("/talkback/c/mixing");
+    expect(fromHash("#/talkback/c/mixing")).toBe("/talkback/c/mixing");
+    expect(fromHash("#/")).toBeNull();
+    expect(fromHash("#main")).toBeNull();
+    expect(signalStage("#/amp")).toBe("/signal/#/amp");
+    expect(signalStage("#/pricing")).toBeNull();
+    expect(SIGNAL_STAGES).toEqual(STAGES.map((s) => s.id));
   });
 
   it("knows every stage the guide can name", () => {

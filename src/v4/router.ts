@@ -1,12 +1,14 @@
 /**
- * The site's pages, by address. While the site is previewed at `/v4/` its
- * pages live in the hash (`/v4/#/pricing`); the marketplace and forum keep
- * their own path addresses everywhere else (`/outboard/<id>`,
- * `/talkback/c/<community>`), and links to those are taken in here instead
- * of leaving.
+ * The site's pages, by address. They are real paths — `/pricing`,
+ * `/outboard/<id>`, `/talkback/c/<community>` — so they can be linked,
+ * shared and found; the Worker renders the marketplace's, the forum's, the
+ * blog's and the legal pages' words for whoever reads them without running
+ * anything. Older addresses still land: the preview's hash routes
+ * (`/v4/#/pricing`) and the Signal Path's stages (`/#/amp`, now at
+ * `/signal/`).
  */
 
-export const PAGES = ["home", "pricing", "market", "community"] as const;
+export const PAGES = ["home", "pricing", "market", "community", "read"] as const;
 export type PageId = (typeof PAGES)[number];
 
 export interface Route {
@@ -15,29 +17,58 @@ export interface Route {
   rest: string[];
 }
 
-/** The page a hash names: `#/pricing`, `#/market/abc`; anything else is home. */
-export function parse(hash: string): Route {
-  const parts = hash.replace(/^#?\/?/, "").split(/[?#]/)[0].split("/").filter(Boolean).map(decodeURIComponent);
-  const page = parts[0] as PageId;
-  return (PAGES as readonly string[]).includes(page) && page !== "home" ? { page, rest: parts.slice(1) } : { page: "home", rest: [] };
+const PATH_OF: Record<Exclude<PageId, "home" | "read">, string> = { pricing: "pricing", market: "outboard", community: "talkback" };
+const PAGE_OF: Record<string, PageId> = { pricing: "pricing", outboard: "market", talkback: "community" };
+/** Pages the Worker writes: shown as they came, inside the site. */
+const READ = ["blog", "imprint", "terms", "rules", "privacy"];
+
+const parts = (path: string) => path.split(/[?#]/)[0].split("/").filter(Boolean).map(decodeURIComponent);
+
+/** The page a path names; anything unknown is home. */
+export function parse(path: string): Route {
+  const [first, ...rest] = parts(path);
+  if (!first) return { page: "home", rest: [] };
+  if (READ.includes(first)) return { page: "read", rest: [first, ...rest] };
+  const page = PAGE_OF[first];
+  return page ? { page, rest: page === "pricing" ? [] : rest } : { page: "home", rest: [] };
 }
 
-/** A page's address within the site. */
+/** A page's address. */
 export function href(page: PageId, rest: string[] = []): string {
-  return page === "home" ? "#/" : `#/${[page, ...rest].map(encodeURIComponent).join("/")}`;
+  if (page === "home" || page === "read") return page === "read" ? `/${rest.map(encodeURIComponent).join("/")}` : "/";
+  return `/${[PATH_OF[page], ...rest].map(encodeURIComponent).join("/")}`;
 }
 
-const SITE_PATH: Record<string, PageId> = { outboard: "market", talkback: "community" };
+/** Whether a path is one of this page's own, to follow without loading the page again. */
+export function isOwn(path: string): boolean {
+  const [first] = parts(path);
+  return !first || first in PAGE_OF;
+}
+
+const LEGACY: Record<string, string> = { pricing: "pricing", market: "outboard", community: "talkback", outboard: "outboard", talkback: "talkback" };
 
 /**
- * Where a site path (`/outboard/abc`, `/talkback/c/mixing`) leads within
- * these pages, or null when it is somewhere else (the API, a download, the
- * legal pages, which have their own).
+ * An older address in the hash — the preview's (`#/pricing`, `#/market/x`)
+ * or the Signal Path's sends (`#/outboard`) — as this site's path, or null.
  */
-export function fromSitePath(path: string): string | null {
-  const [p, ...rest] = path.split(/[?#]/)[0].split("/").filter(Boolean);
-  const page = SITE_PATH[p ?? ""];
-  return page ? href(page, rest.map(decodeURIComponent)) : null;
+export function fromHash(hash: string): string | null {
+  const [first, ...rest] = parts(hash.replace(/^#/, ""));
+  const to = LEGACY[first ?? ""];
+  return to ? `/${[to, ...rest].map(encodeURIComponent).join("/")}` : null;
+}
+
+/** The Signal Path's stages, whose old links (`/#/amp`) now belong at `/signal/`. */
+export const SIGNAL_STAGES = ["silence", "groove", "needle", "cue", "confluence", "voice", "amp", "cone", "floor", "afterglow"];
+
+export function signalStage(hash: string): string | null {
+  const [first] = parts(hash.replace(/^#/, ""));
+  return first && SIGNAL_STAGES.includes(first) ? `/signal/${hash}` : null;
+}
+
+/** Follow one of this page's own addresses without loading the page again. */
+export function navigate(path: string) {
+  history.pushState(null, "", path);
+  dispatchEvent(new PopStateEvent("popstate"));
 }
 
 /** The guide's stages (the Signal Path's), as sections and pages here. */

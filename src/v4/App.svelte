@@ -13,7 +13,7 @@
   import { region, settle, skin, groove } from "./region.svelte";
   import { cssVars } from "./skins";
   import { setGenre } from "./sound.svelte";
-  import { fromSitePath, parse, type Route } from "./router";
+  import { isOwn, parse, type Route } from "./router";
   import { ScrollTrigger } from "./motion";
   import SiteBar from "./SiteBar.svelte";
   import Footer from "./Footer.svelte";
@@ -22,10 +22,9 @@
   import Pricing from "./pages/Pricing.svelte";
   import Market from "./pages/Market.svelte";
   import Community from "./pages/Community.svelte";
+  import Read from "./pages/Read.svelte";
 
-  /** Where this page is served while it is a preview; the forum's own links come back here. */
-  const BASE = location.pathname.endsWith("/") ? location.pathname : `${location.pathname}/`;
-  let route = $state<Route>(parse(location.hash));
+  let route = $state<Route>(parse(location.pathname));
   let ready = $state(false);
 
   $effect(() => {
@@ -53,28 +52,20 @@
     requestAnimationFrame(() => ScrollTrigger.refresh());
   }
 
-  /** The marketplace's and forum's own path links (`/outboard/…`, `/talkback/…`) stay on this page. */
+  /** A link to one of this page's own addresses (`/pricing`, `/outboard/…`, `/talkback/…`) is followed in place. */
   function intercept(e: MouseEvent) {
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     const a = (e.target as HTMLElement).closest("a");
     if (!a || a.target || a.hasAttribute("download") || a.origin !== location.origin) return;
-    const h = fromSitePath(a.pathname + a.search);
-    if (!h) return;
+    // A link within this page (`#main`) is the browser's to follow.
+    if (a.hash && a.pathname === location.pathname && a.search === location.search) return;
+    if (!isOwn(a.pathname)) return;
     e.preventDefault();
-    location.hash = h;
-  }
-
-  /** The forum moves itself by pushing its own path (`navigate`); turn that into this page's address. */
-  function popped() {
-    if (location.pathname !== BASE) {
-      const h = fromSitePath(location.pathname);
-      if (h) {
-        history.replaceState(null, "", BASE + h);
-        go(parse(h));
-        return;
-      }
-    }
-    go(parse(location.hash));
+    history.pushState(null, "", a.pathname + a.search + a.hash);
+    go(parse(location.pathname));
+    // A section of another page (`/#tour`): once that page is shown.
+    const id = a.hash.slice(1);
+    if (id) requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView()));
   }
 
   onMount(() => {
@@ -84,12 +75,11 @@
       .then(() => settle(catalog.data?.visitor.country ?? null))
       .catch(() => settle(null))
       .finally(() => (ready = true));
-    const hash = () => go(parse(location.hash));
-    addEventListener("hashchange", hash);
+    // The back button, and the forum moving itself (`navigate`).
+    const popped = () => go(parse(location.pathname));
     addEventListener("popstate", popped);
     document.addEventListener("click", intercept);
     return () => {
-      removeEventListener("hashchange", hash);
       removeEventListener("popstate", popped);
       document.removeEventListener("click", intercept);
     };
@@ -105,6 +95,8 @@
     <Market rest={route.rest} />
   {:else if route.page === "community"}
     <Community rest={route.rest} />
+  {:else if route.page === "read"}
+    <Read />
   {:else}
     <Home />
   {/if}

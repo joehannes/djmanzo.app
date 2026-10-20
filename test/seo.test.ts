@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { STAGES } from "../src/stages/script";
+import { FACTS } from "../shared/facts";
 import { jsonForScript, plain, render } from "../worker/seo";
 import { escapeHtml } from "../shared/legal";
 import { testEnv } from "./kv";
@@ -40,19 +40,23 @@ async function member(env: never, name: string) {
   return p;
 }
 
-describe("the map, as a search engine reads it", () => {
-  it("names djmanzo, what anyone can have of it, and every stage, in words", async () => {
+describe("the home page, as a search engine reads it", () => {
+  it("names djmanzo, what anyone can have of it, and everything that ships, in words", async () => {
     const env = site();
     const page = await read(env, "/");
     expect(page.status).toBe(200);
-    expect(page.title).toBe("djmanzo — the Signal Path");
+    expect(page.title).toBe("djmanzo — DJ and karaoke software for macOS and Linux");
     expect(page.canonical).toBe("https://djmanzo.test/");
     expect(page.og("image")).toBe("https://djmanzo.test/shots/share.jpg");
     const app = ofType(page.ld, "SoftwareApplication")!;
     expect(app).toMatchObject({ "@context": "https://schema.org", name: "djmanzo", operatingSystem: "macOS, Linux", applicationCategory: "MultimediaApplication" });
     // Only what can be had today: the free edition.
     expect(app.offers).toMatchObject({ price: "0", priceCurrency: "USD" });
-    for (const s of STAGES) expect(page.words).toContain(escapeHtml(s.name));
+    for (const f of FACTS) {
+      if (f.status === "shipped") expect(page.words, f.id).toContain(escapeHtml(f.name));
+      // Nothing planned is offered as done.
+      else if (f.status === "planned") expect(page.words, f.id).not.toContain(`<b>${escapeHtml(f.name)}.</b>`);
+    }
     expect(page.words).toContain('href="/outboard"');
     // One head, not two: the template's own block is replaced, not added to.
     expect(page.html.match(/<title>/g)).toHaveLength(1);
@@ -64,7 +68,7 @@ describe("the map, as a search engine reads it", () => {
     const env = site({ DB: broken });
     const page = await read(env, "/outboard");
     expect(page.status).toBe(200);
-    expect(page.html).toContain('<div id="signal"></div>');
+    expect(page.html).toContain('<div id="app"></div>');
   });
 });
 

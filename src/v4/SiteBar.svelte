@@ -12,7 +12,7 @@
   import { band as bandOf, currencyFor, regional } from "../../shared/regions";
   import { region, choose, follow, skin } from "./region.svelte";
   import { SKINS, type SkinId } from "./skins";
-  import { href, type Route } from "./router";
+  import { href, navigate, type Route } from "./router";
   import { RELEASES, downloadLabel, osOf } from "./download";
 
   let { route }: { route: Route } = $props();
@@ -47,7 +47,7 @@
   function section(id: string) {
     menu = false;
     if (route.page !== "home") {
-      location.hash = "#/";
+      navigate("/");
       requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView()));
     } else document.getElementById(id)?.scrollIntoView();
   }

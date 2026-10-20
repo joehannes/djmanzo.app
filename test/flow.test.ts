@@ -235,11 +235,21 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
 });
 
 describe("the site's addresses", () => {
-  it("sends the Signal Path's preview address to the site itself, keeping what it asked", async () => {
-    for (const path of ["/signal", "/signal/", "/signal/index.html"]) {
-      const res = await handle(new Request(`https://djmanzo.test${path}?sky=snow`), testEnv(), exec);
+  it("sends the professional site's preview address to the site itself, keeping what it asked", async () => {
+    for (const path of ["/v4", "/v4/", "/v4/index.html"]) {
+      const res = await handle(new Request(`https://djmanzo.test${path}?country=DO`), testEnv(), exec);
       expect(res.status, path).toBe(301);
-      expect(res.headers.get("location"), path).toBe("https://djmanzo.test/?sky=snow");
+      expect(res.headers.get("location"), path).toBe("https://djmanzo.test/?country=DO");
+    }
+  });
+
+  it("serves the Signal Path at its own address again, and the preview's pictures where they were", async () => {
+    // The static files stand in as one answer: what matters is that the Worker passes these to them.
+    const env = { ...testEnv(), ASSETS: { fetch: async () => new Response("a static file") } } as unknown as ReturnType<typeof testEnv>;
+    for (const path of ["/signal/", "/v4/art/club-hero.webp"]) {
+      const res = await handle(new Request(`https://djmanzo.test${path}`), env, exec);
+      expect(res.status, path).toBe(200);
+      expect(await res.text(), path).toBe("a static file");
     }
   });
 });

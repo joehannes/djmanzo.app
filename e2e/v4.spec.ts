@@ -1,5 +1,5 @@
 /**
- * The site's fourth version (previewed at /v4/) in a browser: the look that
+ * The site, its fourth version (at /, previewed at /v4/ until 20 October), in a browser: the look that
  * follows where the visitor is, and stays theirs to change; the deck and its
  * stems; the tour in the visitor's theme; the hardware search; the shop from
  * the finder to a started trial; the marketplace and forum kept on the page;
@@ -29,13 +29,13 @@ const skinOf = (page: Page) => page.locator("html").getAttribute("data-skin");
 
 test("the look follows where the visitor is, and the deck plays that place's music", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/v4/?country=DE");
+  await page.goto("/?country=DE");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "club");
   await expect(page.locator("[data-hero-photo]")).toHaveAttribute("style", /club-hero\.webp/);
   await expect(page.locator("[data-groove=techno]")).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-look]")).toContainText("Club · Europe · DE");
 
-  await page.goto("/v4/?country=DO");
+  await page.goto("/?country=DO");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "tropical");
   // A Dominican visitor hears merengue first, and sees the app in its Caribbean theme.
   await expect(page.locator("[data-groove=merengue]")).toHaveAttribute("aria-pressed", "true");
@@ -48,7 +48,7 @@ test("the look follows where the visitor is, and the deck plays that place's mus
 
 test("the visitor can change the look, it stays, and the waveforms follow it", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/v4/?country=DE");
+  await page.goto("/?country=DE");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "club");
   await page.locator("#stems").scrollIntoViewIfNeeded();
   await expect(page.locator("canvas[data-wave=lanes]")).toHaveAttribute("data-colours", "#38e1c6 #7b61ff #2563ff #e6fbff");
@@ -70,7 +70,7 @@ test("the visitor can change the look, it stays, and the waveforms follow it", a
 
 test("the deck plays, changes groove in time, and its stems switch one by one", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/v4/?country=US");
+  await page.goto("/?country=US");
   await expect(page.locator("[data-wave=bands]")).toHaveAttribute("data-renderer", /webgl2|2d/);
   await page.click("[data-play]");
   await expect(page.locator("[data-play]")).toHaveAttribute("aria-label", "Stop the deck");
@@ -93,7 +93,7 @@ test("the deck plays, changes groove in time, and its stems switch one by one", 
 
 test("the tour and the hardware search", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/v4/?country=DE");
+  await page.goto("/?country=DE");
   await page.locator("#tour").scrollIntoViewIfNeeded();
   await page.click("[data-tab=karaoke]");
   await expect(page.locator("[data-tab=karaoke]")).toHaveAttribute("aria-selected", "true");
@@ -114,7 +114,7 @@ test("the tour and the hardware search", async ({ page }) => {
 
 test("the shop: the finder, the plans, a live quote, and a trial started", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/v4/?country=US#/pricing");
+  await page.goto("/pricing?country=US");
   await expect(page.locator("[data-edition=pro] [data-price]")).toHaveText("$119");
   await page.click("[data-plan=monthly]");
   await expect(page.locator("[data-edition=pro] [data-price]")).not.toHaveText("$119");
@@ -138,13 +138,13 @@ test("the shop: the finder, the plans, a live quote, and a trial started", async
 
 test("the marketplace and forum are the working ones, and their links stay on this page", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/v4/#/community");
+  await page.goto("/talkback");
   await expect(page.locator("[data-forum]")).toContainText("Mixing and transitions");
   await page.locator("[data-community=mixing]").click();
-  await expect(page).toHaveURL(/\/v4\/#\/community\/c\/mixing$/);
+  await expect(page).toHaveURL(/\/talkback\/c\/mixing$/);
   await expect(page.locator("[data-forum] [data-community=mixing]")).toHaveClass(/on/);
 
-  await page.goto("/v4/#/market");
+  await page.goto("/outboard");
   await expect(page.locator("[data-market]")).toContainText("Everything");
   await expect(page.locator("[data-market]")).toContainText("/api/outboard/packs.json");
   expect(errs).toEqual([]);
@@ -152,35 +152,64 @@ test("the marketplace and forum are the working ones, and their links stay on th
 
 test("the assistant answers, and its answers lead somewhere", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/v4/?country=DE");
+  await page.goto("/?country=DE");
   await page.click("[data-ask]");
   await expect(page.locator("[data-assistant]")).toContainText("djmanzo's assistant");
   await page.getByRole("button", { name: "Is it free?" }).click();
   await expect(page.locator("[data-assistant]")).toContainText("The Hobbyist edition is");
   await page.locator("[data-assistant] [data-act=start_trial]").click();
-  await expect(page).toHaveURL(/#\/pricing$/);
+  await expect(page).toHaveURL(/\/pricing$/);
   expect(errs).toEqual([]);
 });
 
 test("on a phone nothing goes sideways, and the menu opens", async ({ page }) => {
   const errs = errors(page);
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const at of ["/v4/?country=NG", "/v4/?country=NG#/pricing", "/v4/#/market", "/v4/#/community"]) {
+  for (const at of ["/?country=NG", "/pricing?country=NG", "/outboard", "/talkback"]) {
     await page.goto(at);
     await page.waitForLoadState("networkidle");
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), at).toBeLessThanOrEqual(0);
   }
-  await page.goto("/v4/");
+  await page.goto("/");
   await page.getByRole("button", { name: "Menu" }).click();
-  await expect(page.getByRole("navigation", { name: "Site" }).getByRole("link", { name: "Pricing" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Site", exact: true }).getByRole("link", { name: "Pricing" })).toBeVisible();
   expect(errs).toEqual([]);
 });
 
 test("with less motion asked for, nothing is left hidden", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/v4/?country=DE");
+  await page.goto("/?country=DE");
   await page.locator("#faq").scrollIntoViewIfNeeded();
   const hidden = await page.evaluate(() => [...document.querySelectorAll("[data-reveal]")].filter((el) => getComputedStyle(el).opacity === "0").length);
   expect(hidden).toBe(0);
   expect(await skinOf(page)).toBe("club");
+});
+
+test("older addresses land: the preview's, its hash pages, and the Signal Path's stages", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/v4/?country=DO#/pricing");
+  await expect(page).toHaveURL(/^http:\/\/[^/]+\/pricing\?country=DO$/);
+  await expect(page.locator("[data-edition=pro]")).toBeVisible();
+  await page.goto("/#/market");
+  await expect(page).toHaveURL(/\/outboard$/);
+  await expect(page.locator("[data-market]")).toBeVisible();
+  await page.goto("/#/voice");
+  await expect(page).toHaveURL(/\/signal\/#\/voice$/);
+  expect(errs).toEqual([]);
+});
+
+test("a page that is only words is shown in the site's frame, and the site's own links stay in place", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/terms");
+  await expect(page.locator("[data-read] #static h1")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Site", exact: true })).toBeVisible();
+  // From the words to the shop and back, without loading the page again.
+  await page.evaluate(() => ((window as unknown as { stayed: boolean }).stayed = true));
+  await page.getByRole("navigation", { name: "Site", exact: true }).getByRole("link", { name: "Pricing" }).click();
+  await expect(page).toHaveURL(/\/pricing$/);
+  await expect(page.locator("[data-edition=pro]")).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/terms$/);
+  expect(await page.evaluate(() => (window as unknown as { stayed?: boolean }).stayed)).toBe(true);
+  expect(errs).toEqual([]);
 });

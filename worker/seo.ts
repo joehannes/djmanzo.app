@@ -19,9 +19,8 @@ import { COMING_KINDS, LISTED_KINDS } from "../shared/outboard";
 import { COMMUNITIES, COMMUNITY_BY_ID, RULES, TRUST } from "../shared/talkback";
 import { IMPRINT_MISSING, IMPRINT_WHAT, NO_CONTACT, PRIVACY, PRIVACY_INTRO, PRIVACY_OUTRO, SCREENING, TERMS, TERMS_INTRO, escapeHtml as esc, legalHtml } from "../shared/legal";
 import { markdown as talkMarkdown } from "../shared/markdown";
-import { STATUS_LINE } from "../shared/facts";
+import { FACTS, STATUS_LINE } from "../shared/facts";
 import { EDITION_INFO } from "../shared/catalog";
-import { STAGES } from "../src/stages/script";
 import { markdown as blogMarkdown } from "../src/lib/markdown";
 import { SUBTITLE, TITLE } from "../src/signal/aux/routes";
 import type { AppEnv } from "./env";
@@ -112,7 +111,7 @@ export function render(template: string, page: Page, origin: string): string {
   const lang = page.lang ?? "en";
   return withHead
     .replace(/<html lang="[^"]*">/, `<html lang="${esc(lang)}">`)
-    .replace('<div id="signal"></div>', `<main id="static">\n${frame(page.body)}\n</main>\n    <div id="signal"></div>`);
+    .replace(/<div id="(app|signal)"><\/div>/, (mount) => `<main id="static">\n${frame(page.body)}\n</main>\n    ${mount}`);
 }
 
 /** Every page's way about: home, the sends, the blog; and the site's own pages. */
@@ -161,7 +160,7 @@ function home(env: AppEnv, origin: string): Page {
   const free = EDITION_INFO.hobbyist;
   return {
     status: 200,
-    title: `${SITE} — the Signal Path`,
+    title: `${SITE} — DJ and karaoke software for macOS and Linux`,
     description: DEFAULT_DESCRIPTION,
     path: "/",
     jsonld: [
@@ -181,16 +180,19 @@ function home(env: AppEnv, origin: string): Page {
     ],
     body: [
       `<h1>djmanzo</h1>`,
-      `<p>A DJ and karaoke application for macOS and Linux, followed from the groove of a record to the bodies on the floor.</p>`,
+      `<p>DJ and karaoke software for macOS and Linux: live stems, an assistant that explains its suggestions and can take over the mix, a karaoke night built in, and a Hobbyist edition that is free, for ever.</p>`,
       `<p>${esc(STATUS_LINE)}</p>`,
-      `<h2>The Signal Path</h2>`,
-      `<ol>${STAGES.map((s) => `<li><b>${esc(s.name)}.</b> ${esc(s.reveal)}</li>`).join("")}</ol>`,
+      `<h2>What it does</h2>`,
+      // Only what ships, in the facts' own words: what is planned is not offered to a search engine as done.
+      `<ul>${FACTS.filter((f) => f.status === "shipped").map((f) => `<li><b>${esc(f.name)}.</b> ${esc(f.about)}</li>`).join("")}</ul>`,
       `<h2>Beside it</h2>`,
       `<ul>`,
+      `<li><a href="/pricing">Editions and pricing</a> — seven editions of one download, priced for where you are.</li>`,
       `<li><a href="/outboard">Outboard</a> — ${esc(SUBTITLE.outboard)}</li>`,
       `<li><a href="/talkback">Talkback</a> — ${esc(SUBTITLE.talkback)}</li>`,
       `<li><a href="/blog">The blog</a> — articles about DJing and djmanzo.</li>`,
-      `<li><a href="/island/">The island</a> — the site before this one: your pass and licences, the wishlist, honest comparisons.</li>`,
+      `<li><a href="/island/">The island</a> — your pass and licences, the wishlist, honest comparisons.</li>`,
+      `<li><a href="/signal/">The Signal Path</a> and <a href="/shop/">the record shop</a> — earlier versions of this site.</li>`,
       env.DOWNLOAD_BASE ? `<li><a href="${esc(env.DOWNLOAD_BASE)}">Download djmanzo</a></li>` : "",
       `</ul>`,
     ].join("\n"),

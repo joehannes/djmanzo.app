@@ -6,10 +6,9 @@ export default defineConfig({
   build: {
     target: "es2022",
     chunkSizeWarningLimit: 900,
-    // The Signal Path is the site; the first iteration, the island, stays at /island/.
-    // The record shop, the third, is previewed at /shop/.
-    // The fourth, the professional site with regional skins, is previewed at /v4/.
-    rollupOptions: { input: { signal: "index.html", island: "island/index.html", shop: "shop/index.html", v4: "v4/index.html" } },
+    // The professional site (version 4) is the site at /; the earlier ones stay: the Signal Path at
+    // /signal/, the record shop at /shop/, the island at /island/.
+    rollupOptions: { input: { site: "index.html", signal: "signal/index.html", island: "island/index.html", shop: "shop/index.html" } },
   },
   server: {
     proxy: Object.fromEntries(["/api", "/auth", "/login", "/callback", "/licence", "/renew", "/signout"].map((p) => [p, "http://127.0.0.1:8787"])),

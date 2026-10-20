@@ -15,7 +15,7 @@
   onMount(() => animate(root));
 </script>
 
-<div bind:this={root}>
+<div bind:this={root} data-aux="outboard">
   <header class="head">
     <div class="bg" aria-hidden="true" style:background-image={`url(${shared("market")})`}></div>
     <div class="wrap">

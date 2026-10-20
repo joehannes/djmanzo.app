@@ -28,7 +28,7 @@ async function returning(page: Page, saved: object, consent: object | null = nul
 test("without a key the scripted guide asks, and the question about where is asked once and the answer kept", async ({ page }) => {
   const where: string[] = [];
   page.on("request", (r) => r.url().includes("/api/where") && where.push(r.url()));
-  await page.goto("/#/silence");
+  await page.goto("/signal/#/silence");
   await page.getByRole("button", { name: "Next beat" }).click();
   const guide = page.locator("[data-guide]");
   await expect(guide).toHaveAttribute("data-mode", "script");
@@ -63,7 +63,7 @@ test("with a key, the guide answers, re-dresses the path at once, and offers the
       },
     });
   });
-  await page.goto("/#/silence");
+  await page.goto("/signal/#/silence");
   await page.getByRole("button", { name: "Next beat" }).click();
   const guide = page.locator("[data-guide]");
   await expect(guide).toHaveAttribute("data-mode", "claude");
@@ -89,7 +89,7 @@ test("with a key, the guide answers, re-dresses the path at once, and offers the
 
 test("when the guide is capped the scripted questions take over and say why", async ({ page }) => {
   await page.route("**/api/guide", (r) => r.fulfill({ json: r.request().method() === "GET" ? { on: true } : { fallback: "limit" } }));
-  await page.goto("/#/silence");
+  await page.goto("/signal/#/silence");
   await page.getByRole("button", { name: "Next beat" }).click();
   const guide = page.locator("[data-guide]");
   await guide.getByRole("button", { name: "I host karaoke" }).click();
@@ -106,7 +106,7 @@ test("a visitor who shared where they are sees their town, their sky and their s
   });
   await page.route("**/api/weather?*", (r) => r.fulfill({ json: RAIN }));
   await returning(page, { style: "bachata", role: "dj", visited: ["silence", "groove", "confluence", "amp"] }, { where: true, gps: null });
-  await page.goto("/#/");
+  await page.goto("/signal/#/");
   await expect(page.locator("[data-tonight]")).toHaveText("Tonight in Linz · rain", { timeout: 15_000 });
   expect(asked).toBe(1);
 
@@ -133,7 +133,7 @@ test("the sky over the painting can be shown without asking anyone where they ar
     return r.fulfill({ json: LINZ });
   });
   await returning(page, { style: "edm", role: null, visited: ["silence"] });
-  await page.goto("/?sky=snow#/");
+  await page.goto("/signal/?sky=snow#/");
   await expect(page.locator("[data-tonight]")).toHaveText("Tonight · snow", { timeout: 15_000 });
   expect(asked).toBe(0);
 });

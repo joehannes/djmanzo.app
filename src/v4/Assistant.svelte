@@ -14,7 +14,7 @@
   import { catalog } from "../lib/catalog.svelte";
   import { choose, skin } from "./region.svelte";
   import { skinForStyle, SKIN_BY_ID } from "./skins";
-  import { STAGE_TO, href, stageOf, type Route } from "./router";
+  import { STAGE_TO, href, navigate, stageOf, type Route } from "./router";
   import { gsap, reduced } from "./motion";
 
   let { route }: { route: Route } = $props();
@@ -135,14 +135,14 @@
     if (a.kind === "go_to" || a.kind === "show") {
       const to = a.kind === "show" ? { page: "home" as const, section: "tour" } : STAGE_TO[a.value];
       if (!to) return;
-      if (to.page !== "home") location.hash = href(to.page);
+      if (to.page !== "home") navigate(href(to.page));
       else {
-        if (route.page !== "home") location.hash = "#/";
+        if (route.page !== "home") navigate("/");
         requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(to.section ?? "top")?.scrollIntoView({ behavior: reduced() ? "auto" : "smooth" })));
       }
-    } else if (a.kind === "recommend" && (NAMED as string[]).concat("custom").includes(a.value)) location.hash = `${href("pricing")}?edition=${a.value}`;
+    } else if (a.kind === "recommend" && (NAMED as string[]).concat("custom").includes(a.value)) navigate(`${href("pricing")}?edition=${a.value}`);
     else if (a.kind === "start_trial" || a.kind === "open_checkout") {
-      location.hash = href("pricing");
+      navigate(href("pricing"));
       requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("checkout")?.scrollIntoView()));
     }
   }
