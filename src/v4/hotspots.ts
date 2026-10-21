@@ -84,6 +84,31 @@ export const SPOTS: Record<string, Spot[]> = {
     { x: 41, y: 50, title: "Themes", text: "Palettes for rooms and genres, Caribbean ones among them; and your own from the look studio." },
     { x: 58, y: 50, title: "Workspaces", text: "Beginner to 6 Deck, Mobile DJ, Latin / Caribbean, Scratch, Stem Performance — and boards of your own." },
   ],
+  keys: [
+    { x: 31, y: 75.5, title: "Space opens the guide", text: "Every key from here, one word at a time; groups end in ›, and Backspace goes back a step." },
+    { x: 46, y: 89.5, title: "Groups that read as words", text: "Deck, Stems, Mixer, Record, Open a panel, Dashboard, Theme, Workspace, Preset." },
+    { x: 54, y: 82, title: "Activities on the numbers", text: "Perform, Prepare, Requests, Autopilot, Practice, Karaoke, Event — one digit each." },
+    { x: 33, y: 97.3, title: "The shortcuts beside it", text: "Ctrl K finds anything, Ctrl F searches the library, Ctrl / lists every key." },
+  ],
+  mykeys: [
+    { x: 71.2, y: 15, title: "Everything else is under Space", text: "The guide shows every key from there; the number keys switch activities." },
+    { x: 71.2, y: 25.5, title: "Your own keys", text: "Press the keys, say what they do — deck 1 loop 8, library — and give them a name in the guide." },
+    { x: 71.2, y: 37.5, title: "Keyboard sets to wear", text: "Karaoke host, Scratch, Open format, One hand — and more from the marketplace — laid under your own keys." },
+    { x: 71.2, y: 46.3, title: "Save yours as a set", text: "Your keys as a set of their own, to keep or to share as a pack." },
+    { x: 71.2, y: 66, title: "The performance keyboard", text: "The keys pressed without Space — hot cues, jumps, loops — with the same file format as a controller's mapping." },
+  ],
+  lighting: [
+    { x: 76, y: 6.2, title: "Send to the lights", text: "Off until you say so; Blackout beside it." },
+    { x: 82.5, y: 10.5, title: "Auto, pulse, chase, wash", text: "Auto changes look only at a phrase; no strobe." },
+    { x: 83, y: 16, title: "Brightness and colours", text: "How bright, and in which colours, the lights follow the music." },
+    { x: 79, y: 31.3, title: "Art-Net or sACN", text: "To a node's address or to everything on the network; frames a second chosen for the rig." },
+  ],
+  playlist: [
+    { x: 18, y: 74.3, title: "The deck's own playlist", text: "Any playlist, under the deck it plays on: a press loads a record, ▶ loads and plays it." },
+    { x: 37.5, y: 70.6, title: "Next when this ends · Repeat", text: "Ticked, the deck goes on by itself and round again — a filler deck while you look after the room." },
+    { x: 47.5, y: 70.6, title: "Shuffle", text: "Every record once a round, in an order of its own." },
+    { x: 20, y: 81, title: "Tempo and key of each", text: "What is next, its tempo, key and length, at a glance." },
+  ],
   palette: [{ x: 50, y: 20, title: "One search for everything", text: "Any record, panel, preset, theme or action, typo-tolerant: Ctrl or Cmd + K." }],
   guides: [{ x: 74, y: 3.1, title: "The guides", text: "One per topic, from the assistant: the next record, the mix, the night, a request waiting." }],
 };

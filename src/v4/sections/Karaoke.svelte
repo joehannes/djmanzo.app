@@ -14,6 +14,7 @@
   import Shot from "./Shot.svelte";
 
   const shot = $derived(pick("karaoke", skin().themes));
+  const drawer = $derived(pick("playlist", skin().themes));
 
   const NIGHT = [
     { when: "Before the first singer", icon: "M4 6h16M4 12h10M4 18h7", ids: ["k-words", "k-presets", "launcher", "oldmac"] },
@@ -115,6 +116,13 @@
         <p class="caveat">Suno has no public API and its terms forbid robots: djmanzo fills the form, you press Create and send. Nothing leaves the machine unless you send it. Writing the words needs an AI provider set up in djmanzo.</p>
       </div>
     </div>
+
+    {#if drawer}
+      <div class="drawer" data-reveal>
+        <p class="eyebrow">In djmanzo: the filler deck</p>
+        {#key drawer.src}<Shot shot={drawer} label="A playlist under the deck" />{/key}
+      </div>
+    {/if}
 
     <p class="more" data-reveal>
       <a href="/features#karaoke">Every karaoke feature, with what is not yet proven →</a>
@@ -262,6 +270,9 @@
     margin: 2px 0 0;
     font-size: 14px;
     color: var(--dim);
+  }
+  .drawer {
+    margin-top: 40px;
   }
   .more {
     display: flex;

@@ -8,6 +8,11 @@
 <script lang="ts">
   import { BUILTIN_SETS, TREE, wear, type KeyNode, type KeySet } from "../keys";
   import FactList from "./FactList.svelte";
+  import Shot from "./Shot.svelte";
+  import { skin } from "../region.svelte";
+  import { pick } from "../shots";
+
+  const panel = $derived(pick("mykeys", skin().themes));
 
   let { sets = BUILTIN_SETS }: { sets?: KeySet[] } = $props();
 
@@ -131,6 +136,12 @@
       <p class="dim small note">The real guide lists every panel, theme, workspace and preset on your machine; this sketch shows the shape of it.</p>
     </div>
   </div>
+  {#if panel}
+    <div class="wrap panel-shot" data-reveal>
+      <p class="eyebrow">In djmanzo: the Keys panel</p>
+      {#key panel.src}<Shot shot={panel} label="Keys" />{/key}
+    </div>
+  {/if}
 </section>
 
 <style>
@@ -276,5 +287,8 @@
   }
   .note {
     margin-top: 10px;
+  }
+  .panel-shot {
+    margin-top: clamp(48px, 7vw, 88px);
   }
 </style>

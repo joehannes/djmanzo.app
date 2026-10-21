@@ -60,6 +60,16 @@
   "height": 900
  },
  {
+  "src": "/shots/app/keys--organic-base.webp",
+  "screen": "keys",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Space: the guide to every key, sequences that read as words",
+  "alt": "Space: the guide to every key, sequences that read as words — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
   "src": "/shots/app/launcher--caribbean.webp",
   "screen": "launcher",
   "theme": "Caribbean",
@@ -80,12 +90,32 @@
   "height": 900
  },
  {
+  "src": "/shots/app/lighting--organic-base.webp",
+  "screen": "lighting",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Lights: the room's lights over Art-Net or sACN, following the music",
+  "alt": "Lights: the room's lights over Art-Net or sACN, following the music — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
   "src": "/shots/app/mix--organic-base.webp",
   "screen": "mix",
   "theme": "Organic Base",
   "skin": null,
   "shows": "Mix: two decks and the mixer",
   "alt": "Mix: two decks and the mixer — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mykeys--organic-base.webp",
+  "screen": "mykeys",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map",
+  "alt": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map — djmanzo in the Organic Base theme",
   "width": 1600,
   "height": 900
  },
@@ -116,6 +146,16 @@
   "skin": null,
   "shows": "Perform: stems and the sampler",
   "alt": "Perform: stems and the sampler — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/playlist--organic-base.webp",
+  "screen": "playlist",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "A playlist under the deck: Karaoke Favourites, going on by itself, round again",
+  "alt": "A playlist under the deck: Karaoke Favourites, going on by itself, round again — djmanzo in the Organic Base theme",
   "width": 1600,
   "height": 900
  },
@@ -540,6 +580,66 @@
   "height": 900
  },
  {
+  "src": "/shots/app/keys--caribbean.webp",
+  "screen": "keys",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Space: the guide to every key, sequences that read as words",
+  "alt": "Space: the guide to every key, sequences that read as words — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/keys--industrial-techno.webp",
+  "screen": "keys",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Space: the guide to every key, sequences that read as words",
+  "alt": "Space: the guide to every key, sequences that read as words — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/lighting--caribbean.webp",
+  "screen": "lighting",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Lights: the room's lights over Art-Net or sACN, following the music",
+  "alt": "Lights: the room's lights over Art-Net or sACN, following the music — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/lighting--industrial-techno.webp",
+  "screen": "lighting",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Lights: the room's lights over Art-Net or sACN, following the music",
+  "alt": "Lights: the room's lights over Art-Net or sACN, following the music — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mykeys--caribbean.webp",
+  "screen": "mykeys",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map",
+  "alt": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mykeys--industrial-techno.webp",
+  "screen": "mykeys",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map",
+  "alt": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
   "src": "/shots/app/perform--booth.webp",
   "screen": "perform",
   "theme": "Booth",
@@ -576,6 +676,16 @@
   "skin": null,
   "shows": "Perform: stems and the sampler",
   "alt": "Perform: stems and the sampler — djmanzo in the Spectrum theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/playlist--caribbean.webp",
+  "screen": "playlist",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "A playlist under the deck: Karaoke Favourites, going on by itself, round again",
+  "alt": "A playlist under the deck: Karaoke Favourites, going on by itself, round again — djmanzo in the Caribbean theme",
   "width": 1600,
   "height": 900
  },

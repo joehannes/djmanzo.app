@@ -251,6 +251,12 @@
   .price:hover {
     color: var(--text);
   }
+  /* The price line only where the bar has room for it beside every link. */
+  @media (max-width: 1500px) {
+    .price {
+      display: none;
+    }
+  }
   .skins {
     position: relative;
   }

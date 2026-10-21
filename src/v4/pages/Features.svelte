@@ -17,7 +17,7 @@
 
   const NAMED: Edition[] = ["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full"];
   /** The screen that shows an area best. */
-  const SCREEN: Partial<Record<Area, string>> = { mixing: "perform", library: "dig", hands: "launcher", karaoke: "karaoke", assist: "autopilot", learn: "practice", show: "event" };
+  const SCREEN: Partial<Record<Area, string>> = { mixing: "perform", library: "dig", hands: "launcher", karaoke: "karaoke", assist: "autopilot", learn: "practice", show: "lighting" };
   const WORD = { shipped: "Ships", part: "Part-built", planned: "Planned" };
 
   let root: HTMLElement;

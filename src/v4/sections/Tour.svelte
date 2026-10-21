@@ -20,6 +20,7 @@
     { id: "karaoke", name: "Karaoke", what: "Host the singers: who is up, what they sing, in which key, with their voice in or out.", facts: ["k-rotation", "k-voice", "k-phones", "k-breaks"] },
     { id: "practice", name: "Practice", what: "Try a technique in your headphones while the night goes on.", facts: ["teacher", "curriculum", "knowhow"] },
     { id: "event", name: "Events", what: "Prepare a night: the event, the plan, what to do if it goes wrong.", facts: ["events", "setplan"] },
+    { id: "keys", name: "Space", what: "Press Space: a guide to every key, sequences that read as words.", facts: ["leader", "keysets", "keyboard"] },
     { id: "launcher", name: "Launcher", what: "Press 0: every view, guide, panel, preset, theme and workspace, one key away.", facts: ["launcher", "leader", "palette"] },
   ];
 
