@@ -1,7 +1,7 @@
 /**
  * The application's screenshots, made ready for the site.
  *
- * The owner's rule (§134): pictures of djmanzo come only from
+ * The owner's rule (§139): pictures of djmanzo come only from
  * `docs/screenshots/`, named `<screen>--<theme>[--<skin>].png`. This reads
  * that folder and its README — what each picture shows, and the theme's name
  * as the application's picker says it — encodes every picture as WebP in the

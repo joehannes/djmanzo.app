@@ -14,7 +14,7 @@
  * §130): half of what the professional competitors charge on average, each
  * edition below the same modules bought one by one, an upgrade the
  * difference between two editions. EDITIONS.md prices buying once; the
- * owner also asked for monthly and yearly plans (§133), which follow from
+ * owner also asked for monthly and yearly plans (§134), which follow from
  * those prices by one rule, below, and wait for the owner's nod.
  */
 

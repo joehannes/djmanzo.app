@@ -1,5 +1,5 @@
 /**
- * Outboard, the marketplace (§134, ADR-0012): what may be listed, what is
+ * Outboard, the marketplace (§139, ADR-0012): what may be listed, what is
  * coming, how ratings are read, and where a maker may ask for support. Read
  * by the Worker and the page alike.
  */

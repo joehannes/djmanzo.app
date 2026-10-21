@@ -1,4 +1,4 @@
--- Outboard (the marketplace) and Talkback (the discussion space), §134.
+-- Outboard (the marketplace) and Talkback (the discussion space), §139.
 -- Accounts stay in KV (`user:<uid>`); rows here name them by uid and keep
 -- the name they showed when they wrote, so a deleted account's words read.
 -- Times are milliseconds since the epoch, as everywhere in the Worker.

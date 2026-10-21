@@ -1,5 +1,5 @@
 /**
- * Outboard, the marketplace (§134, ADR-0012, MARKETPLACE.md step 5).
+ * Outboard, the marketplace (§139, ADR-0012, MARKETPLACE.md step 5).
  *
  * Everything in it is free. A maker uploads a signed `.djpack`; it is checked
  * as djmanzo checks one before installing it (`djpack.ts`) and waits for the

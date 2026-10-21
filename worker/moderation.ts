@@ -1,5 +1,5 @@
 /**
- * Keeping Outboard and Talkback to the good parts (§134; the EU's Digital
+ * Keeping Outboard and Talkback to the good parts (§139; the EU's Digital
  * Services Act for a small host): a *Report* on everything (Art. 16), a
  * statement of reasons to whoever's work is held or removed (Art. 17), and
  * their reply as an appeal; the crew decides, in Backstage.

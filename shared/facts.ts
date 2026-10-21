@@ -1,7 +1,7 @@
 /**
  * Everything the website says djmanzo does, and where it says so.
  *
- * The owner's rule (DIRECTIVE §134): no page, guide or article may say
+ * The owner's rule (DIRECTIVE §139): no page, guide or article may say
  * anything wrong or outdated about the application. So nothing on the site
  * — a stage, the box office, the guide, a blog draft — describes the
  * application from memory: it reads this list. Each entry names the module

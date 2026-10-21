@@ -4,7 +4,7 @@
  *
  * It asks what the visitor plays and does, dresses the path in their music,
  * walks them through the stages, and answers what djmanzo does — from
- * `shared/facts.ts` and the catalogue, never from memory (DIRECTIVE §134).
+ * `shared/facts.ts` and the catalogue, never from memory (DIRECTIVE §139).
  *
  * A reply is structured: what the guide says, up to four quick answers for
  * the visitor to tap, and actions. The model *proposes* actions; this file

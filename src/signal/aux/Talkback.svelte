@@ -1,5 +1,5 @@
 <!--
-  Talkback, the discussion space (§134): communities on the craft, the
+  Talkback, the discussion space (§139): communities on the craft, the
   music, the gear, the life around gigs and djmanzo; posts with nested
   comments; one vote an account; hot, new and top; search. A new account's
   posts may wait for the crew, and it is told so. What the crew removes

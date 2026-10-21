@@ -1,5 +1,5 @@
 /**
- * Talkback, the discussion space (§134): posts in communities, comments
+ * Talkback, the discussion space (§139): posts in communities, comments
  * under them, one vote an account, sorted hot, new or top, searchable.
  *
  * A new account grows into it (`shared/talkback.ts` TRUST): few posts and no

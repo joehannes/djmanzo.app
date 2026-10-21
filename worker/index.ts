@@ -218,7 +218,7 @@ route("GET", "/api/blog", (c) => blog.posts(c.env, { lang: c.url.searchParams.ge
 route("GET", "/api/blog/:slug", (c) => blog.post(c.env, c.params.slug, c.url.searchParams.get("lang") || "en"));
 route("GET", "/api/blog-languages", async () => blog.LANGUAGES);
 
-// --- Outboard, the marketplace, and Talkback, the discussion space (§134) ---------------
+// --- Outboard, the marketplace, and Talkback, the discussion space (§139) ---------------
 
 const contributor = (c: Ctx) => people.contributor(c.req, c.env);
 

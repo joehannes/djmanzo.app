@@ -21,7 +21,7 @@
     ]
   },
   "kv_namespaces": [{ "binding": "KV", "id": "63033c23be2046b08d74b2dc6d3902b1" }],
-  // Outboard and Talkback (§134): migrations/ applied with
+  // Outboard and Talkback (§139): migrations/ applied with
   // `npx wrangler d1 migrations apply djmanzo --remote`.
   "d1_databases": [{ "binding": "DB", "database_name": "djmanzo", "database_id": "cf50ba3d-cc96-45d5-b8af-9ba9ea48658f", "migrations_dir": "migrations" }],
   // Outboard's packs (and later the owner's loops and videos), served through

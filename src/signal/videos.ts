@@ -1,7 +1,7 @@
 /**
  * The owner's videos of the application, offered in a stage's reveal.
  *
- * The owner adds them in Backstage as YouTube links (§134: the product is
+ * The owner adds them in Backstage as YouTube links (§139: the product is
  * shown by the owner's own videos and the screenshots folder), each tagged
  * with the stage it shows and, if it is about one, a style. Nothing is
  * fetched from YouTube until the visitor presses play.

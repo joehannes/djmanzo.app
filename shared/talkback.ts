@@ -1,5 +1,5 @@
 /**
- * Talkback, the discussion space (§134): its communities, flair and rules,
+ * Talkback, the discussion space (§139): its communities, flair and rules,
  * and how a new account grows into it. Read by the Worker and the page.
  * Good, related subjects only: the craft, the music, the gear, the life
  * around the gigs, and djmanzo itself.

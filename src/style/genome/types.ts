@@ -1,6 +1,6 @@
 /**
  * The style genome: what a kind of music looks, sounds, dresses and moves
- * like, as the website dresses itself in it (DIRECTIVE §134).
+ * like, as the website dresses itself in it (DIRECTIVE §139).
  *
  * A node describes a *scene*, never a person. Its roots and places are the
  * music's history, told as such; nothing here guesses who a visitor is from

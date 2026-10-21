@@ -1,5 +1,5 @@
 <!--
-  Outboard, the marketplace (§134, ADR-0012): what makers have shared for
+  Outboard, the marketplace (§139, ADR-0012): what makers have shared for
   djmanzo, free; an item's page with its versions, ratings and maker; the
   way in for djmanzo (its index); and, for a maker, the upload and their own
   page. Nothing is offered that djmanzo cannot install: other kinds are

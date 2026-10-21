@@ -167,7 +167,7 @@
     await loadPending();
   }
 
-  // --- Outboard and Talkback (§134) ------------------------------------------------
+  // --- Outboard and Talkback (§139) ------------------------------------------------
   let packQueue = $state<any[]>([]);
   let crewWork = $state<{ reports: any[]; held: any[]; appeals: any[] }>({ reports: [], held: [], appeals: [] });
   let why = $state<Record<string, string>>({});

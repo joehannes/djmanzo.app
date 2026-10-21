@@ -1,7 +1,7 @@
 /**
  * Pictures of the real application for a stage's reveal and the guide.
  *
- * The owner's rule (§134): screenshots come only from `docs/screenshots/`,
+ * The owner's rule (§139): screenshots come only from `docs/screenshots/`,
  * named `<screen>--<theme>[--<skin>].png`. `npm run shots` turns that folder
  * into `public/shots/app/` and `shared/shots.json`, with each picture's
  * caption from the folder's README. A stage asks for screens; one shown in
