@@ -6,7 +6,7 @@
   marks them — so a set adds keys and never takes one away.
 -->
 <script lang="ts">
-  import { BUILTIN_SETS, TREE, wear, type KeyNode, type KeySet } from "../keys";
+  import { BUILTIN_SETS, MARKET_SETS, TREE, wear, type KeyNode, type KeySet } from "../keys";
   import FactList from "./FactList.svelte";
   import Shot from "./Shot.svelte";
   import { skin } from "../region.svelte";
@@ -14,7 +14,7 @@
 
   const panel = $derived(pick("mykeys", skin().themes));
 
-  let { sets = BUILTIN_SETS }: { sets?: KeySet[] } = $props();
+  let { sets = BUILTIN_SETS, market = MARKET_SETS }: { sets?: KeySet[]; market?: KeySet[] } = $props();
 
   let worn = $state<KeySet | null>(null);
   let path = $state<string[]>([]);
@@ -88,15 +88,24 @@
         Press <kbd>Space</kbd> and djmanzo shows every key. <kbd>d</kbd> <kbd>1</kbd> <kbd>p</kbd> is <b>d</b>eck <b>1</b> <b>p</b>lay; <kbd>o</kbd> <kbd>i</kbd> opens the s<b>i</b>ngers. Nothing to memorise first: the guide is there until your fingers know the way.
       </p>
       <p class="dim" data-reveal>
-        A <b>keyboard set</b> adds keys for one way of working — a karaoke host's rotation, a scratch DJ's crossfader — on letters djmanzo leaves free, under any keys you made yourself. It complements the keys you have; it never takes one away. Four come with djmanzo, more are in the <a href="/outboard">marketplace</a>, and your own can be saved as a set to share.
+        A <b>keyboard set</b> adds keys for one way of working — a karaoke host's rotation, a scratch DJ's crossfader — on letters djmanzo leaves free, under any keys you made yourself. It complements the keys you have; it never takes one away. Nine come with djmanzo, one for each way of working; more are in the <a href="/outboard">marketplace</a>, where a set can carry one of djmanzo's whole and add to it, even inside djmanzo's own groups; and your own can be saved as a set, or published with your name.
       </p>
-      <div class="sets" role="group" aria-label="Wear a keyboard set">
+      <p class="eyebrow small">Wear one: they come with djmanzo</p>
+      <div class="sets" role="group" aria-label="Wear a keyboard set djmanzo ships">
         {#each sets as s (s.id)}
-          <button class="chip" class:on={worn?.id === s.id} aria-pressed={worn?.id === s.id} onclick={() => choose(s)} data-set={s.id}>
-            {s.name}{#if s.from === "marketplace"}<span class="from mono">pack</span>{/if}
-          </button>
+          <button class="chip" class:on={worn?.id === s.id} aria-pressed={worn?.id === s.id} onclick={() => choose(s)} data-set={s.id}>{s.name}</button>
         {/each}
       </div>
+      {#if market.length}
+        <p class="eyebrow small">Or one from <a href="/outboard">Outboard</a>, free</p>
+        <div class="sets" role="group" aria-label="Wear a keyboard set from the marketplace">
+          {#each market as s (s.id)}
+            <button class="chip" class:on={worn?.id === s.id} aria-pressed={worn?.id === s.id} onclick={() => choose(s)} data-set={s.id}>
+              {s.name}<span class="from mono">pack</span>
+            </button>
+          {/each}
+        </div>
+      {/if}
       {#if worn}<p class="about small" data-reveal>{worn.about}</p>{/if}
       <FactList ids={["leader", "keysets", "launcher"]} compact />
     </div>

@@ -1,12 +1,14 @@
 /**
  * djmanzo's mnemonic keys, for the site's sketch of the guide that opens on
- * Space: a part of the default tree (`dj_app::leader::tree`) and the four
- * keyboard sets djmanzo ships (`dj_app::keysets::builtin`), copied as they
- * are on main. A set is laid over the tree on letters it leaves free, so it
+ * Space: a part of the default tree (`dj_app::leader::tree`), the nine
+ * keyboard sets djmanzo ships (`dj_app::keysets::builtin`, from
+ * `shared/keyrules.json`) and the crew's sets in Outboard (`packs/keys/`). A set is laid over the tree on letters it leaves free, so it
  * adds keys and never hides one of djmanzo's — which is what the sketch
  * shows when one is worn. Panels, themes, workspaces and presets are lists
  * on the machine; the sketch names a few.
  */
+
+import RULES from "../../shared/keyrules.json";
 
 export interface KeyNode {
   key: string;
@@ -64,78 +66,19 @@ export interface KeySet {
   from: "djmanzo" | "marketplace";
 }
 
-/** The sets djmanzo ships, as `keysets::builtin` has them. */
-export const BUILTIN_SETS: KeySet[] = [
-  {
-    id: "karaoke-host",
-    name: "Karaoke host",
-    purpose: "karaoke",
-    from: "djmanzo",
-    about: "The rotation, the microphone and the singer's key on Space k: k 1 or k 2 puts the next singer on a deck, k b brings them in, k s says they have sung.",
-    keys: [
-      { keys: ["k", "1"], label: "Next singer on deck 1" },
-      { keys: ["k", "2"], label: "Next singer on deck 2" },
-      { keys: ["k", "b"], label: "Bring them in" },
-      { keys: ["k", "s"], label: "They have sung" },
-      { keys: ["k", "o"], label: "Microphone open" },
-      { keys: ["k", "c"], label: "Microphone closed" },
-      { keys: ["k", "u"], label: "Deck 1 a semitone up" },
-      { keys: ["k", "d"], label: "Deck 1 a semitone down" },
-      { keys: ["k", "h"], label: "Deck 1 home, in its own key" },
-      { keys: ["k", "v"], label: "Deck 1's vocal out or back" },
-      { keys: ["k", "p"], label: "The singers' panel" },
-    ],
-  },
-  {
-    id: "scratch",
-    name: "Scratch",
-    purpose: "scratch",
-    from: "djmanzo",
-    about: "The crossfader's curve and the decks' sides on Space c: c s for a sharp cut, c b back to a blend, c 1 and c 2 to put the decks on their sides.",
-    keys: [
-      { keys: ["c", "s"], label: "Sharp crossfader" },
-      { keys: ["c", "l"], label: "Linear crossfader" },
-      { keys: ["c", "b"], label: "Blend crossfader (smooth)" },
-      { keys: ["c", "1"], label: "Deck 1 on side A" },
-      { keys: ["c", "2"], label: "Deck 2 on side B" },
-      { keys: ["c", "r"], label: "Deck 1 backwards on or off" },
-      { keys: ["c", "c"], label: "Crossfader to the centre" },
-    ],
-  },
-  {
-    id: "open-format",
-    name: "Open format",
-    purpose: "open-format",
-    from: "djmanzo",
-    about: "For nights that jump between tempos and styles, on Space f: a wide pitch range for records far apart, a double of the record playing, sync and the automix.",
-    keys: [
-      { keys: ["f", "w"], label: "Deck 1 wide pitch range (±25 %)" },
-      { keys: ["f", "n"], label: "Deck 1 narrow pitch range (±8 %)" },
-      { keys: ["f", "c"], label: "Double deck 1 on deck 2" },
-      { keys: ["f", "s"], label: "Deck 2 sync on or off" },
-      { keys: ["f", "a"], label: "Automix on" },
-      { keys: ["f", "o"], label: "Automix off" },
-      { keys: ["f", "m"], label: "Mix to the next record now" },
-    ],
-  },
-  {
-    id: "one-hand",
-    name: "One hand",
-    purpose: "one-hand",
-    from: "djmanzo",
-    about: "Everything a night needs from one hand on Space h, for a DJ holding a microphone or working a laptop on its own: play, the crossfader, sync, the next mix.",
-    keys: [
-      { keys: ["h", "1"], label: "Deck 1 play or pause" },
-      { keys: ["h", "2"], label: "Deck 2 play or pause" },
-      { keys: ["h", "a"], label: "Crossfader to deck 1's side" },
-      { keys: ["h", "b"], label: "Crossfader to deck 2's side" },
-      { keys: ["h", "c"], label: "Crossfader to the centre" },
-      { keys: ["h", "s"], label: "Deck 2 sync on or off" },
-      { keys: ["h", "n"], label: "Mix to the next record now" },
-      { keys: ["h", "l"], label: "The library" },
-    ],
-  },
-];
+/** The sets djmanzo ships, as `keysets::builtin` has them: from `shared/keyrules.json`, written from `app/`. */
+export const BUILTIN_SETS: KeySet[] = Object.entries(RULES.builtin as Record<string, { name: string; purpose: string; about: string; keys: { keys: string[]; label: string }[] }>).map(
+  ([id, set]) => ({ id: id.replace(/^builtin:/, ""), name: set.name, purpose: set.purpose, about: set.about, keys: set.keys, from: "djmanzo" as const }),
+);
+
+/** The crew's sets in Outboard, from their sources (`packs/keys/`), as the packs carry them. */
+const crewSources = import.meta.glob<{ name: string; set: { name: string; purpose: string; about: string; keys: { keys: string[]; label: string }[] } }>("../../packs/keys/*.json", {
+  eager: true,
+  import: "default",
+});
+export const MARKET_SETS: KeySet[] = Object.entries(crewSources)
+  .map(([path, src]) => ({ id: path.replace(/^.*\/|\.json$/g, ""), name: src.set.name, purpose: src.set.purpose, about: src.set.about, keys: src.set.keys, from: "marketplace" as const }))
+  .sort((a, b) => a.name.localeCompare(b.name));
 
 /**
  * The tree with a set laid over it, as `leader::with_set` lays one: a key

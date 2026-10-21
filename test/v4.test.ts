@@ -185,3 +185,16 @@ describe("screenshots in the visitor's look", () => {
     expect(pick("no-such-screen", SKIN_BY_ID.club.themes)).toBeNull();
   });
 });
+
+describe("a screenshot's close-up", () => {
+  it("is inside its picture, and loses none of its numbered spots", async () => {
+    const { FOCUS, SPOTS } = await import("../src/v4/hotspots");
+    for (const [screen, r] of Object.entries(FOCUS)) {
+      expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= 100 && r.y + r.h <= 100, screen).toBe(true);
+      expect(SPOTS[screen]?.length, screen).toBeGreaterThan(0);
+      for (const s of SPOTS[screen]) {
+        expect(s.x > r.x && s.x < r.x + r.w && s.y > r.y && s.y < r.y + r.h, `${screen}: ${s.title}`).toBe(true);
+      }
+    }
+  });
+});

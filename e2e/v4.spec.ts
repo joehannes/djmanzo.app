@@ -239,3 +239,20 @@ test("signing in stays on this site, and every page knows who is signed in", asy
   expect(visited.filter((p) => p.startsWith("/island"))).toEqual([]);
   expect(errs).toEqual([]);
 });
+
+test("a panel's screenshot opens close up, every spot on it, and the whole window is a press away", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/?country=DE");
+  const shot = page.locator("[data-shot-frame=mykeys]").first();
+  await shot.scrollIntoViewIfNeeded();
+  await expect(shot.locator("[data-focus]")).toHaveAttribute("data-focus", "close");
+  await expect(shot.locator("[data-spot]")).toHaveCount(5);
+  // Close up, the picture is drawn larger than the frame it is in.
+  const frame = await shot.locator("[data-focus]").boundingBox();
+  const img = await shot.locator("img").boundingBox();
+  expect(img!.width).toBeGreaterThan(frame!.width * 2);
+  await shot.locator("[data-whole]").click();
+  await expect(shot.locator("[data-focus]")).toHaveAttribute("data-focus", "whole");
+  expect(Math.round((await shot.locator("img").boundingBox())!.width)).toBe(Math.round((await shot.locator("[data-focus]").boundingBox())!.width));
+  expect(errs).toEqual([]);
+});
