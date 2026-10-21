@@ -198,3 +198,17 @@ describe("a screenshot's close-up", () => {
     }
   });
 });
+
+describe("the highlights", () => {
+  it("name only features the facts have, so none is quietly left out of a list", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { FACT_BY_ID, AREAS } = await import("../shared/facts");
+    const source = readFileSync(new URL("../src/v4/sections/Highlights.svelte", import.meta.url), "utf8");
+    const lists = [...source.matchAll(/area: "([a-z]+)" as Area, facts: \[([^\]]*)\]/g)];
+    expect(lists.length).toBe(10);
+    for (const [, area, ids] of lists) {
+      expect(AREAS.some((a) => a.id === area), area).toBe(true);
+      for (const id of ids.match(/"([^"]+)"/g)!.map((x) => x.slice(1, -1))) expect(FACT_BY_ID[id], id).toBeTruthy();
+    }
+  });
+});
