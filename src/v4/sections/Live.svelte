@@ -109,7 +109,7 @@
         {:else}
           <p class="empty">Loading…</p>
         {/if}
-        <p class="small"><a href="/island/#/muro">Feature requests</a>: ask for what djmanzo should do next, and vote.</p>
+        <p class="small"><a href="/wishes">Feature requests</a>: ask for what djmanzo should do next, and vote.</p>
       </article>
     </div>
 

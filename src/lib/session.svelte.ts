@@ -2,6 +2,15 @@
 
 import { api, post } from "./api";
 import { profile } from "./profile.svelte";
+import { FAILURES, PROVIDER_NAME, type Failure } from "../../shared/signin";
+
+/** What the Worker said on the way back from a provider: signed in, an account connected, or why not. */
+export interface Returned {
+  kind: "signedin" | "linked" | "failed";
+  provider: string | null;
+  /** The sentence to show, for a failure. */
+  why: string | null;
+}
 
 export interface SessionUser {
   id: string;
@@ -11,6 +20,10 @@ export interface SessionUser {
   demo: boolean;
   owner: boolean;
   providers: string[];
+  /** Their Patreon page, verified by connecting Patreon. */
+  patreon?: string | null;
+  /** An active patron of djmanzo's own campaign. */
+  supporter?: boolean;
 }
 
 class Session {
@@ -19,6 +32,27 @@ class Session {
   providers = $state<{ id: string; name: string }[]>([]);
   demo = $state(true);
   loaded = $state(false);
+  /** Set once, from the address the Worker sent the browser back to. */
+  returned = $state<Returned | null>(null);
+
+  /**
+   * Read `?signedin=…`, `?linked=…` or `?signin=failed&why=…` from the
+   * address and take them out of it, so a reload or a shared link does not
+   * say it again.
+   */
+  readReturn(loc: Location = location) {
+    const q = new URLSearchParams(loc.search);
+    const provider = q.get("signedin") ?? q.get("linked");
+    const failed = q.get("signin") === "failed";
+    if (!provider && !failed) return;
+    const why = q.get("why") as Failure | null;
+    this.returned = failed
+      ? { kind: "failed", provider: null, why: (why && FAILURES[why]) || "The sign-in did not finish. Try again, or another way of signing in." }
+      : { kind: q.has("linked") ? "linked" : "signedin", provider: PROVIDER_NAME[provider!] ?? provider, why: null };
+    for (const k of ["signedin", "linked", "signin", "why"]) q.delete(k);
+    const rest = q.toString();
+    history.replaceState(history.state, "", `${loc.pathname}${rest ? `?${rest}` : ""}${loc.hash}`);
+  }
 
   async refresh() {
     try {
@@ -45,17 +79,21 @@ class Session {
     }
   }
 
-  signInUrl(provider: string, back = location.pathname + location.search + location.hash): string {
-    return `/auth/start/${provider}?return=${encodeURIComponent(back)}`;
+  /** Off to a provider, coming back to `back`; `link` adds that account to the one signed in. */
+  signInUrl(provider: string, back = location.pathname + location.search + location.hash, link = false): string {
+    return `/auth/start/${provider}?return=${encodeURIComponent(back)}${link ? "&link=1" : ""}`;
   }
 
   async demoSignIn(name: string) {
     await post("/api/auth/demo", { name });
+    // A sign-in that worked replaces whatever an earlier one said.
+    this.returned = null;
     await this.refresh();
   }
 
   async signOut() {
     await post("/api/auth/signout");
+    this.returned = null;
     this.user = null;
     this.admin = false;
   }

@@ -19,7 +19,17 @@ const git = (...args) => execFileSync("git", args, { cwd: `${here}/..`, encoding
 let drift = false;
 // This branch since the commit; and main since it last parted from that commit
 // (three dots), so this branch's own edits are not mistaken for main's.
-for (const [target, range] of [["HEAD", `${commit}..HEAD`], ["origin/main", `${commit}...origin/main`]]) {
+// When the commit read is main's and not yet merged here, this branch's own documents are not the
+// application's to drift from: only main is compared.
+let ancestor = true;
+try {
+  git("merge-base", "--is-ancestor", commit, "HEAD");
+} catch {
+  ancestor = false;
+  console.log(`(${commit.slice(0, 9)} is main's, not yet merged into this branch: comparing main only)`);
+}
+const ranges = [...(ancestor ? [["HEAD", `${commit}..HEAD`]] : []), ["origin/main", `${commit}...origin/main`]];
+for (const [target, range] of ranges) {
   let stat;
   try {
     stat = git("diff", "--stat", range, "--", ...sources);

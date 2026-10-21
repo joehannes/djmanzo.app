@@ -9,15 +9,18 @@
   import { skin } from "../region.svelte";
   import { pick } from "../shots";
   import FactList from "./FactList.svelte";
+  import Shot from "./Shot.svelte";
 
   const TABS = [
-    { id: "perform", name: "Perform", facts: ["decks", "pads", "fx", "transport"] },
-    { id: "prepare", name: "Prepare", facts: ["waveforms", "phrases", "camelot"] },
-    { id: "dig", name: "Library", facts: ["library", "find", "sources"] },
-    { id: "autopilot", name: "Autopilot", facts: ["automix", "autopilot-surface", "suggest"] },
-    { id: "karaoke", name: "Karaoke", facts: ["karaoke", "requests"] },
-    { id: "practice", name: "Practice", facts: ["teacher", "curriculum"] },
-    { id: "event", name: "Events", facts: ["events", "setplan", "room"] },
+    { id: "perform", name: "Perform", what: "Play with the record: pads, loops, slip and brake, the sampler and the stems.", facts: ["decks", "pads", "fx", "transport"] },
+    { id: "mix", name: "Mix", what: "Two decks and the mixer, nothing else in the way: blend into the next record.", facts: ["decks", "deckqueue", "safe"] },
+    { id: "dig", name: "Library", what: "Find the next record — and what the assistant thinks would follow, with its reasons.", facts: ["library", "camelot", "find", "sources"] },
+    { id: "prepare", name: "Prepare", what: "Set cues and grids and shape the night before it starts.", facts: ["waveforms", "phrases", "camelot"] },
+    { id: "autopilot", name: "Autopilot", what: "Let djmanzo play; watch it, steer it, take it back with a touch.", facts: ["automix", "autopilot-surface", "suggest", "room"] },
+    { id: "karaoke", name: "Karaoke", what: "Host the singers: who is up, what they sing, in which key, with their voice in or out.", facts: ["k-rotation", "k-voice", "k-phones", "k-breaks"] },
+    { id: "practice", name: "Practice", what: "Try a technique in your headphones while the night goes on.", facts: ["teacher", "curriculum", "knowhow"] },
+    { id: "event", name: "Events", what: "Prepare a night: the event, the plan, what to do if it goes wrong.", facts: ["events", "setplan"] },
+    { id: "launcher", name: "Launcher", what: "Press 0: every view, guide, panel, preset, theme and workspace, one key away.", facts: ["launcher", "leader", "palette"] },
   ];
 
   let tab = $state(TABS[0].id);
@@ -44,7 +47,7 @@
   <div class="wrap">
     <p class="eyebrow" data-reveal>The application</p>
     <h2 class="h2" id="tour-title" data-reveal>Everything a night needs, on one screen at a time.</h2>
-    <p class="lead" data-reveal>Real screenshots of djmanzo, shown in {shot?.theme ?? "its"} theme — the one closest to your look. djmanzo ships with many themes, and its look studio makes your own.</p>
+    <p class="lead" data-reveal>Real screenshots of djmanzo, shown in {shot?.theme ?? "its"} theme — the one closest to your look. The numbers point out what is on each screen; press the picture to see it full size.</p>
 
     <div class="tabs" role="tablist" aria-label="Screens" tabindex="-1" onkeydown={keys} data-reveal>
       {#each TABS as t (t.id)}
@@ -53,15 +56,14 @@
     </div>
 
     <div class="panel" id="tour-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-      <figure class="frame" bind:this={frame} data-reveal>
-        <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="mono">djmanzo — {current.name}</span></div>
+      <p class="what" data-what>{current.what}</p>
+      <div class="frame" bind:this={frame} data-reveal>
         {#if shot}
-          <img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} loading="lazy" data-shot={shot.theme} />
-          <figcaption class="mono">{shot.shows} · {shot.theme} theme</figcaption>
+          {#key shot.src}<Shot {shot} label={current.name} />{/key}
         {/if}
-      </figure>
-      <div class="side">
-        <FactList ids={current.facts} compact />
+      </div>
+      <div class="facts">
+        <FactList ids={current.facts} />
       </div>
     </div>
   </div>
@@ -96,59 +98,17 @@
     color: var(--text);
     box-shadow: inset 0 -2px 0 var(--accent);
   }
-  .panel {
+  .what {
+    margin: 0 0 16px;
+    font-size: 1.1rem;
+    color: var(--text);
+  }
+  .facts {
+    margin-top: 28px;
+  }
+  .facts :global(ul) {
     display: grid;
-    grid-template-columns: 1.7fr 1fr;
-    gap: 36px;
-    align-items: start;
-  }
-  @media (max-width: 960px) {
-    .panel {
-      grid-template-columns: 1fr;
-    }
-  }
-  .frame {
-    margin: 0;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    box-shadow:
-      0 40px 120px -30px color-mix(in srgb, var(--accent) 35%, transparent),
-      0 30px 80px -20px rgb(0 0 0 / 0.7);
-  }
-  .chrome {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--line);
-  }
-  .chrome i {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--line);
-  }
-  .chrome span {
-    margin-left: 10px;
-    font-size: 11px;
-    color: var(--dim);
-  }
-  img {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    object-position: top;
-  }
-  figcaption {
-    font-size: 11px;
-    color: var(--dim);
-    padding: 10px 14px;
-    border-top: 1px solid var(--line);
-  }
-  .side :global(.facts) {
-    margin-top: 0;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 0 32px;
   }
 </style>

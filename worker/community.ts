@@ -87,35 +87,57 @@ export async function setWishStatus(env: AppEnv, id: string, status: WishStatus,
 
 /**
  * The wishlist starts with what is honestly on the roadmap and what has
- * already shipped (docs/FEATURES.md, docs/ROADMAP.md), so a visitor can see
- * at once that wishes do become features — and which ones already have.
+ * already shipped (docs/FEATURES.md, docs/ROADMAP.md on main), so a visitor
+ * can see at once that wishes do become features — and which ones already
+ * have. Read against main on 21 October 2026.
  */
 export const SEED: Omit<Wish, "id" | "createdAt" | "votes" | "author">[] = [
-  { title: "Pro DJ Link and StagelinQ", body: "Join a booth of CDJs or Denon players as a peer.", status: "planned", tag: "hardware", note: "Milestone M7 on the roadmap.", seeded: true },
-  { title: "Broadcast to Icecast / Shoutcast", body: "Stream the master straight to an internet radio server.", status: "planned", tag: "live", note: "Milestone M5; recording already ships.", seeded: true },
+  { title: "Pro DJ Link and StagelinQ", body: "Join a booth of CDJs or Denon players as a peer.", status: "planned", tag: "hardware", note: "Planned (FEATURES §4, More hardware); none of it is proved until it meets the real players.", seeded: true },
+  { title: "Broadcast to Icecast / Shoutcast", body: "Stream the master straight to an internet radio server.", status: "planned", tag: "live", note: "Planned. Recording the master and now-playing for OBS ship today.", seeded: true },
   { title: "Record to FLAC and MP3", body: "Not only WAV.", status: "planned", tag: "live", note: "WAV recording ships today.", seeded: true },
-  { title: "Art-Net / DMX lighting", body: "Drive the lights from the beat and the structure of the music.", status: "planned", tag: "visual", note: "In the design (docs/FEATURES.md); not in the app yet.", seeded: true },
+  { title: "Art-Net / DMX lighting", body: "Drive the lights from the beat and the structure of the music.", status: "shipped", tag: "visual", note: "Shipped on 19 October: Art-Net and sACN, one universe, pulse, chase, wash and auto, no strobe. Not yet tried on real lights.", seeded: true },
+  { title: "USB DMX interfaces and more universes", body: "An Enttec interface, moving heads, more than one universe.", status: "planned", tag: "visual", note: "Planned; Art-Net and sACN ship today.", seeded: true },
   { title: "Video mixing for VJs", body: "Mix video clips like decks, with transitions.", status: "shipped", tag: "visual", note: "Shipped: video on a deck, its picture crossfading as the sound does, in a window of its own for a projector.", seeded: true },
-  { title: "Duet parts for karaoke", body: "Split a duet into two singers' parts.", status: "planned", tag: "karaoke", note: "Planned (the karaoke plan's K9); two-microphone duets ship today.", seeded: true },
-  { title: "Phones as microphones", body: "Guests sing into their own phone.", status: "planned", tag: "karaoke", note: "Planned (the karaoke plan's K9).", seeded: true },
-  { title: "Windows build", body: "djmanzo on Windows, not only macOS and Linux.", status: "planned", tag: "platform", note: "Built, tested in CI and packaged with every release; not yet run by a person on Windows.", seeded: true },
+  { title: "Duet parts for karaoke", body: "Split a duet into two singers' parts.", status: "planned", tag: "karaoke", note: "Planned (the karaoke plan's K9); two-microphone duets, each singer in their own colour, ship today.", seeded: true },
+  { title: "Phones as microphones", body: "Guests sing into their own phone.", status: "planned", tag: "karaoke", note: "Planned (the karaoke plan's K9). Phones already put singers in the queue and send emoji to the singers' screen.", seeded: true },
+  { title: "Windows build", body: "djmanzo on Windows, not only macOS and Linux.", status: "building", tag: "platform", note: "Built, tested in CI and packaged with every release; not yet run by a person on Windows.", seeded: true },
+  { title: "Choose JACK as the audio host on Linux", body: "Not only ALSA's default device.", status: "planned", tag: "platform", note: "Planned: PipeWire is served through ALSA's default host today.", seeded: true },
+  { title: "A WebSocket control API", body: "For browser-based remotes and overlays.", status: "planned", tag: "hardware", note: "Planned: OSC and line-delimited JSON over TCP ship today, in the same actions the interface uses.", seeded: true },
+  { title: "Lyrics on the waveform", body: "See the words scroll with the record while you mix.", status: "considering", tag: "karaoke", note: "Timed words exist for karaoke; a waveform layer for them is not built.", seeded: true },
   { title: "Streaming catalogues (Beatport, TIDAL, SoundCloud)", body: "Play from a streaming service.", status: "considering", tag: "library", note: "The slots exist; it needs partnerships with the services.", seeded: true },
   { title: "Cloud library sync between machines", body: "The same crates on the laptop and the studio machine.", status: "not-planned", tag: "library", note: "Not planned for now: it needs hosted storage. Your session record is local and portable.", seeded: true },
   { title: "Neural stems", body: "Vocals, drums, bass and the rest, live.", status: "shipped", tag: "fx", note: "Shipped: separated ahead of the playhead, no added latency.", seeded: true },
-  { title: "Timecode vinyl", body: "Real turntables, real records, digital files.", status: "shipped", tag: "hardware", note: "Shipped (beta), relative and absolute mode.", seeded: true },
-  { title: "Karaoke with timed words", body: "A singers' screen with the words timed to the song.", status: "shipped", tag: "karaoke", note: "Shipped (beta): word timing by speech recognition inside djmanzo.", seeded: true },
+  { title: "Timecode vinyl", body: "Real turntables, real records, digital files.", status: "shipped", tag: "hardware", note: "Shipped (beta), relative and absolute mode. Not yet run against a pressed record.", seeded: true },
+  { title: "Karaoke with timed words", body: "A singers' screen with the words timed to the song.", status: "shipped", tag: "karaoke", note: "Shipped (beta): word timing by speech recognition inside djmanzo, and lyrics that come already timed.", seeded: true },
   { title: "Caribbean themes", body: "Bachata, Malecón, Carnaval…", status: "shipped", tag: "visual", note: "Shipped: Bachata Rosa, Malecón Night, Carnaval, Bioluminescent Bay.", seeded: true },
   { title: "Find a song by humming it", body: "When nobody remembers the name.", status: "shipped", tag: "library", note: "Shipped: by a hum, a half-remembered line, or a description.", seeded: true },
+  { title: "Choose the crossfader curve and the pitch range", body: "A sharp cut for scratching, ±8 % for house, ±50 % for anything.", status: "shipped", tag: "fx", note: "Shipped on 19 October: smooth, linear or sharp; ±6 to ±100 %.", seeded: true },
+  { title: "Name and colour hot cues", body: "And keep the ones made in Serato or rekordbox.", status: "shipped", tag: "library", note: "Shipped: imported from Serato and rekordbox, or set with Shift+right-click on a pad.", seeded: true },
+  { title: "Clone a deck (instant doubles)", body: "The same record on the other deck, in step.", status: "shipped", tag: "fx", note: "Shipped: the same samples, not a reload, in step from the next audio block.", seeded: true },
+  { title: "Mnemonic keyboard sets", body: "Keys for a purpose: karaoke host, scratch, open format, one hand.", status: "shipped", tag: "hardware", note: "Shipped: four sets in djmanzo, more in the marketplace, worn under your own keys.", seeded: true },
 ];
 
+/** Raised when SEED changes, so a board already seeded is brought up to date: seeded wishes found by title, new ones added. */
+export const SEED_VERSION = 2;
+
 export async function seedWishes(env: AppEnv): Promise<number> {
-  if (await env.KV.get("config:seeded-wishes")) return 0;
+  const had = Number((await env.KV.get("config:seeded-wishes-version")) || ((await env.KV.get("config:seeded-wishes")) ? 1 : 0));
+  if (had >= SEED_VERSION) return 0;
+  // A board seeded before: its seeded wishes keep their votes and get today's status and note.
+  const existing = had ? await wishes(env) : [];
   let n = 0;
   for (const s of SEED) {
+    const found = existing.find((w) => w.title === s.title && w.author === "djmanzo");
+    if (found) {
+      const w = await get<Wish>(env.KV, `wish:${found.id}`);
+      if (w?.seeded && (w.status !== s.status || w.note !== s.note)) await saveWish(env, { ...w, status: s.status, note: s.note, body: s.body });
+      continue;
+    }
     await saveWish(env, { ...s, id: randomId(9), votes: 0, author: "djmanzo", createdAt: Date.now() - n * 1000 });
     n++;
   }
   await env.KV.put("config:seeded-wishes", String(Date.now()));
+  await env.KV.put("config:seeded-wishes-version", String(SEED_VERSION));
   return n;
 }
 

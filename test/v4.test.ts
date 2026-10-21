@@ -12,7 +12,12 @@ describe("the site's skins follow where the visitor is", () => {
     expect(skinForCountry("US")).toBe("urban");
     expect(skinForCountry("NG")).toBe("afro");
     expect(skinForCountry("JP")).toBe("neon");
-    expect(skinForCountry("IN")).toBe("studio");
+    expect(skinForCountry("IN")).toBe("monsoon");
+    expect(skinForCountry("MA")).toBe("oasis");
+    expect(skinForCountry("EG")).toBe("oasis");
+    expect(skinForCountry("AU")).toBe("pacific");
+    expect(skinForCountry("NZ")).toBe("pacific");
+    expect(skinForCountry("AQ")).toBe("studio");
     expect(skinForCountry(null)).toBe("studio");
     expect(skinForCountry("")).toBe("studio");
   });

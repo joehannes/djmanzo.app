@@ -34,6 +34,16 @@ export interface Secrets {
   FACEBOOK_CLIENT_SECRET: string;
   MICROSOFT_CLIENT_ID: string;
   MICROSOFT_CLIENT_SECRET: string;
+  /** Patreon: a sign-in, and the way a person shows their own Patreon page as verified. */
+  PATREON_CLIENT_ID: string;
+  PATREON_CLIENT_SECRET: string;
+  /** A variable: djmanzo's own Patreon campaign id, so its patrons are marked as supporters. */
+  PATREON_CAMPAIGN_ID: string;
+  /**
+   * A variable: the callback path a provider app was registered with, when it
+   * is the one used until 18 October (`/auth/callback`). Unset: `/callback`.
+   */
+  OAUTH_CALLBACK_PATH: string;
 
   STRIPE_SECRET_KEY: string;
   STRIPE_PUBLISHABLE_KEY: string;

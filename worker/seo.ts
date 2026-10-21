@@ -19,13 +19,14 @@ import { COMING_KINDS, LISTED_KINDS } from "../shared/outboard";
 import { COMMUNITIES, COMMUNITY_BY_ID, RULES, TRUST } from "../shared/talkback";
 import { IMPRINT_MISSING, IMPRINT_WHAT, NO_CONTACT, PRIVACY, PRIVACY_INTRO, PRIVACY_OUTRO, SCREENING, TERMS, TERMS_INTRO, escapeHtml as esc, legalHtml } from "../shared/legal";
 import { markdown as talkMarkdown } from "../shared/markdown";
-import { FACTS, STATUS_LINE } from "../shared/facts";
+import { AREAS, FACTS, STATUS_LINE, areaOf, carriedBy } from "../shared/facts";
 import { EDITION_INFO } from "../shared/catalog";
 import { markdown as blogMarkdown } from "../src/lib/markdown";
 import { SUBTITLE, TITLE } from "../src/signal/aux/routes";
 import type { AppEnv } from "./env";
 import { HttpError, SECURITY_HEADERS } from "./http";
 import * as blog from "./blog";
+import * as community from "./community";
 import * as market from "./market";
 import * as people from "./people";
 import * as talkback from "./talkback";
@@ -191,8 +192,9 @@ function home(env: AppEnv, origin: string): Page {
       `<li><a href="/outboard">Outboard</a> — ${esc(SUBTITLE.outboard)}</li>`,
       `<li><a href="/talkback">Talkback</a> — ${esc(SUBTITLE.talkback)}</li>`,
       `<li><a href="/blog">The blog</a> — articles about DJing and djmanzo.</li>`,
-      `<li><a href="/island/">The island</a> — your pass and licences, the wishlist, honest comparisons.</li>`,
-      `<li><a href="/signal/">The Signal Path</a> and <a href="/shop/">the record shop</a> — earlier versions of this site.</li>`,
+      `<li><a href="/features">Every feature</a> — what djmanzo does, edition by edition, with what is not yet proven.</li>`,
+      `<li><a href="/wishes">Feature requests</a> — ask for what djmanzo should do next, and vote.</li>`,
+      `<li><a href="/account">Your account</a> — sign in, your licences, and the line that carries them into djmanzo.</li>`,
       env.DOWNLOAD_BASE ? `<li><a href="${esc(env.DOWNLOAD_BASE)}">Download djmanzo</a></li>` : "",
       `</ul>`,
     ].join("\n"),
@@ -413,6 +415,61 @@ function legal(env: AppEnv, origin: string, id: "imprint" | "terms" | "rules" | 
   };
 }
 
+/** Every feature, grouped as the page groups them, each with its status, its caveat and the editions that carry it. */
+function features(origin: string): Page {
+  const named = (["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full"] as const).map((e) => EDITION_INFO[e]);
+  const word = { shipped: "ships", part: "part-built", planned: "planned" };
+  const groups = AREAS.map((a) => ({ a, facts: FACTS.filter((f) => areaOf(f) === a.id) })).filter((g) => g.facts.length);
+  return {
+    status: 200,
+    title: `Every feature — ${SITE}`,
+    description: "Everything djmanzo does, edition by edition: what ships, what is part-built and what is planned, with what has not yet been proven.",
+    path: "/features",
+    jsonld: [{ "@type": "WebPage", name: "Every feature", url: `${origin}/features` }, crumbs(origin, [["Every feature", "/features"]])],
+    body: [
+      `<h1>Every feature</h1>`,
+      `<p>${esc(STATUS_LINE)}</p>`,
+      ...groups.map(
+        (g) =>
+          `<h2 id="${g.a.id}">${esc(g.a.name)}</h2>\n<p>${esc(g.a.about)}</p>\n<ul>${g.facts
+            .map((f) => {
+              const eds = f.status === "planned" ? "in no edition yet" : named.filter((e) => carriedBy(f, e.modules)).map((e) => e.name).join(", ");
+              return `<li><b>${esc(f.name)}</b> (${word[f.status]}; ${esc(eds)}). ${esc(f.about)}${f.caveat ? ` <i>${esc(f.caveat)}</i>` : ""}</li>`;
+            })
+            .join("")}</ul>`,
+      ),
+    ].join("\n"),
+  };
+}
+
+/** The feature requests, most wanted first, each with what became of it. */
+async function wishesPage(env: AppEnv, origin: string): Promise<Page> {
+  const list = await community.wishes(env);
+  return {
+    status: 200,
+    title: `Feature requests — ${SITE}`,
+    description: "Ask for what djmanzo should do next, vote for what others asked, and see what became of each.",
+    path: "/wishes",
+    jsonld: [{ "@type": "WebPage", name: "Feature requests", url: `${origin}/wishes` }, crumbs(origin, [["Feature requests", "/wishes"]])],
+    body: `<h1>Feature requests</h1>\n<p>Ask for what djmanzo should do next, vote for what others asked, and see what became of each.</p>\n<ol>${list
+      .map((w) => `<li><b>${esc(w.title)}</b> — ${esc(w.status)}, ${w.votes} vote${w.votes === 1 ? "" : "s"}${w.note ? `. ${esc(w.note)}` : ""}</li>`)
+      .join("")}</ol>`,
+  };
+}
+
+/** The account page: personal, so nothing in it is rendered and it is not indexed. */
+function account(origin: string): Page {
+  return {
+    status: 200,
+    title: `Your account — ${SITE}`,
+    description: "Sign in, see your licences, and carry them into djmanzo.",
+    path: "/account",
+    noindex: true,
+    jsonld: [{ "@type": "WebPage", name: "Your account", url: `${origin}/account` }],
+    body: `<h1>Your account</h1>\n<p>Sign in with an account you already have; djmanzo keeps no password. Your licences follow you into djmanzo.</p>`,
+  };
+}
+
 const blogPath = (slug: string, lang: string) => `/blog/${encodeURIComponent(slug)}${lang === "en" ? "" : `?lang=${encodeURIComponent(lang)}`}`;
 
 async function blogHome(env: AppEnv, origin: string, lang: string): Promise<Page> {
@@ -486,6 +543,9 @@ export async function pageFor(env: AppEnv, url: URL): Promise<Page | null> {
     return notFound(url.pathname);
   }
   if ((first === "imprint" || first === "terms" || first === "rules" || first === "privacy") && parts.length === 1) return legal(env, origin, first);
+  if (first === "features" && parts.length === 1) return features(origin);
+  if (first === "wishes" && parts.length === 1) return wishesPage(env, origin);
+  if (first === "account" && parts.length === 1) return account(origin);
   if (first === "blog") {
     const lang = url.searchParams.get("lang") || "en";
     if (parts.length === 1) return blogHome(env, origin, lang);
@@ -525,7 +585,7 @@ const xml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 /** Everything anyone may read, with when it last changed where that is known. */
 export async function sitemap(env: AppEnv, origin: string): Promise<Response> {
   type Entry = { path: string; lastmod?: number; alternates?: { lang: string; path: string }[] };
-  const entries: Entry[] = ["/", "/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/island/"].map((path) => ({ path }));
+  const entries: Entry[] = ["/", "/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/features", "/wishes"].map((path) => ({ path }));
   entries.push(...COMMUNITIES.map((c) => ({ path: `/talkback/c/${c.id}` })));
   if (env.DB) {
     const items = await market.listing(env);

@@ -18,7 +18,7 @@
     </div>
     <nav aria-label="Product">
       <h2>Product</h2>
-      <a href="/#tour">Features</a>
+      <a href={href("features")}>Every feature</a>
       <a href={href("pricing")}>Pricing and editions</a>
       <a href={RELEASES}>Download and release notes</a>
       <a href="/api/outboard/packs.json">Pack index for djmanzo</a>
@@ -27,12 +27,12 @@
       <h2>Community</h2>
       <a href={href("market")}>Marketplace</a>
       <a href={href("community")}>Forum</a>
-      <a href="/island/#/muro">Feature requests</a>
+      <a href={href("wishes")}>Feature requests</a>
       <a href="/blog">Journal</a>
     </nav>
     <nav aria-label="Account">
       <h2>Account</h2>
-      <a href="/island/#/pase">Sign in and licences</a>
+      <a href={href("account")}>Sign in and licences</a>
       <a href="https://github.com/joehannes/djmanzo">Source on GitHub</a>
     </nav>
     <nav aria-label="Legal">
@@ -41,12 +41,6 @@
       <a href="/terms">Terms</a>
       <a href="/privacy">Privacy</a>
       <a href="/rules">Community rules</a>
-    </nav>
-    <nav aria-label="Other versions of this site">
-      <h2>Also here</h2>
-      <a href="/signal/">The Signal Path</a>
-      <a href="/shop/">The record shop</a>
-      <a href="/island/">Isla Manzo</a>
     </nav>
   </div>
 </footer>

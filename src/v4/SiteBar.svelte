@@ -12,6 +12,7 @@
   import { band as bandOf, currencyFor, regional } from "../../shared/regions";
   import { region, choose, follow, skin } from "./region.svelte";
   import { SKINS, type SkinId } from "./skins";
+  import { LOOKS, svgUri } from "./looks";
   import { href, navigate, type Route } from "./router";
   import { RELEASES, downloadLabel, osOf } from "./download";
 
@@ -76,7 +77,7 @@
     </a>
 
     <nav class="links" class:open={menu} aria-label="Site">
-      <button class="nav" onclick={() => section("tour")}>Features</button>
+      <a class="nav" class:on={route.page === "features"} href={href("features")} onclick={() => (menu = false)}>Features</a>
       <button class="nav" onclick={() => section("hardware")}>Hardware</button>
       <a class="nav" class:on={route.page === "pricing"} href={href("pricing")} onclick={() => (menu = false)}>Pricing</a>
       <a class="nav" class:on={route.page === "market"} href={href("market")} onclick={() => (menu = false)}>Marketplace</a>
@@ -94,11 +95,13 @@
           <div class="pop card" role="menu" aria-label="Looks">
             <p class="why mono">{skin().name} · {skin().region}{BY[region.by] ? ` — ${BY[region.by]}` : ""}{region.country ? ` (${region.country})` : ""}</p>
             {#each SKINS as s (s.id)}
-              <button role="menuitemradio" aria-checked={region.skin === s.id} class="opt" onclick={() => pick(s.id)} data-skin={s.id}>
-                <span class="swatch" style:background={`linear-gradient(135deg, ${s.tokens.accent}, ${s.tokens.accent2})`}></span>
-                <span><b>{s.name}</b><small>{s.region}</small></span>
+              {@const p = LOOKS[s.id].pattern}
+              <button role="menuitemradio" aria-checked={region.skin === s.id} class="opt" onclick={() => pick(s.id)} data-skin={s.id} title={LOOKS[s.id].about}>
+                <span class="swatch tile" style:background-color={s.tokens.bg} style:background-image={svgUri(p.svg, `0 0 ${p.size} ${p.size}`, s.tokens.accent, s.tokens.accent2)} style:background-size={`${p.size / 2}px`}></span>
+                <span><b style:font-family={LOOKS[s.id].font.stack}>{s.name}</b><small>{s.region}</small></span>
               </button>
             {/each}
+            <p class="about">{LOOKS[region.skin].about}</p>
             {#if region.chosen}
               <button class="follow" onclick={() => (follow(), (picker = false))}>Follow my location again</button>
             {/if}
@@ -106,9 +109,12 @@
         {/if}
       </div>
       {#if session.user}
-        <a class="nav account" href="/island/#/pase" title="Your licences">{session.user.name}</a>
+        <a class="nav account signed" class:on={route.page === "account"} href={href("account")} title="Your account and licences" data-account-link>
+          {#if session.user.avatar}<img src={session.user.avatar} alt="" width="22" height="22" />{:else}<span class="initial" aria-hidden="true">{session.user.name.slice(0, 1)}</span>{/if}
+          <span class="who">{session.user.name}</span>
+        </a>
       {:else}
-        <a class="nav account" href="/island/#/pase">Sign in</a>
+        <a class="nav account" class:on={route.page === "account"} href={href("account")} data-account-link>Sign in</a>
       {/if}
       {#if solid && route.page !== "pricing" && from}
         <a class="price mono" href={href("pricing")} data-from>Free · editions from {from}</a>
@@ -120,6 +126,41 @@
 </header>
 
 <style>
+  .swatch.tile {
+    border: 1px solid var(--line);
+  }
+  .about {
+    margin: 8px 6px 2px;
+    max-width: 30ch;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--dim);
+  }
+  .account.signed {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .account img,
+  .account .initial {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .account .initial {
+    display: grid;
+    place-items: center;
+    background: var(--accent);
+    color: var(--on-accent);
+    font: 700 12px/1 var(--display);
+  }
+  .account .who {
+    max-width: 12ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .skip {
     position: absolute;
     left: -9999px;
@@ -236,7 +277,9 @@
     position: absolute;
     right: 0;
     top: calc(100% + 10px);
-    width: 290px;
+    width: 300px;
+    max-height: min(76vh, 680px);
+    overflow-y: auto;
     padding: 8px;
     box-shadow: 0 24px 60px rgb(0 0 0 / 0.55);
   }

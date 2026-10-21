@@ -46,7 +46,7 @@
             <span class="status {d.status === 'mapped' ? 'shipped' : 'planned'}">{STATUS_WORDS[d.status].label}</span>
           </li>
         {:else}
-          <li class="none">Not in the list. Map it yourself in djmanzo — or ask for it on the <a href="/island/#/muro">feature requests</a>.</li>
+          <li class="none">Not in the list. Map it yourself in djmanzo — or ask for it on the <a href="/wishes">feature requests</a>.</li>
         {/each}
       </ul>
       <p class="caveat">{STATUS_WORDS.mapped.caveat}</p>

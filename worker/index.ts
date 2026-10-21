@@ -73,6 +73,14 @@ route("GET", "/auth/start/:provider", (c) => auth.start(c.req, c.env, c.params.p
 // One address per provider for the browser and djmanzo alike; Apple posts its answer.
 route("GET", "/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
 route("POST", "/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
+// The address used until 18 October, which a provider app registered then still names.
+route("GET", "/auth/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
+route("POST", "/auth/callback/:provider", (c) => auth.callback(c.req, c.env, c.params.provider));
+// For the crew: which sign-ins are offered, and the address to register at each provider.
+route("GET", "/api/auth/check", async (c) => {
+  await needAdmin(c);
+  return { callbackPath: auth.callbackPath(c.env), providers: auth.check(c.env, c.url.origin) };
+});
 route("POST", "/api/auth/demo", async (c) => auth.demoSignIn(c.req, c.env, (await body<{ name?: string }>(c.req)).name ?? ""));
 route("POST", "/api/auth/owner", async (c) => auth.ownerSignIn(c.req, c.env, (await body<{ token?: string }>(c.req)).token ?? ""));
 route("POST", "/api/auth/signout", (c) => auth.signOut(c.req, c.env));
@@ -80,7 +88,7 @@ route("POST", "/api/auth/signout", (c) => auth.signOut(c.req, c.env));
 route("GET", "/api/me", async (c) => {
   const u = await user(c);
   return {
-    user: u ? auth.publicUser(u) : null,
+    user: u ? auth.publicUser(u, c.env) : null,
     admin: await auth.isAdmin(c.req, c.env, u),
     providers: auth.enabledProviders(c.env),
     demo: auth.demoMode(c.env),

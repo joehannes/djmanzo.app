@@ -71,6 +71,10 @@ export interface User {
   owner?: boolean;
   /** A student or teacher, marked by the crew after seeing proof (an academic address needs no marking). */
   student?: boolean;
+  /** Their own Patreon page, as Patreon said when they connected it: shown as verified. */
+  patreon?: string;
+  /** The Patreon campaigns they were an active patron of when they last connected it. */
+  patronOf?: string[];
 }
 
 export interface Session {

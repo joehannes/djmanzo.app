@@ -12,6 +12,7 @@
   import { session } from "../lib/session.svelte";
   import { region, settle, skin, groove } from "./region.svelte";
   import { cssVars } from "./skins";
+  import { LOOKS, fontHref, lookVars } from "./looks";
   import { setGenre } from "./sound.svelte";
   import { isOwn, parse, type Route } from "./router";
   import { ScrollTrigger } from "./motion";
@@ -23,13 +24,26 @@
   import Market from "./pages/Market.svelte";
   import Community from "./pages/Community.svelte";
   import Read from "./pages/Read.svelte";
+  import Account from "./pages/Account.svelte";
+  import Wishes from "./pages/Wishes.svelte";
+  import Features from "./pages/Features.svelte";
+  import Toast from "./Toast.svelte";
 
   let route = $state<Route>(parse(location.pathname));
   let ready = $state(false);
 
   $effect(() => {
     const root = document.documentElement;
-    for (const [k, v] of Object.entries(cssVars(skin()))) root.style.setProperty(k, v);
+    const s = skin();
+    const look = LOOKS[s.id];
+    for (const [k, v] of Object.entries({ ...cssVars(s), ...lookVars(look, s.tokens.accent, s.tokens.accent2) })) root.style.setProperty(k, v);
+    // The skin's display face, fetched only when it is worn.
+    const href = fontHref(look);
+    if (!document.querySelector(`link[data-face][href="${href}"]`)) {
+      const link = Object.assign(document.createElement("link"), { rel: "stylesheet", href });
+      link.dataset.face = s.id;
+      document.head.append(link);
+    }
     root.dataset.skin = region.skin;
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", skin().tokens.bg);
   });
@@ -69,6 +83,8 @@
   }
 
   onMount(() => {
+    // Back from a provider: what it said, read once and taken out of the address.
+    session.readReturn();
     void session.refresh();
     catalog
       .load()
@@ -95,6 +111,12 @@
     <Market rest={route.rest} />
   {:else if route.page === "community"}
     <Community rest={route.rest} />
+  {:else if route.page === "features"}
+    <Features />
+  {:else if route.page === "account"}
+    <Account />
+  {:else if route.page === "wishes"}
+    <Wishes />
   {:else if route.page === "read"}
     <Read />
   {:else}
@@ -104,3 +126,4 @@
 
 <Footer />
 <Assistant {route} />
+<Toast {route} />

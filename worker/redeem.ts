@@ -58,7 +58,7 @@ function page(title: string, body: string, status = 200): Response {
   return new Response(html, { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store", ...SECURITY_HEADERS } });
 }
 
-const SHOP = `<p class="soft"><a href="/island/#/taquilla">The box office</a> · <a href="/">djmanzo</a></p>`;
+const SHOP = `<p class="soft"><a href="/pricing">Editions and prices</a> · <a href="/account">Your account</a> · <a href="/">djmanzo</a></p>`;
 const refuse = (sentence: string, status: number) => page("Not a voucher to take", `<h1>This voucher cannot be taken</h1><p>${esc(sentence)}</p>${SHOP}`, status);
 
 /** What a voucher is for, in words: "djmanzo Full", or Custom with its modules. */
@@ -113,7 +113,7 @@ export async function show(req: Request, env: AppEnv): Promise<Response> {
   if (voucher.gives(p) === "discount") {
     const list = listPrice(p.edition, "perpetual", (p.modules ?? "").split(","));
     const off = list - Math.round((list * p.percent) / 100);
-    const to = `/island/?voucher=${encodeURIComponent(record.line)}#/taquilla`;
+    const to = `/pricing?voucher=${encodeURIComponent(record.line)}#checkout`;
     return page(
       `${p.percent} % off`,
       `<h1>${p.percent} % off ${esc(what(p))}</h1>${note(p)}
@@ -175,6 +175,6 @@ export async function takeGift(req: Request, env: AppEnv): Promise<Response> {
     "It's yours",
     `<h1>It's yours: ${esc(what(p))}</h1><p>Bought once, to keep, on your account.</p>
 <p>In djmanzo, open <b>Settings → Licence</b> and sign in with the same account you used here; djmanzo fetches the licence by itself and keeps working offline.</p>
-<div class="row"><a class="btn" href="/island/#/pase">See it in your pass</a></div>${SHOP}`,
+<div class="row"><a class="btn" href="/account">See it in your account</a></div>${SHOP}`,
   );
 }

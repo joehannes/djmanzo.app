@@ -265,7 +265,7 @@ describe("taking a voucher at /redeem", () => {
     const page = await html(r);
     expect(page).toMatch(/40 % off djmanzo Full/);
     expect(page).toMatch(/\$149; with this voucher, \$89\.40/);
-    expect(page).toContain(`/island/?voucher=${encodeURIComponent(v.line)}#/taquilla`);
+    expect(page).toContain(`/pricing?voucher=${encodeURIComponent(v.line)}#checkout`);
   });
 });
 

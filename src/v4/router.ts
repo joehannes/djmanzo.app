@@ -8,7 +8,7 @@
  * `/signal/`).
  */
 
-export const PAGES = ["home", "pricing", "market", "community", "read"] as const;
+export const PAGES = ["home", "features", "pricing", "market", "community", "account", "wishes", "read"] as const;
 export type PageId = (typeof PAGES)[number];
 
 export interface Route {
@@ -17,8 +17,17 @@ export interface Route {
   rest: string[];
 }
 
-const PATH_OF: Record<Exclude<PageId, "home" | "read">, string> = { pricing: "pricing", market: "outboard", community: "talkback" };
-const PAGE_OF: Record<string, PageId> = { pricing: "pricing", outboard: "market", talkback: "community" };
+const PATH_OF: Record<Exclude<PageId, "home" | "read">, string> = {
+  features: "features",
+  pricing: "pricing",
+  market: "outboard",
+  community: "talkback",
+  account: "account",
+  wishes: "wishes",
+};
+const PAGE_OF: Record<string, PageId> = Object.fromEntries(Object.entries(PATH_OF).map(([page, path]) => [path, page as PageId]));
+/** Pages that take nothing after their name. */
+const BARE: PageId[] = ["pricing", "account", "wishes"];
 /** Pages the Worker writes: shown as they came, inside the site. */
 const READ = ["blog", "imprint", "terms", "rules", "privacy"];
 
@@ -30,7 +39,7 @@ export function parse(path: string): Route {
   if (!first) return { page: "home", rest: [] };
   if (READ.includes(first)) return { page: "read", rest: [first, ...rest] };
   const page = PAGE_OF[first];
-  return page ? { page, rest: page === "pricing" ? [] : rest } : { page: "home", rest: [] };
+  return page ? { page, rest: BARE.includes(page) ? [] : rest } : { page: "home", rest: [] };
 }
 
 /** A page's address. */
@@ -45,7 +54,16 @@ export function isOwn(path: string): boolean {
   return !first || first in PAGE_OF;
 }
 
-const LEGACY: Record<string, string> = { pricing: "pricing", market: "outboard", community: "talkback", outboard: "outboard", talkback: "talkback" };
+const LEGACY: Record<string, string> = {
+  pricing: "pricing",
+  market: "outboard",
+  community: "talkback",
+  outboard: "outboard",
+  talkback: "talkback",
+  // The island's pass and wall, from older links: they live on this site now.
+  pase: "account",
+  muro: "wishes",
+};
 
 /**
  * An older address in the hash — the preview's (`#/pricing`, `#/market/x`)
@@ -88,6 +106,7 @@ export const STAGE_TO: Record<string, { page: PageId; section?: string }> = {
 /** The stage the guide is told the visitor is at, from where they are here. */
 export function stageOf(route: Route, section: string | null): string {
   if (route.page === "pricing") return "amp";
+  if (route.page === "features") return "confluence";
   if (route.page !== "home") return "afterglow";
   const hit = Object.entries(STAGE_TO).find(([, to]) => to.page === "home" && to.section === section);
   return hit ? hit[0] : "silence";

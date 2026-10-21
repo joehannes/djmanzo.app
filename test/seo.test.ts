@@ -233,3 +233,26 @@ describe("for crawlers", () => {
     expect(() => render("<html></html>", { status: 200, title: "", description: "", path: "/", jsonld: [], body: "" }, "https://x.test")).toThrow(/seo/);
   });
 });
+
+describe("the features page, the requests and the account, as a search engine reads them", () => {
+  it("every feature is in words, with its status, its caveat and the editions that carry it", async () => {
+    const page = await read(site(), "/features");
+    expect(page.status).toBe(200);
+    expect(page.canonical).toBe("https://djmanzo.test/features");
+    for (const f of FACTS) expect(page.words, f.id).toContain(escapeHtml(f.name));
+    // The Karaoke edition is named on a karaoke feature; a planned one is in none.
+    expect(page.words).toMatch(/<b>The singers and the rotation<\/b> \(ships; Karaoke, Full\)/);
+    expect(page.words).toMatch(/<b>A real gig<\/b> \(planned; in no edition yet\)/);
+    expect(page.words).toContain(escapeHtml(FACTS.find((f) => f.id === "k-guests")!.caveat!));
+  });
+
+  it("the requests are listed with what became of each; the account is not indexed", async () => {
+    const env = site();
+    await browser(env)("/api/wishes");
+    const wishes = await read(env, "/wishes");
+    expect(wishes.status).toBe(200);
+    expect(wishes.words).toContain("Art-Net / DMX lighting</b> — shipped");
+    const account = await read(env, "/account");
+    expect(account.robots).toBe("noindex");
+  });
+});

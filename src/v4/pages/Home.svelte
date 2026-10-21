@@ -15,6 +15,9 @@
   import Live from "../sections/Live.svelte";
   import Faq from "../sections/Faq.svelte";
   import Closing from "../sections/Closing.svelte";
+  import Highlights from "../sections/Highlights.svelte";
+  import Keys from "../sections/Keys.svelte";
+  import Karaoke from "../sections/Karaoke.svelte";
 
   let root: HTMLElement;
   onMount(() => animate(root));
@@ -39,36 +42,33 @@
     </ul>
   </div>
 
+  <Highlights />
+  <div class="divider wrap" aria-hidden="true"></div>
   <Stems />
   <Tour />
+  <div class="divider wrap" aria-hidden="true"></div>
+  <Keys />
 
   <Feature
     id="assistant"
     eyebrow="The assistant"
     title="Suggestions that say why. A mix that runs itself, until you touch it."
     lead="djmanzo ranks what could come next by key, tempo, loudness and phrase, and tells you its reasons. Hand it the night and it mixes; move a fader and it steps back."
-    facts={["suggest", "asks", "automix"]}
+    facts={["suggest", "asks", "automix", "autopilot-surface"]}
     image={shared("autopilot")}
     alt="An empty DJ booth at sunrise after a beach party, the decks still lit"
   />
 
-  <Feature
-    id="karaoke"
-    eyebrow="Karaoke"
-    title="The karaoke night is built in."
-    lead="The singers' screen, the queue, the sign-up page, the vocal taken out of the record, a microphone with its own effects, and the song a singer cannot name — found."
-    facts={["karaoke", "requests", "oldmac"]}
-    image={shared("karaoke")}
-    alt="A woman singing on a small karaoke stage, friends cheering"
-    flip
-  />
+  <div class="divider wrap" aria-hidden="true"></div>
+  <Karaoke />
+  <div class="divider wrap" aria-hidden="true"></div>
 
   <Feature
     id="visuals"
     eyebrow="Video and visuals"
-    title="Pictures that move with the music."
-    lead="Video on a deck, crossfading as the sound does; layered looks and MilkDrop presets for the screen behind you; what is playing, shown on your stream."
-    facts={["visuals", "live", "record"]}
+    title="Pictures — and lights — that move with the music."
+    lead="Video on a deck, crossfading as the sound does; layered looks and MilkDrop presets for the screen behind you; the room's lights on the beat and the phrase; what is playing, shown on your stream."
+    facts={["visuals", "lights", "live", "record"]}
     image={shared("visuals")}
     alt="A DJ silhouetted in front of a huge LED wall of flowing liquid visuals"
   />
@@ -78,7 +78,7 @@
     eyebrow="Learn"
     title="A teacher in the software."
     lead="A practice deck only your headphones hear, a coach that names what your hands just did, and a course from the first beatmatch to the first gig."
-    facts={["teacher", "curriculum"]}
+    facts={["teacher", "curriculum", "knowhow"]}
     image={shared("learn")}
     alt="A DJ teaching a student at a controller in a small studio"
     flip

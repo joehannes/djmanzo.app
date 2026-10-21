@@ -51,6 +51,21 @@ export interface Profile {
   verified: boolean;
   name: string;
   avatar: string | null;
+  /** Patreon: the person's own page there, which their account then shows as verified. */
+  page?: string | null;
+  /** Patreon: the campaigns the person is an active patron of. */
+  supports?: string[];
+}
+
+/** A Patreon page address as Patreon gives it, made plain, or null if it is not one. */
+export function patreonPage(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url);
+    return u.protocol === "https:" && /(^|\.)patreon\.com$/.test(u.hostname) ? `https://www.patreon.com${u.pathname.replace(/\/$/, "")}` : null;
+  } catch {
+    return null;
+  }
 }
 
 const UA = { "user-agent": "djmanzo-website" };
@@ -142,6 +157,36 @@ export const PROVIDERS: Provider[] = [
     },
   },
   {
+    id: "patreon",
+    name: "Patreon",
+    authorize: "https://www.patreon.com/oauth2/authorize",
+    token: "https://www.patreon.com/api/oauth2/token",
+    // `identity.memberships` only to see whether the person supports djmanzo's own campaign, when one is named.
+    scope: "identity identity[email] identity.memberships",
+    noPkce: true,
+    profile: async (t) => {
+      const fields = "fields%5Buser%5D=full_name,email,is_email_verified,image_url,url,vanity&include=memberships.campaign&fields%5Bmember%5D=patron_status";
+      const p = (await getJson(`https://www.patreon.com/api/oauth2/v2/identity?${fields}`, t)) as {
+        data?: { id?: string; attributes?: Record<string, unknown> };
+        included?: { type: string; attributes?: Record<string, unknown>; relationships?: { campaign?: { data?: { id?: string } } } }[];
+      };
+      const a = p.data?.attributes ?? {};
+      const supports = (p.included ?? [])
+        .filter((m) => m.type === "member" && m.attributes?.patron_status === "active_patron")
+        .map((m) => String(m.relationships?.campaign?.data?.id ?? ""))
+        .filter(Boolean);
+      return {
+        sub: String(p.data?.id),
+        email: s(a.email),
+        verified: a.is_email_verified === true,
+        name: s(a.full_name) ?? s(a.vanity) ?? "DJ",
+        avatar: s(a.image_url),
+        page: patreonPage(s(a.url)),
+        supports,
+      };
+    },
+  },
+  {
     id: "microsoft",
     name: "Microsoft",
     authorize: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
@@ -209,8 +254,18 @@ export function safeReturn(path: string | null): string {
   return path && path.startsWith("/") && !path.startsWith("//") && !path.startsWith("/\\") ? path.slice(0, 600) : "/";
 }
 
-/** The one address each provider sends a person back to, for the browser and for djmanzo alike. */
-const back = (origin: string, provider: string) => `${origin}/callback/${provider}`;
+/**
+ * The one address each provider sends a person back to, for the browser and
+ * for djmanzo alike: `/callback/<provider>`. Until 18 October it was
+ * `/auth/callback/<provider>`, and a provider app registered then still
+ * names that; both are served, and `OAUTH_CALLBACK_PATH` (a variable) says
+ * which one to ask for, so the owner need not register anything again.
+ */
+export function callbackPath(env: AppEnv): string {
+  const p = String(env.OAUTH_CALLBACK_PATH || "/callback").replace(/\/+$/, "");
+  return p === "/auth/callback" ? p : "/callback";
+}
+const back = (env: AppEnv, origin: string, provider: string) => `${origin}${callbackPath(env)}/${provider}`;
 
 interface Pending {
   provider: string;
@@ -218,6 +273,47 @@ interface Pending {
   back: string;
   /** djmanzo's own sign-in, waiting on a port of this machine. */
   app?: AppLogin;
+  /** A person already signed in, adding this account to their own. */
+  link?: string;
+}
+
+export { FAILURES, type Failure } from "../shared/signin";
+import type { Failure } from "../shared/signin";
+
+/** `path` with `params` added to its query, before any hash. */
+export function withQuery(path: string, params: Record<string, string>): string {
+  const [head, hash = ""] = path.split("#", 2);
+  const [base, query = ""] = head.split("?", 2);
+  const q = new URLSearchParams(query);
+  for (const [k, v] of Object.entries(params)) q.set(k, v);
+  return `${base}?${q}${hash ? `#${hash}` : ""}`;
+}
+
+/** The pending sign-in rides in a cookie as well as KV, so a callback that reaches another place before KV has caught up still finishes. */
+const PENDING = "djm_oauth";
+function pendingCookie(state: string, pending: Pending | null): string {
+  const value = pending ? b64url(new TextEncoder().encode(JSON.stringify({ state, ...pending }))) : "";
+  // SameSite=None: Apple answers by posting a form from its own site, which a Lax cookie would not ride along with.
+  return `${PENDING}=${value}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${pending ? 600 : 0}`;
+}
+function pendingFrom(req: Request, state: string): Pending | null {
+  const raw = cookies(req)[PENDING];
+  if (!raw || !state) return null;
+  try {
+    const p = JSON.parse(new TextDecoder().decode(unb64url(raw))) as Pending & { state?: string };
+    if (p.state !== state || typeof p.provider !== "string" || typeof p.verifier !== "string") return null;
+    const { state: _, ...pending } = p;
+    return { ...pending, back: safeReturn(pending.back) };
+  } catch {
+    return null;
+  }
+}
+
+function failed(origin: string, to: string, why: Failure, detail?: string): Response {
+  console.error(`sign-in failed: ${why}${detail ? ` (${detail})` : ""}`);
+  const res = new Response(null, { status: 302, headers: { location: `${origin}${withQuery(to, { signin: "failed", why })}` } });
+  res.headers.append("set-cookie", pendingCookie("", null));
+  return res;
 }
 
 /**
@@ -232,11 +328,19 @@ export async function start(req: Request, env: AppEnv, providerId: string, app?:
   const state = app?.state ?? randomId();
   const verifier = randomId(32);
   const challenge = b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)));
-  const pending: Pending = { provider: provider.id, verifier, back: safeReturn(url.searchParams.get("return")), ...(app ? { app: app.app } : {}) };
+  // Signed in already, in the browser: this sign-in adds the account to theirs.
+  const linking = !app && url.searchParams.get("link") === "1" ? await whoami(req, env) : null;
+  const pending: Pending = {
+    provider: provider.id,
+    verifier,
+    back: safeReturn(url.searchParams.get("return")),
+    ...(app ? { app: app.app } : {}),
+    ...(linking && !linking.demo ? { link: linking.id } : {}),
+  };
   await put(env.KV, `oauth:${state}`, pending, 600);
   const auth = new URL(provider.authorize);
   auth.searchParams.set("client_id", creds.clientId);
-  auth.searchParams.set("redirect_uri", back(url.origin, provider.id));
+  auth.searchParams.set("redirect_uri", back(env, url.origin, provider.id));
   auth.searchParams.set("response_type", "code");
   auth.searchParams.set("scope", provider.scope);
   auth.searchParams.set("state", state);
@@ -246,7 +350,9 @@ export async function start(req: Request, env: AppEnv, providerId: string, app?:
   }
   if (provider.formPost) auth.searchParams.set("response_mode", "form_post");
   if (provider.id === "google") auth.searchParams.set("prompt", "select_account");
-  return Response.redirect(auth.toString(), 302);
+  const res = new Response(null, { status: 302, headers: { location: auth.toString() } });
+  if (!app) res.headers.append("set-cookie", pendingCookie(state, pending));
+  return res;
 }
 
 export async function callback(req: Request, env: AppEnv, providerId: string): Promise<Response> {
@@ -255,17 +361,18 @@ export async function callback(req: Request, env: AppEnv, providerId: string): P
   const form = req.method === "POST" ? new URLSearchParams(await req.text()) : url.searchParams;
   const state = form.get("state") || "";
   const code = form.get("code") || "";
-  const saved = await get<Pending>(env.KV, `oauth:${state}`);
-  if (!saved || saved.provider !== providerId || !code) {
-    return Response.redirect(`${url.origin}/?signin=failed`, 302);
-  }
+  const saved = (await get<Pending>(env.KV, `oauth:${state}`)) ?? pendingFrom(req, state);
+  if (!saved || saved.provider !== providerId) return failed(url.origin, "/account", "expired", `state ${saved ? "for another provider" : "unknown"}`);
+  // The person said no at the provider, or the provider refused the request (a wrong callback address, an unverified app).
+  if (!code) return failed(url.origin, saved.back, "refused", form.get("error") ?? "no code");
   await env.KV.delete(`oauth:${state}`);
   const provider = PROVIDERS.find((p) => p.id === providerId)!;
-  const creds = credentials(env, providerId)!;
+  const creds = credentials(env, providerId);
+  if (!creds) return failed(url.origin, saved.back, "refused", "provider not configured");
   const exchange = new URLSearchParams({
     grant_type: "authorization_code",
     code,
-    redirect_uri: back(url.origin, providerId),
+    redirect_uri: back(env, url.origin, providerId),
     client_id: creds.clientId,
     client_secret: providerId === "apple" ? await appleSecret(env) : creds.secret,
   });
@@ -276,13 +383,55 @@ export async function callback(req: Request, env: AppEnv, providerId: string): P
     body: exchange,
   });
   const tok = (await r.json().catch(() => ({}))) as Record<string, unknown>;
-  if (!r.ok || (!tok.access_token && !tok.id_token)) return Response.redirect(`${url.origin}/?signin=failed`, 302);
-  const profile = provider.fromToken ? provider.fromToken(tok, form) : await provider.profile!(String(tok.access_token));
-  if (!profile) return Response.redirect(`${url.origin}/?signin=failed`, 302);
+  // GitHub answers 200 with an `error` field when the code or the redirect address is wrong.
+  if (!r.ok || (!tok.access_token && !tok.id_token)) return failed(url.origin, saved.back, "token", `${r.status} ${String(tok.error ?? "")} ${String(tok.error_description ?? "")}`.trim());
+  let profile: Profile | null;
+  try {
+    profile = provider.fromToken ? provider.fromToken(tok, form) : await provider.profile!(String(tok.access_token));
+  } catch (e) {
+    return failed(url.origin, saved.back, "profile", (e as Error).message);
+  }
+  if (!profile) return failed(url.origin, saved.back, "profile");
+  if (saved.link) {
+    const linked = await link(env, saved.link, providerId, profile);
+    if (!linked) return failed(url.origin, saved.back, "taken");
+    const res = new Response(null, { status: 302, headers: { location: `${url.origin}${withQuery(saved.back, { linked: providerId })}` } });
+    res.headers.append("set-cookie", pendingCookie("", null));
+    return res;
+  }
   const user = await findOrCreate(env, providerId, profile);
   // djmanzo asked: the grant goes back to it on this machine, and no browser session is made.
   if (saved.app) return grant(env, user.id, `${providerId}:${profile.sub}`, saved.app, state);
-  return signedIn(env, user, `${url.origin}${saved.back}`);
+  const res = await signedIn(env, user, `${url.origin}${withQuery(saved.back, { signedin: providerId })}`);
+  res.headers.append("set-cookie", pendingCookie("", null));
+  return res;
+}
+
+/**
+ * Add an account at a provider to a person already signed in. Refused when
+ * that account already belongs to somebody else's djmanzo account: two
+ * people's licences are never merged by a click.
+ */
+export async function link(env: AppEnv, uid: string, provider: string, p: Profile): Promise<User | null> {
+  const user = await get<User>(env.KV, `user:${uid}`);
+  if (!user) return null;
+  const identKey = `ident:${provider}:${p.sub}`;
+  const owner = await env.KV.get(identKey);
+  if (owner && owner !== uid) return null;
+  if (!user.identities.some((i) => i.provider === provider && i.sub === p.sub)) user.identities.push({ provider, sub: p.sub });
+  remember(user, p);
+  await put(env.KV, `user:${user.id}`, user);
+  await env.KV.put(identKey, user.id);
+  return user;
+}
+
+/** What a provider vouches for beyond who the person is: a verified Patreon page, the campaigns they support. */
+function remember(user: User, p: Profile) {
+  const email = p.email ? p.email.toLowerCase() : null;
+  if (!user.email && email && p.verified) user.email = email;
+  if (!user.avatar && p.avatar) user.avatar = p.avatar;
+  if (p.page) user.patreon = p.page;
+  if (p.supports) user.patronOf = p.supports;
 }
 
 export async function findOrCreate(env: AppEnv, provider: string, p: Profile, extra: Partial<User> = {}): Promise<User> {
@@ -305,8 +454,7 @@ export async function findOrCreate(env: AppEnv, provider: string, p: Profile, ex
   if (!user.identities.some((i) => i.provider === provider && i.sub === p.sub)) {
     user.identities.push({ provider, sub: p.sub });
   }
-  if (!user.email && email && p.verified) user.email = email;
-  if (!user.avatar && p.avatar) user.avatar = p.avatar;
+  remember(user, p);
   await put(env.KV, `user:${user.id}`, user);
   await env.KV.put(identKey, user.id);
   if (user.email && p.verified) await env.KV.put(`email:${user.email}`, user.id);
@@ -384,6 +532,32 @@ export async function demoSignIn(req: Request, env: AppEnv, name: string): Promi
   });
 }
 
-export function publicUser(u: User) {
-  return { id: u.id, name: u.name, email: u.email, avatar: u.avatar, demo: !!u.demo, owner: !!u.owner, providers: u.identities.map((i) => i.provider) };
+export function publicUser(u: User, env?: AppEnv) {
+  const campaign = env?.PATREON_CAMPAIGN_ID;
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    avatar: u.avatar,
+    demo: !!u.demo,
+    owner: !!u.owner,
+    providers: u.identities.map((i) => i.provider),
+    patreon: u.patreon ?? null,
+    supporter: !!campaign && !!u.patronOf?.includes(campaign),
+  };
+}
+
+/**
+ * For the crew: each provider, whether it is offered, and the exact address
+ * to register at that provider — the one thing a sign-in that "does nothing"
+ * almost always comes down to.
+ */
+export function check(env: AppEnv, origin: string) {
+  return PROVIDERS.map((p) => {
+    const missing =
+      p.id === "apple"
+        ? (["APPLE_CLIENT_ID", "APPLE_TEAM_ID", "APPLE_KEY_ID", "APPLE_PRIVATE_KEY"] as const).filter((k) => !env[k])
+        : [`${p.id.toUpperCase()}_CLIENT_ID`, `${p.id.toUpperCase()}_CLIENT_SECRET`].filter((k) => !(env as unknown as Record<string, unknown>)[k]);
+    return { id: p.id, name: p.name, offered: missing.length === 0, missing, register: back(env, origin, p.id), alsoServed: `${origin}${callbackPath(env) === "/callback" ? "/auth/callback" : "/callback"}/${p.id}` };
+  });
 }

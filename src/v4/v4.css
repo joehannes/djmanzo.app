@@ -53,6 +53,52 @@ a {
   color: inherit;
 }
 
+/*
+ * The skin's pattern, woven faintly behind everything (`looks.ts`): a fixed
+ * layer, so it does not scroll with the words, masked to fade towards the
+ * middle of the screen where people read.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--pattern, none);
+  background-size: var(--pattern-size, 40px) var(--pattern-size, 40px);
+  opacity: var(--pattern-opacity, 0.06);
+  mask-image: radial-gradient(120% 90% at 50% 40%, transparent 30%, black 85%);
+  transition: opacity 0.4s;
+}
+body {
+  isolation: isolate;
+}
+
+/* A band between sections, in the skin's ornament: papel picado, kente, arches, marigolds… */
+.divider {
+  height: 48px;
+  background-image: var(--divider, none);
+  background-size: auto 48px;
+  background-repeat: repeat-x;
+  background-position: center;
+  opacity: 0.55;
+  mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+}
+
+/* The eyebrow carries the skin's symbol. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  flex: none;
+  background: var(--motif, none) center / contain no-repeat;
+}
+
 img {
   max-width: 100%;
   display: block;
@@ -242,6 +288,16 @@ img {
 .section {
   position: relative;
   padding: clamp(72px, 11vw, 140px) 0;
+}
+/* Each section falls in the skin's light. */
+.section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--glow, none);
+  opacity: 0.8;
 }
 .section + .section {
   border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent);

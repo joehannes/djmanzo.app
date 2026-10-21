@@ -69,5 +69,5 @@ export const skin = () => SKIN_BY_ID[region.skin];
 export const groove = () => grooveFor(SKIN_BY_ID[region.skin], region.country);
 
 /** The skin's photographs, in `public/v4/art/`. */
-export const art = (name: "hero" | "crowd" | "gear", id: SkinId = region.skin) => `/v4/art/${id}-${name}.webp`;
+export const art = (name: "hero" | "crowd" | "gear", id: SkinId = region.skin) => `/v4/art/${SKIN_BY_ID[id].photos ?? id}-${name}.webp`;
 export const shared = (name: string) => `/v4/art/${name}.webp`;

@@ -54,6 +54,7 @@
   <div class="photo-wrap" aria-hidden="true">
     <div class="photo" bind:this={photo} style:background-image={`url(${art("hero")})`} data-hero-photo></div>
     <div class="glow" bind:this={glow}></div>
+    <div class="motif" data-motif></div>
     <div class="shade"></div>
   </div>
 
@@ -105,6 +106,29 @@
 </section>
 
 <style>
+  /* The skin's symbol, large and slow, at the edge of the photograph (`looks.ts`). */
+  .motif {
+    position: absolute;
+    right: -6vw;
+    top: 8vh;
+    width: min(52vw, 640px);
+    aspect-ratio: 1;
+    background: var(--motif) center / contain no-repeat;
+    opacity: 0.18;
+    mix-blend-mode: screen;
+    animation: turn 120s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes turn {
+    to {
+      rotate: 360deg;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .motif {
+      animation: none;
+    }
+  }
   .hero {
     position: relative;
     min-height: max(720px, 100svh);

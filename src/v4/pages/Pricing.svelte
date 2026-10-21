@@ -14,8 +14,9 @@
   import { session } from "../../lib/session.svelte";
   import { post } from "../../lib/api";
   import { countries, flag } from "../../lib/countries";
-  import SignIn from "../../shop/SignIn.svelte";
+  import SignIn from "../SignIn.svelte";
   import Checkout from "../../shop/Checkout.svelte";
+  import EditionMatrix from "../sections/EditionMatrix.svelte";
   import { animate, gsap, reduced } from "../motion";
   import { region, shared } from "../region.svelte";
   import { RELEASES } from "../download";
@@ -119,8 +120,12 @@
       const where = region.country ?? catalog.data?.visitor.country;
       if (where) country = where;
     });
-    const want = new URLSearchParams(location.search).get("edition") as Edition | null;
+    const q = new URLSearchParams(location.search);
+    const want = q.get("edition") as Edition | null;
     if (want && EDITIONS.includes(want)) edition = want;
+    // A discount voucher from `/redeem`: its line goes in the promo box, where the quote and every checkout read it.
+    const v = q.get("voucher");
+    if (v) promo = v;
     return animate(root);
   });
 </script>
@@ -177,32 +182,8 @@
 
   <section class="wrap matrix-wrap" aria-labelledby="matrix-title">
     <h2 class="h2" id="matrix-title" data-reveal>What each edition carries</h2>
-    <p class="lead" data-reveal>Every edition has the foundation: two decks, the mixer, the library, cues, loops and pads, the effects, the sampler, recording, the keyboard and a controller. What an edition lacks shows in djmanzo as a quiet card naming the edition that has it.</p>
-    <div class="matrix card" data-reveal>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col"><span class="sr-only">Module</span></th>
-            {#each NAMED.filter((e) => e !== "hobbyist") as e (e)}
-              <th scope="col" class:on={edition === e}><button onclick={() => pick(e)}>{c?.editions[e]?.name ?? e}</button></th>
-            {/each}
-          </tr>
-        </thead>
-        {#each GROUPS as g (g.name)}
-          <tbody>
-            <tr class="group"><th colspan="6" scope="colgroup" class="mono">{g.name}</th></tr>
-            {#each g.modules as m (m)}
-              <tr>
-                <th scope="row">{MODULE_TITLE[m]}</th>
-                {#each NAMED.filter((e) => e !== "hobbyist") as e (e)}
-                  <td class:on={edition === e}>{#if has(e, m)}<span class="yes" aria-label="included">●</span>{:else}<span class="no" aria-label="not included">—</span>{/if}</td>
-                {/each}
-              </tr>
-            {/each}
-          </tbody>
-        {/each}
-      </table>
-    </div>
+    <p class="lead" data-reveal>Feature by feature, so you can see what you get — the free Hobbyist edition included. Every edition has the foundation: two decks, the mixer, the library, cues, loops and pads, the effects, the sampler, recording, the keyboard and a controller, the launcher and the mnemonic keys. What an edition lacks shows in djmanzo as a quiet card naming the edition that has it.</p>
+    <div data-reveal><EditionMatrix chosen={edition} onpick={(e) => pick(e)} /></div>
   </section>
 
   <section class="wrap checkout" id="checkout" aria-labelledby="co-title">
@@ -216,7 +197,7 @@
         <ol class="steps">
           <li><a href={RELEASES}>Download djmanzo</a> for your computer.</li>
           <li>In djmanzo, open <b>Settings → Licence</b> and sign in with the same account. It fetches the licence by itself and keeps working offline.</li>
-          <li>On a computer that cannot sign in, paste the licence line from <a href="/island/#/pase">your pass</a>.</li>
+          <li>On a computer that cannot sign in, paste the licence line from <a href="/account">your account</a>.</li>
         </ol>
         <button class="btn ghost" onclick={() => (done = null)}>Back to the shop</button>
       </div>
@@ -272,7 +253,7 @@
           {#if edition !== "hobbyist"}
             <h3 class="h3">Pay</h3>
             {#if !session.user}
-              <SignIn />
+              <SignIn compact back={`/pricing${location.search}#checkout`} why="Sign in to buy or to try — the licence is tied to your account, and djmanzo picks it up from there." />
             {:else}
               <p class="dim">Signed in as <b>{session.user.name}</b>. The licence goes to this account.</p>
               {#if quote}
@@ -465,7 +446,6 @@
   .market {
     margin-top: clamp(72px, 9vw, 120px);
   }
-  .matrix,
   .table {
     margin-top: 28px;
     overflow-x: auto;
@@ -488,37 +468,8 @@
     border-bottom: 1px solid var(--line);
     white-space: nowrap;
   }
-  .matrix td {
-    text-align: center;
-  }
-  .matrix thead th button {
-    font: 600 13px var(--body);
-    color: var(--text);
-    background: none;
-    border: 0;
-    cursor: pointer;
-    padding: 0;
-  }
-  th.on,
-  td.on {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-  }
-  .group th {
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--dim);
-    font-weight: 500;
-    padding-top: 22px;
-  }
   tbody th {
     font-weight: 500;
-  }
-  .yes {
-    color: var(--accent);
-  }
-  .no {
-    color: var(--line);
   }
   .table a {
     color: var(--text);

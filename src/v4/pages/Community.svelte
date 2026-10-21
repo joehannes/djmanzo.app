@@ -21,7 +21,7 @@
       <p class="eyebrow">Community</p>
       <h1 class="h1">Ask the question<br />everyone at the gig was thinking.</h1>
       <p class="lead">The craft, the music, the gear, the life around the gigs, and djmanzo itself. Good, related subjects only — kind words, real help, nobody's music but your own.</p>
-      <p class="side" data-reveal>Want djmanzo to do something it doesn't? <a href="/island/#/muro">Feature requests</a> are voted on, and the board says what became of each.</p>
+      <p class="side" data-reveal>Want djmanzo to do something it doesn't? <a href="/wishes">Feature requests</a> are voted on, and the board says what became of each.</p>
     </div>
   </header>
   <div class="wrap content body" data-forum>

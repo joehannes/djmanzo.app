@@ -10,7 +10,7 @@
  * already is); nothing about the person.
  */
 
-export type SkinId = "club" | "tropical" | "urban" | "afro" | "neon" | "studio";
+export type SkinId = "club" | "tropical" | "urban" | "afro" | "neon" | "oasis" | "monsoon" | "pacific" | "studio";
 
 export interface Skin {
   id: SkinId;
@@ -40,6 +40,11 @@ export interface Skin {
   stems: [string, string, string, string];
   /** djmanzo themes to show screenshots in, best first (names as the app's picker shows them). */
   themes: string[];
+  /**
+   * Whose photographs it shows, when it has none of its own yet: the skin
+   * nearest in feeling. Its patterns, symbols and type are its own (`looks.ts`).
+   */
+  photos?: SkinId;
 }
 
 export const SKINS: Skin[] = [
@@ -104,6 +109,45 @@ export const SKINS: Skin[] = [
     themes: ["Karaoke Neon", "Cyber Trance", "Aurora", "Spectrum"],
   },
   {
+    id: "oasis",
+    name: "Oasis",
+    region: "The Middle East & North Africa",
+    line: "Raï and shaabi at the wedding, Arabic pop on the terrace, deep house on the rooftop after midnight.",
+    genres: ["house", "pop", "lounge"],
+    family: "party",
+    tokens: { bg: "#070a10", surface: "#0e1420", raised: "#151d2c", line: "#24304a", text: "#f3efe6", dim: "#9aa3b6", accent: "#2ec4b6", accent2: "#e9b949", onAccent: "#04201d" },
+    bands: ["#1f6fb2", "#2ec4b6", "#f6e7b8"],
+    stems: ["#2ec4b6", "#e9b949", "#1f6fb2", "#f6e7b8"],
+    themes: ["Sunset", "Velvet", "Lounge"],
+    photos: "studio",
+  },
+  {
+    id: "monsoon",
+    name: "Monsoon",
+    region: "South Asia",
+    line: "Bhangra at the sangeet, Bollywood at the baraat, house in the city once the wedding is over.",
+    genres: ["pop", "house", "lounge"],
+    family: "party",
+    tokens: { bg: "#0d0610", surface: "#170c1b", raised: "#221327", line: "#3a2242", text: "#fbf0ea", dim: "#b598ab", accent: "#ff9f1c", accent2: "#e0218a", onAccent: "#211100" },
+    bands: ["#e0218a", "#ff9f1c", "#ffe8b3"],
+    stems: ["#ff9f1c", "#e0218a", "#7b2cbf", "#ffe8b3"],
+    themes: ["Festival", "Carnaval", "Sunset"],
+    photos: "neon",
+  },
+  {
+    id: "pacific",
+    name: "Pacific",
+    region: "Oceania",
+    line: "Beach bars at sunset, a festival in the bush, island reggae under the stars.",
+    genres: ["house", "dancehall", "dnb", "lounge"],
+    family: "edm",
+    tokens: { bg: "#050b0f", surface: "#0b161d", raised: "#112029", line: "#1d3442", text: "#ecf5f4", dim: "#8fa8ad", accent: "#2dd4bf", accent2: "#ff8a5c", onAccent: "#03201c" },
+    bands: ["#0e7490", "#2dd4bf", "#e0fbf6"],
+    stems: ["#2dd4bf", "#ff8a5c", "#0e7490", "#e0fbf6"],
+    themes: ["Bioluminescent Bay", "Aurora", "Watershed Living"],
+    photos: "tropical",
+  },
+  {
     id: "studio",
     name: "Studio",
     region: "Everywhere else",
@@ -120,13 +164,16 @@ export const SKINS: Skin[] = [
 
 export const SKIN_BY_ID = Object.fromEntries(SKINS.map((s) => [s.id, s])) as Record<SkinId, Skin>;
 
-const EUROPE = "AD AL AT AU BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO NZ PL PT RO RS RU SE SI SK SM UA VA XK";
+const EUROPE = "AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS RU SE SI SK SM UA VA XK";
 const LATIN =
   "AG AI AR AW BB BL BO BQ BR BS BZ CL CO CR CU CW DM DO EC GD GF GP GT GY HN HT JM KN KY LC MF MQ MS MX NI PA PE PR PY SR SV SX TC TT UY VC VE VG VI";
 const NORTH = "US CA BM GL PM";
-const AFRICA =
-  "AO BF BI BJ BW CD CF CG CI CM CV DJ DZ EG EH ER ET GA GH GM GN GQ GW KE KM LR LS LY MA MG ML MR MU MW MZ NA NE NG RE RW SC SD SH SL SN SO SS ST SZ TD TG TN TZ UG YT ZA ZM ZW";
+const AFRICA = "AO BF BI BJ BW CD CF CG CI CM CV DJ ER ET GA GH GM GN GQ GW KE KM LR LS MG ML MR MU MW MZ NA NE NG RE RW SC SH SL SN SO SS ST SZ TD TG TZ UG YT ZA ZM ZW";
 const ASIA = "BN CN HK ID JP KH KR LA MM MN MO MY PH SG TH TW VN";
+/** Western Asia and Northern Africa, as the UN's M49 groups them. */
+const MENA = "AE BH DZ EG EH IL IQ IR JO KW LB LY MA OM PS QA SA SD SY TN TR YE";
+const SOUTH_ASIA = "AF BD BT IN LK MV NP PK";
+const OCEANIA = "AU CK FJ FM KI MH NC NR NU NZ PF PG PW SB TO TV VU WS";
 
 const REGION: Record<string, SkinId> = {};
 for (const [list, skin] of [
@@ -135,6 +182,9 @@ for (const [list, skin] of [
   [NORTH, "urban"],
   [AFRICA, "afro"],
   [ASIA, "neon"],
+  [MENA, "oasis"],
+  [SOUTH_ASIA, "monsoon"],
+  [OCEANIA, "pacific"],
 ] as [string, SkinId][]) {
   for (const c of list.split(" ")) REGION[c] = skin;
 }
@@ -172,6 +222,8 @@ const LOCAL: Record<string, string> = {
   NG: "afrobeats",
   ZA: "afrobeats",
   GH: "afrobeats",
+  AU: "dnb",
+  NZ: "dnb",
 };
 
 /** The groove a visitor from `country` hears first in `skin`. */
@@ -209,6 +261,10 @@ const FAMILY_SKIN: Record<string, SkinId> = {
   hiphop: "urban",
   rnb: "urban",
   afrobeats: "afro",
+  bhangra: "monsoon",
+  bollywood: "monsoon",
+  rai: "oasis",
+  arabic: "oasis",
   party: "neon",
   pop: "neon",
   karaoke: "neon",
