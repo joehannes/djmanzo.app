@@ -134,7 +134,10 @@
     }
   }
 
-  const KIND_NAME: Record<string, string> = { theme: "Theme", skin: "Skin", visuals: "Visuals" };
+  /** The support links signed into a pack's manifest (§137), as its listing keeps them. */
+  const signedSupport = (preview: Record<string, unknown>) => (Array.isArray(preview.support) ? preview.support : []) as { kind: string; url: string }[];
+  const SUPPORT_NAME: Record<string, string> = { patreon: "Patreon", kofi: "Ko-fi", buymeacoffee: "Buy Me a Coffee", github: "GitHub Sponsors", paypal: "PayPal", liberapay: "Liberapay", other: "Elsewhere" };
+  const KIND_NAME: Record<string, string> = { theme: "Theme", skin: "Skin", visuals: "Visuals", keys: "Keyboard set" };
   const kb = (n: number) => `${Math.max(1, Math.round(n / 1024))} KB`;
   const meanText = (r: Card["rating"]) => (r.count ? `${r.mean!.toFixed(1)} ★ (${r.count})` : "Not rated yet");
 </script>
@@ -177,6 +180,18 @@
           {/if}
           <p class="rating">{meanText(item.rating)} · {item.downloads} downloaded</p>
           <p class="note">Installs in every edition of djmanzo. Signed with the key <code>{item.fingerprint}</code>: djmanzo shows the same before it installs.</p>
+          {#if item.kind === "keys"}
+            <p class="note" data-wear>
+              Once installed it is among the keyboard sets in the Keys panel (<kbd>Space</kbd> <kbd>o</kbd> <kbd>?</kbd>): wear it there. It sits under your own keys and beside
+              djmanzo's, and takes none of them over{item.preview.edition ? `; made for the ${item.preview.edition} edition, and any edition can wear it` : ""}. A key that
+              needs something your edition does not carry is left out of the guide, not broken.
+            </p>
+          {/if}
+          {#if signedSupport(item.preview).length}
+            <p class="support" data-signed-support>Thank the maker (signed into the pack):
+              {#each signedSupport(item.preview) as l (l.url)}<a class="link" href={l.url} rel="noopener noreferrer" target="_blank">{SUPPORT_NAME[l.kind] ?? l.kind}</a>{" "}{/each}
+            </p>
+          {/if}
           {#each item.versions.filter((v) => v.status === "listed").slice(0, 1) as v (v.version)}
             <a class="go" href={`/api/outboard/items/${item.id}/v/${encodeURIComponent(v.version)}.djpack`} download data-download>Download {item.name} {v.version} ({kb(v.size)})</a>
           {/each}
@@ -258,7 +273,7 @@
 
   <section class="share">
     <h2>Share yours</h2>
-    <p>Make a pack in djmanzo — the look studio for themes and skins, Settings → From packs for visuals — and upload the <code>.djpack</code> it saves. It is checked as djmanzo checks one, then the crew lists it or tells you why not. Packs are free; your page may link to your own donation page.</p>
+    <p>Make a pack in djmanzo — the look studio for themes and skins, Settings → From packs for visuals, the Keys panel for your own keys saved as a set — and upload the <code>.djpack</code> it saves. It is checked as djmanzo checks one, then the crew lists it or tells you why not. Packs are free; your page may link to your own donation page.</p>
     {#if info}
       {#if info.standing.closed}
         <Join standing={info.standing} />

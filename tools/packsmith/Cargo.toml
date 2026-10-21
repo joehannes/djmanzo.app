@@ -1,0 +1,19 @@
+[package]
+name = "packsmith"
+version = "0.1.0"
+edition = "2024"
+publish = false
+description = "Makes, signs and checks the website's own djmanzo packs with djmanzo's own code, and writes the rules the website's upload checker reads."
+license = "LicenseRef-djmanzo"
+
+# Its own workspace: djmanzo (app/) is a dependency, not a parent.
+[workspace]
+
+[dependencies]
+dj-app = { path = "../../app/crates/dj-app" }
+dj-core = { path = "../../app/crates/dj-core" }
+dj-presets = { path = "../../app/crates/dj-presets" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+zip = { version = "2.4", default-features = false, features = ["deflate"] }

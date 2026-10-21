@@ -18,6 +18,7 @@ import * as community from "./community";
 import * as applicence from "./applicence";
 import * as guide from "./guide";
 import * as market from "./market";
+import { seedOnce, seedThreadsOnce } from "./seed";
 import * as moderation from "./moderation";
 import * as people from "./people";
 import * as talkback from "./talkback";
@@ -224,9 +225,18 @@ const contributor = (c: Ctx) => people.contributor(c.req, c.env);
 
 route("GET", "/api/imprint", async (c) => ({ imprint: people.imprint(c.env), support: c.env.SUPPORT_URL || null }));
 
-route("GET", "/api/outboard", async (c) => ({ kinds: LISTED_KINDS, coming: COMING_KINDS, standing: await people.standing(c.req, c.env) }));
-route("GET", "/api/outboard/items", (c) => market.listing(c.env, c.url.searchParams.get("kind"), c.url.searchParams.get("q")));
-route("GET", "/api/outboard/packs.json", (c) => market.index(c.env, c.url.origin));
+route("GET", "/api/outboard", async (c) => {
+  await seedOnce(c.env, c.url.origin);
+  return { kinds: LISTED_KINDS, coming: COMING_KINDS, standing: await people.standing(c.req, c.env) };
+});
+route("GET", "/api/outboard/items", async (c) => {
+  await seedOnce(c.env, c.url.origin);
+  return market.listing(c.env, c.url.searchParams.get("kind"), c.url.searchParams.get("q"));
+});
+route("GET", "/api/outboard/packs.json", async (c) => {
+  await seedOnce(c.env, c.url.origin);
+  return market.index(c.env, c.url.origin);
+});
 route("GET", "/api/outboard/items/:id", async (c) => {
   const u = await user(c);
   return market.item(c.env, c.params.id, u?.id ?? null, await auth.isAdmin(c.req, c.env, u));
@@ -260,6 +270,7 @@ route("GET", "/api/me/notices", async (c) => moderation.notices(c.env, (await ne
 route("POST", "/api/me/notices/:id/appeal", async (c) => moderation.appeal(c.env, await needUser(c), c.params.id, String((await body<{ text?: string }>(c.req)).text ?? "")));
 
 route("GET", "/api/talkback", async (c) => {
+  await seedThreadsOnce(c.env);
   const u = await user(c);
   return {
     communities: c.env.DB ? await talkback.communities(c.env) : COMMUNITIES.map((x) => ({ ...x, posts: 0 })),
@@ -271,18 +282,26 @@ route("GET", "/api/talkback", async (c) => {
     me: u && c.env.DB && people.vouched(u) ? await talkback.standing(c.env, u) : null,
   };
 });
-route("GET", "/api/talkback/posts", async (c) =>
-  talkback.posts(c.env, {
+route("GET", "/api/talkback/posts", async (c) => {
+  await seedThreadsOnce(c.env);
+  return talkback.posts(c.env, {
     community: c.url.searchParams.get("c"),
     sort: c.url.searchParams.get("sort"),
     q: c.url.searchParams.get("q"),
     item: c.url.searchParams.get("item"),
     uid: (await user(c))?.id ?? null,
-  }),
-);
+  });
+});
 route("GET", "/api/talkback/posts/:id", async (c) => talkback.thread(c.env, c.params.id, (await user(c))?.id ?? null));
 route("POST", "/api/talkback/posts", async (c) => talkback.post(c.env, c.req, await contributor(c), await body(c.req)));
 route("POST", "/api/talkback/posts/:id/comments", async (c) => talkback.comment(c.env, await contributor(c), c.params.id, await body(c.req)));
+route("POST", "/api/talkback/posts/:id/answer", async (c) => {
+  const u = await user(c);
+  const admin = await auth.isAdmin(c.req, c.env, u);
+  if (!u && !admin) fail(401, "Sign in first.");
+  const b = await body<{ comment?: string | null }>(c.req);
+  return talkback.answer(c.env, u?.id ?? null, c.params.id, b.comment ? String(b.comment) : null, admin);
+});
 route("POST", "/api/talkback/vote", async (c) => {
   const b = await body<{ kind?: string; id?: string; value?: number }>(c.req);
   return talkback.vote(c.env, await contributor(c), String(b.kind), String(b.id), Number(b.value));

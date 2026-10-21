@@ -37,6 +37,10 @@ export interface PostRow {
   status: "live" | "held" | "removed";
   reason: string | null;
   wish: string | null;
+  /** 1 when the crew has pinned it to the top of its community. */
+  pinned: number;
+  /** The comment its asker said answered it. */
+  answer: string | null;
   created: number;
 }
 
@@ -92,9 +96,11 @@ export async function posts(env: AppEnv, opts: { community?: string | null; sort
     where.push("posts_fts MATCH ?");
     args.push(match);
   }
-  const order = SORTS[(opts.sort ?? "hot") as keyof typeof SORTS] ?? SORTS.hot;
+  // In one community, its pinned threads first, as a forum's stickies; never in a search.
+  const sorted = SORTS[(opts.sort ?? "hot") as keyof typeof SORTS] ?? SORTS.hot;
+  const order = opts.community && !match ? `posts.pinned DESC, ${sorted}` : sorted;
   const { results } = await db(env)
-    .prepare(`SELECT posts.id, posts.community, posts.uid, posts.author, posts.title, substr(posts.body, 1, 400) AS body, posts.flair, posts.item, posts.score, posts.comments, posts.status, posts.wish, posts.created FROM ${from} WHERE ${where.join(" AND ")} ORDER BY ${order} LIMIT 100`)
+    .prepare(`SELECT posts.id, posts.community, posts.uid, posts.author, posts.title, substr(posts.body, 1, 400) AS body, posts.flair, posts.item, posts.score, posts.comments, posts.status, posts.wish, posts.pinned, posts.answer, posts.created FROM ${from} WHERE ${where.join(" AND ")} ORDER BY ${order} LIMIT 100`)
     .bind(...args)
     .all<PostRow>();
   return results;
@@ -134,6 +140,23 @@ export async function thread(env: AppEnv, id: string, uid: string | null) {
     : {};
   const hide = <T extends { status: string; body: string }>(x: T) => (x.status === "removed" ? { ...x, body: "", removed: true } : x);
   return { post: post!.status === "removed" ? { ...hide(post!), title: "Removed", reason: post!.reason } : post, comments: results.map(hide), votes };
+}
+
+/**
+ * The reply that answered a question, said by whoever asked it (or the crew):
+ * shown first under the question and marked. `comment` null takes it back.
+ */
+export async function answer(env: AppEnv, uid: string | null, postId: string, comment: string | null, crew: boolean) {
+  const store = db(env);
+  const post = await store.prepare("SELECT uid, status FROM posts WHERE id = ?").bind(postId).first<{ uid: string; status: string }>();
+  if (!post || post.status !== "live") fail(404, "No such post.");
+  if (post!.uid !== uid && !crew) fail(403, "Only whoever asked can say which reply answered it.");
+  if (comment !== null) {
+    const live = await store.prepare("SELECT 1 FROM comments WHERE id = ? AND post = ? AND status = 'live'").bind(comment, postId).first();
+    if (!live) fail(404, "No such reply under this post.");
+  }
+  await store.prepare("UPDATE posts SET answer = ? WHERE id = ?").bind(comment, postId).run();
+  return { id: postId, answer: comment };
 }
 
 /** Today's count of what an account has written. */

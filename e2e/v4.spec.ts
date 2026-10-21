@@ -40,7 +40,7 @@ test("the look follows where the visitor is, and the deck plays that place's mus
   // A Dominican visitor hears merengue first, and sees the app in its Caribbean theme.
   await expect(page.locator("[data-groove=merengue]")).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-tab=perform]")).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator("img[data-shot]")).toHaveAttribute("data-shot", "Caribbean");
+  await expect(page.locator("#tour-panel img[data-shot]")).toHaveAttribute("data-shot", "Caribbean");
   // The page is in the skin's colours.
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--accent").trim())).toBe("#ff6b3d");
   expect(errs).toEqual([]);
@@ -97,7 +97,7 @@ test("the tour and the hardware search", async ({ page }) => {
   await page.locator("#tour").scrollIntoViewIfNeeded();
   await page.click("[data-tab=karaoke]");
   await expect(page.locator("[data-tab=karaoke]")).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator("#tour-panel [data-fact=karaoke]")).toBeVisible();
+  await expect(page.locator("#tour-panel [data-fact=k-rotation]")).toBeVisible();
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("[data-tab=practice]")).toHaveAttribute("aria-selected", "true");
 

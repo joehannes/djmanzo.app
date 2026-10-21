@@ -3,7 +3,11 @@
   music, the gear, the life around gigs and djmanzo; posts with nested
   comments; one vote an account; hot, new and top; search. A new account's
   posts may wait for the crew, and it is told so. What the crew removes
-  shows only that it was removed — and its author is told why.
+  shows only that it was removed — and its author is told why. As on the
+  forums DJs already use, a community's pinned threads come first, and a
+  question's asker marks the reply that answered it, which then comes first
+  under it; before a new post goes up, threads that may already answer it
+  are shown.
 -->
 <script lang="ts">
   import { api } from "../../lib/api";
@@ -37,6 +41,8 @@
     reason?: string | null;
     removed?: boolean;
     wish: string | null;
+    pinned?: number;
+    answer?: string | null;
     created: number;
   }
   interface Comment {
@@ -173,6 +179,37 @@
     }
   }
 
+  // --- The asker (or the crew) marks the reply that answered it
+  async function markAnswer(id: string | null) {
+    if (!thread) return;
+    try {
+      const r = await api<{ answer: string | null }>(`/api/talkback/posts/${thread.post.id}/answer`, { method: "POST", json: { comment: id } });
+      thread.post.answer = r.answer;
+    } catch (e) {
+      error = (e as Error).message;
+    }
+  }
+  const canMark = $derived(!!thread && thread.post.status === "live" && (thread.post.uid === info?.standing.uid || session.admin));
+
+  // --- Before posting: threads that may already answer it
+  let similar = $state<Post[]>([]);
+  let similarFor = "";
+  $effect(() => {
+    const title = draft.title.trim();
+    if (!writing || title.length < 8 || title === similarFor) return;
+    const asked = title;
+    const timer = setTimeout(async () => {
+      similarFor = asked;
+      try {
+        const found = await api<Post[]>(`/api/talkback/posts?q=${encodeURIComponent(asked)}&sort=top`);
+        if (draft.title.trim() === asked) similar = found.slice(0, 4);
+      } catch {
+        similar = [];
+      }
+    }, 450);
+    return () => clearTimeout(timer);
+  });
+
   // --- The crew carries a proposal to the wishlist
   async function promote() {
     if (!thread) return;
@@ -198,8 +235,12 @@
     }
   }
 
-  /** The comments under `parent`, in the order written. */
-  const under = (parent: string | null) => (thread?.comments ?? []).filter((c) => c.parent === parent);
+  /** The comments under `parent`, in the order written; at the top, the one that answered the question first. */
+  const under = (parent: string | null) => {
+    const here = (thread?.comments ?? []).filter((c) => c.parent === parent);
+    const answer = parent === null ? thread?.post.answer : null;
+    return answer ? [...here.filter((c) => c.id === answer), ...here.filter((c) => c.id !== answer)] : here;
+  };
 </script>
 
 {#snippet votes(kind: "post" | "comment", id: string, score: number, mine: number, own: boolean)}
@@ -213,7 +254,8 @@
 {#snippet comments(parent: string | null)}
   <ul class="comments">
     {#each under(parent) as c (c.id)}
-      <li data-comment={c.id}>
+      <li data-comment={c.id} class:answer={thread?.post.answer === c.id}>
+        {#if thread?.post.answer === c.id}<p class="answered" data-answer>✓ The answer, as whoever asked marked it</p>{/if}
         <div class="line">
           {@render votes("comment", c.id, c.score, thread?.votes[`comment:${c.id}`] ?? 0, c.uid === info?.standing.uid)}
           <span class="by">{c.author} · {ago(c.created)}{c.status === "held" ? " · waiting for the crew" : ""}</span>
@@ -224,6 +266,13 @@
           <div class="md">{@html markdown(c.body)}</div>
           <p class="acts">
             {#if canWrite}<button class="link" onclick={() => { replyTo = c.id; reply = ""; }}>Reply</button>{/if}
+            {#if canMark && c.depth === 0 && c.status === "live"}
+              {#if thread?.post.answer === c.id}
+                <button class="link" onclick={() => markAnswer(null)} data-unmark>Not the answer after all</button>
+              {:else}
+                <button class="link" onclick={() => markAnswer(c.id)} data-mark>This answered it</button>
+              {/if}
+            {/if}
             <Report kind="comment" target={c.id} standing={info?.standing ?? null} />
           </p>
         {/if}
@@ -274,6 +323,8 @@
         <h2>{thread.post.title}</h2>
       </div>
       <p class="by">
+        {#if thread.post.pinned}<span class="pin" title="Pinned to the top of its community">Pinned</span>{/if}
+        {#if thread.post.answer}<span class="solved">Answered</span>{/if}
         {#if flairName(thread.post.flair)}<span class="flair">{flairName(thread.post.flair)}</span>{/if}
         {thread.post.author} · {ago(thread.post.created)}{thread.post.status === "held" ? " · waiting for the crew: only you see it" : ""}
         {#if thread.post.wish}· <a class="link" href={`/island/#/muro`}>on the wishlist</a>{/if}
@@ -333,6 +384,16 @@
             {#each info?.communities ?? [] as c (c.id)}<option value={c.id}>{c.group}: {c.name}</option>{/each}
           </select>
           <input type="text" bind:value={draft.title} maxlength="140" placeholder="Title" aria-label="Title" />
+          {#if similar.length}
+            <div class="similar" data-similar>
+              <p class="note">Already asked? These may answer it:</p>
+              <ul>
+                {#each similar as p (p.id)}
+                  <li><a class="link" href={`/talkback/${p.id}`}>{p.title}</a>{p.answer ? " ✓" : ""} <span class="note">in {name(p.community)}</span></li>
+                {/each}
+              </ul>
+            </div>
+          {/if}
           <textarea bind:value={draft.body} maxlength="10000" rows="7" placeholder="**bold**, *italic*, `code`, > quote, - lists, [a link](https://…)" aria-label="What you want to say"></textarea>
           <select bind:value={draft.flair} aria-label="Flair">
             <option value="">No flair</option>
@@ -351,6 +412,8 @@
             <div>
               <a class="title" href={`/talkback/${p.id}`}>{p.title}</a>
               <p class="by">
+                {#if p.pinned && community}<span class="pin" title="Pinned to the top of its community">Pinned</span>{/if}
+                {#if p.answer}<span class="solved">Answered</span>{/if}
                 {#if flairName(p.flair)}<span class="flair">{flairName(p.flair)}</span>{/if}
                 <a class="link" href={`/talkback/c/${p.community}`}>{name(p.community)}</a> · {p.author} · {ago(p.created)} · {p.comments} comment{p.comments === 1 ? "" : "s"}{p.status === "held" ? " · waiting for the crew" : ""}
               </p>
@@ -365,6 +428,41 @@
 {/if}
 
 <style>
+  .pin,
+  .solved {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 999px;
+    margin-right: 6px;
+    border: 1px solid currentColor;
+  }
+  .pin {
+    color: var(--accent, #e2445c);
+  }
+  .solved {
+    color: #2fae6a;
+  }
+  li.answer {
+    border-left: 3px solid #2fae6a;
+    padding-left: 12px;
+  }
+  .answered {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #2fae6a;
+  }
+  .similar {
+    border: 1px dashed var(--line, #444);
+    border-radius: 6px;
+    padding: 8px 12px;
+  }
+  .similar ul {
+    margin: 4px 0 0;
+    padding-left: 18px;
+  }
   .layout {
     display: grid;
     grid-template-columns: 15rem minmax(0, 1fr);

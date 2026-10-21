@@ -1,0 +1,4243 @@
+{
+  "app": "df9c971f16df49240fbd251bcbbbbbf61635b14a",
+  "longest": 4,
+  "set": {
+    "purposes": [
+      "karaoke",
+      "scratch",
+      "open-format",
+      "one-hand",
+      "club",
+      "mobile",
+      "practice",
+      "essentials",
+      "performance",
+      "autopilot",
+      "dashboards",
+      "other"
+    ],
+    "editions": [
+      "autopilot",
+      "hobbyist",
+      "apprentice",
+      "karaoke",
+      "pro",
+      "full",
+      "custom"
+    ],
+    "most": 64,
+    "name": 48,
+    "about": 400
+  },
+  "panels": [
+    "library",
+    "prepare",
+    "next",
+    "course",
+    "studio",
+    "lighting",
+    "autopilot",
+    "plan",
+    "pair",
+    "room",
+    "night",
+    "requests",
+    "karaoke",
+    "assistant",
+    "stems",
+    "fx",
+    "sampler",
+    "practice",
+    "event",
+    "crowd",
+    "camera",
+    "video",
+    "marketplace",
+    "kit",
+    "journal",
+    "athand",
+    "mixes",
+    "history",
+    "memory",
+    "controllers",
+    "booth",
+    "presets",
+    "keys",
+    "log",
+    "settings"
+  ],
+  "boards": [
+    "prepare",
+    "live",
+    "lab",
+    "music",
+    "kit",
+    "social",
+    "karaoke",
+    "karaoke-prep",
+    "decks"
+  ],
+  "ui": [
+    "palette",
+    "search",
+    "back",
+    "record",
+    "mark",
+    "everything",
+    "dashboard",
+    "browse up",
+    "browse down",
+    "load 1",
+    "load 2",
+    "load 3",
+    "load 4",
+    "deck next",
+    "deck previous",
+    "deck float",
+    "deck design",
+    "deck tone",
+    "deck pads",
+    "deck loops",
+    "deck fx"
+  ],
+  "guides": [
+    "next",
+    "mix",
+    "energy",
+    "request",
+    "learn",
+    "trouble"
+  ],
+  "switch_kinds": [
+    "activity",
+    "preset",
+    "theme",
+    "workspace"
+  ],
+  "vocabulary": [
+    {
+      "target": "deck",
+      "verb": "play",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "start playback",
+      "example": "deck 1 play"
+    },
+    {
+      "target": "deck",
+      "verb": "pause",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "stop playback, staying where you are",
+      "example": "deck 1 pause"
+    },
+    {
+      "target": "deck",
+      "verb": "play_pause",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "toggle playback",
+      "example": "deck 1 play_pause"
+    },
+    {
+      "target": "deck",
+      "verb": "cue",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "stop and return to the cue point",
+      "example": "deck 1 cue"
+    },
+    {
+      "target": "deck",
+      "verb": "eject",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "unload the track",
+      "example": "deck 1 eject"
+    },
+    {
+      "target": "deck",
+      "verb": "seek",
+      "argument": "frames",
+      "min": null,
+      "max": null,
+      "help": "jump the playhead to a position in frames",
+      "example": "deck 1 seek 48000"
+    },
+    {
+      "target": "deck",
+      "verb": "rate",
+      "argument": "number",
+      "min": -4.0,
+      "max": 4.0,
+      "help": "set playback speed directly; 1.0 is normal, negative is reverse",
+      "example": "deck 1 rate 1.0"
+    },
+    {
+      "target": "deck",
+      "verb": "pitch",
+      "argument": "number",
+      "min": -1.0,
+      "max": 1.0,
+      "help": "pitch fader as a fraction; 0.08 is +8%",
+      "example": "deck 1 pitch 0.08"
+    },
+    {
+      "target": "deck",
+      "verb": "pitch_range",
+      "argument": "number",
+      "min": 1.0,
+      "max": 100.0,
+      "help": "how far the pitch fader reaches either side, in percent; does not move the tempo",
+      "example": "deck 1 pitch_range 8"
+    },
+    {
+      "target": "deck",
+      "verb": "clone",
+      "argument": "number",
+      "min": 1.0,
+      "max": 4.0,
+      "help": "make this deck a double of another: same record, place, speed and key, in step",
+      "example": "deck 2 clone 1"
+    },
+    {
+      "target": "deck",
+      "verb": "pitch_fader",
+      "argument": "number",
+      "min": -1.0,
+      "max": 1.0,
+      "help": "pitch fader by its own travel, -1 to +1, across the deck's pitch range",
+      "example": "deck 1 pitch_fader 0.5"
+    },
+    {
+      "target": "deck",
+      "verb": "keylock_on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "hold the musical key while the pitch fader changes tempo",
+      "example": "deck 1 keylock_on"
+    },
+    {
+      "target": "deck",
+      "verb": "keylock_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "let the pitch fader move tempo and key together",
+      "example": "deck 1 keylock_off"
+    },
+    {
+      "target": "deck",
+      "verb": "keylock_toggle",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "flip keylock",
+      "example": "deck 1 keylock_toggle"
+    },
+    {
+      "target": "deck",
+      "verb": "slip_on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "keep a shadow playhead running while a loop or a censor diverts this one",
+      "example": "deck 1 slip_on"
+    },
+    {
+      "target": "deck",
+      "verb": "slip_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "stop shadowing, and stay where the playhead is",
+      "example": "deck 1 slip_off"
+    },
+    {
+      "target": "deck",
+      "verb": "slip_toggle",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "flip slip mode",
+      "example": "deck 1 slip_toggle"
+    },
+    {
+      "target": "deck",
+      "verb": "reverse_on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "play backwards",
+      "example": "deck 1 reverse_on"
+    },
+    {
+      "target": "deck",
+      "verb": "reverse_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "play forwards again",
+      "example": "deck 1 reverse_off"
+    },
+    {
+      "target": "deck",
+      "verb": "reverse_toggle",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "flip the direction of travel",
+      "example": "deck 1 reverse_toggle"
+    },
+    {
+      "target": "deck",
+      "verb": "censor_on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "hold the censor: reverse over a word, and land back on the beat",
+      "example": "deck 1 censor_on"
+    },
+    {
+      "target": "deck",
+      "verb": "censor_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "release the censor",
+      "example": "deck 1 censor_off"
+    },
+    {
+      "target": "deck",
+      "verb": "brake",
+      "argument": "number",
+      "min": 0.0625,
+      "max": 32.0,
+      "help": "cut the motor and coast to a stop over this many beats, like a turntable losing power",
+      "example": "deck 1 brake 2"
+    },
+    {
+      "target": "deck",
+      "verb": "brake_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "put the motor back on, wherever the record got to",
+      "example": "deck 1 brake_off"
+    },
+    {
+      "target": "deck",
+      "verb": "backspin",
+      "argument": "number",
+      "min": 0.0625,
+      "max": 32.0,
+      "help": "throw the record backwards and let friction take it down over this many beats",
+      "example": "deck 1 backspin 1"
+    },
+    {
+      "target": "deck",
+      "verb": "backspin_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "put the motor back on after a backspin",
+      "example": "deck 1 backspin_off"
+    },
+    {
+      "target": "deck",
+      "verb": "slice",
+      "argument": "number",
+      "min": 1.0,
+      "max": 8.0,
+      "help": "hold one of the eight slices of the current span; releases with `slice_off`, and the track lands where it would have been",
+      "example": "deck 1 slice 3"
+    },
+    {
+      "target": "deck",
+      "verb": "slice_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "let a held slice go",
+      "example": "deck 1 slice_off"
+    },
+    {
+      "target": "deck",
+      "verb": "slice_domain",
+      "argument": "number",
+      "min": 1.0,
+      "max": 64.0,
+      "help": "how many beats the eight slices divide up; 4, 8, 16 or 32 in practice",
+      "example": "deck 1 slice_domain 16"
+    },
+    {
+      "target": "deck",
+      "verb": "stem_mute",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "toggle one stem: vocal, drums, bass or other",
+      "example": "deck 1 stem_mute vocal"
+    },
+    {
+      "target": "deck",
+      "verb": "stem_solo_on",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "hold only one stem in the deck mix",
+      "example": "deck 1 stem_solo_on bass"
+    },
+    {
+      "target": "deck",
+      "verb": "stem_solo_off",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "release a held stem solo",
+      "example": "deck 1 stem_solo_off bass"
+    },
+    {
+      "target": "deck",
+      "verb": "stem_volume",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "set one stem level as stem:value, with value from 0 to 1",
+      "example": "deck 1 stem_volume drums:0.5"
+    },
+    {
+      "target": "deck",
+      "verb": "roll",
+      "argument": "number",
+      "min": 0.0625,
+      "max": 32.0,
+      "help": "hold a loop roll this many beats long, as a decimal or 1/4 — the track carries on underneath",
+      "example": "deck 1 roll 0.25"
+    },
+    {
+      "target": "deck",
+      "verb": "roll_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "release the roll, and land where the track would have been",
+      "example": "deck 1 roll_off"
+    },
+    {
+      "target": "deck",
+      "verb": "fx",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "change an effect slot: `fx <1-3> <none|echo|delay|reverb|gate|crush|flanger|phaser|filter>` to load one, then `on`/`off`/`toggle`, `wet <0-1>`, `beats <0.0625-4>`, `amount <0-1>`, `pre`/`post`",
+      "example": "deck 1 fx 1 wet 0.5"
+    },
+    {
+      "target": "deck",
+      "verb": "key",
+      "argument": "number",
+      "min": -12.0,
+      "max": 12.0,
+      "help": "transpose in semitones for harmonic mixing, without changing tempo",
+      "example": "deck 1 key 2"
+    },
+    {
+      "target": "deck",
+      "verb": "sync",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "match tempo and phase to the other playing deck; refused if either grid is weak",
+      "example": "deck 2 sync"
+    },
+    {
+      "target": "deck",
+      "verb": "sync_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "release the tempo lock and give the pitch fader back",
+      "example": "deck 2 sync_off"
+    },
+    {
+      "target": "deck",
+      "verb": "beatjump",
+      "argument": "number",
+      "min": -64.0,
+      "max": 64.0,
+      "help": "move the playhead by whole beats; negative goes back",
+      "example": "deck 1 beatjump 4"
+    },
+    {
+      "target": "deck",
+      "verb": "hotcue",
+      "argument": "number",
+      "min": 1.0,
+      "max": 8.0,
+      "help": "jump to a hot cue, or set it here if the slot is empty",
+      "example": "deck 1 hotcue 1"
+    },
+    {
+      "target": "deck",
+      "verb": "hotcue_set",
+      "argument": "number",
+      "min": 1.0,
+      "max": 8.0,
+      "help": "set a hot cue at the playhead, replacing whatever was there",
+      "example": "deck 1 hotcue_set 2"
+    },
+    {
+      "target": "deck",
+      "verb": "hotcue_clear",
+      "argument": "number",
+      "min": 1.0,
+      "max": 8.0,
+      "help": "forget a hot cue",
+      "example": "deck 1 hotcue_clear 2"
+    },
+    {
+      "target": "deck",
+      "verb": "loop",
+      "argument": "number",
+      "min": 0.0,
+      "max": 128.0,
+      "help": "loop this many beats from here, as a decimal or 1/4; 0 turns looping off",
+      "example": "deck 1 loop 4"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "stop looping and carry on",
+      "example": "deck 1 loop_off"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_halve",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "halve the loop, keeping its start",
+      "example": "deck 1 loop_halve"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_double",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "double the loop, keeping its start",
+      "example": "deck 1 loop_double"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_in",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "drop the loop's in point at the playhead",
+      "example": "deck 1 loop_in"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_out",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "drop the out point and start looping",
+      "example": "deck 1 loop_out"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_move",
+      "argument": "number",
+      "min": -64.0,
+      "max": 64.0,
+      "help": "slide the whole loop by whole beats, keeping its length",
+      "example": "deck 1 loop_move 4"
+    },
+    {
+      "target": "deck",
+      "verb": "volume",
+      "argument": "number",
+      "min": 0.0,
+      "max": 1.0,
+      "help": "channel fader",
+      "example": "deck 1 volume 0.8"
+    },
+    {
+      "target": "deck",
+      "verb": "gain",
+      "argument": "number",
+      "min": -24.0,
+      "max": 24.0,
+      "help": "trim, in decibels",
+      "example": "deck 1 gain -3"
+    },
+    {
+      "target": "deck",
+      "verb": "eq_low",
+      "argument": "number",
+      "min": 0.0,
+      "max": 4.0,
+      "help": "low band; 0 is a true kill, 1 is flat",
+      "example": "deck 1 eq_low 0"
+    },
+    {
+      "target": "deck",
+      "verb": "eq_mid",
+      "argument": "number",
+      "min": 0.0,
+      "max": 4.0,
+      "help": "mid band; 0 is a true kill, 1 is flat",
+      "example": "deck 1 eq_mid 1"
+    },
+    {
+      "target": "deck",
+      "verb": "eq_high",
+      "argument": "number",
+      "min": 0.0,
+      "max": 4.0,
+      "help": "high band; 0 is a true kill, 1 is flat",
+      "example": "deck 1 eq_high 1"
+    },
+    {
+      "target": "deck",
+      "verb": "filter",
+      "argument": "number",
+      "min": -1.0,
+      "max": 1.0,
+      "help": "filter sweep; -1 fully low-passed, 0 off, +1 fully high-passed",
+      "example": "deck 1 filter -0.5"
+    },
+    {
+      "target": "deck",
+      "verb": "voice",
+      "argument": "number",
+      "min": 0.0,
+      "max": 1.0,
+      "help": "how much of the recorded singer to leave in, for karaoke: 1 as recorded, 0.25 a guide vocal, 0 out",
+      "example": "deck 1 voice 0"
+    },
+    {
+      "target": "deck",
+      "verb": "cue_on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "send this deck to the headphones",
+      "example": "deck 1 cue_on"
+    },
+    {
+      "target": "deck",
+      "verb": "cue_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "stop sending this deck to the headphones",
+      "example": "deck 1 cue_off"
+    },
+    {
+      "target": "deck",
+      "verb": "cue_toggle",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "flip the headphone cue send",
+      "example": "deck 1 cue_toggle"
+    },
+    {
+      "target": "deck",
+      "verb": "xfader_left",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "put this deck on the left half of the crossfader",
+      "example": "deck 1 xfader_left"
+    },
+    {
+      "target": "deck",
+      "verb": "xfader_right",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "put this deck on the right half of the crossfader",
+      "example": "deck 2 xfader_right"
+    },
+    {
+      "target": "deck",
+      "verb": "xfader_thru",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "take this deck off the crossfader; it plays whatever the crossfader does",
+      "example": "deck 3 xfader_thru"
+    },
+    {
+      "target": "deck",
+      "verb": "grid_here",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "put a beat on the playhead, leaving the tempo alone",
+      "example": "deck 1 grid_here"
+    },
+    {
+      "target": "deck",
+      "verb": "grid_nudge",
+      "argument": "number",
+      "min": -500.0,
+      "max": 500.0,
+      "help": "slide the whole beat grid by milliseconds; negative is earlier",
+      "example": "deck 1 grid_nudge -10"
+    },
+    {
+      "target": "deck",
+      "verb": "grid_scale",
+      "argument": "number",
+      "min": 0.25,
+      "max": 4.0,
+      "help": "multiply the grid tempo, keeping the anchor; 2 and 0.5 fix an octave error",
+      "example": "deck 1 grid_scale 2"
+    },
+    {
+      "target": "deck",
+      "verb": "grid_bpm",
+      "argument": "number",
+      "min": 20.0,
+      "max": 400.0,
+      "help": "set the grid tempo outright, keeping the anchor",
+      "example": "deck 1 grid_bpm 128"
+    },
+    {
+      "target": "deck",
+      "verb": "grid_tap",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "tap along with the music; two taps give a tempo and the last sets the phase",
+      "example": "deck 1 grid_tap"
+    },
+    {
+      "target": "deck",
+      "verb": "grid_reset",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "throw away grid edits and go back to what the analyser found",
+      "example": "deck 1 grid_reset"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_save",
+      "argument": "number",
+      "min": 1.0,
+      "max": 8.0,
+      "help": "keep the loop that is playing in a numbered slot, with the track",
+      "example": "deck 1 loop_save 1"
+    },
+    {
+      "target": "deck",
+      "verb": "loop_recall",
+      "argument": "number",
+      "min": 1.0,
+      "max": 8.0,
+      "help": "put a saved loop back and start looping it",
+      "example": "deck 1 loop_recall 1"
+    },
+    {
+      "target": "mixer",
+      "verb": "crossfader",
+      "argument": "number",
+      "min": -1.0,
+      "max": 1.0,
+      "help": "crossfader; -1 is the decks assigned left, +1 the decks assigned right",
+      "example": "crossfader 0"
+    },
+    {
+      "target": "mixer",
+      "verb": "crossfader curve smooth",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "constant-power crossfader, for long blends (the default)",
+      "example": "crossfader curve smooth"
+    },
+    {
+      "target": "mixer",
+      "verb": "crossfader curve linear",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "linear crossfader, for the same record on both decks",
+      "example": "crossfader curve linear"
+    },
+    {
+      "target": "mixer",
+      "verb": "crossfader curve sharp",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "sharp-cut crossfader, for scratching: full volume a few millimetres in",
+      "example": "crossfader curve sharp"
+    },
+    {
+      "target": "mixer",
+      "verb": "sampler",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "the sampler: `sampler <1-8> trigger|release|stop|clear`, `sampler <1-8> one_shot|hold|loop|stutter` to set how a pad behaves, `sampler <1-8> volume <0-1>`, `master`/`cue` to route it, `sync`/`sync_off`; and `sampler bank <1-4>`, `sampler volume <0-1>`, `sampler stop_all`",
+      "example": "sampler 1 volume 0.8"
+    },
+    {
+      "target": "mixer",
+      "verb": "sampler record",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "record into a slot of the bank showing: `sampler record <1-8> master` takes what the room hears, `sampler record <1-8> deck <n>` takes that deck before its fader; then `sampler record stop` to keep it or `sampler record cancel` to bin it",
+      "example": "sampler record 3 deck 1"
+    },
+    {
+      "target": "mixer",
+      "verb": "master fx",
+      "argument": "words",
+      "min": null,
+      "max": null,
+      "help": "change a master effect slot; the same grammar as a deck's, applied to the whole mix",
+      "example": "master fx 1 wet 0.5"
+    },
+    {
+      "target": "mixer",
+      "verb": "master gain",
+      "argument": "number",
+      "min": -24.0,
+      "max": 24.0,
+      "help": "master output level in decibels",
+      "example": "master gain 0"
+    },
+    {
+      "target": "mixer",
+      "verb": "booth gain",
+      "argument": "number",
+      "min": -24.0,
+      "max": 24.0,
+      "help": "booth monitor level in decibels",
+      "example": "booth gain -6"
+    },
+    {
+      "target": "mixer",
+      "verb": "monitor music",
+      "argument": "number",
+      "min": -60.0,
+      "max": 12.0,
+      "help": "the music's level in the singers' monitor in decibels, apart from the room's; the bottom is off",
+      "example": "monitor music -6"
+    },
+    {
+      "target": "mixer",
+      "verb": "monitor split_on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "a monitor of their own for each singer, where the output has a pair for each",
+      "example": "monitor split_on"
+    },
+    {
+      "target": "mixer",
+      "verb": "monitor split_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "the singers share one monitor again",
+      "example": "monitor split_off"
+    },
+    {
+      "target": "mixer",
+      "verb": "cue mix",
+      "argument": "number",
+      "min": 0.0,
+      "max": 1.0,
+      "help": "headphone blend; 0 is all cue, 1 is all master",
+      "example": "cue mix 0.5"
+    },
+    {
+      "target": "mixer",
+      "verb": "cue split_on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "cue in one ear, master in the other",
+      "example": "cue split_on"
+    },
+    {
+      "target": "mixer",
+      "verb": "cue split_off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "return the headphones to a blend",
+      "example": "cue split_off"
+    },
+    {
+      "target": "mixer",
+      "verb": "record on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "record the master to disk; the file lands beside the settings, named for when it started",
+      "example": "record on"
+    },
+    {
+      "target": "mixer",
+      "verb": "record off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "stop recording and finish the file",
+      "example": "record off"
+    },
+    {
+      "target": "mixer",
+      "verb": "quantize on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "snap beat jumps to the grid",
+      "example": "quantize on"
+    },
+    {
+      "target": "mixer",
+      "verb": "quantize off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "let beat jumps move by an exact beat from wherever you are",
+      "example": "quantize off"
+    },
+    {
+      "target": "mixer",
+      "verb": "karaoke load",
+      "argument": "number",
+      "min": 1.0,
+      "max": 6.0,
+      "help": "put the next singer's song on that deck, in their key, with the voice they asked for",
+      "example": "karaoke load 2"
+    },
+    {
+      "target": "mixer",
+      "verb": "karaoke bring_in",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "mix the next singer's song in from what the room hears, at the next phrase",
+      "example": "karaoke bring_in"
+    },
+    {
+      "target": "mixer",
+      "verb": "karaoke sang",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "the singer up next has sung: they go to the back of the rotation",
+      "example": "karaoke sang"
+    },
+    {
+      "target": "mixer",
+      "verb": "safe",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "emergency: take every control back, clear every effect, flatten the tone",
+      "example": "safe"
+    },
+    {
+      "target": "mixer",
+      "verb": "limiter on",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "engage the master limiter (on by default)",
+      "example": "limiter on"
+    },
+    {
+      "target": "mixer",
+      "verb": "limiter off",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "bypass the master limiter, for an external processor downstream",
+      "example": "limiter off"
+    },
+    {
+      "target": "deck",
+      "verb": "sync_toggle",
+      "argument": "none",
+      "min": null,
+      "max": null,
+      "help": "",
+      "example": ""
+    }
+  ],
+  "action_heads": [
+    "automix",
+    "booth",
+    "crossfader",
+    "cue",
+    "karaoke",
+    "limiter",
+    "master",
+    "mic",
+    "monitor",
+    "quantize",
+    "record",
+    "safe",
+    "sampler"
+  ],
+  "tree": [
+    {
+      "keys": [
+        "space"
+      ],
+      "label": "Find anything (the palette)",
+      "group": false
+    },
+    {
+      "keys": [
+        "?"
+      ],
+      "label": "Every key",
+      "group": false
+    },
+    {
+      "keys": [
+        "/"
+      ],
+      "label": "Search the library",
+      "group": false
+    },
+    {
+      "keys": [
+        ","
+      ],
+      "label": "Settings",
+      "group": false
+    },
+    {
+      "keys": [
+        "`"
+      ],
+      "label": "Back to the last activity",
+      "group": false
+    },
+    {
+      "keys": [
+        "0"
+      ],
+      "label": "Launcher (everything, on one screen)",
+      "group": false
+    },
+    {
+      "keys": [
+        "1"
+      ],
+      "label": "Dig",
+      "group": false
+    },
+    {
+      "keys": [
+        "2"
+      ],
+      "label": "Mix",
+      "group": false
+    },
+    {
+      "keys": [
+        "3"
+      ],
+      "label": "Perform",
+      "group": false
+    },
+    {
+      "keys": [
+        "4"
+      ],
+      "label": "Prepare",
+      "group": false
+    },
+    {
+      "keys": [
+        "5"
+      ],
+      "label": "Requests",
+      "group": false
+    },
+    {
+      "keys": [
+        "6"
+      ],
+      "label": "Autopilot",
+      "group": false
+    },
+    {
+      "keys": [
+        "7"
+      ],
+      "label": "Practice",
+      "group": false
+    },
+    {
+      "keys": [
+        "8"
+      ],
+      "label": "Karaoke",
+      "group": false
+    },
+    {
+      "keys": [
+        "9"
+      ],
+      "label": "Event",
+      "group": false
+    },
+    {
+      "keys": [
+        "d"
+      ],
+      "label": "Deck (letters: the current one)",
+      "group": true
+    },
+    {
+      "keys": [
+        "d",
+        "1"
+      ],
+      "label": "Deck 1",
+      "group": true
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "p"
+      ],
+      "label": "Play / pause",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "c"
+      ],
+      "label": "Cue",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "s"
+      ],
+      "label": "Sync on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "k"
+      ],
+      "label": "Keylock on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "h"
+      ],
+      "label": "Headphones on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "l"
+      ],
+      "label": "Loop four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "o"
+      ],
+      "label": "Loop off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "b"
+      ],
+      "label": "Back four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "f"
+      ],
+      "label": "Forward four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "g"
+      ],
+      "label": "Grid: a beat here",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "1",
+        "e"
+      ],
+      "label": "Eject",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2"
+      ],
+      "label": "Deck 2",
+      "group": true
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "p"
+      ],
+      "label": "Play / pause",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "c"
+      ],
+      "label": "Cue",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "s"
+      ],
+      "label": "Sync on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "k"
+      ],
+      "label": "Keylock on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "h"
+      ],
+      "label": "Headphones on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "l"
+      ],
+      "label": "Loop four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "o"
+      ],
+      "label": "Loop off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "b"
+      ],
+      "label": "Back four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "f"
+      ],
+      "label": "Forward four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "g"
+      ],
+      "label": "Grid: a beat here",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "2",
+        "e"
+      ],
+      "label": "Eject",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "p"
+      ],
+      "label": "Play / pause",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "c"
+      ],
+      "label": "Cue",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "s"
+      ],
+      "label": "Sync on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "k"
+      ],
+      "label": "Keylock on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "h"
+      ],
+      "label": "Headphones on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "l"
+      ],
+      "label": "Loop four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "o"
+      ],
+      "label": "Loop off",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "b"
+      ],
+      "label": "Back four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "f"
+      ],
+      "label": "Forward four beats",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "g"
+      ],
+      "label": "Grid: a beat here",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "e"
+      ],
+      "label": "Eject",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "n"
+      ],
+      "label": "Next deck (Tab)",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "N"
+      ],
+      "label": "Deck before (Shift+Tab)",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "w"
+      ],
+      "label": "Float this deck in a window",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "x"
+      ],
+      "label": "Compact / full design",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "r"
+      ],
+      "label": "Open a part of the compact deck",
+      "group": true
+    },
+    {
+      "keys": [
+        "d",
+        "r",
+        "t"
+      ],
+      "label": "EQ & tempo",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "r",
+        "p"
+      ],
+      "label": "Pads",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "r",
+        "l"
+      ],
+      "label": "Loops",
+      "group": false
+    },
+    {
+      "keys": [
+        "d",
+        "r",
+        "f"
+      ],
+      "label": "FX & stems",
+      "group": false
+    },
+    {
+      "keys": [
+        "s"
+      ],
+      "label": "Stems (letters: the current deck)",
+      "group": true
+    },
+    {
+      "keys": [
+        "s",
+        "1"
+      ],
+      "label": "Deck 1",
+      "group": true
+    },
+    {
+      "keys": [
+        "s",
+        "1",
+        "v"
+      ],
+      "label": "Mute / unmute the vocals",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "1",
+        "d"
+      ],
+      "label": "Mute / unmute the drums",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "1",
+        "b"
+      ],
+      "label": "Mute / unmute the bass",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "1",
+        "o"
+      ],
+      "label": "Mute / unmute the other",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "2"
+      ],
+      "label": "Deck 2",
+      "group": true
+    },
+    {
+      "keys": [
+        "s",
+        "2",
+        "v"
+      ],
+      "label": "Mute / unmute the vocals",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "2",
+        "d"
+      ],
+      "label": "Mute / unmute the drums",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "2",
+        "b"
+      ],
+      "label": "Mute / unmute the bass",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "2",
+        "o"
+      ],
+      "label": "Mute / unmute the other",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "v"
+      ],
+      "label": "Mute / unmute the vocals",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "d"
+      ],
+      "label": "Mute / unmute the drums",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "b"
+      ],
+      "label": "Mute / unmute the bass",
+      "group": false
+    },
+    {
+      "keys": [
+        "s",
+        "o"
+      ],
+      "label": "Mute / unmute the other",
+      "group": false
+    },
+    {
+      "keys": [
+        "m"
+      ],
+      "label": "Mixer",
+      "group": true
+    },
+    {
+      "keys": [
+        "m",
+        "c"
+      ],
+      "label": "Crossfader to the centre",
+      "group": false
+    },
+    {
+      "keys": [
+        "m",
+        "a"
+      ],
+      "label": "Crossfader to side A",
+      "group": false
+    },
+    {
+      "keys": [
+        "m",
+        "b"
+      ],
+      "label": "Crossfader to side B",
+      "group": false
+    },
+    {
+      "keys": [
+        "m",
+        "x"
+      ],
+      "label": "Stop every sample",
+      "group": false
+    },
+    {
+      "keys": [
+        "r"
+      ],
+      "label": "Record",
+      "group": true
+    },
+    {
+      "keys": [
+        "r",
+        "r"
+      ],
+      "label": "Record the set on / off",
+      "group": false
+    },
+    {
+      "keys": [
+        "r",
+        "m"
+      ],
+      "label": "Mark this moment",
+      "group": false
+    },
+    {
+      "keys": [
+        "o"
+      ],
+      "label": "Open a panel",
+      "group": true
+    },
+    {
+      "keys": [
+        "o",
+        "l"
+      ],
+      "label": "Library",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "n"
+      ],
+      "label": "Next",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "p"
+      ],
+      "label": "Prepare",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "s"
+      ],
+      "label": "Set plan",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "2"
+      ],
+      "label": "Pair",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "r"
+      ],
+      "label": "Practice",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "t"
+      ],
+      "label": "The night",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "h"
+      ],
+      "label": "At hand",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "m"
+      ],
+      "label": "Tonight's mixes",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "q"
+      ],
+      "label": "Requests",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "k"
+      ],
+      "label": "Singers",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "b"
+      ],
+      "label": "Booth",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "o"
+      ],
+      "label": "Room",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "c"
+      ],
+      "label": "Sampler",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "f"
+      ],
+      "label": "Presets",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "a"
+      ],
+      "label": "Assistant",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "g"
+      ],
+      "label": "Controllers",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "?"
+      ],
+      "label": "Keys",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "j"
+      ],
+      "label": "Session log",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        ","
+      ],
+      "label": "Settings",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "e"
+      ],
+      "label": "Event",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "i"
+      ],
+      "label": "Press kit",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "w"
+      ],
+      "label": "Crowd",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "y"
+      ],
+      "label": "Camera",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "v"
+      ],
+      "label": "Video",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "+"
+      ],
+      "label": "Marketplace",
+      "group": false
+    },
+    {
+      "keys": [
+        "o",
+        "d"
+      ],
+      "label": "Lights",
+      "group": false
+    },
+    {
+      "keys": [
+        "O"
+      ],
+      "label": "Open a panel large, over the decks",
+      "group": true
+    },
+    {
+      "keys": [
+        "O",
+        "l"
+      ],
+      "label": "Library",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "n"
+      ],
+      "label": "Next",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "p"
+      ],
+      "label": "Prepare",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "s"
+      ],
+      "label": "Set plan",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "2"
+      ],
+      "label": "Pair",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "r"
+      ],
+      "label": "Practice",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "t"
+      ],
+      "label": "The night",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "h"
+      ],
+      "label": "At hand",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "m"
+      ],
+      "label": "Tonight's mixes",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "q"
+      ],
+      "label": "Requests",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "k"
+      ],
+      "label": "Singers",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "b"
+      ],
+      "label": "Booth",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "o"
+      ],
+      "label": "Room",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "c"
+      ],
+      "label": "Sampler",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "f"
+      ],
+      "label": "Presets",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "a"
+      ],
+      "label": "Assistant",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "g"
+      ],
+      "label": "Controllers",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "?"
+      ],
+      "label": "Keys",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "j"
+      ],
+      "label": "Session log",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        ","
+      ],
+      "label": "Settings",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "e"
+      ],
+      "label": "Event",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "i"
+      ],
+      "label": "Press kit",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "w"
+      ],
+      "label": "Crowd",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "y"
+      ],
+      "label": "Camera",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "v"
+      ],
+      "label": "Video",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "+"
+      ],
+      "label": "Marketplace",
+      "group": false
+    },
+    {
+      "keys": [
+        "O",
+        "d"
+      ],
+      "label": "Lights",
+      "group": false
+    },
+    {
+      "keys": [
+        "b"
+      ],
+      "label": "Dashboard",
+      "group": true
+    },
+    {
+      "keys": [
+        "b",
+        "p"
+      ],
+      "label": "Prepare",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "l"
+      ],
+      "label": "Live",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "x"
+      ],
+      "label": "Experiment",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "m"
+      ],
+      "label": "My music",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "i"
+      ],
+      "label": "Press kit",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "s"
+      ],
+      "label": "Social",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "k"
+      ],
+      "label": "Karaoke",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "K"
+      ],
+      "label": "Karaoke prep",
+      "group": false
+    },
+    {
+      "keys": [
+        "b",
+        "d"
+      ],
+      "label": "Decks",
+      "group": false
+    },
+    {
+      "keys": [
+        "v"
+      ],
+      "label": "View",
+      "group": true
+    },
+    {
+      "keys": [
+        "v",
+        "1"
+      ],
+      "label": "Dig",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "2"
+      ],
+      "label": "Mix",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "3"
+      ],
+      "label": "Perform",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "4"
+      ],
+      "label": "Prepare",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "5"
+      ],
+      "label": "Requests",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "6"
+      ],
+      "label": "Autopilot",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "7"
+      ],
+      "label": "Practice",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "8"
+      ],
+      "label": "Karaoke",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "9"
+      ],
+      "label": "Event",
+      "group": false
+    },
+    {
+      "keys": [
+        "v",
+        "e"
+      ],
+      "label": "Everything (leave activities)",
+      "group": false
+    },
+    {
+      "keys": [
+        "t"
+      ],
+      "label": "Theme",
+      "group": true
+    },
+    {
+      "keys": [
+        "t",
+        "s"
+      ],
+      "label": "Studio Neutral",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "p"
+      ],
+      "label": "Pro Dark",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "d"
+      ],
+      "label": "Daylight",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "c"
+      ],
+      "label": "Club",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "f"
+      ],
+      "label": "Festival",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "b"
+      ],
+      "label": "Beach Sunset",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "a"
+      ],
+      "label": "Caribbean",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "l"
+      ],
+      "label": "Latin",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "w"
+      ],
+      "label": "Wedding",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "o"
+      ],
+      "label": "Lounge",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "r"
+      ],
+      "label": "Scratch",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "t"
+      ],
+      "label": "Stem Lab",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "e"
+      ],
+      "label": "Cyber / Experimental",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "g"
+      ],
+      "label": "Organic Base",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "i"
+      ],
+      "label": "Industrial Techno",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "u"
+      ],
+      "label": "Colour-blind safe",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "m"
+      ],
+      "label": "Spectrum",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "n"
+      ],
+      "label": "Signal",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "h"
+      ],
+      "label": "Aurora",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "k"
+      ],
+      "label": "Karaoke Neon",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "j"
+      ],
+      "label": "Spotlight",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "v"
+      ],
+      "label": "Velvet",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "q"
+      ],
+      "label": "Malecón Night",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "x"
+      ],
+      "label": "Carnaval",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "y"
+      ],
+      "label": "Bioluminescent Bay",
+      "group": false
+    },
+    {
+      "keys": [
+        "t",
+        "z"
+      ],
+      "label": "Bachata Rosa",
+      "group": false
+    },
+    {
+      "keys": [
+        "w"
+      ],
+      "label": "Workspace",
+      "group": true
+    },
+    {
+      "keys": [
+        "w",
+        "p"
+      ],
+      "label": "Perform",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "b"
+      ],
+      "label": "Beginner",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "c"
+      ],
+      "label": "Classic DJ",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "r"
+      ],
+      "label": "Pro Performance",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "d"
+      ],
+      "label": "4 Deck",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "e"
+      ],
+      "label": "6 Deck",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "l"
+      ],
+      "label": "Club",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "m"
+      ],
+      "label": "Mobile DJ",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "w"
+      ],
+      "label": "Wedding / Event",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "o"
+      ],
+      "label": "Open Format",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "a"
+      ],
+      "label": "Latin / Caribbean",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "s"
+      ],
+      "label": "Scratch / Turntablism",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "t"
+      ],
+      "label": "Stem Performance",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "h"
+      ],
+      "label": "Mashup / Remix",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "i"
+      ],
+      "label": "Preparation",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "n"
+      ],
+      "label": "Set Planning",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "g"
+      ],
+      "label": "Practice / Learning",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "u"
+      ],
+      "label": "Autopilot",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "f"
+      ],
+      "label": "Read the room",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "j"
+      ],
+      "label": "Minimal",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "k"
+      ],
+      "label": "High Contrast",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "q"
+      ],
+      "label": "Laptop Compact",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "v"
+      ],
+      "label": "Controller Focus",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "x"
+      ],
+      "label": "CDJ / External Mixer",
+      "group": false
+    },
+    {
+      "keys": [
+        "w",
+        "y"
+      ],
+      "label": "Karaoke / MC",
+      "group": false
+    },
+    {
+      "keys": [
+        "p"
+      ],
+      "label": "Preset",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "w"
+      ],
+      "label": "Warm up",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "f"
+      ],
+      "label": "Fiesta",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "p"
+      ],
+      "label": "Peak",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "s"
+      ],
+      "label": "Slow down",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "c"
+      ],
+      "label": "Chill out",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "l"
+      ],
+      "label": "Close",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "i"
+      ],
+      "label": "Cue it up",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "i",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "i",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "r"
+      ],
+      "label": "Ready without bass",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "r",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "r",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "t"
+      ],
+      "label": "Reset the strip",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "t",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "t",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "b"
+      ],
+      "label": "Take the bass",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "b",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "b",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "g"
+      ],
+      "label": "Give up the bass",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "g",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "g",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "h"
+      ],
+      "label": "Lift the top",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "h",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "h",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "e"
+      ],
+      "label": "Filter build",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "e",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "e",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "d"
+      ],
+      "label": "Drop",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "d",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "d",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "a"
+      ],
+      "label": "Hear both",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "u"
+      ],
+      "label": "Cutting",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "n"
+      ],
+      "label": "Blending",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "j"
+      ],
+      "label": "Bachata blend",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "j",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "j",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "m"
+      ],
+      "label": "Merengue drive",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "m",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "m",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "o"
+      ],
+      "label": "Dembow swap",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "o",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "o",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "k"
+      ],
+      "label": "Típico wide open",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "k",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "k",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "v"
+      ],
+      "label": "Vocals out",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "v",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "v",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "q"
+      ],
+      "label": "Guide vocal",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "q",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "q",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "y"
+      ],
+      "label": "Everyone sings",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "y",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "y",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "x"
+      ],
+      "label": "Down a tone",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "x",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "x",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "z"
+      ],
+      "label": "Down a fourth",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        "z",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "z",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        "."
+      ],
+      "label": "More: Preset",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        ".",
+        "u"
+      ],
+      "label": "Up a tone",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        ".",
+        "u",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        ".",
+        "u",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        ".",
+        "o"
+      ],
+      "label": "Original key",
+      "group": true
+    },
+    {
+      "keys": [
+        "p",
+        ".",
+        "o",
+        "1"
+      ],
+      "label": "On deck 1",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        ".",
+        "o",
+        "2"
+      ],
+      "label": "On deck 2",
+      "group": false
+    },
+    {
+      "keys": [
+        "p",
+        ".",
+        "m"
+      ],
+      "label": "Open microphones",
+      "group": false
+    }
+  ],
+  "builtin": {
+    "builtin:autopilot": {
+      "name": "Autopilot",
+      "about": "Driving and being driven, on Space a: a a lets the automix mix, a o takes it back, a n mixes now; a p the autopilot's panel, a r how the room is taking it.",
+      "purpose": "autopilot",
+      "edition": "autopilot",
+      "keys": [
+        {
+          "keys": [
+            "a",
+            "a"
+          ],
+          "label": "Let the automix mix",
+          "run": "action automix on"
+        },
+        {
+          "keys": [
+            "a",
+            "o"
+          ],
+          "label": "Take it back",
+          "run": "action automix off"
+        },
+        {
+          "keys": [
+            "a",
+            "n"
+          ],
+          "label": "Mix to the next record now",
+          "run": "action automix now"
+        },
+        {
+          "keys": [
+            "a",
+            "p"
+          ],
+          "label": "The autopilot",
+          "run": "surface autopilot"
+        },
+        {
+          "keys": [
+            "a",
+            "r"
+          ],
+          "label": "The room",
+          "run": "surface room"
+        },
+        {
+          "keys": [
+            "a",
+            "x"
+          ],
+          "label": "What comes next",
+          "run": "surface next"
+        },
+        {
+          "keys": [
+            "a",
+            "w"
+          ],
+          "label": "The autopilot's workspace",
+          "run": "switch workspace Autopilot"
+        },
+        {
+          "keys": [
+            "a",
+            "v"
+          ],
+          "label": "The autopilot, as an activity",
+          "run": "switch activity autopilot"
+        }
+      ]
+    },
+    "builtin:dashboards": {
+      "name": "Dashboards",
+      "about": "Working from the boards, on Space g: g and a board's own key from Space b goes there, g 0 is the launcher, g g the decks again, and Shift and a panel's key from Space o opens that panel large.",
+      "purpose": "dashboards",
+      "keys": [
+        {
+          "keys": [
+            "g",
+            "p"
+          ],
+          "label": "Prepare",
+          "run": "board prepare"
+        },
+        {
+          "keys": [
+            "g",
+            "l"
+          ],
+          "label": "Live",
+          "run": "board live"
+        },
+        {
+          "keys": [
+            "g",
+            "x"
+          ],
+          "label": "Experiment",
+          "run": "board lab"
+        },
+        {
+          "keys": [
+            "g",
+            "m"
+          ],
+          "label": "My music",
+          "run": "board music"
+        },
+        {
+          "keys": [
+            "g",
+            "i"
+          ],
+          "label": "Press kit",
+          "run": "board kit"
+        },
+        {
+          "keys": [
+            "g",
+            "s"
+          ],
+          "label": "Social",
+          "run": "board social"
+        },
+        {
+          "keys": [
+            "g",
+            "k"
+          ],
+          "label": "Karaoke",
+          "run": "board karaoke"
+        },
+        {
+          "keys": [
+            "g",
+            "K"
+          ],
+          "label": "Karaoke prep",
+          "run": "board karaoke-prep"
+        },
+        {
+          "keys": [
+            "g",
+            "0"
+          ],
+          "label": "The launcher",
+          "run": "ui dashboard"
+        },
+        {
+          "keys": [
+            "g",
+            "g"
+          ],
+          "label": "Back to the decks",
+          "run": "board decks"
+        },
+        {
+          "keys": [
+            "g",
+            "L"
+          ],
+          "label": "The library panel, large",
+          "run": "lift library"
+        },
+        {
+          "keys": [
+            "g",
+            "N"
+          ],
+          "label": "The next panel, large",
+          "run": "lift next"
+        },
+        {
+          "keys": [
+            "g",
+            "P"
+          ],
+          "label": "The prepare panel, large",
+          "run": "lift prepare"
+        },
+        {
+          "keys": [
+            "g",
+            "M"
+          ],
+          "label": "The mixes panel, large",
+          "run": "lift mixes"
+        }
+      ]
+    },
+    "builtin:essentials": {
+      "name": "Essentials",
+      "about": "The handful every mix uses, on Space e, for the current deck: e p plays, e c cues, e s syncs, e l loops four beats; e 1 and e 2 load what is chosen in the library.",
+      "purpose": "essentials",
+      "edition": "hobbyist",
+      "keys": [
+        {
+          "keys": [
+            "e",
+            "p"
+          ],
+          "label": "Play / pause the current deck",
+          "run": "action deck @ play_pause"
+        },
+        {
+          "keys": [
+            "e",
+            "c"
+          ],
+          "label": "Cue the current deck",
+          "run": "action deck @ cue"
+        },
+        {
+          "keys": [
+            "e",
+            "s"
+          ],
+          "label": "Sync the current deck",
+          "run": "action deck @ sync_toggle"
+        },
+        {
+          "keys": [
+            "e",
+            "l"
+          ],
+          "label": "Loop four beats",
+          "run": "action deck @ loop 4"
+        },
+        {
+          "keys": [
+            "e",
+            "o"
+          ],
+          "label": "Loop off",
+          "run": "action deck @ loop_off"
+        },
+        {
+          "keys": [
+            "e",
+            "1"
+          ],
+          "label": "Load the chosen record on deck 1",
+          "run": "ui load 1"
+        },
+        {
+          "keys": [
+            "e",
+            "2"
+          ],
+          "label": "Load the chosen record on deck 2",
+          "run": "ui load 2"
+        },
+        {
+          "keys": [
+            "e",
+            "x"
+          ],
+          "label": "Crossfader to the centre",
+          "run": "action crossfader 0"
+        },
+        {
+          "keys": [
+            "e",
+            "f"
+          ],
+          "label": "Find in the library",
+          "run": "ui search"
+        },
+        {
+          "keys": [
+            "e",
+            "n"
+          ],
+          "label": "What could come next",
+          "run": "surface next"
+        },
+        {
+          "keys": [
+            "e",
+            "t"
+          ],
+          "label": "The next deck (Tab)",
+          "run": "ui deck next"
+        }
+      ]
+    },
+    "builtin:karaoke-host": {
+      "name": "Karaoke host",
+      "about": "The rotation, the microphone and the singer's key on Space k: k 1 or k 2 puts the next singer on a deck, k b brings them in, k s says they have sung; k u, k d and k h move the current deck's key.",
+      "purpose": "karaoke",
+      "edition": "karaoke",
+      "keys": [
+        {
+          "keys": [
+            "k",
+            "1"
+          ],
+          "label": "Next singer on deck 1",
+          "run": "action karaoke load 1"
+        },
+        {
+          "keys": [
+            "k",
+            "2"
+          ],
+          "label": "Next singer on deck 2",
+          "run": "action karaoke load 2"
+        },
+        {
+          "keys": [
+            "k",
+            "b"
+          ],
+          "label": "Bring them in",
+          "run": "action karaoke bring_in"
+        },
+        {
+          "keys": [
+            "k",
+            "s"
+          ],
+          "label": "They have sung",
+          "run": "action karaoke sang"
+        },
+        {
+          "keys": [
+            "k",
+            "o"
+          ],
+          "label": "Microphone open",
+          "run": "action mic on"
+        },
+        {
+          "keys": [
+            "k",
+            "c"
+          ],
+          "label": "Microphone closed",
+          "run": "action mic off"
+        },
+        {
+          "keys": [
+            "k",
+            "u"
+          ],
+          "label": "The current deck a semitone up",
+          "run": "action deck @ key 1"
+        },
+        {
+          "keys": [
+            "k",
+            "d"
+          ],
+          "label": "The current deck a semitone down",
+          "run": "action deck @ key -1"
+        },
+        {
+          "keys": [
+            "k",
+            "h"
+          ],
+          "label": "The current deck home, in its own key",
+          "run": "action deck @ key 0"
+        },
+        {
+          "keys": [
+            "k",
+            "v"
+          ],
+          "label": "The current deck's vocal out or back",
+          "run": "action deck @ stem_mute vocal"
+        },
+        {
+          "keys": [
+            "k",
+            "p"
+          ],
+          "label": "The singers' panel",
+          "run": "surface karaoke"
+        }
+      ]
+    },
+    "builtin:learning": {
+      "name": "Learning",
+      "about": "The teacher on Space l: l c the course, l p the practice lab, l r a mix rehearsed between two records, l g the guide to learning, l k every key.",
+      "purpose": "practice",
+      "edition": "apprentice",
+      "keys": [
+        {
+          "keys": [
+            "l",
+            "c"
+          ],
+          "label": "The course",
+          "run": "surface course"
+        },
+        {
+          "keys": [
+            "l",
+            "p"
+          ],
+          "label": "The practice lab",
+          "run": "surface practice"
+        },
+        {
+          "keys": [
+            "l",
+            "r"
+          ],
+          "label": "Rehearse a pair",
+          "run": "surface pair"
+        },
+        {
+          "keys": [
+            "l",
+            "a"
+          ],
+          "label": "Practice, as an activity",
+          "run": "switch activity practice"
+        },
+        {
+          "keys": [
+            "l",
+            "g"
+          ],
+          "label": "The guide to learning",
+          "run": "guide learn"
+        },
+        {
+          "keys": [
+            "l",
+            "m"
+          ],
+          "label": "The guide to a first mix",
+          "run": "guide mix"
+        },
+        {
+          "keys": [
+            "l",
+            "k"
+          ],
+          "label": "Every key",
+          "run": "surface keys"
+        },
+        {
+          "keys": [
+            "l",
+            "s"
+          ],
+          "label": "Sync the current deck",
+          "run": "action deck @ sync_toggle"
+        }
+      ]
+    },
+    "builtin:one-hand": {
+      "name": "One hand",
+      "about": "Everything a night needs from one hand on Space h, for a DJ holding a microphone or working a laptop on its own: play, the crossfader, sync, the next mix.",
+      "purpose": "one-hand",
+      "keys": [
+        {
+          "keys": [
+            "h",
+            "1"
+          ],
+          "label": "Deck 1 play or pause",
+          "run": "action deck 1 play_pause"
+        },
+        {
+          "keys": [
+            "h",
+            "2"
+          ],
+          "label": "Deck 2 play or pause",
+          "run": "action deck 2 play_pause"
+        },
+        {
+          "keys": [
+            "h",
+            "a"
+          ],
+          "label": "Crossfader to deck 1's side",
+          "run": "action crossfader -1"
+        },
+        {
+          "keys": [
+            "h",
+            "b"
+          ],
+          "label": "Crossfader to deck 2's side",
+          "run": "action crossfader 1"
+        },
+        {
+          "keys": [
+            "h",
+            "c"
+          ],
+          "label": "Crossfader to the centre",
+          "run": "action crossfader 0"
+        },
+        {
+          "keys": [
+            "h",
+            "s"
+          ],
+          "label": "Deck 2 sync on or off",
+          "run": "action deck 2 sync_toggle"
+        },
+        {
+          "keys": [
+            "h",
+            "n"
+          ],
+          "label": "Mix to the next record now",
+          "run": "action automix now"
+        },
+        {
+          "keys": [
+            "h",
+            "l"
+          ],
+          "label": "The library",
+          "run": "surface library"
+        }
+      ]
+    },
+    "builtin:open-format": {
+      "name": "Open format",
+      "about": "For nights that jump between tempos and styles, on Space f: a wide pitch range for records far apart, a double of the record playing, sync and the automix.",
+      "purpose": "open-format",
+      "keys": [
+        {
+          "keys": [
+            "f",
+            "w"
+          ],
+          "label": "Deck 1 wide pitch range (±25 %)",
+          "run": "action deck 1 pitch_range 25"
+        },
+        {
+          "keys": [
+            "f",
+            "n"
+          ],
+          "label": "Deck 1 narrow pitch range (±8 %)",
+          "run": "action deck 1 pitch_range 8"
+        },
+        {
+          "keys": [
+            "f",
+            "c"
+          ],
+          "label": "Double deck 1 on deck 2",
+          "run": "action deck 2 clone 1"
+        },
+        {
+          "keys": [
+            "f",
+            "s"
+          ],
+          "label": "Deck 2 sync on or off",
+          "run": "action deck 2 sync_toggle"
+        },
+        {
+          "keys": [
+            "f",
+            "a"
+          ],
+          "label": "Automix on",
+          "run": "action automix on"
+        },
+        {
+          "keys": [
+            "f",
+            "o"
+          ],
+          "label": "Automix off",
+          "run": "action automix off"
+        },
+        {
+          "keys": [
+            "f",
+            "m"
+          ],
+          "label": "Mix to the next record now",
+          "run": "action automix now"
+        }
+      ]
+    },
+    "builtin:performance": {
+      "name": "Performance",
+      "about": "The current deck played hard, on Space x: x 1 to x 8 are its hot cues; x l a loop (x l 1 to x l 8 beats, x l h halves, x l d doubles, x l o off); x j jumps (x j 1, x j 4, x j 8 forward, x J back); slip, reverse and brake on x s, x r and x b.",
+      "purpose": "performance",
+      "edition": "pro",
+      "keys": [
+        {
+          "keys": [
+            "x",
+            "1"
+          ],
+          "label": "Hot cue 1",
+          "run": "action deck @ hotcue 1"
+        },
+        {
+          "keys": [
+            "x",
+            "2"
+          ],
+          "label": "Hot cue 2",
+          "run": "action deck @ hotcue 2"
+        },
+        {
+          "keys": [
+            "x",
+            "3"
+          ],
+          "label": "Hot cue 3",
+          "run": "action deck @ hotcue 3"
+        },
+        {
+          "keys": [
+            "x",
+            "4"
+          ],
+          "label": "Hot cue 4",
+          "run": "action deck @ hotcue 4"
+        },
+        {
+          "keys": [
+            "x",
+            "5"
+          ],
+          "label": "Hot cue 5",
+          "run": "action deck @ hotcue 5"
+        },
+        {
+          "keys": [
+            "x",
+            "6"
+          ],
+          "label": "Hot cue 6",
+          "run": "action deck @ hotcue 6"
+        },
+        {
+          "keys": [
+            "x",
+            "7"
+          ],
+          "label": "Hot cue 7",
+          "run": "action deck @ hotcue 7"
+        },
+        {
+          "keys": [
+            "x",
+            "8"
+          ],
+          "label": "Hot cue 8",
+          "run": "action deck @ hotcue 8"
+        },
+        {
+          "keys": [
+            "x",
+            "l",
+            "1"
+          ],
+          "label": "Loop 1 beats",
+          "run": "action deck @ loop 1"
+        },
+        {
+          "keys": [
+            "x",
+            "l",
+            "2"
+          ],
+          "label": "Loop 2 beats",
+          "run": "action deck @ loop 2"
+        },
+        {
+          "keys": [
+            "x",
+            "l",
+            "4"
+          ],
+          "label": "Loop 4 beats",
+          "run": "action deck @ loop 4"
+        },
+        {
+          "keys": [
+            "x",
+            "l",
+            "8"
+          ],
+          "label": "Loop 8 beats",
+          "run": "action deck @ loop 8"
+        },
+        {
+          "keys": [
+            "x",
+            "l",
+            "h"
+          ],
+          "label": "Halve the loop",
+          "run": "action deck @ loop_halve"
+        },
+        {
+          "keys": [
+            "x",
+            "l",
+            "d"
+          ],
+          "label": "Double the loop",
+          "run": "action deck @ loop_double"
+        },
+        {
+          "keys": [
+            "x",
+            "l",
+            "o"
+          ],
+          "label": "Loop off",
+          "run": "action deck @ loop_off"
+        },
+        {
+          "keys": [
+            "x",
+            "j",
+            "1"
+          ],
+          "label": "Jump 1 forward",
+          "run": "action deck @ beatjump 1"
+        },
+        {
+          "keys": [
+            "x",
+            "j",
+            "4"
+          ],
+          "label": "Jump 4 forward",
+          "run": "action deck @ beatjump 4"
+        },
+        {
+          "keys": [
+            "x",
+            "j",
+            "8"
+          ],
+          "label": "Jump 8 forward",
+          "run": "action deck @ beatjump 8"
+        },
+        {
+          "keys": [
+            "x",
+            "J",
+            "1"
+          ],
+          "label": "Jump 1 back",
+          "run": "action deck @ beatjump -1"
+        },
+        {
+          "keys": [
+            "x",
+            "J",
+            "4"
+          ],
+          "label": "Jump 4 back",
+          "run": "action deck @ beatjump -4"
+        },
+        {
+          "keys": [
+            "x",
+            "J",
+            "8"
+          ],
+          "label": "Jump 8 back",
+          "run": "action deck @ beatjump -8"
+        },
+        {
+          "keys": [
+            "x",
+            "s"
+          ],
+          "label": "Slip on / off",
+          "run": "action deck @ slip_toggle"
+        },
+        {
+          "keys": [
+            "x",
+            "r"
+          ],
+          "label": "Reverse on / off",
+          "run": "action deck @ reverse_toggle"
+        },
+        {
+          "keys": [
+            "x",
+            "b"
+          ],
+          "label": "Brake over four beats",
+          "run": "action deck @ brake 4"
+        },
+        {
+          "keys": [
+            "x",
+            "k"
+          ],
+          "label": "Keylock on / off",
+          "run": "action deck @ keylock_toggle"
+        }
+      ]
+    },
+    "builtin:scratch": {
+      "name": "Scratch",
+      "about": "The crossfader's curve and the decks' sides on Space c: c s for a sharp cut, c b back to a blend, c 1 and c 2 to put the decks on their sides.",
+      "purpose": "scratch",
+      "keys": [
+        {
+          "keys": [
+            "c",
+            "s"
+          ],
+          "label": "Sharp crossfader",
+          "run": "action crossfader curve sharp"
+        },
+        {
+          "keys": [
+            "c",
+            "l"
+          ],
+          "label": "Linear crossfader",
+          "run": "action crossfader curve linear"
+        },
+        {
+          "keys": [
+            "c",
+            "b"
+          ],
+          "label": "Blend crossfader (smooth)",
+          "run": "action crossfader curve smooth"
+        },
+        {
+          "keys": [
+            "c",
+            "1"
+          ],
+          "label": "Deck 1 on side A",
+          "run": "action deck 1 xfader_left"
+        },
+        {
+          "keys": [
+            "c",
+            "2"
+          ],
+          "label": "Deck 2 on side B",
+          "run": "action deck 2 xfader_right"
+        },
+        {
+          "keys": [
+            "c",
+            "r"
+          ],
+          "label": "Deck 1 backwards on or off",
+          "run": "action deck 1 reverse_toggle"
+        },
+        {
+          "keys": [
+            "c",
+            "c"
+          ],
+          "label": "Crossfader to the centre",
+          "run": "action crossfader 0"
+        }
+      ]
+    }
+  },
+  "support": [
+    {
+      "kind": "patreon",
+      "name": "Patreon",
+      "hosts": [
+        "patreon.com"
+      ]
+    },
+    {
+      "kind": "kofi",
+      "name": "Ko-fi",
+      "hosts": [
+        "ko-fi.com"
+      ]
+    },
+    {
+      "kind": "buymeacoffee",
+      "name": "Buy Me a Coffee",
+      "hosts": [
+        "buymeacoffee.com"
+      ]
+    },
+    {
+      "kind": "github",
+      "name": "GitHub Sponsors",
+      "hosts": [
+        "github.com"
+      ]
+    },
+    {
+      "kind": "paypal",
+      "name": "PayPal",
+      "hosts": [
+        "paypal.me",
+        "paypal.com"
+      ]
+    },
+    {
+      "kind": "liberapay",
+      "name": "Liberapay",
+      "hosts": [
+        "liberapay.com"
+      ]
+    },
+    {
+      "kind": "other",
+      "name": "Elsewhere",
+      "hosts": []
+    }
+  ]
+}

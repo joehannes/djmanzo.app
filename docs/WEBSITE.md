@@ -636,6 +636,98 @@ under load:
 - the assistant speaking through the AI in this site (the test site has it
   off).
 
+## Outboard and Talkback on the day they open (21 October)
+
+The owner: "work on the marketplace and forum ... it should be usable at
+once ... add default answers to default questions in the forums, default packs
+to the marketplace ... mnemonic shortcut packs for different usages ... make
+it so those cannot only substitute but complement existing mnemonics".
+
+**Keyboard sets are a kind Outboard lists.** djmanzo's `main` installs
+`keys` packs (§133, §137); the site now checks them as djmanzo does
+(`worker/keyset.ts`): `keysets::check`'s rules word for word, from lists
+djmanzo itself exports (`shared/keyrules.json`, written by
+`tools/packsmith rules` from `app/`): the panels, boards, interface verbs,
+guides, the action vocabulary, the first words of every mixer action djmanzo
+writes, the deck verbs it uses that its vocabulary does not describe
+(`sync_toggle`, its argument found by asking the parser), and djmanzo's whole
+tree under Space. Where the site cannot run djmanzo's parsers it is stricter,
+never looser: an action is held to its verb and the shape of its argument and
+parsed whole again when djmanzo installs it; a `uiop` key and a keyboard map
+are not taken here. One rule is the site's own: **a set in Outboard adds keys
+and takes none of djmanzo's over** (djmanzo would let a set's key win on one
+of its own letters). A pack's signed support links (§137: Patreon, Ko-fi, Buy
+Me a Coffee, GitHub Sponsors, PayPal, Liberapay) are checked as djmanzo's
+installer checks them and shown on its page. Kinds djmanzo installs that the
+site cannot check yet (techniques, mappings, knowledge, lessons) are refused
+by name rather than as unknown. Migration `0002` lets the table hold every
+kind.
+
+**Held to djmanzo by fixtures it writes.** `tools/packsmith fixtures`
+makes 28 keys packs, one for each way of being refused, and records
+djmanzo's own verdict on each (`test/fixtures/keys/`); `test/keyset.test.ts`
+asks the site for the same verdict word for word, with one listed exception
+(the takeover rule). Five mutants of the checker fail it.
+
+**The crew's seven sets.** `packs/keys/` holds their sources;
+`npm run packs` makes them with djmanzo's own `packs::make_keys`, checks each
+again with `packs::check` and with the takeover rule, and writes them, signed
+with the crew's key (`PACKSMITH_KEY`, a secret, never committed; public key
+`P8Mn9E8HYxPALWdn+taLeHqDMsdZCGU48G22Qbrbs0M=`, fingerprint
+`7884 d9c2 6ea7 f5c0`), to `public/packs/crew/` with an `index.json`. The
+output is byte for byte the same each time it is made. Each set complements
+rather than replaces, within djmanzo's rule that one set is worn at a time:
+one that grows out of a set djmanzo ships carries all of that set's keys, and
+each adds keys inside djmanzo's own groups where a letter is free:
+
+| Set | On | Grows out of | Adds to djmanzo's groups |
+|---|---|---|---|
+| Karaoke host: the whole night | `k` | Karaoke host | `s g`, `s r`: the guide vocal under Stems |
+| Noche latina | `n` | — | `d t`: tap the grid under Deck |
+| Underground: long blends | `u` | — | `m l`, `m L`: the limiter under Mixer |
+| Cuts and scratch | `c` | Scratch | — |
+| Weddings and parties | `q` | — | — |
+| Lights and screens | `i` | — | — |
+| Practice drills | `l` | Learning | — |
+
+**They list themselves** (`worker/seed.ts`): the first time Outboard is read
+after a deploy whose `index.json` it has not seen, each pack is fetched from
+the site's own static files, checked as an upload is, kept in R2 and listed
+under the crew's account with no review. A pack already listed is left as it
+is; one whose name a maker took first is left out and logged; a file that is
+not the one the index names is left out. Wearing more than one set at once
+would let a marketplace set sit beside one djmanzo ships instead of carrying
+it: that is djmanzo's to do (`commands.rs` keeps one worn set).
+
+**Talkback's first threads** (`shared/talkback-seed.ts`): 28 questions DJs
+and karaoke hosts ask, each with the crew's answer, told as
+`shared/facts.ts` tells djmanzo, caveats included, and the craft said plainly:
+a welcome, which edition, installing on Linux, an old Mac, the Space keys,
+importing a library, controllers, Spotify, installing a pack, the whole
+karaoke night (guide vocal, lyrics, the guest's song and WhatsApp, music
+between singers, phones), the long blend, sync or by ear, Camelot, bachata
+into merengue, timecode, a beginners' thread, gain and the limiter, ears,
+latency on Linux, lights, a wedding. They are written when Talkback is read
+and their words have changed; a thread keeps its votes and replies.
+
+**As the forums DJs use already work** (r/DJs, Discourse): a community's
+pinned threads come first; the asker (or the crew) marks the reply that
+answered it, which then comes first under the question and marks it
+*Answered* in every list (`POST /api/talkback/posts/:id/answer`, migration
+`0003`); and while a title is typed, threads that may already answer it are
+offered. `test/seed.test.ts` covers the packs listed once, byte for byte
+through djmanzo's index, a taken name and a changed file left out, the
+threads answered and pinned first, found by search, kept through a rewrite,
+and an answer marked only by whoever asked or the crew; six mutants fail it.
+
+**Every pack on GitHub too.** djmanzo's `.github/workflows/release-packs.yml`
+(on `main`) attaches every pack Outboard lists to each release, once a day to
+the newest, and by hand to any tag, with `outboard-packs.json`, an index in
+djmanzo's format naming them there; and it writes the same packs into
+`community/packs.json`, the index djmanzo's Marketplace panel reads before a
+DJ adds any, so the panel offers them with nothing set up. R2 stays the
+site's store; GitHub's releases are the copy that outlives it.
+
 ## The record shop (version 3, previewed at `/shop/`)
 
 The owner asked for something playful, interactive and meaningful — real

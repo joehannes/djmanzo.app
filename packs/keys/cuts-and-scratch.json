@@ -1,0 +1,127 @@
+{
+ "name": "Cuts and scratch",
+ "version": "1.0.0",
+ "licence": "CC0-1.0",
+ "author": "djmanzo crew",
+ "description": "Everything of djmanzo's own Scratch set on Space c, and what a hip-hop or open-format DJ cuts with besides: the censor held over a word, a backspin, a quarter-beat roll, a tape stop, the first hot cue for the cut.",
+ "set": {
+  "name": "Cuts and scratch",
+  "purpose": "scratch",
+  "edition": "",
+  "about": "Space c, as djmanzo's Scratch has it, and more: c k holds the censor over a word, c K lets go; c p backspins; c y rolls a quarter beat, c Y stops; c t is a tape stop over two beats; c h drops on the first hot cue.",
+  "keys": [
+   {
+    "keys": [
+     "c",
+     "s"
+    ],
+    "label": "Sharp crossfader",
+    "run": "action crossfader curve sharp"
+   },
+   {
+    "keys": [
+     "c",
+     "l"
+    ],
+    "label": "Linear crossfader",
+    "run": "action crossfader curve linear"
+   },
+   {
+    "keys": [
+     "c",
+     "b"
+    ],
+    "label": "Blend crossfader (smooth)",
+    "run": "action crossfader curve smooth"
+   },
+   {
+    "keys": [
+     "c",
+     "1"
+    ],
+    "label": "Deck 1 on side A",
+    "run": "action deck 1 xfader_left"
+   },
+   {
+    "keys": [
+     "c",
+     "2"
+    ],
+    "label": "Deck 2 on side B",
+    "run": "action deck 2 xfader_right"
+   },
+   {
+    "keys": [
+     "c",
+     "r"
+    ],
+    "label": "Deck 1 backwards on or off",
+    "run": "action deck 1 reverse_toggle"
+   },
+   {
+    "keys": [
+     "c",
+     "c"
+    ],
+    "label": "Crossfader to the centre",
+    "run": "action crossfader 0"
+   },
+   {
+    "keys": [
+     "c",
+     "k"
+    ],
+    "label": "Censor: hold over a word",
+    "run": "action deck @ censor_on"
+   },
+   {
+    "keys": [
+     "c",
+     "K"
+    ],
+    "label": "Censor off",
+    "run": "action deck @ censor_off"
+   },
+   {
+    "keys": [
+     "c",
+     "p"
+    ],
+    "label": "Backspin",
+    "run": "action deck @ backspin 1"
+   },
+   {
+    "keys": [
+     "c",
+     "y"
+    ],
+    "label": "Roll a quarter beat",
+    "run": "action deck @ roll 0.25"
+   },
+   {
+    "keys": [
+     "c",
+     "Y"
+    ],
+    "label": "Roll off",
+    "run": "action deck @ roll_off"
+   },
+   {
+    "keys": [
+     "c",
+     "t"
+    ],
+    "label": "Tape stop over two beats",
+    "run": "action deck @ brake 2"
+   },
+   {
+    "keys": [
+     "c",
+     "h"
+    ],
+    "label": "Hot cue 1, for the cut",
+    "run": "action deck @ hotcue 1"
+   }
+  ]
+ }
+}
