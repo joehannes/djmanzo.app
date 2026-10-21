@@ -55,6 +55,27 @@ export interface Profile {
   page?: string | null;
   /** Patreon: the campaigns the person is an active patron of. */
   supports?: string[];
+  /** GitHub: the accounts the person sponsors, lower-cased. */
+  sponsors?: string[];
+  /** GitHub: their own Sponsors page, when they have one. */
+  sponsorsPage?: string | null;
+}
+
+/** Whom a GitHub account sponsors, and whether it can be sponsored itself (GitHub's GraphQL, with the sign-in's own token). */
+async function sponsorships(t: string): Promise<{ sponsors: string[]; sponsorsPage: string | null }> {
+  const r = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: { authorization: `Bearer ${t}`, "content-type": "application/json", "user-agent": "djmanzo-website" },
+    body: JSON.stringify({
+      query: "{ viewer { login hasSponsorsListing sponsorshipsAsSponsor(first: 100, activeOnly: true) { nodes { sponsorable { ... on User { login } ... on Organization { login } } } } } }",
+    }),
+  });
+  const j = (await r.json().catch(() => ({}))) as {
+    data?: { viewer?: { login?: string; hasSponsorsListing?: boolean; sponsorshipsAsSponsor?: { nodes?: { sponsorable?: { login?: string } }[] } } };
+  };
+  const v = j.data?.viewer;
+  const sponsors = (v?.sponsorshipsAsSponsor?.nodes ?? []).map((n) => n.sponsorable?.login?.toLowerCase()).filter((l): l is string => !!l);
+  return { sponsors, sponsorsPage: v?.hasSponsorsListing && v.login ? `https://github.com/sponsors/${v.login}` : null };
 }
 
 /** A Patreon page address as Patreon gives it, made plain, or null if it is not one. */
@@ -128,7 +149,9 @@ export const PROVIDERS: Provider[] = [
         verified: boolean;
       }[];
       const primary = Array.isArray(emails) ? emails.find((e) => e.primary && e.verified) : undefined;
-      return { sub: String(p.id), email: primary?.email ?? null, verified: !!primary, name: s(p.name) ?? s(p.login) ?? "DJ", avatar: s(p.avatar_url) };
+      // Whom they sponsor, and their own Sponsors page: never a reason for a sign-in to fail.
+      const sponsoring = await sponsorships(t).catch(() => ({ sponsors: [] as string[], sponsorsPage: null }));
+      return { sub: String(p.id), email: primary?.email ?? null, verified: !!primary, name: s(p.name) ?? s(p.login) ?? "DJ", avatar: s(p.avatar_url), ...sponsoring };
     },
   },
   {
@@ -432,6 +455,8 @@ function remember(user: User, p: Profile) {
   if (!user.avatar && p.avatar) user.avatar = p.avatar;
   if (p.page) user.patreon = p.page;
   if (p.supports) user.patronOf = p.supports;
+  if (p.sponsors) user.sponsorOf = p.sponsors;
+  if (p.sponsorsPage) user.githubSponsors = p.sponsorsPage;
 }
 
 export async function findOrCreate(env: AppEnv, provider: string, p: Profile, extra: Partial<User> = {}): Promise<User> {
@@ -543,6 +568,7 @@ export function publicUser(u: User, env?: AppEnv) {
     owner: !!u.owner,
     providers: u.identities.map((i) => i.provider),
     patreon: u.patreon ?? null,
+    githubSponsors: u.githubSponsors ?? null,
     supporter: !!campaign && !!u.patronOf?.includes(campaign),
   };
 }

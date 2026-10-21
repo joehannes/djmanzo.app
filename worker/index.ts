@@ -19,6 +19,7 @@ import * as applicence from "./applicence";
 import * as guide from "./guide";
 import * as market from "./market";
 import { seedOnce, seedThreadsOnce } from "./seed";
+import * as support from "./support";
 import * as moderation from "./moderation";
 import * as people from "./people";
 import * as talkback from "./talkback";
@@ -88,8 +89,10 @@ route("POST", "/api/auth/signout", (c) => auth.signOut(c.req, c.env));
 
 route("GET", "/api/me", async (c) => {
   const u = await user(c);
+  // Where they support djmanzo, as each platform said (worker/support.ts).
+  const supports = u ? await support.supportsDjmanzo(c.env, u) : [];
   return {
-    user: u ? auth.publicUser(u, c.env) : null,
+    user: u ? { ...auth.publicUser(u, c.env), supports, supporter: supports.length > 0 } : null,
     admin: await auth.isAdmin(c.req, c.env, u),
     providers: auth.enabledProviders(c.env),
     demo: auth.demoMode(c.env),
@@ -170,6 +173,8 @@ route("POST", "/api/checkout/stripe", async (c) => {
 });
 route("POST", "/api/checkout/stripe/finalize", async (c) => checkout.stripeFinalize(c.env, await needUser(c), String((await body<{ order?: string }>(c.req)).order || "")));
 route("POST", "/api/webhooks/stripe", (c) => checkout.stripeWebhook(c.env, c.req));
+route("POST", "/api/webhooks/kofi", (c) => support.kofi(c.env, c.req));
+route("POST", "/api/webhooks/buymeacoffee", (c) => support.buymeacoffee(c.env, c.req));
 route("POST", "/api/checkout/paypal", async (c) => checkout.paypalCreate(c.env, await needUser(c), checkout.checkInput(await body(c.req))));
 route("POST", "/api/checkout/paypal/capture", async (c) => {
   const b = await body<{ order?: string; acceptHigher?: boolean }>(c.req);

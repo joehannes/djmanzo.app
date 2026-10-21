@@ -55,8 +55,8 @@ export const DONATION_PLATFORMS = [
   { name: "PayPal.me", hosts: ["paypal.me", "www.paypal.me"], path: /^\/[A-Za-z0-9]{2,40}\/?$/ },
 ] as const;
 
-/** The most donation links a maker shows. */
-export const MOST_LINKS = 3;
+/** The most donation links a maker shows: as many as djmanzo signs into a pack (`dj_app::account::MOST`). */
+export const MOST_LINKS = 6;
 
 /** A link to a maker's own page on an official platform, made plain; anything else is refused. */
 export function donationLink(text: string): { url: string; platform: string } | null {

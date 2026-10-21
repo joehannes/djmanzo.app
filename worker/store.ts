@@ -75,6 +75,10 @@ export interface User {
   patreon?: string;
   /** The Patreon campaigns they were an active patron of when they last connected it. */
   patronOf?: string[];
+  /** The GitHub accounts they sponsored when they last signed in with GitHub, lower-cased. */
+  sponsorOf?: string[];
+  /** Their own GitHub Sponsors page, when GitHub said they have one: shown as verified. */
+  githubSponsors?: string;
 }
 
 export interface Session {

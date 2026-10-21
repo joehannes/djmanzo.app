@@ -22,7 +22,11 @@ export interface SessionUser {
   providers: string[];
   /** Their Patreon page, verified by connecting Patreon. */
   patreon?: string | null;
-  /** An active patron of djmanzo's own campaign. */
+  /** Their GitHub Sponsors page, verified by signing in with GitHub. */
+  githubSponsors?: string | null;
+  /** Where they support djmanzo, as each platform said: patreon, github, kofi, buymeacoffee. */
+  supports?: string[];
+  /** They support djmanzo somewhere. */
   supporter?: boolean;
 }
 

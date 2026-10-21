@@ -277,6 +277,31 @@ unless `keep_vars` is set, as it now is: one deploy dropped the two the owner
 had set in the dashboard. A variable that matters belongs in `wrangler.jsonc`;
 a secret never does.
 
+### Supporters: Patreon, GitHub Sponsors, Ko-fi, Buy Me a Coffee (21 October)
+
+The owner: "add the integration of patreon & co properly for each user".
+Every person keeps up to six pages of their own on the official platforms
+(as many as djmanzo signs into a pack, `dj_app::account::MOST`), shown on
+their profile, their packs and beside their name in the forum; djmanzo
+handles no money for anyone. A person is marked as **supporting djmanzo**
+only when a platform says so (`worker/support.ts`), each named on their
+account page:
+
+| Platform | How the site knows | What the owner sets |
+|---|---|---|
+| Patreon | Connecting Patreon names the campaigns they are an active patron of | `PATREON_CLIENT_ID`, `PATREON_CLIENT_SECRET`, and the variable `PATREON_CAMPAIGN_ID` |
+| GitHub Sponsors | Signing in or connecting with GitHub asks GitHub whom they sponsor (and whether they have a Sponsors page of their own, then shown as verified) | the variable `GITHUB_SPONSORS_LOGIN`, djmanzo's account there |
+| Ko-fi | Ko-fi's webhook to `/api/webhooks/kofi`, with the token Ko-fi shows (Settings → API) | the secret `KOFI_VERIFICATION_TOKEN`, and that address in Ko-fi |
+| Buy Me a Coffee | Its webhook to `/api/webhooks/buymeacoffee`, signed with the webhook's secret | the secret `BUYMEACOFFEE_WEBHOOK_SECRET`, and that address in its webhook settings |
+
+A Ko-fi or Buy Me a Coffee payment is kept only as its payer's email
+address against the platform, for a year (a membership for forty days, so
+until the next month's payment, and at once no longer when a membership is
+cancelled), and marks the account whose address a sign-in provider verified
+as that one. `test/support.test.ts` covers each, and a wrong token, a
+forged signature, someone else's address and a cancelled membership; four
+mutants fail it.
+
 ### Secrets
 
 Set with `npx wrangler secret put NAME`. None is committed.
