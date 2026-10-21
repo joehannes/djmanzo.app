@@ -1,9 +1,12 @@
 /**
  * The application's screenshots, made ready for the site.
  *
- * The owner's rule (§134): pictures of djmanzo come only from
- * `docs/screenshots/`, named `<screen>--<theme>[--<skin>].png`. This reads
- * that folder and its README — what each picture shows, and the theme's name
+ * The owner's rule (§134): pictures of djmanzo come only from the
+ * application's `docs/screenshots/` (here `app/`, djmanzo checked out as a
+ * submodule) or, for pictures taken for the site that the application does not
+ * carry, `screenshots/` beside this script's folder, held to the same rules;
+ * named `<screen>--<theme>[--<skin>].png`. This reads both folders and their
+ * READMEs — what each picture shows, and the theme's name
  * as the application's picker says it — encodes every picture as WebP in the
  * Chromium the browser tests already use (no new dependency), and writes
  * `public/shots/app/` and `shared/shots.json`, which the Signal Path and the
@@ -17,8 +20,13 @@
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
 
-const ROOT = new URL("../../", import.meta.url);
+const ROOT = new URL("../app/", import.meta.url);
 const DOCS = new URL("docs/screenshots/", ROOT);
+const OWN = new URL("../screenshots/", import.meta.url);
+const FOLDERS = [
+  { root: DOCS, name: "app/docs/screenshots" },
+  { root: OWN, name: "screenshots" },
+];
 const OUT = new URL("../public/shots/app/", import.meta.url);
 const INDEX = new URL("../shared/shots.json", import.meta.url);
 const SHARE = new URL("../public/shots/share.jpg", import.meta.url);
@@ -33,11 +41,14 @@ const slug = (s) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-// The README's tables: a picture's path, what it shows, and its theme (", <skin> skin" after it, for a skin).
-const readme = readFileSync(new URL("README.md", DOCS), "utf8");
-const described = new Map();
-for (const m of readme.matchAll(/^\| \[!\[[^\]]*\]\(([^)]+)\)\]\([^)]+\) \| ([^|]+?) \| ([^|]+?) \|$/gm)) {
-  described.set(m[1], { shows: m[2], theme: m[3].replace(/, [^,]+ skin$/, "") });
+// Each README's tables: a picture's path, what it shows, and its theme (", <skin> skin" after it, for a skin).
+function describedIn(root) {
+  const described = new Map();
+  const readme = readFileSync(new URL("README.md", root), "utf8");
+  for (const m of readme.matchAll(/^\| \[!\[[^\]]*\]\(([^)]+)\)\]\([^)]+\) \| ([^|]+?) \| ([^|]+?) \|$/gm)) {
+    described.set(m[1], { shows: m[2], theme: m[3].replace(/, [^,]+ skin$/, "") });
+  }
+  return described;
 }
 
 // The application's skins: the id and the name its picker shows.
@@ -50,23 +61,35 @@ function fail(why) {
 }
 
 const shots = [];
-for (const kind of KINDS) {
-  for (const file of readdirSync(new URL(`${kind}/`, DOCS)).filter((f) => f.endsWith(".png")).sort()) {
-    const path = `${kind}/${file}`;
-    const about = described.get(path) ?? fail(`${path} is not described in docs/screenshots/README.md`);
-    const [screen, themeSlug, skinSlug] = file.replace(/\.png$/, "").split("--");
-    if (slug(about.theme) !== themeSlug) fail(`${path}: the README says ${about.theme}, the name says ${themeSlug}`);
-    const skin = skinSlug ? (SKINS.find((k) => k.id === skinSlug || slug(k.name) === skinSlug)?.name ?? fail(`${path}: djmanzo has no skin ${skinSlug}`)) : null;
-    const name = file.replace(/\.png$/, "");
-    shots.push({
-      src: `/shots/app/${name}.webp`,
-      screen,
-      theme: about.theme,
-      skin,
-      shows: about.shows,
-      alt: `${about.shows} — djmanzo in the ${about.theme} theme${skin ? `, worn with the ${skin} skin` : ""}`,
-      file: path,
-    });
+const seen = new Set();
+for (const folder of FOLDERS) {
+  const described = describedIn(folder.root);
+  for (const kind of KINDS) {
+    let files = [];
+    try {
+      files = readdirSync(new URL(`${kind}/`, folder.root));
+    } catch {
+      continue;
+    }
+    for (const file of files.filter((f) => f.endsWith(".png")).sort()) {
+      const path = `${kind}/${file}`;
+      if (seen.has(file)) fail(`${folder.name}/${path} is in both folders: keep one`);
+      seen.add(file);
+      const about = described.get(path) ?? fail(`${path} is not described in ${folder.name}/README.md`);
+      const [screen, themeSlug, skinSlug] = file.replace(/\.png$/, "").split("--");
+      if (slug(about.theme) !== themeSlug) fail(`${path}: the README says ${about.theme}, the name says ${themeSlug}`);
+      const skin = skinSlug ? (SKINS.find((k) => k.id === skinSlug || slug(k.name) === skinSlug)?.name ?? fail(`${path}: djmanzo has no skin ${skinSlug}`)) : null;
+      const name = file.replace(/\.png$/, "");
+      shots.push({
+        src: `/shots/app/${name}.webp`,
+        screen,
+        theme: about.theme,
+        skin,
+        shows: about.shows,
+        alt: `${about.shows} — djmanzo in the ${about.theme} theme${skin ? `, worn with the ${skin} skin` : ""}`,
+        file: new URL(path, folder.root),
+      });
+    }
   }
 }
 
@@ -99,7 +122,7 @@ mkdirSync(OUT, { recursive: true });
 let total = 0;
 const index = [];
 for (const s of shots) {
-  const { bytes, w, h } = await encode(readFileSync(new URL(s.file, DOCS)), "image/webp");
+  const { bytes, w, h } = await encode(readFileSync(s.file), "image/webp");
   writeFileSync(new URL(s.src.replace("/shots/app/", ""), OUT), bytes);
   total += bytes.length;
   const { file: _file, ...rest } = s;

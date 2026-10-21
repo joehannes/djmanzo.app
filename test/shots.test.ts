@@ -3,12 +3,15 @@ import { describe, expect, it } from "vitest";
 import { STAGES } from "../src/stages/script";
 import { HOME_THEME, SHOTS, shotFor } from "../src/signal/shots";
 
-const docs = (p: string) => new URL(`../../docs/screenshots/${p}`, import.meta.url);
+// djmanzo's own folder (the app/ submodule) and the site's own, held to the same rules.
+const FOLDERS = [new URL("../app/docs/screenshots/", import.meta.url), new URL("../screenshots/", import.meta.url)];
 const pub = (src: string) => new URL(`../public${src}`, import.meta.url);
 
-describe("pictures of the application come only from docs/screenshots", () => {
+describe("pictures of the application come only from its docs/screenshots and the site's screenshots/", () => {
   it("has every picture in the folder, encoded, and nothing else", () => {
-    const folder = ["screens", "themes", "skins"].flatMap((k) => readdirSync(docs(`${k}/`)).filter((f) => f.endsWith(".png")).map((f) => f.replace(/\.png$/, "")));
+    const folder = FOLDERS.flatMap((root) =>
+      ["screens", "themes", "skins"].flatMap((k) => (existsSync(new URL(`${k}/`, root)) ? readdirSync(new URL(`${k}/`, root)) : []).filter((f) => f.endsWith(".png")).map((f) => f.replace(/\.png$/, ""))),
+    );
     expect(SHOTS.map((s) => s.src.replace(/^\/shots\/app\/|\.webp$/g, "")).sort()).toEqual(folder.sort());
     for (const s of SHOTS) expect(existsSync(pub(s.src)), s.src).toBe(true);
   });
