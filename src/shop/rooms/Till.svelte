@@ -53,7 +53,7 @@
       {/each}
     </ul>
     <p class="fine">{c ? c.plans[plan].about : ""} Prices shown for where you are; the box office checks the rest.</p>
-    <a class="go quiet" href="/island/#/taquilla" data-box-office>Try one free for {c?.trialDays ?? 7} days, or buy</a>
+    <a class="go quiet" href="/pricing" data-box-office>Try one free for {c?.trialDays ?? 7} days, or buy</a>
   </div>
 </div>
 

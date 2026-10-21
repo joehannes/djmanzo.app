@@ -327,7 +327,7 @@
         {#if thread.post.answer}<span class="solved">Answered</span>{/if}
         {#if flairName(thread.post.flair)}<span class="flair">{flairName(thread.post.flair)}</span>{/if}
         {thread.post.author} · {ago(thread.post.created)}{thread.post.status === "held" ? " · waiting for the crew: only you see it" : ""}
-        {#if thread.post.wish}· <a class="link" href={`/island/#/muro`}>on the wishlist</a>{/if}
+        {#if thread.post.wish}· <a class="link" href="/wishes">on the wishlist</a>{/if}
       </p>
       {#if thread.post.removed}
         <p class="note">Removed by the crew.</p>

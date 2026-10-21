@@ -213,3 +213,29 @@ test("a page that is only words is shown in the site's frame, and the site's own
   expect(await page.evaluate(() => (window as unknown as { stayed?: boolean }).stayed)).toBe(true);
   expect(errs).toEqual([]);
 });
+
+test("signing in stays on this site, and every page knows who is signed in", async ({ page }) => {
+  const errs = errors(page);
+  const visited: string[] = [];
+  page.on("framenavigated", (f) => {
+    if (f === page.mainFrame()) visited.push(new URL(f.url()).pathname);
+  });
+  await page.goto("/features");
+  await page.locator("[data-account-link]").click();
+  await expect(page).toHaveURL(/\/account$/);
+  await page.getByPlaceholder("Your DJ name").fill("Night Owl");
+  await page.getByRole("button", { name: "Sign in for the demo" }).click();
+  await expect(page.locator("[data-account-link]")).toContainText("Night Owl");
+
+  // Every page, loaded afresh, knows.
+  for (const path of ["/", "/pricing", "/outboard", "/talkback", "/wishes"]) {
+    await page.goto(path);
+    await expect(page.locator("[data-account-link]"), path).toContainText("Night Owl");
+  }
+  // Back from a provider: the page it left from says so, and the address is clean again.
+  await page.goto("/pricing?signedin=github");
+  await expect(page.getByText(/signed in with GitHub/i)).toBeVisible();
+  await expect(page).toHaveURL(/\/pricing$/);
+  expect(visited.filter((p) => p.startsWith("/island"))).toEqual([]);
+  expect(errs).toEqual([]);
+});

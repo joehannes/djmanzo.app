@@ -130,8 +130,8 @@ test("the aisle: dividers, arrow keys, the address, and plain links to every ord
   for (const [name, href] of [
     ["Market", "/outboard"],
     ["Forum", "/talkback"],
-    ["Wishlist", "/island/#/muro"],
-    ["Sign in", "/island/#/pase"],
+    ["Wishlist", "/wishes"],
+    ["Sign in", "/account"],
   ]) {
     await expect(bar.getByRole("link", { name })).toHaveAttribute("href", href);
   }
