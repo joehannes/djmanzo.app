@@ -8,6 +8,17 @@
   import { onMount } from "svelte";
   import { GENRE_BY_ID } from "../../lib/genres";
   import { art, skin, region } from "../region.svelte";
+  import { flavourOf } from "../../../shared/flavours";
+
+  // The visitor's own country inside their region's look (shared/flavours.ts).
+  const flavour = $derived(flavourOf(region.country));
+  const countryName = (code: string) => {
+    try {
+      return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
+    } catch {
+      return code;
+    }
+  };
   import { deck, keyOf, setGenre, tempoOf, toggle } from "../sound.svelte";
   import { gsap, lean, reduced, ScrollTrigger } from "../motion";
   import { href } from "../router";
@@ -59,6 +70,12 @@
   </div>
 
   <div class="wrap copy" data-hero-copy>
+    {#if flavour}
+      <p class="local" data-hero-rise data-local={region.country}>
+        <span class="flag" aria-hidden="true">{#each flavour.colours as c (c)}<i style:background={c}></i>{/each}</span>
+        <b>{flavour.hello}</b> {countryName(region.country!)} · {flavour.scene}
+      </p>
+    {/if}
     <p class="eyebrow" data-hero-rise>DJ and karaoke software · macOS and Linux</p>
     <h1 class="h1" id="hero-title" bind:this={title}>
       <span class="line"><span>Play the room.</span></span>
@@ -106,6 +123,34 @@
 </section>
 
 <style>
+  .local {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 14px;
+    padding: 6px 12px 6px 8px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+    backdrop-filter: blur(6px);
+    font-size: 13px;
+    color: var(--dim);
+  }
+  .local b {
+    color: var(--text);
+    font-family: var(--display);
+  }
+  .flag {
+    display: inline-flex;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  }
+  .flag i {
+    width: 7px;
+    height: 14px;
+  }
   /* The skin's symbol, large and slow, at the edge of the photograph (`looks.ts`). */
   .motif {
     position: absolute;

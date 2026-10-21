@@ -212,3 +212,22 @@ describe("the highlights", () => {
     }
   });
 });
+
+describe("the visitor's own country, inside their region's look", () => {
+  it("has a welcome, its floors' music and two or three national colours for every country it names", async () => {
+    const { FLAVOURS, flavourOf } = await import("../shared/flavours");
+    expect(Object.keys(FLAVOURS).length).toBeGreaterThanOrEqual(40);
+    for (const [code, f] of Object.entries(FLAVOURS)) {
+      expect(code).toMatch(/^[A-Z]{2}$/);
+      expect(new Intl.DisplayNames(["en"], { type: "region" }).of(code), code).not.toBe(code);
+      expect(f.hello.trim().length, code).toBeGreaterThan(1);
+      expect(f.scene, code).toMatch(/\w/);
+      expect(f.colours.length, code).toBeGreaterThanOrEqual(2);
+      expect(f.colours.length, code).toBeLessThanOrEqual(3);
+      for (const c of f.colours) expect(c, code).toMatch(/^#[0-9A-F]{6}$/);
+    }
+    expect(flavourOf("do")?.scene).toMatch(/merengue/);
+    expect(flavourOf("XX")).toBeNull();
+    expect(flavourOf(null)).toBeNull();
+  });
+});

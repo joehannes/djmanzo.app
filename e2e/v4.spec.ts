@@ -256,3 +256,19 @@ test("a panel's screenshot opens close up, every spot on it, and the whole windo
   expect(Math.round((await shot.locator("img").boundingBox())!.width)).toBe(Math.round((await shot.locator("[data-focus]").boundingBox())!.width));
   expect(errs).toEqual([]);
 });
+
+test("the visitor's own country is welcomed in its words and colours, and a country not listed sees its region alone", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/?country=DO");
+  const local = page.locator("[data-local]");
+  await expect(local).toHaveAttribute("data-local", "DO");
+  await expect(local).toContainText("¡Bienvenido!");
+  await expect(local).toContainText("Dominican Republic");
+  await expect(local).toContainText("merengue");
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--flag"))).toContain("linear-gradient");
+  await page.goto("/?country=DE");
+  await expect(page.locator("[data-local]")).toContainText("Willkommen!");
+  await page.goto("/?country=IS");
+  await expect(page.locator("[data-local]")).toHaveCount(0);
+  expect(errs).toEqual([]);
+});

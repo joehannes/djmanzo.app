@@ -277,6 +277,21 @@ unless `keep_vars` is set, as it now is: one deploy dropped the two the owner
 had set in the dashboard. A variable that matters belongs in `wrangler.jsonc`;
 a secret never does.
 
+### The visitor's own country, inside their region's look (21 October)
+
+The owner asked for the site to be styled per region "and origin of the
+navigator ... more deeply and detailed and delightfully". Each region's
+skin already wears a pattern, a divider, a symbol, a light and a typeface
+from the visual culture around its music (`src/v4/looks.ts`). Under it,
+44 countries now have a layer of their own (`shared/flavours.ts`): a
+welcome in the country's words, the music its floors move to, and its
+national colours, worn as a small flag beside the welcome, a two-pixel rule
+under the bar and a faint light from the top of the page. A Dominican
+visitor reads *¡Bienvenido! Dominican Republic · merengue, bachata and
+dembow*; a Berliner *Willkommen!*; a Nigerian *Welcome · Ẹ káàbọ̀*. A country
+not listed sees its region alone. The country is the one the region already
+reads; nothing else about the visitor is.
+
 ### Supporters: Patreon, GitHub Sponsors, Ko-fi, Buy Me a Coffee (21 October)
 
 The owner: "add the integration of patreon & co properly for each user".
