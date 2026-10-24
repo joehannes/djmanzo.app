@@ -12,7 +12,7 @@
   import { downloadLabel, latest, osOf, sizeOf, type Latest } from "../download";
 
   const OSES = ["mac", "linux", "windows"] as const;
-  let release = $state<Latest | null>(null);
+  let release = $state<(Latest & { error?: string }) | null>(null);
   let mine = $state<string>("other");
   const order = $derived([...OSES].sort((a, b) => Number(b === mine) - Number(a === mine)));
 
@@ -45,6 +45,8 @@
                 <li><a href={f.href} data-file={f.name}>{f.label} <span class="mono dim">{sizeOf(f.size)}</span></a></li>
               {/each}
             </ul>
+          {:else if release?.error}
+            <small class="dim" data-download-error>The download list could not be fetched just now. Try again in a minute.</small>
           {:else if release}
             <small class="dim">The installers appear here with the next release.</small>
           {/if}

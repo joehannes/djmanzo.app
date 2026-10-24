@@ -49,6 +49,17 @@ function headers(env: AppEnv, accept = UA.accept): Record<string, string> {
   return h;
 }
 
+/**
+ * What GitHub said when it refused, for the owner to act on: its status and
+ * its own message, and whether the site sent its token. Never the token.
+ */
+export async function whyNot(env: AppEnv, r: Response): Promise<string> {
+  const said = ((await r.json().catch(() => null)) as { message?: string } | null)?.message;
+  const how = env.GITHUB_RELEASES_TOKEN ? "with the site's GITHUB_RELEASES_TOKEN" : "without a token (GITHUB_RELEASES_TOKEN is not set on the Worker)";
+  const limit = r.headers.get("x-ratelimit-remaining");
+  return `GitHub answered ${r.status}${said ? ` ("${said.slice(0, 160)}")` : ""}, asked ${how}${limit === "0" ? "; its rate limit is used up" : ""}.`;
+}
+
 /** A version as `semver` has it: three numbers and the pre-release's identifiers. */
 export interface Version {
   major: number;
@@ -121,7 +132,7 @@ export async function latest(env: AppEnv): Promise<Release | null> {
     await put(env.KV, "cache:release", { release: null }, CACHE);
     return null;
   }
-  if (!r.ok) fail(502, `GitHub answered ${r.status}; try again later.`);
+  if (!r.ok) fail(502, await whyNot(env, r));
   const g = (await r.json()) as {
     tag_name?: string;
     body?: string | null;
@@ -224,7 +235,7 @@ export async function file(env: AppEnv, name: string): Promise<Response> {
   const r = await fetch(`${ASSETS}/${asset.id}`, { headers: headers(env, "application/octet-stream"), redirect: "manual" });
   const to = r.headers.get("location");
   if (r.status >= 300 && r.status < 400 && to) return Response.redirect(to, 302);
-  fail(502, `GitHub answered ${r.status} for that file; try again in a minute.`);
+  fail(502, await whyNot(env, r));
 }
 
 /** `GET /api/releases`: the three newest releases for "What's new", read with the token and kept ten minutes. */
@@ -245,6 +256,7 @@ export async function recent(env: AppEnv): Promise<Response> {
       body: String(g.body ?? "").slice(0, MOST_NOTES),
       prerelease: !!g.prerelease,
     }));
-  await put(env.KV, "cache:releases", { list }, CACHE);
+  // Only a real answer is kept: a refusal is asked again next time.
+  if (r?.ok) await put(env.KV, "cache:releases", { list }, CACHE);
   return json(list);
 }

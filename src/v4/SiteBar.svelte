@@ -14,7 +14,7 @@
   import { SKINS, type SkinId } from "./skins";
   import { LOOKS, svgUri } from "./looks";
   import { href, navigate, type Route } from "./router";
-  import { RELEASES, downloadLabel, osOf } from "./download";
+  import { RELEASES, download, downloadLabel, osOf } from "./download";
   import { restore, setSounds, sounds } from "./sfx.svelte";
   import OsIcon from "./OsIcon.svelte";
 
@@ -131,7 +131,7 @@
         <a class="price mono" href={href("pricing")} data-from>Free · editions from {from}</a>
       {/if}
       <!-- A download arrow and the visitor's system, no words: the words are in the label and the tooltip. -->
-      <a class="btn primary small dl" href={RELEASES} title={`${dl.label}. ${dl.note}`} aria-label={dl.label} data-download data-sound="scratch">
+      <a class="btn primary small dl" href={RELEASES} title={`${dl.label}. ${dl.note}`} aria-label={dl.label} data-download data-sound="scratch" onclick={(e) => { e.preventDefault(); void download(() => section("download")); }}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6.5 10 12 15.5 17.5 10M4 20h16" /></svg>
         <OsIcon {os} />
       </a>

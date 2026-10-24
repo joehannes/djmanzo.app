@@ -207,3 +207,17 @@ describe("downloads, through the site", () => {
     expect(r.data.signature).toBe("c2lnbmF0dXJl");
   });
 });
+
+describe("when GitHub refuses, the site says why", () => {
+  it("names GitHub's own reason and whether the token was sent, never the token", async () => {
+    vi.stubGlobal("fetch", async () => Response.json({ message: "Resource not accessible by personal access token" }, { status: 403 }));
+    const withToken = await browser(testEnv({ GITHUB_RELEASES_TOKEN: "secret-tok" }))("/api/download");
+    expect(withToken.status).toBe(502);
+    expect(withToken.data.error).toContain("403");
+    expect(withToken.data.error).toContain("Resource not accessible by personal access token");
+    expect(withToken.data.error).toContain("with the site's GITHUB_RELEASES_TOKEN");
+    expect(JSON.stringify(withToken.data)).not.toContain("secret-tok");
+    const without = await browser(testEnv())("/api/download");
+    expect(without.data.error).toContain("without a token");
+  });
+});

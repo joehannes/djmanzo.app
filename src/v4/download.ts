@@ -35,12 +35,45 @@ export interface Latest {
 
 let asked: Promise<Latest> | null = null;
 
-/** The newest release, asked for once a visit. */
-export function latest(): Promise<Latest> {
+/** The newest release, asked for once a visit; `error` says why there is none. */
+export function latest(): Promise<Latest & { error?: string }> {
   asked ??= fetch("/api/download")
-    .then((r) => (r.ok ? (r.json() as Promise<Latest>) : { version: null, page: null, files: [] }))
-    .catch(() => ({ version: null, page: null, files: [] }));
+    .then(async (r) => (r.ok ? ((await r.json()) as Latest) : { version: null, page: null, files: [], error: ((await r.json().catch(() => ({}))) as { error?: string }).error ?? `HTTP ${r.status}` }))
+    .catch(() => ({ version: null, page: null, files: [], error: "offline" }));
   return asked;
+}
+
+/** The one file to hand a visitor on `os`, or null when they should choose (a Mac: Apple silicon or Intel). */
+export function pick(files: File[], os: Os, arch?: string): File | null {
+  const mine = files.filter((f) => f.os === os);
+  if (os === "linux") return mine.find((f) => /appimage$/i.test(f.name)) ?? mine[0] ?? null;
+  if (os === "windows") return mine.find((f) => /\.exe$/i.test(f.name)) ?? mine.find((f) => /\.msi$/i.test(f.name)) ?? null;
+  if (os === "mac") {
+    const main = mine.filter((f) => !/karaoke|legacy|10\.13/i.test(f.name + f.label));
+    if (main.length === 1) return main[0];
+    if (arch === "arm") return main.find((f) => /aarch64|arm64/i.test(f.name)) ?? null;
+    if (arch === "x86") return main.find((f) => !/aarch64|arm64/i.test(f.name)) ?? null;
+  }
+  return null;
+}
+
+/** The processor, where the browser says (Chromium does; Safari and Firefox do not). */
+async function archOf(): Promise<string | undefined> {
+  const ua = (navigator as Navigator & { userAgentData?: { getHighEntropyValues(h: string[]): Promise<{ architecture?: string }> } }).userAgentData;
+  return ua ? (await ua.getHighEntropyValues(["architecture"]).catch(() => ({ architecture: undefined }))).architecture : undefined;
+}
+
+/**
+ * The Download button: the visitor's installer, at once, when there is one
+ * obvious file for their system; otherwise `choose` (the download screen,
+ * where every file and the reason for none are shown).
+ */
+export async function download(choose: () => void): Promise<void> {
+  const os = osOf(navigator.userAgent);
+  const r = await latest();
+  const f = r.files.length ? pick(r.files, os, await archOf()) : null;
+  if (f) location.assign(f.href);
+  else choose();
 }
 
 /** A file's size as a person reads it. */

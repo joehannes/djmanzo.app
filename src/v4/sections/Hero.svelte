@@ -22,7 +22,7 @@
   import { deck, keyOf, setGenre, tempoOf, toggle } from "../sound.svelte";
   import { gsap, lean, reduced, ScrollTrigger } from "../motion";
   import { href } from "../router";
-  import { RELEASES, downloadLabel, osOf } from "../download";
+  import { RELEASES, download, downloadLabel, osOf } from "../download";
   import Wave from "../wave/Wave.svelte";
 
   let hero: HTMLElement;
@@ -85,7 +85,7 @@
       Live stems, an assistant that explains its suggestions and can take over the mix, a karaoke night built in, and a free edition that stays free. {skin().line}
     </p>
     <div class="ctas" data-hero-rise>
-      <a class="btn primary" href={RELEASES} title={dl.note}>{dl.label}</a>
+      <a class="btn primary" href={RELEASES} title={dl.note} data-download onclick={(e) => { e.preventDefault(); void download(() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })); }}>{dl.label}</a>
       <a class="btn ghost" href={href("pricing")}>Editions and pricing</a>
     </div>
     <p class="note mono" data-hero-rise>{dl.note} The Hobbyist edition is free, for ever.</p>
