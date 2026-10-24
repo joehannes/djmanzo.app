@@ -8,7 +8,7 @@
   import { onMount } from "svelte";
   import { api } from "../../lib/api";
   import { COMMUNITIES } from "../../../shared/talkback";
-  import Preview from "../../signal/aux/Preview.svelte";
+  import Preview from "../../signal/auxiliary/Preview.svelte";
   import { href } from "../router";
   import { shared } from "../region.svelte";
   import { RELEASES } from "../download";

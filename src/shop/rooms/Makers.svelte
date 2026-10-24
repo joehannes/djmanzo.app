@@ -7,7 +7,7 @@
   import { onMount } from "svelte";
   import { api } from "../../lib/api";
   import { COMING_KINDS, LISTED_KINDS } from "../../../shared/outboard";
-  import Preview from "../../signal/aux/Preview.svelte";
+  import Preview from "../../signal/auxiliary/Preview.svelte";
 
   interface Card {
     id: string;

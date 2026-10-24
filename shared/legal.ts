@@ -1,7 +1,7 @@
 /**
  * The words of the site's own pages (Austria's ECG §5 and MedienG §25, the
  * GDPR, the EU's Digital Services Act), held once: the Signal Path shows them
- * (`src/signal/aux/Legal.svelte`) and the Worker renders them for whoever
+ * (`src/signal/auxiliary/Legal.svelte`) and the Worker renders them for whoever
  * reads the page without running it (`worker/seo.ts`). Written for the owner
  * to read over: they say what this site actually does.
  *

@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import Talkback from "../../signal/aux/Talkback.svelte";
+  import Talkback from "../../signal/auxiliary/Talkback.svelte";
   import { animate } from "../motion";
   import { shared } from "../region.svelte";
 

@@ -22,7 +22,7 @@ import { markdown as talkMarkdown } from "../shared/markdown";
 import { AREAS, FACTS, STATUS_LINE, areaOf, carriedBy } from "../shared/facts";
 import { EDITION_INFO } from "../shared/catalog";
 import { markdown as blogMarkdown } from "../src/lib/markdown";
-import { SUBTITLE, TITLE } from "../src/signal/aux/routes";
+import { SUBTITLE, TITLE } from "../src/signal/auxiliary/routes";
 import type { AppEnv } from "./env";
 import { HttpError, SECURITY_HEADERS } from "./http";
 import * as blog from "./blog";

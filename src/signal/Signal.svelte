@@ -12,8 +12,8 @@
   import MapHud from "./MapHud.svelte";
   import StageScreen from "./StageScreen.svelte";
   import Corner from "./Corner.svelte";
-  import Aux from "./aux/Aux.svelte";
-  import { auxPath, auxRoute, type AuxRoute } from "./aux/routes";
+  import Aux from "./auxiliary/Aux.svelte";
+  import { auxPath, auxRoute, type AuxRoute } from "./auxiliary/routes";
   import { STAGES, STAGE_BY_ID } from "../stages/script";
   import { resolveStyle } from "../style/genome";
   import type { StageId } from "../style/genome/types";

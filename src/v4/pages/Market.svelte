@@ -5,7 +5,7 @@
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import Outboard from "../../signal/aux/Outboard.svelte";
+  import Outboard from "../../signal/auxiliary/Outboard.svelte";
   import { LISTED_KINDS } from "../../../shared/outboard";
   import { animate } from "../motion";
   import { shared } from "../region.svelte";
