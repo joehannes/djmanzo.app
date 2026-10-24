@@ -197,6 +197,77 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
     expect((await app("/renew", { method: "POST", json: { renew: first.data.renew } })).status).toBe(401);
   });
 
+  it("a licence is activated on at most three computers; one removed on the account page is told so when it renews", async () => {
+    const env = testEnv({ GITHUB_CLIENT_ID: "gh-id", GITHUB_CLIENT_SECRET: "gh-secret", GOOGLE_CLIENT_ID: "g-id", GOOGLE_CLIENT_SECRET: "g-secret" });
+    // GitHub and Google, played here: the same person, the same verified address.
+    vi.stubGlobal("fetch", async (url: string) => {
+      const u = String(url);
+      if (u.startsWith("https://github.com/login/oauth/access_token")) return Response.json({ access_token: "gh-token" });
+      if (u === "https://api.github.com/user") return Response.json({ id: 583231, login: "lena", name: "Lena" });
+      if (u === "https://api.github.com/user/emails") return Response.json([{ email: "lena@example.com", primary: true, verified: true }]);
+      if (u.startsWith("https://oauth2.googleapis.com/token")) return Response.json({ access_token: "g-token" });
+      if (u.startsWith("https://openidconnect.googleapis.com/v1/userinfo") || u.startsWith("https://www.googleapis.com/oauth2")) return Response.json({ sub: "g-77", email: "lena@example.com", email_verified: true, name: "Lena" });
+      throw new Error(`unexpected fetch ${u}`);
+    });
+    const app = client(env);
+    const verifier = "v".repeat(20) + "erifier-0123456789-abcdefghij";
+    const challenge = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier)))))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+    const state = "state-0123456789abcdef";
+    async function signIn(provider: string, device: string, name: string) {
+      await app(`/login/${provider}?state=${state}&code_challenge=${challenge}&port=53682`);
+      const code = new URL((await app(`/callback/${provider}?code=c&state=${state}`)).location!).searchParams.get("code")!;
+      return app("/licence", { method: "POST", json: { code, verifier, device: { id: device, name, os: "linux" } } });
+    }
+    const studio = await signIn("github", "studio-laptop-0001", "Studio laptop");
+    const booth = await signIn("github", "booth-machine-0002", "Booth");
+    // The same person through Google, with the same verified address: the same account, a third computer.
+    const home = await signIn("google", "home-desktop-00003", "Home");
+    for (const r of [studio, booth, home]) expect(r.data.renew, JSON.stringify(r.data)).toBeTruthy();
+    // A fourth is refused, and says where to make room.
+    const fourth = await signIn("github", "friends-laptop-004", "A friend's laptop");
+    expect(fourth.status).toBe(409);
+    expect(fourth.data.refused).toMatch(/account page/);
+    // Signing in again on a computer already activated uses its own place, and its old token stops working.
+    const again = await signIn("github", "studio-laptop-0001", "Studio laptop");
+    expect(again.data.renew).toBeTruthy();
+    expect((await app("/renew", { method: "POST", json: { renew: studio.data.renew } })).data.revoked).toBe(true);
+
+    // On the website, signed in with GitHub: three computers, and one removed.
+    const web = client(env);
+    const to = new URL((await web("/auth/start/github")).location!);
+    await web(`/callback/github?code=web&state=${to.searchParams.get("state")}`);
+    const mine = await web("/api/me/activations");
+    expect(mine.data.most).toBe(3);
+    expect(mine.data.activations.map((a: { name: string }) => a.name).sort()).toEqual(["Booth", "Home", "Studio laptop"]);
+    expect(JSON.stringify(mine.data)).not.toMatch(/renew/);
+    const booths = mine.data.activations.find((a: { name: string }) => a.name === "Booth").id;
+    expect((await web(`/api/me/activations/${booths}`, { method: "DELETE" })).data.activations).toHaveLength(2);
+    // The booth's djmanzo, next time it is online, is told its activation was removed.
+    const told = await app("/renew", { method: "POST", json: { renew: booth.data.renew } });
+    expect(told.status).toBe(401);
+    expect(told.data).toMatchObject({ revoked: true });
+    // Its place is free: the friend's laptop can be activated now.
+    expect((await signIn("github", "friends-laptop-004", "A friend's laptop")).data.renew).toBeTruthy();
+    // Signing out frees a place too.
+    await app("/signout", { method: "POST", json: { renew: again.data.renew } });
+    expect((await web("/api/me/activations")).data.activations.map((a: { name: string }) => a.name).sort()).toEqual(["A friend's laptop", "Home"]);
+  });
+
+  it("a renewal token from before activations becomes an activation of its own, whatever the limit", async () => {
+    const env = testEnv({ MAX_ACTIVATIONS: "1" });
+    const app = client(env);
+    const { sha256 } = await import("../worker/http");
+    await (env as unknown as { KV: KVNamespace }).KV.put(`renew:${await sha256("old-token")}`, JSON.stringify({ uid: "u_old", account: "github:1" }));
+    await (env as unknown as { KV: KVNamespace }).KV.put(`renew:${await sha256("old-token-2")}`, JSON.stringify({ uid: "u_old", account: "github:1" }));
+    expect((await app("/renew", { method: "POST", json: { renew: "old-token" } })).status).not.toBe(401);
+    expect((await app("/renew", { method: "POST", json: { renew: "old-token-2" } })).status).not.toBe(401);
+    const { activationsOf } = await import("../worker/activations");
+    expect(await activationsOf(env as never, "u_old")).toHaveLength(2);
+  });
+
   it("the student price and the regional price never stack: the larger discount applies", async () => {
     const env = testEnv();
     const student: User = { id: "u_s", email: "ana@uasd.edu.do", name: "Ana", avatar: null, identities: [], createdAt: 0 };

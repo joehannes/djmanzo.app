@@ -860,3 +860,30 @@ buttons, the scripted questions taking over when capped). How Claude
 actually talks, and what a turn costs, will be known only once the key is
 set. The weather is real: `wrangler dev` asked MET Norway for Linz and got
 its answer.
+
+## Activations: a licence on up to three computers (24 October)
+
+The owner's rule: a licence belongs to the person, not to a provider — any
+sign-in linked to the same verified e-mail address reaches it — and is
+activated on up to `MAX_ACTIVATIONS` computers at once (three unless set).
+
+- `POST /licence` takes `device: {id, name, os}` from djmanzo: a random id
+  it keeps beside its licence (never a hardware fingerprint), the
+  computer's name and its system. The same id signing in again keeps its
+  place, and its old renewal token stops working; a new computer past the
+  limit is refused with 409 and a sentence pointing at the account page.
+  A djmanzo too old to send a device counts as a new computer each time.
+- The account page lists the person's computers (`GET
+  /api/me/activations`), each with *Remove* (`DELETE
+  /api/me/activations/:id`). Removing one forgets its renewal token, so
+  that djmanzo's next `POST /renew` is answered 401 with `revoked: true`,
+  and it forgets its licence: the Hobbyist edition from its next start,
+  never mid-set. Offline, an activated djmanzo keeps working as before.
+- `POST /signout` frees the computer's place too.
+- A renewal token from before activations becomes an activation of its own
+  at its next renewal, whatever the limit, so nobody signed in is locked out.
+
+Code: `worker/activations.ts`; tests: the two activation cases in
+`test/flow.test.ts` (mutation-tested: lifting the limit fails the first;
+so does keeping a removed computer's token and skipping the activation
+check together).

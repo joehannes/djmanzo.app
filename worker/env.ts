@@ -43,6 +43,8 @@ export interface Secrets {
   GITHUB_SPONSORS_LOGIN: string;
   /** Read-only, joehannes/djmanzo only: lets the site hand out a private repository's release files (`worker/update.ts`). */
   GITHUB_RELEASES_TOKEN?: string;
+  /** How many computers one person may have djmanzo activated on at once (`worker/activations.ts`); 3 when unset. */
+  MAX_ACTIVATIONS?: string;
   /** Ko-fi's webhook verification token (Ko-fi → Settings → API), for /api/webhooks/kofi. */
   KOFI_VERIFICATION_TOKEN: string;
   /** Buy Me a Coffee's webhook secret, for /api/webhooks/buymeacoffee. */

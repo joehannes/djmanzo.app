@@ -32,6 +32,7 @@ import type { AppEnv } from "./env";
 import { HttpError, b64url, body, fail, json, randomId, sha256 } from "./http";
 import { keys } from "./licence";
 import { startTrial, userLicences } from "./checkout";
+import { AtLimit, activate, activationsOf, deviceOf, seen, signOut as activationSignOut } from "./activations";
 import { get, put, type Licence, type User } from "./store";
 
 export const PREFIX = "djmanzo-licence-1.";
@@ -189,30 +190,56 @@ async function b64urlSha256(text: string): Promise<string> {
   return b64url(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)));
 }
 
-/** `POST /licence {code, verifier, trial?}`: the grant and the PKCE verifier, traded for a licence and a renewal token. */
+/**
+ * `POST /licence {code, verifier, trial?, device?}`: the grant and the PKCE
+ * verifier, traded for a licence and a renewal token — one of the person's
+ * activations (`worker/activations.ts`). `device` is what djmanzo says about
+ * the computer: its installation's random id, its name and its system.
+ */
 export async function licence(env: AppEnv, req: Request, now = seconds()) {
-  const b = await body<{ code?: string; verifier?: string; trial?: { edition?: string } }>(req);
+  const b = await body<{ code?: string; verifier?: string; trial?: { edition?: string }; device?: unknown }>(req);
   const g = await get<{ uid: string; account: string; challenge: string }>(env.KV, `grant:${String(b.code ?? "")}`);
   if (!g) return json({ refused: "that sign-in has expired" }, 400);
   await env.KV.delete(`grant:${b.code}`);
   if ((await b64urlSha256(String(b.verifier ?? ""))) !== g.challenge) return json({ refused: "that sign-in was not this djmanzo's" }, 400);
-  const renew = randomId(32);
-  await put(env.KV, `renew:${await sha256(renew)}`, { uid: g.uid, account: g.account });
+  let renew: string;
+  try {
+    renew = await activate(env, g.uid, g.account, deviceOf(b.device), now);
+  } catch (e) {
+    if (e instanceof AtLimit) return json({ refused: e.message, at_limit: true }, 409);
+    throw e;
+  }
   return { ...(await licenceFor(env, g.uid, g.account, now, b.trial)), renew, account: g.account };
 }
 
-/** `POST /renew {renew, trial?}`: a fresh licence, in the background. */
+/**
+ * `POST /renew {renew, trial?}`: a fresh licence, in the background. A
+ * token whose activation was removed is answered `revoked`: djmanzo then
+ * forgets its licence, and is the Hobbyist edition from its next start.
+ */
 export async function renew(env: AppEnv, req: Request, now = seconds()) {
   const b = await body<{ renew?: string; trial?: { edition?: string } }>(req);
-  const r = await get<{ uid: string; account: string }>(env.KV, `renew:${await sha256(String(b.renew ?? ""))}`);
-  if (!r) return json({ refused: "sign in again" }, 401);
+  const hash = await sha256(String(b.renew ?? ""));
+  const r = await get<{ uid: string; account: string; activation?: string }>(env.KV, `renew:${hash}`);
+  if (!r) return json({ refused: "this computer's activation was removed; sign in again to activate it", revoked: true }, 401);
+  if (!r.activation) {
+    // A token from before activations: it becomes this computer's activation, whatever the limit, so nobody signed in is locked out.
+    const list = await activationsOf(env, r.uid);
+    const id = randomId(12);
+    list.push({ id, device: `unnamed-${randomId(12)}`, name: "A computer signed in before activations", os: "unknown", account: r.account, created: now, seen: now, renew: hash });
+    await put(env.KV, `activations:${r.uid}`, list);
+    await put(env.KV, `renew:${hash}`, { ...r, activation: id });
+  } else if (!(await seen(env, r.uid, r.activation, now))) {
+    await env.KV.delete(`renew:${hash}`);
+    return json({ refused: "this computer's activation was removed; sign in again to activate it", revoked: true }, 401);
+  }
   return { ...(await licenceFor(env, r.uid, r.account, now, b.trial)), account: r.account };
 }
 
-/** `POST /signout {renew}`: forget a renewal token. */
+/** `POST /signout {renew}`: forget a renewal token, and the activation it was. */
 export async function signout(env: AppEnv, req: Request) {
   const b = await body<{ renew?: string }>(req);
-  if (b.renew) await env.KV.delete(`renew:${await sha256(String(b.renew))}`);
+  if (b.renew) await activationSignOut(env, await sha256(String(b.renew)));
   return { ok: true };
 }
 

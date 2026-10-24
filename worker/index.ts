@@ -16,6 +16,7 @@ import * as blog from "./blog";
 import * as checkout from "./checkout";
 import * as community from "./community";
 import * as applicence from "./applicence";
+import * as activations from "./activations";
 import * as guide from "./guide";
 import * as market from "./market";
 import { seedOnce, seedThreadsOnce } from "./seed";
@@ -105,6 +106,12 @@ route("GET", "/api/me/licences", async (c) => {
 });
 // The licence line to paste into djmanzo, for a machine that cannot sign in itself.
 route("GET", "/api/me/licence-line", async (c) => applicence.lineFor(c.env, await needUser(c)));
+// The computers djmanzo is activated on, and removing one (`worker/activations.ts`).
+route("GET", "/api/me/activations", async (c) => activations.view(await activations.activationsOf(c.env, (await needUser(c)).id), activations.most(c.env)));
+route("DELETE", "/api/me/activations/:id", async (c) => {
+  const u = await needUser(c);
+  return activations.view(await activations.remove(c.env, u.id, c.params.id), activations.most(c.env));
+});
 route("GET", "/api/me/orders", async (c) => {
   const u = await needUser(c);
   const keys = await list<{ u: string }>(c.env.KV, "order:", 5000);

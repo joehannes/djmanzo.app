@@ -51,6 +51,7 @@ put a bot check in front of new accounts.
 | Bank transfer | `BANK_TRANSFER_DETAILS` (shown at checkout) |
 | Signing licences | `LICENCE_PRIVATE_KEY`: the Ed25519 key whose public half is `DJMANZO_LICENCE_KEY`. Without it the site signs with the development key, which only djmanzo's debug builds believe |
 | The imprint | `IMPRINT_NAME`, `IMPRINT_ADDRESS`, `IMPRINT_EMAIL` (required by law before selling in the EU) |
+| How many computers at once | `MAX_ACTIVATIONS`, a variable: how many computers one person may have djmanzo activated on at once (3 when unset). They see and remove them on their account page |
 
 ## 4. Downloads from GitHub
 

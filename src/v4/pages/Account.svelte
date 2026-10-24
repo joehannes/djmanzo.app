@@ -62,6 +62,28 @@
   let voucher = $state("");
   let voucherMsg = $state<string | null>(null);
   let check = $state<Check | null>(null);
+  interface Computer {
+    id: string;
+    name: string;
+    os: string;
+    account: string;
+    created: number;
+    seen: number;
+  }
+  let computers = $state<{ most: number; activations: Computer[] } | null>(null);
+  let removing = $state<string | null>(null);
+  const day = (s: number) => new Date(s * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  const OS_NAME: Record<string, string> = { linux: "Linux", macos: "macOS", windows: "Windows" };
+
+  async function removeComputer(c: Computer) {
+    if (!confirm(`Remove "${c.name}"? djmanzo there goes back to the free Hobbyist edition the next time it is online and started again.`)) return;
+    removing = c.id;
+    try {
+      computers = await api<{ most: number; activations: Computer[] }>(`/api/me/activations/${encodeURIComponent(c.id)}`, { method: "DELETE" });
+    } finally {
+      removing = null;
+    }
+  }
   let loadedFor: string | null = null;
 
   async function load() {
@@ -73,6 +95,7 @@
     orders = o.status === "fulfilled" ? o.value.sort((a, b) => b.createdAt - a.createdAt) : [];
     notices = n.status === "fulfilled" ? n.value : [];
     trialHad = t.status === "fulfilled" ? t.value.had : null;
+    computers = await api<{ most: number; activations: Computer[] }>("/api/me/activations").catch(() => ({ most: 3, activations: [] }));
     if (session.admin) check = await api<Check>("/api/auth/check").catch(() => null);
   }
 
@@ -198,6 +221,26 @@
             </div>
           {/if}
 
+          <h3 class="mono small-h">Your computers</h3>
+          {#if computers}
+            <p class="dim small" data-activations-count>
+              djmanzo is activated on {computers.activations.length} of the {computers.most} computers a licence can be on at once. Signing in again on one of them keeps its place. To activate another, remove one you no longer use: djmanzo there goes back to the free Hobbyist edition the next time it is online and started again. Offline, an activated djmanzo keeps working.
+            </p>
+            {#if computers.activations.length}
+              <ul class="computers" data-activations>
+                {#each computers.activations as c (c.id)}
+                  <li data-activation={c.id}>
+                    <div>
+                      <b>{c.name}</b>
+                      <p class="dim small">{OS_NAME[c.os] ?? c.os} · through {PROVIDER_NAME[c.account.split(":")[0]] ?? c.account.split(":")[0]} · since {day(c.created)} · last seen {day(c.seen)}</p>
+                    </div>
+                    <button class="btn ghost small" disabled={removing === c.id} onclick={() => removeComputer(c)} data-remove-activation={c.id}>{removing === c.id ? "Removing…" : "Remove"}</button>
+                  </li>
+                {/each}
+              </ul>
+            {/if}
+          {/if}
+
           <h3 class="mono small-h">In djmanzo</h3>
           <ol class="steps">
             <li>Open <b>Settings → Licence</b> and sign in with {session.user.providers.filter((p) => p !== "demo" && p !== "owner").map((p) => PROVIDER_NAME[p] ?? p).join(" or ") || "the same account"}.</li>
@@ -317,6 +360,25 @@
 </div>
 
 <style>
+  .computers {
+    list-style: none;
+    margin: 8px 0 16px;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+  }
+  .computers li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .computers p {
+    margin: 2px 0 0;
+  }
   .head {
     position: relative;
     padding: calc(var(--bar) + 64px) 0 36px;
