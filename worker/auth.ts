@@ -1,9 +1,15 @@
 /**
  * Sign-in with an account a person already has.
  *
- * Six providers over OAuth 2 — Google, Apple, GitHub, Microsoft and Discord,
- * as ADR-0011 names them, and Facebook — with PKCE wherever the provider
- * takes it. A provider is offered only when its keys are set; with none set
+ * Thirteen providers over OAuth 2 — Google, Apple, GitHub, Microsoft and
+ * Discord, as ADR-0011 names them; Facebook, Instagram (its professional
+ * accounts: Meta ended sign-in for personal ones in December 2024), X,
+ * TikTok, LinkedIn, Twitch, LINE and Patreon — with PKCE wherever the
+ * provider takes it. Spotify is not among them: since May 2025 its login
+ * serves only a handful of allow-listed people unless the app belongs to a
+ * registered business with 250,000 monthly users. A provider is offered only
+ * when its keys are set — as Worker secrets, or in Backstage
+ * (`worker/signin.ts`); with none set
  * the site offers a demo sign-in instead, labelled as one, so the site can be
  * walked end to end before the owner has registered a single app.
  *
@@ -35,14 +41,20 @@ interface Provider {
   authorize: string;
   token: string;
   scope: string;
-  /** From the access token, by asking the provider. */
-  profile?: (token: string) => Promise<Profile>;
+  /** From the access token, by asking the provider (some want the client id alongside). */
+  profile?: (token: string, clientId: string) => Promise<Profile>;
   /** From the token response itself (an OpenID id_token), and the callback's form. */
   fromToken?: (tok: Record<string, unknown>, form: URLSearchParams) => Profile | null;
   /** Answers by posting a form to the callback (`response_mode=form_post`). */
   formPost?: boolean;
   /** Does not take PKCE. */
   noPkce?: boolean;
+  /** What the provider calls the client id in its requests (TikTok: `client_key`). */
+  clientIdParam?: string;
+  /** Wants the client's id and secret as a Basic header on the token request, not in its body (X). */
+  basicAuth?: boolean;
+  /** Who can sign in with it, where that is narrower than "anyone with an account". */
+  who?: string;
 }
 
 export interface Profile {
@@ -210,6 +222,87 @@ export const PROVIDERS: Provider[] = [
     },
   },
   {
+    id: "instagram",
+    name: "Instagram",
+    // Business Login for Instagram: Meta ended sign-in for personal Instagram
+    // accounts in December 2024; a professional (creator or business) account signs in here.
+    authorize: "https://www.instagram.com/oauth/authorize",
+    token: "https://api.instagram.com/oauth/access_token",
+    scope: "instagram_business_basic",
+    noPkce: true,
+    who: "Instagram professional accounts (creator or business)",
+    profile: async (t) => {
+      const p = await getJson(`https://graph.instagram.com/me?fields=user_id,username,name,profile_picture_url&access_token=${encodeURIComponent(t)}`, t);
+      return { sub: String(p.user_id ?? p.id), email: null, verified: false, name: s(p.name) ?? s(p.username) ?? "DJ", avatar: s(p.profile_picture_url) };
+    },
+  },
+  {
+    id: "x",
+    name: "X",
+    authorize: "https://x.com/i/oauth2/authorize",
+    token: "https://api.x.com/2/oauth2/token",
+    scope: "users.read tweet.read",
+    basicAuth: true,
+    profile: async (t) => {
+      const p = (await getJson("https://api.x.com/2/users/me?user.fields=profile_image_url", t)) as { data?: Record<string, unknown> };
+      const d = p.data ?? {};
+      return { sub: String(d.id), email: null, verified: false, name: s(d.name) ?? s(d.username) ?? "DJ", avatar: s(d.profile_image_url) };
+    },
+  },
+  {
+    id: "tiktok",
+    name: "TikTok",
+    authorize: "https://www.tiktok.com/v2/auth/authorize/",
+    token: "https://open.tiktokapis.com/v2/oauth/token/",
+    scope: "user.info.basic",
+    clientIdParam: "client_key",
+    // PKCE is TikTok's for desktop and mobile apps; the web flow is this one.
+    noPkce: true,
+    profile: async (t) => {
+      const p = (await getJson("https://open.tiktokapis.com/v2/user/info/?fields=open_id,avatar_url,display_name", t)) as { data?: { user?: Record<string, unknown> } };
+      const u = p.data?.user ?? {};
+      if (!u.open_id) fail(502, "TikTok did not say who this is.");
+      return { sub: String(u.open_id), email: null, verified: false, name: s(u.display_name) ?? "DJ", avatar: s(u.avatar_url) };
+    },
+  },
+  {
+    id: "linkedin",
+    name: "LinkedIn",
+    authorize: "https://www.linkedin.com/oauth/v2/authorization",
+    token: "https://www.linkedin.com/oauth/v2/accessToken",
+    scope: "openid profile email",
+    noPkce: true,
+    profile: async (t) => {
+      const p = await getJson("https://api.linkedin.com/v2/userinfo", t);
+      return { sub: String(p.sub), email: s(p.email), verified: p.email_verified === true, name: s(p.name) ?? "DJ", avatar: s(p.picture) };
+    },
+  },
+  {
+    id: "twitch",
+    name: "Twitch",
+    authorize: "https://id.twitch.tv/oauth2/authorize",
+    token: "https://id.twitch.tv/oauth2/token",
+    scope: "user:read:email",
+    noPkce: true,
+    profile: async (t, clientId) => {
+      const p = (await getJson("https://api.twitch.tv/helix/users", t, { "client-id": clientId })) as { data?: Record<string, unknown>[] };
+      const u = p.data?.[0] ?? {};
+      // Twitch does not say whether the address is confirmed: it links nothing.
+      return { sub: String(u.id), email: s(u.email), verified: false, name: s(u.display_name) ?? s(u.login) ?? "DJ", avatar: s(u.profile_image_url) };
+    },
+  },
+  {
+    id: "line",
+    name: "LINE",
+    authorize: "https://access.line.me/oauth2/v2.1/authorize",
+    token: "https://api.line.me/oauth2/v2.1/token",
+    scope: "profile openid",
+    profile: async (t) => {
+      const p = await getJson("https://api.line.me/v2/profile", t);
+      return { sub: String(p.userId), email: null, verified: false, name: s(p.displayName) ?? "DJ", avatar: s(p.pictureUrl) };
+    },
+  },
+  {
     id: "microsoft",
     name: "Microsoft",
     authorize: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
@@ -362,7 +455,7 @@ export async function start(req: Request, env: AppEnv, providerId: string, app?:
   };
   await put(env.KV, `oauth:${state}`, pending, 600);
   const auth = new URL(provider.authorize);
-  auth.searchParams.set("client_id", creds.clientId);
+  auth.searchParams.set(provider.clientIdParam ?? "client_id", creds.clientId);
   auth.searchParams.set("redirect_uri", back(env, url.origin, provider.id));
   auth.searchParams.set("response_type", "code");
   auth.searchParams.set("scope", provider.scope);
@@ -396,13 +489,14 @@ export async function callback(req: Request, env: AppEnv, providerId: string): P
     grant_type: "authorization_code",
     code,
     redirect_uri: back(env, url.origin, providerId),
-    client_id: creds.clientId,
-    client_secret: providerId === "apple" ? await appleSecret(env) : creds.secret,
+    [provider.clientIdParam ?? "client_id"]: creds.clientId,
   });
+  if (!provider.basicAuth) exchange.set("client_secret", providerId === "apple" ? await appleSecret(env) : creds.secret);
   if (!provider.noPkce) exchange.set("code_verifier", saved.verifier);
+  const basic: Record<string, string> = provider.basicAuth ? { authorization: `Basic ${btoa(`${encodeURIComponent(creds.clientId)}:${encodeURIComponent(creds.secret)}`)}` } : {};
   const r = await fetch(provider.token, {
     method: "POST",
-    headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json", ...UA },
+    headers: { "content-type": "application/x-www-form-urlencoded", accept: "application/json", ...UA, ...basic },
     body: exchange,
   });
   const tok = (await r.json().catch(() => ({}))) as Record<string, unknown>;
@@ -410,7 +504,7 @@ export async function callback(req: Request, env: AppEnv, providerId: string): P
   if (!r.ok || (!tok.access_token && !tok.id_token)) return failed(url.origin, saved.back, "token", `${r.status} ${String(tok.error ?? "")} ${String(tok.error_description ?? "")}`.trim());
   let profile: Profile | null;
   try {
-    profile = provider.fromToken ? provider.fromToken(tok, form) : await provider.profile!(String(tok.access_token));
+    profile = provider.fromToken ? provider.fromToken(tok, form) : await provider.profile!(String(tok.access_token), creds.clientId);
   } catch (e) {
     return failed(url.origin, saved.back, "profile", (e as Error).message);
   }
@@ -521,6 +615,23 @@ export async function isAdmin(req: Request, env: AppEnv, user: User | null): Pro
   }
   if (!user) return false;
   if (user.owner) return true;
+  // The owner's own GitHub account (by its numeric id, which a rename does
+  // not change): signing in with it is enough, no secret needed first.
+  const github = String(env.ADMIN_GITHUB_IDS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (user.identities.some((i) => i.provider === "github" && github.includes(i.sub))) return true;
+  // The owner's own address, by its SHA-256, so the address itself is not in
+  // the public repository; only an address a provider vouched for is kept on an account.
+  const hashes = String(env.ADMIN_EMAIL_HASHES || "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean);
+  if (user.email && hashes.length) {
+    const h = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(user.email.toLowerCase())))].map((b) => b.toString(16).padStart(2, "0")).join("");
+    if (hashes.includes(h)) return true;
+  }
   const admins = String(env.ADMIN_EMAILS || "")
     .split(",")
     .map((e) => e.trim().toLowerCase())
@@ -537,14 +648,18 @@ export async function adminRequired(req: Request, env: AppEnv): Promise<User | {
 // --- The crew's password --------------------------------------------------------
 //
 // There is no default password. Until the owner sets one in Backstage, the
-// way in is the ADMIN_TOKEN secret or an account in ADMIN_EMAILS. A set
+// way in is signing in with the owner's GitHub account (ADMIN_GITHUB_IDS) or
+// an account with the owner's address (ADMIN_EMAIL_HASHES), the ADMIN_TOKEN
+// secret, or an account in ADMIN_EMAILS. The owner's chosen password is set
+// there, in Backstage, never in this public repository: a short password's
+// hash published here could be guessed offline. A set
 // password is kept only as a PBKDF2 hash with its own salt (`admin:password`
 // in KV); ADMIN_TOKEN always works too, as the key under the doormat that
 // opens Backstage when the password is forgotten.
 
 /** The most PBKDF2 rounds a Worker will run. */
 export const PASSWORD_ROUNDS = 100_000;
-export const PASSWORD_MIN = 12;
+export const PASSWORD_MIN = 10;
 
 interface PasswordHash {
   salt: string;

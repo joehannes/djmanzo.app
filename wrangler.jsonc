@@ -19,7 +19,7 @@
       // The newest release's files, through the site (worker/update.ts).
       "/download/*",
       // Pages with an address of their own, rendered with their words (worker/seo.ts).
-      "/", "/features", "/wishes", "/releases", "/backstage", "/account", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
+      "/", "/features", "/wishes", "/releases", "/backstage", "/admin", "/account", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
     ]
   },
   "kv_namespaces": [{ "binding": "KV", "id": "63033c23be2046b08d74b2dc6d3902b1" }],
@@ -38,6 +38,12 @@
     // demo mode and says so on every checkout and sign-in screen.
     // ADMIN_EMAILS and ADMIN_TOKEN are secrets, never committed.
     "DEMO_MODE": "auto",
+    // The owner's own accounts open Backstage when they sign in, with no
+    // token or password first: the GitHub account by its numeric id, and
+    // the owner's address by its SHA-256 (the address itself stays out of
+    // this public repository). Neither is a secret.
+    "ADMIN_GITHUB_IDS": "63741107",
+    "ADMIN_EMAIL_HASHES": "1b83f893d7bb6e9243e98262f328c93952481947b6af108b28feb8f71316a9b7",
     "MAJOR_VERSION": "1",
     "DOWNLOAD_BASE": "/#download",
     // What a djmanzo release names to sign in here (the owner set them on the

@@ -32,6 +32,7 @@ import * as redeem from "./redeem";
 import * as update from "./update";
 import * as releaseNotes from "./notes";
 import * as payments from "./payments";
+import * as signin from "./signin";
 import * as voucher from "./voucher";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
@@ -123,6 +124,7 @@ route("GET", "/api/me/orders", async (c) => {
 route("GET", "/api/me/gifts", async (c) => checkout.giftsOf(c.env, (await needUser(c)).id));
 // Backstage lives in the island; this is the address to remember.
 route("GET", "/backstage", async (c) => Response.redirect(new URL("/island/#/backstage", c.url).toString(), 302));
+route("GET", "/admin", async (c) => Response.redirect(new URL("/island/#/backstage", c.url).toString(), 302));
 route("GET", "/api/me/profile", async (c) => get(c.env.KV, `profile:${(await needUser(c)).id}`));
 route("PUT", "/api/me/profile", async (c) => community.saveProfile(c.env, await needUser(c), await body(c.req, 9000)));
 
@@ -516,6 +518,15 @@ route("GET", "/api/admin/payments", async (c) => {
   await needAdmin(c);
   return json(await payments.view(c.env));
 });
+route("GET", "/api/admin/signin", async (c) => {
+  await needAdmin(c);
+  return json(await signin.view(c.env, c.url.origin));
+});
+route("PUT", "/api/admin/signin", async (c) => {
+  const admin = await needAdmin(c);
+  await signin.update(c.env, await body<{ values?: Record<string, string> }>(c.req), admin.name);
+  return json(await signin.view(c.env, c.url.origin));
+});
 route("PUT", "/api/admin/payments", async (c) => {
   const admin = await needAdmin(c);
   await payments.update(c.env, await body<payments.Change>(c.req), admin.name);
@@ -606,7 +617,7 @@ route("GET", "/sitemap.xml", (c) => seo.sitemap(c.env, c.url.origin));
 export async function handle(req: Request, rawEnv: AppEnv, exec: ExecutionContext): Promise<Response> {
   const url = new URL(req.url);
   // The ways to pay the crew set in Backstage, over the Worker's secrets (`worker/payments.ts`).
-  const env = await payments.withPayments(rawEnv);
+  const env = await signin.withSignin(await payments.withPayments(rawEnv));
   // The professional site was previewed at /v4/ before it became the site; old links still land
   // (the browser keeps an old #/pricing, and the page turns it into /pricing). Its pictures stay at /v4/art/.
   if (url.pathname === "/v4" || url.pathname === "/v4/" || url.pathname === "/v4/index.html") return Response.redirect(`${url.origin}/${url.search}`, 301);

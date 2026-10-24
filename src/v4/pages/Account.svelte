@@ -187,7 +187,10 @@
               {#if session.user.githubSponsors}<a class="tag" href={session.user.githubSponsors} rel="noopener">Your GitHub Sponsors page, verified</a>{/if}
             </p>
           </div>
-          <button class="btn ghost small out" onclick={signOut} data-signout>Sign out</button>
+          <div class="out">
+            {#if session.admin}<a class="btn small" href="/island/#/backstage" data-backstage-link>Backstage (crew)</a>{/if}
+            <button class="btn ghost small" onclick={signOut} data-signout>Sign out</button>
+          </div>
         </div>
       {:else}
         <h1 class="h1">Sign in.<br />Your licences follow.</h1>
@@ -459,6 +462,9 @@
   }
   .out {
     margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .tag {
     display: inline-block;

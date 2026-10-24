@@ -24,6 +24,12 @@ export const PROVIDER_NAME: Record<string, string> = {
   facebook: "Facebook",
   patreon: "Patreon",
   microsoft: "Microsoft",
+  instagram: "Instagram",
+  x: "X",
+  tiktok: "TikTok",
+  linkedin: "LinkedIn",
+  twitch: "Twitch",
+  line: "LINE",
   demo: "the demo sign-in",
   owner: "the crew's token",
 };

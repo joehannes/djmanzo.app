@@ -482,3 +482,34 @@ test("Backstage: payments are set without a deploy, shown back only by their end
   }
   expect(errs).toEqual([]);
 });
+
+test("Backstage: a sign-in provider is switched on with its keys, and the sign-in page offers it", async ({ page, request }) => {
+  const errs = errors(page);
+  const clear = { values: { GOOGLE_CLIENT_ID: "", GOOGLE_CLIENT_SECRET: "" } };
+  try {
+    await page.goto("/admin");
+    await expect(page).toHaveURL(/\/island\/#\/backstage$/);
+    await page.locator("[data-crew-password]").fill("crew-secret");
+    await page.getByRole("button", { name: "Come in" }).click();
+    await page.locator("[data-signin-keys] summary").click();
+    const google = page.locator("[data-signin-provider=google]");
+    await expect(google).toContainText("— off");
+    await expect(google.locator("[data-signin-register]")).toHaveText(/\/callback\/google$/);
+    await expect(page.locator("[data-signin-provider=instagram]")).toContainText("Only Instagram professional accounts");
+    await page.locator("[data-signin-field=GOOGLE_CLIENT_ID]").fill("1234-e2e.apps.googleusercontent.com");
+    await page.locator("[data-signin-field=GOOGLE_CLIENT_SECRET]").fill("GOCSPX-e2e-secret-WXYZ");
+    await page.locator("[data-signin-save]").click();
+    await expect(page.locator("[data-signin-msg]")).toContainText("Saved.");
+    await expect(google).toContainText("✓ offered");
+    await expect(google).toContainText("…WXYZ (backstage)");
+    await expect(page.locator("[data-signin-keys]")).not.toContainText("GOCSPX-e2e-secret-WXYZ");
+    // The sign-in page offers it now, to someone not signed in.
+    expect((await (await request.get("/api/me")).json()).providers.map((p: { id: string }) => p.id)).toContain("google");
+    await page.context().clearCookies();
+    await page.goto("/account");
+    await expect(page.locator("[data-provider=google]")).toContainText("Continue with Google");
+  } finally {
+    await request.put("/api/admin/signin", { data: clear, headers: { authorization: "Bearer crew-secret" } });
+  }
+  expect(errs).toEqual([]);
+});

@@ -50,13 +50,13 @@ export interface Settings {
 const EMPTY: Settings = { values: {}, wallets: { applePay: true, googlePay: true }, at: 0, by: "" };
 const KEY = "config:payments";
 
-/** The settings key: HKDF over the Worker's own secret, so it is never in KV. */
-async function cipherKey(env: AppEnv): Promise<CryptoKey | null> {
+/** A settings key: HKDF over the Worker's own secret, so it is never in KV; `info` keeps each kind of setting's key its own. */
+async function cipherKey(env: AppEnv, info: string): Promise<CryptoKey | null> {
   const root = env.LICENCE_PRIVATE_KEY || env.ADMIN_TOKEN;
   if (!root) return null;
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(root), "HKDF", false, ["deriveKey"]);
   return crypto.subtle.deriveKey(
-    { name: "HKDF", hash: "SHA-256", salt: new TextEncoder().encode("djmanzo-settings"), info: new TextEncoder().encode("payments-v1") },
+    { name: "HKDF", hash: "SHA-256", salt: new TextEncoder().encode("djmanzo-settings"), info: new TextEncoder().encode(info) },
     base,
     { name: "AES-GCM", length: 256 },
     false,
@@ -64,35 +64,46 @@ async function cipherKey(env: AppEnv): Promise<CryptoKey | null> {
   );
 }
 
-/** The settings as kept, or the empty ones (none kept yet, or kept under a secret since changed). */
-export async function read(env: AppEnv): Promise<Settings & { unreadable?: boolean }> {
-  const raw = await env.KV.get(KEY);
-  if (!raw) return EMPTY;
-  const key = await cipherKey(env);
-  if (!key) return { ...EMPTY, unreadable: true };
+/** Settings kept sealed in KV: null when none are kept, `unreadable` when they were sealed under a secret since changed. */
+export async function sealedRead<T>(env: AppEnv, kvKey: string, info: string): Promise<{ value: T | null; unreadable: boolean }> {
+  const raw = await env.KV.get(kvKey);
+  if (!raw) return { value: null, unreadable: false };
+  const key = await cipherKey(env, info);
+  if (!key) return { value: null, unreadable: true };
   try {
     const { iv, data } = JSON.parse(raw) as { iv: string; data: string };
     const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64url(iv) }, key, unb64url(data));
-    const s = JSON.parse(new TextDecoder().decode(plain)) as Settings;
-    return { ...EMPTY, ...s, wallets: { ...EMPTY.wallets, ...s.wallets } };
+    return { value: JSON.parse(new TextDecoder().decode(plain)) as T, unreadable: false };
   } catch {
     // Kept under another secret (the licence key was changed): set the keys again.
-    return { ...EMPTY, unreadable: true };
+    return { value: null, unreadable: true };
   }
 }
 
-async function write(env: AppEnv, s: Settings): Promise<void> {
-  const key = await cipherKey(env);
-  if (!key) fail(503, "Set the LICENCE_PRIVATE_KEY (or ADMIN_TOKEN) Worker secret first: payment keys are kept encrypted under it.");
+export async function sealedWrite(env: AppEnv, kvKey: string, info: string, value: unknown): Promise<void> {
+  const key = await cipherKey(env, info);
+  if (!key) fail(503, "Set the LICENCE_PRIVATE_KEY (or ADMIN_TOKEN) Worker secret first: keys set here are kept encrypted under it.");
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(JSON.stringify(s)));
-  await env.KV.put(KEY, JSON.stringify({ iv: b64url(iv), data: b64url(new Uint8Array(data)) }));
+  const data = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(JSON.stringify(value)));
+  await env.KV.put(kvKey, JSON.stringify({ iv: b64url(iv), data: b64url(new Uint8Array(data)) }));
+}
+
+/** The settings as kept, or the empty ones (none kept yet, or kept under a secret since changed). */
+export async function read(env: AppEnv): Promise<Settings & { unreadable?: boolean }> {
+  const { value, unreadable } = await sealedRead<Settings>(env, KEY, "payments-v1");
+  if (unreadable) return { ...EMPTY, unreadable: true };
+  if (!value) return EMPTY;
+  return { ...EMPTY, ...value, wallets: { ...EMPTY.wallets, ...value.wallets } };
+}
+
+async function write(env: AppEnv, s: Settings): Promise<void> {
+  await sealedWrite(env, KEY, "payments-v1", s);
   cached = null;
 }
 
 /** The Worker's own environment, under the settings laid over it for this request. */
-const RAW = Symbol("the Worker's own environment");
-const rawOf = (env: AppEnv): AppEnv => ((env as unknown as Record<symbol, AppEnv>)[RAW] ?? env);
+export const RAW = Symbol("the Worker's own environment");
+export const rawOf = (env: AppEnv): AppEnv => ((env as unknown as Record<symbol, AppEnv>)[RAW] ?? env);
 
 /** The change Backstage asks for: a field's new value, "" to clear it (back to the Worker secret), absent to keep it. */
 export interface Change {

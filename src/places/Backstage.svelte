@@ -93,6 +93,35 @@
     return "code,bound_to\n" + minted.map((m) => `${m.code},${m.boundTo ?? ""}`).join("\n");
   }
 
+  // --- Sign-in with an account people already have (worker/signin.ts) ------------------
+  let signView = $state<any>(null);
+  let signDraft = $state<Record<string, string>>({});
+  let signMsg = $state<string | null>(null);
+  async function loadSignin() {
+    signView = await api("/api/admin/signin").catch((e) => ((signMsg = (e as Error).message), null));
+  }
+  async function saveSignin(e: SubmitEvent) {
+    e.preventDefault();
+    signMsg = null;
+    const values = Object.fromEntries(Object.entries(signDraft).filter(([, v]) => v !== undefined && v !== ""));
+    try {
+      signView = await api("/api/admin/signin", { method: "PUT", json: { values } });
+      signDraft = {};
+      signMsg = "Saved. The sign-in buttons follow within half a minute, here and in djmanzo.";
+    } catch (err) {
+      signMsg = (err as Error).message;
+    }
+  }
+  async function clearSignin(key: string) {
+    signMsg = null;
+    try {
+      signView = await api("/api/admin/signin", { method: "PUT", json: { values: { [key]: "" } } });
+      signMsg = `${key} cleared here; the Worker secret of that name, if any, is used again.`;
+    } catch (err) {
+      signMsg = (err as Error).message;
+    }
+  }
+
   // --- How the shop takes money (worker/payments.ts) ------------------------------------
   const PAY_FIELDS: { key: string; label: string; secret: boolean; hint: string; area?: boolean }[] = [
     { key: "STRIPE_PUBLISHABLE_KEY", label: "Stripe publishable key", secret: false, hint: "pk_live_… (Stripe → Developers → API keys)" },
@@ -537,6 +566,37 @@
     {/if}
   </details>
 
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadSignin()} data-signin-keys>
+    <summary>🙋 Sign-in</summary>
+    <p class="small muted">Which accounts people can sign in with, here and in djmanzo. Each provider needs an app registered in <b>your</b> account there — the link and the steps are under each one — and wants the one address on this site it may send people back to: copy it exactly. Keys set here are kept encrypted and win over the Worker secrets of the same name; empty a field to fall back to the secret.</p>
+    {#if signView}
+      {#if signView.unreadable}<p class="notice">The kept keys were encrypted under a secret that has since changed; set them again.</p>{/if}
+      <p data-signin-offered>Offered now: <b>{signView.providers.filter((p: any) => p.offered).map((p: any) => p.name).join(", ") || "none — the demo sign-in stands in"}</b></p>
+      <form onsubmit={saveSignin} class="grid">
+        {#each signView.providers as p (p.id)}
+          <fieldset data-signin-provider={p.id}>
+            <legend>{p.name} {#if p.offered}<span class="ok">✓ offered</span>{:else}<span class="muted">— off</span>{/if}</legend>
+            {#if p.who}<p class="small notice">Only {p.who}.</p>{/if}
+            <p class="small muted"><a href={p.console} target="_blank" rel="noopener">{p.name}'s developer console ↗</a> · {p.steps}</p>
+            <p class="small">Address to register: <code data-signin-register>{p.register}</code></p>
+            {#each p.keys as k (k.field)}
+              <label class="field">
+                <span>{k.label} {#if k.set}<span class="muted">— {k.shown} ({k.from}){#if k.from === "backstage"} <button type="button" class="btn quiet" onclick={() => clearSignin(k.field)}>clear</button>{/if}</span>{/if}</span>
+                {#if k.multiline}
+                  <textarea bind:value={signDraft[k.field]} placeholder={k.set ? "leave empty to keep it" : "-----BEGIN PRIVATE KEY-----"} rows="4" spellcheck="false"></textarea>
+                {:else}
+                  <input type={k.field.endsWith("SECRET") ? "password" : "text"} bind:value={signDraft[k.field]} placeholder={k.set ? "leave empty to keep it" : k.label} autocomplete="off" spellcheck="false" data-signin-field={k.field} />
+                {/if}
+              </label>
+            {/each}
+          </fieldset>
+        {/each}
+        <button class="btn primary" data-signin-save>Save</button>
+      </form>
+    {/if}
+    {#if signMsg}<p class="notice" data-signin-msg>{signMsg}</p>{/if}
+  </details>
+
   <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPayments()} data-payments>
     <summary>💳 Payments</summary>
     <p class="small muted">How the shop takes money. The recommended setup: one <b>Stripe</b> account (Austria, sole trader) paying out to your Wise EUR IBAN, whose card form takes cards, Apple Pay and Google Pay — and PayPal and EPS once you turn them on in Stripe → Settings → Payment methods. PayPal on its own is an alternative. Keys set here are kept encrypted and win over the Worker secrets of the same name; empty a field to fall back to the secret. SETUP.md, "Payments", walks through it.</p>
@@ -605,7 +665,7 @@
     <p class="small muted">There is no default password. {pwState?.set ? `One is set (since ${new Date(pwState.at ?? 0).toISOString().slice(0, 10)}); setting another replaces it.` : "None is set yet: until one is, Backstage opens with the ADMIN_TOKEN secret or an address on ADMIN_EMAILS."} It is kept only as a salted hash. The ADMIN_TOKEN secret always opens Backstage too, should the password be forgotten.</p>
     <form onsubmit={setPassword} class="grid">
       <div class="two">
-        <label class="field"><span>New password (at least 12 characters)</span><input type="password" minlength="12" bind:value={pw1} autocomplete="new-password" required data-pw-new /></label>
+        <label class="field"><span>New password (at least 10 characters)</span><input type="password" minlength="10" bind:value={pw1} autocomplete="new-password" required data-pw-new /></label>
         <label class="field"><span>Again</span><input type="password" minlength="12" bind:value={pw2} autocomplete="new-password" required data-pw-again /></label>
       </div>
       <button class="btn primary">{pwState?.set ? "Change the password" : "Set the password"}</button>

@@ -8,6 +8,10 @@ export interface Secrets {
   STUDENT_DOMAINS?: string;
   /** Comma-separated e-mail addresses whose sign-in opens Backstage. */
   ADMIN_EMAILS: string;
+  /** GitHub account ids (numbers) whose sign-in is the crew's: the owner's own. */
+  ADMIN_GITHUB_IDS?: string;
+  /** SHA-256s (hex) of addresses whose verified sign-in is the crew's: the owner's own, kept out of the public repository. */
+  ADMIN_EMAIL_HASHES?: string;
   /** A bearer token that opens Backstage before any sign-in provider exists. */
   ADMIN_TOKEN: string;
   /** Ed25519 private key, PKCS#8, base64. Signs every licence, and every voucher (`worker/voucher.ts`). */
