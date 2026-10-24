@@ -12,7 +12,7 @@ page is how that is drawn. [WEBSITE.md](WEBSITE.md) is how the site works.
 
 Sound travels from a groove, through a needle and a mixer, to an amplifier,
 through a speaker cone into the air and into bodies on a floor. The website
-is that journey, in ten stages (`website/src/stages/script.ts`):
+is that journey, in ten stages (`src/stages/script.ts`):
 
 | Stage | Night | What it reveals |
 |---|---|---|
@@ -46,7 +46,7 @@ took through it becomes their constellation.
    explained ("Two rivers never meet by accident.").
 2. **Reveal.** The real application doing it — the owner's demo videos and
    the screenshots in [`screenshots/`](screenshots/), never a mock-up — and
-   one honest fact, taken from `website/shared/facts.ts`.
+   one honest fact, taken from `shared/facts.ts`.
 3. **Play.** Something for the hands that is about music and art, never a
    pretend djmanzo: scrub a needle through a genre's history, let two
    painted streams meet, sing to make the scene move.
@@ -75,7 +75,7 @@ silhouettes.
 ## The style genome
 
 What a style looks, sounds, dresses and moves like is data
-(`website/src/style/genome/`), and a child names only what it changes. The
+(`src/style/genome/`), and a child names only what it changes. The
 three paths written in depth:
 
 | | EDM | Electro swing (EDM's rig through Art Deco) |
@@ -114,7 +114,7 @@ who a visitor is from where they are.
 
 Each style names the djmanzo theme and skin that suit it, and a test holds
 every pair to what the application ships and will wear together
-(`website/test/genome.test.ts`), so the screenshot a stage shows is the
+(`test/genome.test.ts`), so the screenshot a stage shows is the
 visitor's own look.
 
 ## Motion and sound
@@ -137,7 +137,7 @@ complements — is cited in each node's `sources`.
 
 The painting is **three.js on WebGL2 with hand-written GLSL** — the Kuwahara
 pass, the gradient map, the bristles and the grain are one fragment shader
-(`website/src/signal/world/painter.ts`). WebGPU with three.js's node
+(`src/signal/world/painter.ts`). WebGPU with three.js's node
 materials, Threlte and GSAP were considered and set aside for now: WebGL2
 runs everywhere the site is shown, and under the software renderer this
 repository's browser tests draw with, so every change to the painting is

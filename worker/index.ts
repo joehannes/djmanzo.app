@@ -140,7 +140,8 @@ route("GET", "/api/catalog", async (c) => {
       transfer: !!c.env.BANK_TRANSFER_DETAILS,
     },
     major: Number(c.env.MAJOR_VERSION || 1),
-    downloads: c.env.DOWNLOAD_BASE,
+    // The download screen, which lists the newest release's installers (`worker/update.ts`).
+    downloads: new URL(c.env.DOWNLOAD_BASE || "/#download", c.url.origin).href,
     // Where djmanzo asks for updates, in the Tauri updater's own template (`worker/update.ts`).
     updates: `${c.url.origin}/api/update/{{target}}/{{arch}}/{{current_version}}`,
   };
@@ -200,7 +201,11 @@ route("GET", "/api/licence/public-key", async (c) => {
 route("GET", "/redeem", (c) => redeem.show(c.req, c.env));
 route("POST", "/redeem", (c) => redeem.takeGift(c.req, c.env));
 // Whether there is a newer djmanzo, for its updater (`worker/update.ts`).
-route("GET", "/api/update/:target/:arch/:current", (c) => update.check(c.env, c.params.target, c.params.arch, c.params.current));
+route("GET", "/api/update/:target/:arch/:current", (c) => update.check(c.env, c.params.target, c.params.arch, c.params.current, c.url.origin));
+// The newest release's installers, and one of its files (`worker/update.ts`).
+route("GET", "/api/download", (c) => update.downloads(c.env, c.url.origin));
+route("GET", "/api/releases", (c) => update.recent(c.env));
+route("GET", "/download/:file", (c) => update.file(c.env, decodeURIComponent(c.params.file)));
 
 // --- The community -------------------------------------------------------------
 

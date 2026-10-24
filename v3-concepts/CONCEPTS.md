@@ -3,8 +3,8 @@
 *No code and no architecture yet: five complete ideas, each with its
 journey, guide, places, lessons, look, motion, sound and words, so you can
 pick one or ask for a mix. They rest on the research report*
-`website/v3-concepts/research/djmanzo website v3 intel.md`, *on what versions 1 and 2 taught
-us, and on* `website/desired_sounds.md` *for the music.*
+`v3-concepts/research/djmanzo website v3 intel.md`, *on what versions 1 and 2 taught
+us, and on* `desired_sounds.md` *for the music.*
 
 All pictures here are **AI-drafted samples** (FLUX.2 [klein] 4B on
 Cloudflare Workers AI, Apache-2.0, free tier), made to show a mood, not
@@ -508,7 +508,7 @@ licence excludes the EU), and SUPIR is non-commercial.
 - Cloudflare: already in place (the token this session uses).
 - **Suno:** a Pro or Premier month while you download the final songs.
 
-**Sound.** `website/desired_sounds.md`: 23 songs with words and styles, 9
+**Sound.** `desired_sounds.md`: 23 songs with words and styles, 9
 beds, 8 teaching tracks, and the short sounds to cut from them.
 
 ---

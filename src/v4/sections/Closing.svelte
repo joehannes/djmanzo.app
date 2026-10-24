@@ -1,12 +1,25 @@
 <!--
   The last screen: the download, for every system, with the truth about
-  each, and where to go if you want more than the free edition.
+  each, and where to go if you want more than the free edition. The files
+  are the newest release's own (`/api/download`), the visitor's system
+  first; one download for every edition, which a licence unlocks.
 -->
 <script lang="ts">
+  import { onMount } from "svelte";
   import { STATUS_LINE } from "../../../shared/facts";
   import { shared } from "../region.svelte";
   import { href } from "../router";
-  import { RELEASES, downloadLabel } from "../download";
+  import { downloadLabel, latest, osOf, sizeOf, type Latest } from "../download";
+
+  const OSES = ["mac", "linux", "windows"] as const;
+  let release = $state<Latest | null>(null);
+  let mine = $state<string>("other");
+  const order = $derived([...OSES].sort((a, b) => Number(b === mine) - Number(a === mine)));
+
+  onMount(() => {
+    mine = osOf(navigator.userAgent);
+    void latest().then((r) => (release = r));
+  });
 </script>
 
 <section class="closing" id="download" aria-labelledby="dl-title">
@@ -15,17 +28,31 @@
   <div class="wrap inner">
     <p class="eyebrow" data-reveal>Download</p>
     <h2 class="h1" id="dl-title" data-reveal>Your next night<br />starts free.</h2>
+    <p class="lead" data-reveal>
+      One download for every edition. It starts as the Hobbyist edition, free for ever; a licence or a 7-day trial unlocks the rest, in Settings → Licence.
+      {#if release?.version}<span class="mono">Newest: v{release.version}.</span>{/if}
+    </p>
     <div class="oses" data-reveal>
-      {#each ["mac", "linux", "windows"] as const as os (os)}
+      {#each order as os (os)}
         {@const d = downloadLabel(os)}
-        <a class="os card" href={RELEASES} data-os={os}>
-          <b>{d.label.replace("Download for ", "")}</b>
+        {@const files = release?.files.filter((f) => f.os === os) ?? []}
+        <div class="os card" class:mine={os === mine} data-os={os}>
+          <b>{d.label.replace("Download for ", "")}{#if os === mine}<span class="you">your system</span>{/if}</b>
           <small>{d.note}</small>
-        </a>
+          {#if files.length}
+            <ul class="files">
+              {#each files as f (f.name)}
+                <li><a href={f.href} data-file={f.name}>{f.label} <span class="mono dim">{sizeOf(f.size)}</span></a></li>
+              {/each}
+            </ul>
+          {:else if release}
+            <small class="dim">The installers appear here with the next release.</small>
+          {/if}
+        </div>
       {/each}
     </div>
     <div class="ctas" data-reveal>
-      <a class="btn primary" href={RELEASES}>All downloads and release notes</a>
+      <a class="btn primary" href={href("account")}>Your account and licences</a>
       <a class="btn ghost" href={href("pricing")}>Compare editions</a>
     </div>
     <p class="status-line" data-reveal>{STATUS_LINE}</p>
@@ -75,8 +102,31 @@
     backdrop-filter: blur(10px);
     transition: border-color 0.2s;
   }
-  .os:hover {
+  .os:hover,
+  .os.mine {
     border-color: var(--accent);
+  }
+  .you {
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--accent);
+    color: var(--bg);
+    font: 600 11px/1.4 var(--body, inherit);
+    vertical-align: middle;
+  }
+  .files {
+    list-style: none;
+    margin: 6px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+  }
+  .files a {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 14px;
   }
   .os b {
     font: 600 18px/1.2 var(--display);

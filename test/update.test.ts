@@ -139,3 +139,71 @@ describe("GET /api/update/:target/:arch/:current", () => {
     expect(r.data.updates).toBe("https://djmanzo.test/api/update/{{target}}/{{arch}}/{{current_version}}");
   });
 });
+
+describe("downloads, through the site", () => {
+  const DMG = "https://github.com/joehannes/djmanzo/releases/download/v1.4.0/djmanzo_1.4.0_aarch64.dmg";
+  const files = [
+    { id: 11, name: "djmanzo_1.4.0_aarch64.dmg", size: 90_000_000, browser_download_url: DMG },
+    { id: 12, name: "djmanzo_1.4.0_amd64.AppImage", size: 120_000_000, browser_download_url: "https://github.com/joehannes/djmanzo/releases/download/v1.4.0/djmanzo_1.4.0_amd64.AppImage" },
+    { id: 13, name: "djmanzo_1.4.0_amd64.AppImage.tar.gz", size: 1, browser_download_url: "https://github.com/joehannes/djmanzo/releases/download/v1.4.0/djmanzo_1.4.0_amd64.AppImage.tar.gz" },
+    { id: 14, name: "latest.json", size: 1, browser_download_url: MANIFEST },
+  ];
+
+  /** GitHub with a private repository: nothing without the token, a short-lived address with it. */
+  function privateGithub(token: string) {
+    const asked: { url: string; auth: string | null; accept: string | null }[] = [];
+    vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
+      const h = new Headers(init?.headers);
+      asked.push({ url: String(url), auth: h.get("authorization"), accept: h.get("accept") });
+      if (h.get("authorization") !== `Bearer ${token}`) return new Response("{}", { status: 404 });
+      if (url === RELEASES) return Response.json(release({ assets: files }));
+      const m = /\/releases\/assets\/(\d+)$/.exec(String(url));
+      if (m && h.get("accept") === "application/octet-stream") {
+        if (m[1] === "14") return Response.json(manifest);
+        return new Response(null, { status: 302, headers: { location: `https://objects.githubusercontent.com/signed/${m[1]}?expires=soon` } });
+      }
+      throw new Error(`unexpected fetch ${url}`);
+    });
+    return asked;
+  }
+
+  it("lists the installers, each at this site's address, and leaves out the updater's own files", async () => {
+    privateGithub("tok");
+    const r = await browser(testEnv({ GITHUB_RELEASES_TOKEN: "tok" }))("/api/download");
+    expect(r.status).toBe(200);
+    expect(r.data).toMatchObject({ version: "1.4.0", private: true });
+    expect(r.data.files).toEqual([
+      { name: "djmanzo_1.4.0_aarch64.dmg", size: 90_000_000, os: "mac", label: "macOS, Apple silicon", href: "https://djmanzo.test/download/djmanzo_1.4.0_aarch64.dmg" },
+      { name: "djmanzo_1.4.0_amd64.AppImage", size: 120_000_000, os: "linux", label: "Linux, AppImage", href: "https://djmanzo.test/download/djmanzo_1.4.0_amd64.AppImage" },
+    ]);
+  });
+
+  it("sends the visitor to GitHub's short-lived address, the token never leaving the Worker", async () => {
+    const asked = privateGithub("tok");
+    const r = await browser(testEnv({ GITHUB_RELEASES_TOKEN: "tok" }))("/download/djmanzo_1.4.0_aarch64.dmg");
+    expect(r.status).toBe(302);
+    expect(r.res.headers.get("location")).toBe("https://objects.githubusercontent.com/signed/11?expires=soon");
+    expect(r.res.headers.get("location")).not.toContain("tok");
+    expect(asked.every((a) => a.auth === "Bearer tok")).toBe(true);
+  });
+
+  it("refuses a file the newest release does not have", async () => {
+    privateGithub("tok");
+    expect((await browser(testEnv({ GITHUB_RELEASES_TOKEN: "tok" }))("/download/evil.exe")).status).toBe(404);
+  });
+
+  it("without the token, uses the public addresses, which work while the repository is public", async () => {
+    github(release({ assets: files }), manifest);
+    const r = await browser(testEnv())("/download/djmanzo_1.4.0_aarch64.dmg");
+    expect(r.status).toBe(302);
+    expect(r.res.headers.get("location")).toBe(DMG);
+  });
+
+  it("points the updater at this site when the repository is private, and reads the manifest privately", async () => {
+    privateGithub("tok");
+    const r = await browser(testEnv({ GITHUB_RELEASES_TOKEN: "tok" }))("/api/update/linux/x86_64/1.3.0");
+    expect(r.status).toBe(200);
+    expect(r.data.url).toBe("https://djmanzo.test/download/djmanzo_1.4.0_amd64.AppImage.tar.gz");
+    expect(r.data.signature).toBe("c2lnbmF0dXJl");
+  });
+});

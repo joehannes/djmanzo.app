@@ -59,7 +59,7 @@
   onMount(() => {
     api<Card[]>("/api/outboard/items").then((r) => (items = r.slice(0, 4)), () => (items = []));
     api<Post[]>("/api/talkback/posts?sort=hot").then((r) => (posts = r.slice(0, 5)), () => (posts = []));
-    fetch("https://api.github.com/repos/joehannes/djmanzo/releases?per_page=3")
+    fetch("/api/releases")
       .then((r) => (r.ok ? r.json() : []))
       .then((r: Release[]) => (releases = r), () => (releases = []));
   });
@@ -114,7 +114,7 @@
     </div>
 
     <div class="releases" id="releases">
-      <header><h3 class="h3" data-reveal>What's new</h3><a href={RELEASES} class="more">All releases →</a></header>
+      <header><h3 class="h3" data-reveal>What's new</h3><a href={RELEASES} class="more">Download →</a></header>
       {#if releases && releases.length}
         <ol class="rel">
           {#each releases as r (r.tag_name)}
@@ -127,7 +127,7 @@
           {/each}
         </ol>
       {:else if releases}
-        <p class="empty">The release list is on <a href={RELEASES}>GitHub</a>.</p>
+        <p class="empty">The newest release is on <a href={RELEASES}>the download screen</a>.</p>
       {/if}
     </div>
   </div>

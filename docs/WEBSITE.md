@@ -2,7 +2,7 @@
 
 djmanzo's website presents the application, sells it, and is where a DJ's
 account and licences live. It is one Cloudflare Worker with one KV namespace,
-in [`website/`](../), and it is live at
+in this repository, and it is live at
 **https://djmanzo.johannes-neugschwentner.workers.dev**.
 
 > **The front door is the fourth version, the professional site, at
@@ -61,7 +61,7 @@ gear, experience — and the island changes with each answer: the genre's
 colours and display face, the loop the island plays, the islets that sail
 closer, the order of the tour and the edition the box office opens on. The
 genre knowledge (rooms, clothes, art, dances, how its DJs mix, the theme and
-skin djmanzo ships for it) is in `website/src/lib/genres.ts`.
+skin djmanzo ships for it) is in `src/lib/genres.ts`.
 
 Everything audible is synthesised in the browser from each genre's pattern;
 no recordings are used. Screenshots are of the real application.
@@ -86,7 +86,7 @@ no recordings are used. Screenshots are of the real application.
 
 ## Editions and prices
 
-What an edition *is* comes from the application: `website/shared/editions.json`
+What an edition *is* comes from the application: `shared/editions.json`
 is written from `dj_core::edition`, and a Rust test
 (`crates/dj-core/tests/website_editions.rs`) fails when the two drift. What
 it *costs* is [EDITIONS.md](../app/docs/EDITIONS.md)'s: half of what the professional
@@ -109,7 +109,7 @@ own ask for the website (DIRECTIVE §134) and follow one rule that waits for
 the owner's nod: Pro DJ's month is half the professional subscriptions'
 average, every other edition's month in the same proportion to its one-time
 price, a year ten months. The box office's board shows every reference with
-its source, and tests hold the arithmetic (`website/test/catalog.test.ts`).
+its source, and tests hold the arithmetic (`test/catalog.test.ts`).
 A Custom choice that reaches an edition's price is pointed at the edition.
 
 **A free trial**: seven days of any edition, Full included, once per account
@@ -173,7 +173,7 @@ trial's end, when to renew — and, for a monthly or yearly plan,
 `paid_until`, after which and a fortnight's grace djmanzo treats the plan as
 lapsed at its next start. What was bought once carries no date. The tests
 sign `services/licence`'s own test vectors byte for byte
-(`website/test/applicence.test.ts`), and `dj_app::licence` reads the same
+(`test/applicence.test.ts`), and `dj_app::licence` reads the same
 vectors, so the three cannot drift apart unnoticed. Without
 `LICENCE_PRIVATE_KEY` the Worker signs with the development key, which only
 a debug build of djmanzo believes.
@@ -386,7 +386,7 @@ previews and the browser tests.
 The site shows djmanzo only as it is: screenshots from
 [`screenshots/`](../app/docs/screenshots/) and the owner's own videos (§139).
 
-- **Screenshots.** `npm run shots` (`website/scripts/shots.mjs`) reads the
+- **Screenshots.** `npm run shots` (`scripts/shots.mjs`) reads the
   folder and its README, encodes every picture as WebP in the Chromium the
   browser tests use, and writes `public/shots/app/` and `shared/shots.json`
   (screen, theme, skin and the README's caption for each), plus
@@ -411,7 +411,7 @@ The site shows djmanzo only as it is: screenshots from
 ### Outboard and Talkback
 
 The marketplace and the discussion space (§139, ADR-0012), on a D1 database
-(`djmanzo`, `website/migrations/`; `npx wrangler d1 migrations apply djmanzo
+(`djmanzo`, `migrations/`; `npx wrangler d1 migrations apply djmanzo
 --remote` after a new migration). Both are pages beside the stages, at
 `/#/outboard` and `/#/talkback`, with the site's own pages (`/#/imprint`,
 `/#/terms`, `/#/rules`, `/#/privacy`). The map offers them bottom left,
@@ -506,7 +506,7 @@ structured data (JSON-LD), and its real words and links.
 
 ### What KV holds
 
-The key layout is documented at the top of `website/worker/store.ts`. KV is
+The key layout is documented at the top of `worker/store.ts`. KV is
 eventually consistent: listings can lag a write by up to a minute (a new
 wish may take that long to appear on the wall), and a promo code's use count
 can run one over its limit across two places in the same second. Both were
@@ -773,7 +773,7 @@ site's store; GitHub's releases are the copy that outlives it.
 The owner asked for something playful, interactive and meaningful — real
 music, its theory, its places and people — with no wasted space, no
 overlays and no extra steps. Five concepts were drawn up
-(`website/v3-concepts/CONCEPTS.md`); the owner chose the mix recommended
+(`v3-concepts/CONCEPTS.md`); the owner chose the mix recommended
 there, with one change: the atlas became **a flat earth under a glass dome,
 laid out as Gleason's 1892 map, that is also a record**.
 

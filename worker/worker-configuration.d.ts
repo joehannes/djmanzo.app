@@ -8,7 +8,7 @@ interface __BaseEnv_Env {
 	SITE_NAME: "djmanzo";
 	DEMO_MODE: "auto";
 	MAJOR_VERSION: "1";
-	DOWNLOAD_BASE: "https://github.com/joehannes/djmanzo/releases/latest";
+	DOWNLOAD_BASE: "/#download";
 }
 declare namespace Cloudflare {
 	interface Env extends __BaseEnv_Env {}

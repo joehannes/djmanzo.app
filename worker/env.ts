@@ -41,6 +41,8 @@ export interface Secrets {
   PATREON_CAMPAIGN_ID: string;
   /** A variable: djmanzo's own account on GitHub Sponsors (a login), so its sponsors who sign in with GitHub are marked as supporters. */
   GITHUB_SPONSORS_LOGIN: string;
+  /** Read-only, joehannes/djmanzo only: lets the site hand out a private repository's release files (`worker/update.ts`). */
+  GITHUB_RELEASES_TOKEN?: string;
   /** Ko-fi's webhook verification token (Ko-fi → Settings → API), for /api/webhooks/kofi. */
   KOFI_VERIFICATION_TOKEN: string;
   /** Buy Me a Coffee's webhook secret, for /api/webhooks/buymeacoffee. */

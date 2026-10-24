@@ -16,6 +16,8 @@
       "/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/v4", "/v4/", "/v4/index.html",
       // Taking a signed voucher (worker/redeem.ts).
       "/redeem",
+      // The newest release's files, through the site (worker/update.ts).
+      "/download/*",
       // Pages with an address of their own, rendered with their words (worker/seo.ts).
       "/", "/features", "/wishes", "/account", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
     ]
@@ -37,7 +39,7 @@
     // ADMIN_EMAILS and ADMIN_TOKEN are secrets, never committed.
     "DEMO_MODE": "auto",
     "MAJOR_VERSION": "1",
-    "DOWNLOAD_BASE": "https://github.com/joehannes/djmanzo/releases/latest",
+    "DOWNLOAD_BASE": "/#download",
     // What a djmanzo release names to sign in here (the owner set them on the
     // Worker, 18 October). The Worker itself does not read them; a release
     // takes them from the repository variables of the same names. Both are
@@ -68,7 +70,7 @@
         "SITE_NAME": "djmanzo",
         "DEMO_MODE": "auto",
         "MAJOR_VERSION": "1",
-        "DOWNLOAD_BASE": "https://github.com/joehannes/djmanzo/releases/latest",
+        "DOWNLOAD_BASE": "/#download",
         "IMPRINT_NAME": "Test Owner",
         "IMPRINT_ADDRESS": "Teststraße 1, 4020 Linz, Austria",
         "IMPRINT_EMAIL": "owner@example.test",

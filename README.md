@@ -13,7 +13,7 @@ what has not.
 ## Getting it
 
 ```
-git clone --recurse-submodules https://github.com/joehannes/djmanzo_website.git
+git clone --recurse-submodules https://github.com/joehannes/djmanzo.app.git
 ```
 
 `app/` is djmanzo itself, a submodule pinned to a commit of its `main`. The

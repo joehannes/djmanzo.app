@@ -1,6 +1,6 @@
 # Web animation, 3D and audio technology for a playful, guided 3D marketing site (status as of October 2026)
 
-Context for the report writer: the current djmanzo website (`/home/user/djmanzo/website`) is Svelte 5 (`^5.57.2`) + three.js (`^0.186.1`) on `THREE.WebGLRenderer`, with a custom painterly full-screen pass written as a GLSL `THREE.ShaderMaterial` (`website/src/signal/world/painter.ts`, line ~197), a hand-rolled quality tier guess (`website/src/signal/world/quality.ts`), and a custom Web Audio engine (`website/src/lib/audio/engine.ts`). No GSAP, Theatre, Tone or Threlte dependency is present today. This matters most for the WebGPU question below: that painterly pass will not run under `WebGPURenderer` without a port.
+Context for the report writer: the current djmanzo website (`/home/user/djmanzo/website`) is Svelte 5 (`^5.57.2`) + three.js (`^0.186.1`) on `THREE.WebGLRenderer`, with a custom painterly full-screen pass written as a GLSL `THREE.ShaderMaterial` (`src/signal/world/painter.ts`, line ~197), a hand-rolled quality tier guess (`src/signal/world/quality.ts`), and a custom Web Audio engine (`src/lib/audio/engine.ts`). No GSAP, Theatre, Tone or Threlte dependency is present today. This matters most for the WebGPU question below: that painterly pass will not run under `WebGPURenderer` without a port.
 
 Release dates below marked "(npm)" were read directly from the npm registry JSON on 2026-10-19 (`https://registry.npmjs.org/<package>`, `time[<version>]`), which is primary data.
 

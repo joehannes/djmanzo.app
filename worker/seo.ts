@@ -174,7 +174,7 @@ function home(env: AppEnv, origin: string): Page {
         description: STATUS_LINE,
         url: `${origin}/`,
         image: origin + SHARE_IMAGE,
-        downloadUrl: env.DOWNLOAD_BASE || undefined,
+        downloadUrl: env.DOWNLOAD_BASE ? new URL(env.DOWNLOAD_BASE, origin).href : undefined,
         // Only what anyone can have today: the Hobbyist edition, free for ever.
         offers: { "@type": "Offer", name: `${free.name} edition`, description: free.tagline, price: "0", priceCurrency: "USD" },
       },
@@ -195,7 +195,7 @@ function home(env: AppEnv, origin: string): Page {
       `<li><a href="/features">Every feature</a> — what djmanzo does, edition by edition, with what is not yet proven.</li>`,
       `<li><a href="/wishes">Feature requests</a> — ask for what djmanzo should do next, and vote.</li>`,
       `<li><a href="/account">Your account</a> — sign in, your licences, and the line that carries them into djmanzo.</li>`,
-      env.DOWNLOAD_BASE ? `<li><a href="${esc(env.DOWNLOAD_BASE)}">Download djmanzo</a></li>` : "",
+      env.DOWNLOAD_BASE ? `<li><a href="${esc(new URL(env.DOWNLOAD_BASE, origin).href)}">Download djmanzo</a></li>` : "",
       `</ul>`,
     ].join("\n"),
   };

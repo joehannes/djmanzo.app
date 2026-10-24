@@ -19,6 +19,16 @@
  * - A new major version: the same download only, never installed by
  *   itself; it is a new licence (`docs/EDITIONS.md`, buying once covers a
  *   major version).
+ *
+ * The same release is what the site hands out (`GET /api/download`, and
+ * `GET /download/:file` for one of its files). djmanzo's repository is
+ * private, so its release files cannot be fetched by a visitor's browser:
+ * with `GITHUB_RELEASES_TOKEN` set (read-only, that repository only) the
+ * Worker asks GitHub for a short-lived address for the file and sends the
+ * visitor there, so the token never leaves it and the file never passes
+ * through it. The updater's own addresses are rewritten to the same route.
+ * Without the token the public addresses are used, which work only while
+ * the repository is public.
  */
 
 import type { AppEnv } from "./env";
@@ -31,6 +41,13 @@ export const CACHE = 600;
 export const MOST_NOTES = 4000;
 
 const UA = { "user-agent": "djmanzo-website", accept: "application/vnd.github+json" };
+
+/** GitHub's headers, with the read token when the owner has set one. */
+function headers(env: AppEnv, accept = UA.accept): Record<string, string> {
+  const h: Record<string, string> = { "user-agent": UA["user-agent"], accept };
+  if (env.GITHUB_RELEASES_TOKEN) h.authorization = `Bearer ${env.GITHUB_RELEASES_TOKEN}`;
+  return h;
+}
 
 /** A version as `semver` has it: three numbers and the pre-release's identifiers. */
 export interface Version {
@@ -75,6 +92,16 @@ export interface Release {
   draft: boolean;
   prerelease: boolean;
   manifest: string | null;
+  /** Every file on the release, with GitHub's id for asking for it privately. */
+  assets: Asset[];
+}
+
+export interface Asset {
+  id: number;
+  name: string;
+  size: number;
+  /** The public address, which works only while the repository is public. */
+  url: string;
 }
 
 /** The Tauri updater's manifest, as a release publishes it. */
@@ -88,8 +115,8 @@ interface Manifest {
 /** The latest release, from KV or from GitHub; null when there is none. */
 export async function latest(env: AppEnv): Promise<Release | null> {
   const kept = await get<{ release: Release | null }>(env.KV, "cache:release");
-  if (kept) return kept.release;
-  const r = await fetch(RELEASES, { headers: UA });
+  if (kept && (!kept.release || kept.release.assets)) return kept.release;
+  const r = await fetch(RELEASES, { headers: headers(env) });
   if (r.status === 404) {
     await put(env.KV, "cache:release", { release: null }, CACHE);
     return null;
@@ -102,8 +129,11 @@ export async function latest(env: AppEnv): Promise<Release | null> {
     published_at?: string | null;
     draft?: boolean;
     prerelease?: boolean;
-    assets?: { name?: string; browser_download_url?: string }[];
+    assets?: { id?: number; name?: string; size?: number; browser_download_url?: string }[];
   };
+  const assets = (g.assets ?? [])
+    .filter((a) => a.name && a.browser_download_url)
+    .map((a) => ({ id: Number(a.id) || 0, name: String(a.name), size: Number(a.size) || 0, url: String(a.browser_download_url) }));
   const release: Release = {
     tag: String(g.tag_name ?? ""),
     body: String(g.body ?? "").trim().slice(0, MOST_NOTES),
@@ -111,7 +141,8 @@ export async function latest(env: AppEnv): Promise<Release | null> {
     published: g.published_at ?? null,
     draft: !!g.draft,
     prerelease: !!g.prerelease,
-    manifest: (g.assets ?? []).find((a) => a.name === "latest.json")?.browser_download_url ?? null,
+    manifest: assets.find((a) => a.name === "latest.json")?.url ?? null,
+    assets,
   };
   await put(env.KV, "cache:release", { release }, CACHE);
   return release;
@@ -123,14 +154,18 @@ async function manifestOf(env: AppEnv, release: Release): Promise<Manifest | nul
   const key = `cache:updater:${release.tag}`;
   const kept = await get<{ manifest: Manifest | null }>(env.KV, key);
   if (kept) return kept.manifest;
-  const r = await fetch(release.manifest, { headers: { "user-agent": UA["user-agent"] } }).catch(() => null);
+  const asset = release.assets.find((a) => a.name === "latest.json");
+  const r = await (env.GITHUB_RELEASES_TOKEN && asset?.id
+    ? fetch(`${ASSETS}/${asset.id}`, { headers: headers(env, "application/octet-stream") })
+    : fetch(release.manifest, { headers: { "user-agent": UA["user-agent"] } })
+  ).catch(() => null);
   const manifest = r?.ok ? ((await r.json().catch(() => null)) as Manifest | null) : null;
   await put(env.KV, key, { manifest }, CACHE);
   return manifest;
 }
 
 /** `GET /api/update/:target/:arch/:current`. */
-export async function check(env: AppEnv, target: string, arch: string, current: string): Promise<Response> {
+export async function check(env: AppEnv, target: string, arch: string, current: string, origin = ""): Promise<Response> {
   if (!/^[a-z0-9_]{1,24}$/.test(target) || !/^[a-z0-9_]{1,24}$/.test(arch)) fail(400, "Name the platform as djmanzo does: darwin, linux or windows, and x86_64 or aarch64.");
   const have = parse(current);
   if (!have) fail(400, "That is not a version djmanzo has.");
@@ -143,5 +178,73 @@ export async function check(env: AppEnv, target: string, arch: string, current: 
   if (offered.major !== have.major) return json(download);
   const entry = (await manifestOf(env, release))?.platforms?.[`${target}-${arch}`];
   if (!entry?.url || !entry.signature) return json(download);
-  return json({ ...download, url: entry.url, signature: entry.signature });
+  return json({ ...download, url: origin && env.GITHUB_RELEASES_TOKEN ? throughSite(origin, entry.url) : entry.url, signature: entry.signature });
+}
+
+export const ASSETS = "https://api.github.com/repos/joehannes/djmanzo/releases/assets";
+
+/** A release file's address on this site: `<origin>/download/<its name>`. */
+export function throughSite(origin: string, url: string): string {
+  return `${origin}/download/${encodeURIComponent(decodeURIComponent(url.split("/").pop() ?? ""))}`;
+}
+
+/** What a visitor would want each file for; null for the updater's own files. */
+export function platformOf(name: string): { os: "mac" | "linux" | "windows"; label: string } | null {
+  const n = name.toLowerCase();
+  if (n.endsWith(".sig") || n.endsWith(".tar.gz") || n.endsWith(".zip") || n.endsWith(".json")) return null;
+  if (n.endsWith(".dmg")) return { os: "mac", label: /aarch64|arm64/.test(n) ? "macOS, Apple silicon" : /legacy|10\.13|karaoke/.test(n) ? "macOS 10.13+, Intel (karaoke build)" : "macOS, Intel" };
+  if (n.endsWith(".appimage")) return { os: "linux", label: "Linux, AppImage" };
+  if (n.endsWith(".deb")) return { os: "linux", label: "Linux, .deb (Debian, Ubuntu)" };
+  if (n.endsWith(".rpm")) return { os: "linux", label: "Linux, .rpm (Fedora, openSUSE)" };
+  if (n.endsWith(".msi")) return { os: "windows", label: "Windows, .msi" };
+  if (n.endsWith(".exe")) return { os: "windows", label: "Windows, installer" };
+  return null;
+}
+
+/** `GET /api/download`: the newest release's installers, each with this site's address for it. */
+export async function downloads(env: AppEnv, origin: string): Promise<Response> {
+  const release = await latest(env);
+  if (!release || release.draft || release.prerelease) return json({ version: null, files: [], page: null });
+  const files = release.assets.flatMap((a) => {
+    const p = platformOf(a.name);
+    return p ? [{ name: a.name, size: a.size, os: p.os, label: p.label, href: throughSite(origin, a.url) }] : [];
+  });
+  return json({ version: release.tag.replace(/^v/, ""), published: release.published, page: release.page, private: !!env.GITHUB_RELEASES_TOKEN, files });
+}
+
+/**
+ * `GET /download/:file`: one file of the newest release. With the token,
+ * GitHub's short-lived address for it; without, its public one.
+ */
+export async function file(env: AppEnv, name: string): Promise<Response> {
+  const release = await latest(env);
+  const asset = release?.assets.find((a) => a.name === name);
+  if (!release || !asset) fail(404, "That file is not on the newest release. The download page lists what is.");
+  if (!env.GITHUB_RELEASES_TOKEN || !asset.id) return Response.redirect(asset.url, 302);
+  const r = await fetch(`${ASSETS}/${asset.id}`, { headers: headers(env, "application/octet-stream"), redirect: "manual" });
+  const to = r.headers.get("location");
+  if (r.status >= 300 && r.status < 400 && to) return Response.redirect(to, 302);
+  fail(502, `GitHub answered ${r.status} for that file; try again in a minute.`);
+}
+
+/** `GET /api/releases`: the three newest releases for "What's new", read with the token and kept ten minutes. */
+export async function recent(env: AppEnv): Promise<Response> {
+  const kept = await get<{ list: unknown[] }>(env.KV, "cache:releases");
+  if (kept) return json(kept.list);
+  const r = await fetch(`${RELEASES.replace(/\/latest$/, "")}?per_page=6`, { headers: headers(env) }).catch(() => null);
+  const all = r?.ok ? ((await r.json().catch(() => [])) as { name?: string; tag_name?: string; published_at?: string; html_url?: string; body?: string | null; prerelease?: boolean; draft?: boolean }[]) : [];
+  const list = all
+    .filter((g) => !g.draft && g.tag_name && g.published_at)
+    .slice(0, 3)
+    .map((g) => ({
+      name: String(g.name || g.tag_name),
+      tag_name: String(g.tag_name),
+      published_at: String(g.published_at),
+      // A private repository's page opens for nobody; the site's download screen does.
+      html_url: env.GITHUB_RELEASES_TOKEN ? "/#download" : String(g.html_url ?? "/#download"),
+      body: String(g.body ?? "").slice(0, MOST_NOTES),
+      prerelease: !!g.prerelease,
+    }));
+  await put(env.KV, "cache:releases", { list }, CACHE);
+  return json(list);
 }

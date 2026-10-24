@@ -9,7 +9,8 @@
  * pack's name stays with the key it was first listed under (`market.ts`), as
  * an installed pack's does in djmanzo (`looks.rs` `clash`).
  *
- * Held to djmanzo by `website/test/fixtures/packs/`: packs of every kind and
+ * Held to djmanzo by `test/fixtures/packs/` (copies of djmanzo's
+ * `contracts/packs/`, checked by `test/contracts.test.ts`): packs of every kind and
  * every way of being refused, written by `dj_app::packs`'s own tests with its
  * verdict on each, which these checks must give word for word. The lists it
  * reads (themes djmanzo ships, the look studio's parts, the layers a look
