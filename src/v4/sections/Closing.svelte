@@ -9,7 +9,8 @@
   import { STATUS_LINE } from "../../../shared/facts";
   import { shared } from "../region.svelte";
   import { href } from "../router";
-  import { downloadLabel, latest, osOf, sizeOf, type Latest } from "../download";
+  import { downloadLabel, filesFor, latest, osOf, sizeOf, type Latest } from "../download";
+  import DownloadButton from "../DownloadButton.svelte";
 
   const OSES = ["mac", "linux", "windows"] as const;
   let release = $state<(Latest & { error?: string }) | null>(null);
@@ -35,7 +36,7 @@
     <div class="oses" data-reveal>
       {#each order as os (os)}
         {@const d = downloadLabel(os)}
-        {@const files = release?.files.filter((f) => f.os === os) ?? []}
+        {@const files = release ? filesFor(release.files, os) : []}
         <div class="os card" class:mine={os === mine} data-os={os}>
           <b>{d.label.replace("Download for ", "")}{#if os === mine}<span class="you">your system</span>{/if}</b>
           <small>{d.note}</small>
@@ -54,7 +55,8 @@
       {/each}
     </div>
     <div class="ctas" data-reveal>
-      <a class="btn primary" href={href("account")}>Your account and licences</a>
+      <DownloadButton />
+      <a class="btn ghost" href={href("account")}>Your account and licences</a>
       <a class="btn ghost" href={href("pricing")}>Compare editions</a>
     </div>
     <p class="status-line" data-reveal>{STATUS_LINE}</p>

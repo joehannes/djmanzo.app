@@ -212,6 +212,7 @@ route("GET", "/api/update/:target/:arch/:current", (c) => update.check(c.env, c.
 // The newest release's installers, and one of its files (`worker/update.ts`).
 route("GET", "/api/download", (c) => update.downloads(c.env, c.url.origin));
 route("GET", "/api/releases", (c) => update.recent(c.env));
+route("GET", "/download/latest/:key", (c) => update.newest(c.env, c.params.key));
 route("GET", "/download/:file", (c) => update.file(c.env, decodeURIComponent(c.params.file)));
 
 // --- The community -------------------------------------------------------------

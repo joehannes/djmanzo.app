@@ -14,7 +14,8 @@
   import { SKINS, type SkinId } from "./skins";
   import { LOOKS, svgUri } from "./looks";
   import { href, navigate, type Route } from "./router";
-  import { RELEASES, download, downloadLabel, osOf } from "./download";
+  import { SYSTEMS, SYSTEM_NAME, downloadLabel, osOf, type System } from "./download";
+  import { choice, chooseSystem, start as startChoice } from "./dlchoice.svelte";
   import { restore, setSounds, sounds } from "./sfx.svelte";
   import OsIcon from "./OsIcon.svelte";
 
@@ -23,6 +24,18 @@
   let solid = $state(false);
   let menu = $state(false);
   let picker = $state(false);
+  let systems = $state(false);
+
+  /** The bar's system menu: switch the system, then the main Download button, glowing. */
+  function forSystem(os: System) {
+    systems = false;
+    chooseSystem(os);
+    const there = () => document.getElementById("get")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (route.page !== "home") {
+      navigate("/");
+      requestAnimationFrame(() => requestAnimationFrame(there));
+    } else there();
+  }
   const os = osOf(navigator.userAgent);
   const dl = downloadLabel(os);
   /** The cheapest edition bought once, at the visitor's price. */
@@ -58,11 +71,13 @@
 
   onMount(() => {
     restore();
+    startChoice();
     const scroll = () => (solid = scrollY > 40);
     scroll();
     addEventListener("scroll", scroll, { passive: true });
     const close = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest(".skins")) picker = false;
+      if (!(e.target as HTMLElement).closest(".dlmenu")) systems = false;
     };
     document.addEventListener("click", close);
     return () => {
@@ -130,11 +145,23 @@
       {#if solid && route.page !== "pricing" && from}
         <a class="price mono" href={href("pricing")} data-from>Free · editions from {from}</a>
       {/if}
-      <!-- A download arrow and the visitor's system, no words: the words are in the label and the tooltip. -->
-      <a class="btn primary small dl" href={RELEASES} title={`${dl.label}. ${dl.note}`} aria-label={dl.label} data-download data-sound="scratch" onclick={(e) => { e.preventDefault(); void download(() => section("download")); }}>
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6.5 10 12 15.5 17.5 10M4 20h16" /></svg>
-        <OsIcon {os} />
-      </a>
+      <!-- A download arrow and the chosen system: a menu of systems; choosing one goes to the main Download button. -->
+      <div class="dlmenu">
+        <button class="btn primary small dl" aria-haspopup="menu" aria-expanded={systems} title={`${dl.label}. ${dl.note} Choose a system.`} aria-label={`Download for ${SYSTEM_NAME[choice.os]}: choose a system`} data-download data-sound="scratch" onclick={() => (systems = !systems)}>
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6.5 10 12 15.5 17.5 10M4 20h16" /></svg>
+          <OsIcon os={choice.os} />
+          <svg class="caret" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        {#if systems}
+          <div class="pop card sysmenu" role="menu" aria-label="Download for">
+            {#each SYSTEMS as os (os)}
+              <button role="menuitemradio" aria-checked={choice.os === os} class="opt" onclick={() => forSystem(os)} data-bar-system={os}>
+                <OsIcon {os} /> <span>{SYSTEM_NAME[os]}</span>
+              </button>
+            {/each}
+          </div>
+        {/if}
+      </div>
       <button class="burger" aria-label="Menu" aria-expanded={menu} onclick={() => (menu = !menu)}><span></span><span></span></button>
     </div>
   </div>
@@ -393,7 +420,22 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding-inline: 14px;
+    padding-inline: 12px;
+  }
+  .dl .caret {
+    margin-left: -2px;
+    opacity: 0.8;
+  }
+  .dlmenu {
+    position: relative;
+  }
+  .sysmenu {
+    width: 190px;
+  }
+  .sysmenu .opt {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
   /* Between the full menu and the folded one, the bar is tight: the look's name goes, so nothing is cut. */
   @media (max-width: 1360px) {

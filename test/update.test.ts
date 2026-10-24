@@ -173,8 +173,8 @@ describe("downloads, through the site", () => {
     expect(r.status).toBe(200);
     expect(r.data).toMatchObject({ version: "1.4.0", private: true });
     expect(r.data.files).toEqual([
-      { name: "djmanzo_1.4.0_aarch64.dmg", size: 90_000_000, os: "mac", label: "macOS, Apple silicon", href: "https://djmanzo.test/download/djmanzo_1.4.0_aarch64.dmg" },
-      { name: "djmanzo_1.4.0_amd64.AppImage", size: 120_000_000, os: "linux", label: "Linux, AppImage", href: "https://djmanzo.test/download/djmanzo_1.4.0_amd64.AppImage" },
+      { name: "djmanzo_1.4.0_aarch64.dmg", size: 90_000_000, os: "mac", key: "mac-arm", label: "macOS, Apple silicon", href: "https://djmanzo.test/download/latest/mac-arm" },
+      { name: "djmanzo_1.4.0_amd64.AppImage", size: 120_000_000, os: "linux", key: "linux-appimage", label: "Linux, AppImage", href: "https://djmanzo.test/download/latest/linux-appimage" },
     ]);
   });
 
@@ -187,7 +187,15 @@ describe("downloads, through the site", () => {
     expect(asked.every((a) => a.auth === "Bearer tok")).toBe(true);
   });
 
-  it("refuses a file the newest release does not have", async () => {
+  it("an address by kind of file is the newest release's file of that kind", async () => {
+    privateGithub("tok");
+    const r = await browser(testEnv({ GITHUB_RELEASES_TOKEN: "tok" }))("/download/latest/mac-arm");
+    expect(r.status).toBe(302);
+    expect(r.res.headers.get("location")).toBe("https://objects.githubusercontent.com/signed/11?expires=soon");
+    expect((await browser(testEnv({ GITHUB_RELEASES_TOKEN: "tok" }))("/download/latest/windows-exe")).status).toBe(404);
+  });
+
+    it("refuses a file the newest release does not have", async () => {
     privateGithub("tok");
     expect((await browser(testEnv({ GITHUB_RELEASES_TOKEN: "tok" }))("/download/evil.exe")).status).toBe(404);
   });

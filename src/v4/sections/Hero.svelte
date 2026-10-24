@@ -22,14 +22,16 @@
   import { deck, keyOf, setGenre, tempoOf, toggle } from "../sound.svelte";
   import { gsap, lean, reduced, ScrollTrigger } from "../motion";
   import { href } from "../router";
-  import { RELEASES, download, downloadLabel, osOf } from "../download";
+  import { downloadLabel } from "../download";
+  import { choice } from "../dlchoice.svelte";
+  import DownloadButton from "../DownloadButton.svelte";
   import Wave from "../wave/Wave.svelte";
 
   let hero: HTMLElement;
   let photo: HTMLElement;
   let glow: HTMLElement;
   let title: HTMLElement;
-  const dl = downloadLabel(osOf(navigator.userAgent));
+  const dl = $derived(downloadLabel(choice.os));
   const genre = $derived(GENRE_BY_ID[deck.genre] ?? GENRE_BY_ID.house);
   const key = $derived(keyOf(genre));
 
@@ -85,7 +87,7 @@
       Live stems, an assistant that explains its suggestions and can take over the mix, a karaoke night built in, and a free edition that stays free. {skin().line}
     </p>
     <div class="ctas" data-hero-rise>
-      <a class="btn primary" href={RELEASES} title={dl.note} data-download onclick={(e) => { e.preventDefault(); void download(() => document.getElementById("download")?.scrollIntoView({ behavior: "smooth" })); }}>{dl.label}</a>
+      <DownloadButton id="get" />
       <a class="btn ghost" href={href("pricing")}>Editions and pricing</a>
     </div>
     <p class="note mono" data-hero-rise>{dl.note} The Hobbyist edition is free, for ever.</p>
@@ -219,6 +221,9 @@
   .copy {
     align-self: center;
     padding-bottom: 32px;
+    /* It moves with the pointer, so it is a layer of its own: above the deck, so the Download menu opens over it. */
+    position: relative;
+    z-index: 2;
   }
   .line {
     display: block;
@@ -232,6 +237,8 @@
     color: var(--accent);
   }
   .ctas {
+    position: relative;
+    z-index: 5;
     display: flex;
     flex-wrap: wrap;
     gap: 12px;

@@ -199,16 +199,24 @@ export function throughSite(origin: string, url: string): string {
   return `${origin}/download/${encodeURIComponent(decodeURIComponent(url.split("/").pop() ?? ""))}`;
 }
 
-/** What a visitor would want each file for; null for the updater's own files. */
-export function platformOf(name: string): { os: "mac" | "linux" | "windows"; label: string } | null {
+/**
+ * What a visitor would want each file for, with a stable key for that kind
+ * of file (`linux-deb`, `mac-arm`…), the same from release to release; null
+ * for the updater's own files.
+ */
+export function platformOf(name: string): { os: "mac" | "linux" | "windows"; key: string; label: string } | null {
   const n = name.toLowerCase();
   if (n.endsWith(".sig") || n.endsWith(".tar.gz") || n.endsWith(".zip") || n.endsWith(".json")) return null;
-  if (n.endsWith(".dmg")) return { os: "mac", label: /aarch64|arm64/.test(n) ? "macOS, Apple silicon" : /legacy|10\.13|karaoke/.test(n) ? "macOS 10.13+, Intel (karaoke build)" : "macOS, Intel" };
-  if (n.endsWith(".appimage")) return { os: "linux", label: "Linux, AppImage" };
-  if (n.endsWith(".deb")) return { os: "linux", label: "Linux, .deb (Debian, Ubuntu)" };
-  if (n.endsWith(".rpm")) return { os: "linux", label: "Linux, .rpm (Fedora, openSUSE)" };
-  if (n.endsWith(".msi")) return { os: "windows", label: "Windows, .msi" };
-  if (n.endsWith(".exe")) return { os: "windows", label: "Windows, installer" };
+  if (n.endsWith(".dmg")) {
+    if (/aarch64|arm64/.test(n)) return { os: "mac", key: "mac-arm", label: "macOS, Apple silicon" };
+    if (/legacy|10\.13|karaoke/.test(n)) return { os: "mac", key: "mac-karaoke", label: "macOS 10.13+, Intel (karaoke build)" };
+    return { os: "mac", key: "mac-intel", label: "macOS, Intel" };
+  }
+  if (n.endsWith(".appimage")) return { os: "linux", key: "linux-appimage", label: "Linux, AppImage" };
+  if (n.endsWith(".deb")) return { os: "linux", key: "linux-deb", label: "Linux, .deb (Debian, Ubuntu)" };
+  if (n.endsWith(".rpm")) return { os: "linux", key: "linux-rpm", label: "Linux, .rpm (Fedora, openSUSE)" };
+  if (n.endsWith(".msi")) return { os: "windows", key: "windows-msi", label: "Windows, .msi" };
+  if (n.endsWith(".exe")) return { os: "windows", key: "windows-exe", label: "Windows, installer" };
   return null;
 }
 
@@ -218,9 +226,18 @@ export async function downloads(env: AppEnv, origin: string): Promise<Response> 
   if (!release || release.draft || release.prerelease) return json({ version: null, files: [], page: null });
   const files = release.assets.flatMap((a) => {
     const p = platformOf(a.name);
-    return p ? [{ name: a.name, size: a.size, os: p.os, label: p.label, href: throughSite(origin, a.url) }] : [];
+    // The address names the kind of file, not this release's file: pressed later, it is still the newest.
+    return p ? [{ name: a.name, size: a.size, os: p.os, key: p.key, label: p.label, href: `${origin}/download/latest/${p.key}` }] : [];
   });
   return json({ version: release.tag.replace(/^v/, ""), published: release.published, page: release.page, private: !!env.GITHUB_RELEASES_TOKEN, files });
+}
+
+/** `GET /download/latest/:key`: the newest release's file of that kind (`platformOf`'s key). */
+export async function newest(env: AppEnv, key: string): Promise<Response> {
+  const release = await latest(env);
+  const asset = release && !release.draft && !release.prerelease ? release.assets.find((a) => platformOf(a.name)?.key === key) : undefined;
+  if (!asset) fail(404, "The newest release has no file of that kind. The download screen lists what it has.");
+  return file(env, asset.name);
 }
 
 /**
