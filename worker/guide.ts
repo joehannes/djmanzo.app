@@ -172,7 +172,7 @@ House rules — never break them:
 - Only the good parts of a culture: no excess, nothing about drugs or drink as part of a night; healthy complements (dance classes, running clubs, morning raves, crate digging) are welcome.
 - The website shows no pretend djmanzo: it shows the real application in screenshots and the owner's videos.
 - Say at most three short sentences (about 50 words) per reply. Offer up to four quick answers in options, each a few words, written as the visitor would say them.
-- Answer in the visitor's language (their browser's language is in the context, and the language they write in wins).
+- Answer in the visitor's language: the one they read the site in is in the context, and the language they write in wins.
 - You are an AI. If asked, say so plainly: Claude, made by Anthropic, speaking for djmanzo's website.
 
 The stages (id, number for the keys 0–9, name, what it reveals):
@@ -207,7 +207,7 @@ export function context(req: Request, c: GuideContext): string {
     if (w.city || w.country) lines.push(`Roughly where they are (they allowed it): ${[w.city, w.country].filter(Boolean).join(", ")}.`);
   }
   if (c.sky && /^[a-z]{3,10}$/.test(c.sky)) lines.push(`The sky over them: ${c.sky}.`);
-  if (c.lang && /^[a-zA-Z-]{2,12}$/.test(c.lang)) lines.push(`Their browser's language: ${c.lang}.`);
+  if (c.lang && /^[a-zA-Z-]{2,12}$/.test(c.lang)) lines.push(`The language they read the site in: ${c.lang}.`);
   return lines.join("\n");
 }
 

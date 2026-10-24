@@ -31,6 +31,7 @@ import * as promo from "./promo";
 import * as redeem from "./redeem";
 import * as update from "./update";
 import * as releaseNotes from "./notes";
+import * as payments from "./payments";
 import * as voucher from "./voucher";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
@@ -119,6 +120,9 @@ route("GET", "/api/me/orders", async (c) => {
   const mine = keys.filter((k) => k.metadata?.u === u.id).map((k) => k.name);
   return (await Promise.all(mine.map((k) => get<Order>(c.env.KV, k)))).filter(Boolean);
 });
+route("GET", "/api/me/gifts", async (c) => checkout.giftsOf(c.env, (await needUser(c)).id));
+// Backstage lives in the island; this is the address to remember.
+route("GET", "/backstage", async (c) => Response.redirect(new URL("/island/#/backstage", c.url).toString(), 302));
 route("GET", "/api/me/profile", async (c) => get(c.env.KV, `profile:${(await needUser(c)).id}`));
 route("PUT", "/api/me/profile", async (c) => community.saveProfile(c.env, await needUser(c), await body(c.req, 9000)));
 
@@ -143,7 +147,7 @@ route("GET", "/api/catalog", async (c) => {
     visitor: { country: where, band: band(where), currency: currencyFor(where) },
     pay: {
       demo: auth.demoMode(c.env),
-      stripe: c.env.STRIPE_PUBLISHABLE_KEY && c.env.STRIPE_SECRET_KEY ? { key: c.env.STRIPE_PUBLISHABLE_KEY } : null,
+      stripe: c.env.STRIPE_PUBLISHABLE_KEY && c.env.STRIPE_SECRET_KEY ? { key: c.env.STRIPE_PUBLISHABLE_KEY, wallets: await payments.wallets(c.env) } : null,
       paypal: c.env.PAYPAL_CLIENT_ID && c.env.PAYPAL_CLIENT_SECRET ? { clientId: c.env.PAYPAL_CLIENT_ID } : null,
       transfer: !!c.env.BANK_TRANSFER_DETAILS,
     },
@@ -503,6 +507,36 @@ route("POST", "/api/admin/orders/:id/paid", async (c) => {
   const b = await body<{ bankCountry?: string }>(c.req);
   return checkout.markPaid(c.env, c.params.id, b.bankCountry ? text(b.bankCountry, 2).toUpperCase() : null);
 });
+route("POST", "/api/admin/licences", async (c) => {
+  const admin = await needAdmin(c);
+  const b = await body<{ who?: string; edition?: string; modules?: string[] | string; plan?: string; months?: number; why?: string }>(c.req);
+  return json(await checkout.grant(c.env, String(b.who ?? ""), b, admin.name));
+});
+route("GET", "/api/admin/payments", async (c) => {
+  await needAdmin(c);
+  return json(await payments.view(c.env));
+});
+route("PUT", "/api/admin/payments", async (c) => {
+  const admin = await needAdmin(c);
+  await payments.update(c.env, await body<payments.Change>(c.req), admin.name);
+  return json(await payments.view(c.env));
+});
+route("POST", "/api/admin/payments/check", async (c) => {
+  await needAdmin(c);
+  return json(await payments.check(await payments.withPayments(c.env), c.url.origin));
+});
+route("POST", "/api/admin/payments/apple-pay", async (c) => {
+  await needAdmin(c);
+  return json(await payments.registerDomain(await payments.withPayments(c.env), c.url.origin));
+});
+route("GET", "/api/admin/password", async (c) => {
+  await needAdmin(c);
+  return json(await auth.adminPasswordSet(c.env));
+});
+route("PUT", "/api/admin/password", async (c) => {
+  const admin = await needAdmin(c);
+  return json(await auth.setAdminPassword(c.env, String((await body<{ password?: string }>(c.req)).password ?? ""), admin.name));
+});
 route("POST", "/api/admin/licences/:id/revoke", async (c) => {
   await needAdmin(c);
   const l = await get<Licence>(c.env.KV, `licence:${c.params.id}`);
@@ -569,8 +603,10 @@ route("GET", "/sitemap.xml", (c) => seo.sitemap(c.env, c.url.origin));
 
 // --- Dispatch ------------------------------------------------------------------
 
-export async function handle(req: Request, env: AppEnv, exec: ExecutionContext): Promise<Response> {
+export async function handle(req: Request, rawEnv: AppEnv, exec: ExecutionContext): Promise<Response> {
   const url = new URL(req.url);
+  // The ways to pay the crew set in Backstage, over the Worker's secrets (`worker/payments.ts`).
+  const env = await payments.withPayments(rawEnv);
   // The professional site was previewed at /v4/ before it became the site; old links still land
   // (the browser keeps an old #/pricing, and the page turns it into /pricing). Its pictures stay at /v4/art/.
   if (url.pathname === "/v4" || url.pathname === "/v4/" || url.pathname === "/v4/index.html") return Response.redirect(`${url.origin}/${url.search}`, 301);

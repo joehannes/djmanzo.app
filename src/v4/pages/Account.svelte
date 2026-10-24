@@ -19,6 +19,7 @@
   import { RELEASES } from "../download";
   import { href } from "../router";
   import { shared } from "../region.svelte";
+  import { t } from "../i18n.svelte";
 
   interface Lic {
     id: string;
@@ -54,6 +55,26 @@
   }
 
   let licences = $state<Lic[] | null>(null);
+  /** Gifts this account bought (`/api/me/gifts`): each voucher line, and whether it has been taken. */
+  interface GiftRow {
+    id: string;
+    line: string;
+    edition: Edition;
+    for: string[];
+    note: string | null;
+    taken: boolean;
+    rehearsal: boolean;
+  }
+  let gifts = $state<GiftRow[]>([]);
+  let giftCopied = $state<string | null>(null);
+  async function copyGift(g: GiftRow) {
+    try {
+      await navigator.clipboard.writeText(`${location.origin}/redeem?voucher=${encodeURIComponent(g.line)}`);
+      giftCopied = g.id;
+    } catch {
+      // The link is on the page to copy by hand.
+    }
+  }
   let orders = $state<OrderRow[]>([]);
   let notices = $state<Notice[]>([]);
   let trialHad = $state<unknown>(null);
@@ -96,6 +117,7 @@
     notices = n.status === "fulfilled" ? n.value : [];
     trialHad = t.status === "fulfilled" ? t.value.had : null;
     computers = await api<{ most: number; activations: Computer[] }>("/api/me/activations").catch(() => ({ most: 3, activations: [] }));
+    gifts = await api<GiftRow[]>("/api/me/gifts").catch(() => []);
     if (session.admin) check = await api<Check>("/api/auth/check").catch(() => null);
   }
 
@@ -256,6 +278,24 @@
             <p class="note">{line.refused}</p>
           {/if}
         </section>
+
+        {#if gifts.length}
+          <section class="card pad" aria-labelledby="gift-h" data-gifts>
+            <h2 class="h3" id="gift-h">🎁 {t("gift.mine")}</h2>
+            <ul class="gifts">
+              {#each gifts as g (g.id)}
+                <li data-gift={g.id}>
+                  <b>djmanzo {EDITION_INFO[g.edition]?.name ?? g.edition}</b>
+                  <span class="dim">{g.for.length ? t("gift.forWhom", { who: g.for.join(", ") }) : t("gift.anyone")} · {g.taken ? t("gift.taken") : t("gift.waiting")}</span>
+                  {#if g.rehearsal}<span class="dim small">{t("gift.rehearsal")}</span>{/if}
+                  {#if !g.taken && !g.rehearsal}
+                    <span class="copyrow"><input type="text" readonly value={`${location.origin}/redeem?voucher=${encodeURIComponent(g.line)}`} /><button class="btn ghost small" onclick={() => copyGift(g)}>{giftCopied === g.id ? t("gift.copied") : t("gift.copy")}</button></span>
+                  {/if}
+                </li>
+              {/each}
+            </ul>
+          </section>
+        {/if}
 
         <section class="card pad" aria-labelledby="try-h">
           <h2 class="h3" id="try-h">Try, or redeem</h2>
@@ -622,5 +662,25 @@
   }
   code {
     font-family: var(--mono);
+  }
+  .gifts {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+  }
+  .gifts li {
+    display: grid;
+    gap: 4px;
+  }
+  .copyrow {
+    display: flex;
+    gap: 8px;
+  }
+  .copyrow input {
+    flex: 1;
+    min-width: 0;
+    font: 12px/1.4 var(--mono);
   }
 </style>

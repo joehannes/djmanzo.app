@@ -1,10 +1,13 @@
 <!--
-  The assistant: the site's guide (`/api/guide`, on the free Workers AI),
-  asked from any page. It answers from the facts, and what it proposes are
-  buttons — a section, an edition, the checkout — and when it hears what the
-  visitor plays, the site changes its look to match. When the AI is off or
-  today's allowance is spent, it says so and answers the common questions
-  from a script.
+  The assistant, asked from any page. The questions it offers are answered
+  in advance (`i18n/assistant.ts`), from what djmanzo actually does, in the
+  visitor's language, at once and the same for everyone. Only a question
+  the visitor writes in their own words goes to the AI (`/api/guide`, on the
+  free Workers AI), told the language they read the site in. What either
+  proposes are buttons — a section, an edition, the checkout — and when it
+  hears what the visitor plays, the site changes its look to match. When the
+  AI is off or today's allowance is spent, it says so and offers the
+  questions it can answer.
 -->
 <script lang="ts">
   import { onMount, tick } from "svelte";
@@ -16,12 +19,27 @@
   import { skinForStyle, SKIN_BY_ID } from "./skins";
   import { STAGE_TO, href, navigate, stageOf, type Route } from "./router";
   import { gsap, reduced } from "./motion";
+  import { LANG_INFO, i18n, t } from "./i18n.svelte";
+  import { CANNED, CANNED_BY_ID } from "./i18n/assistant";
+  import type { Key } from "./i18n/strings";
 
   let { route }: { route: Route } = $props();
 
+  /**
+   * A line of the conversation. The site's own lines are kept as what they
+   * are (a phrase's key, a canned question or answer), not as words, so they
+   * follow the visitor into another language; the AI's and the visitor's
+   * own words are kept as written.
+   */
   interface Line {
     from: "visitor" | "guide";
-    text: string;
+    text?: string;
+    say?: { key: Key; vars?: Record<string, string> }[];
+    /** A canned question (the visitor's line) or its answer (the guide's). */
+    canned?: string;
+    /** Canned questions offered under the line, by id. */
+    offer?: string[];
+    /** The AI's suggested replies, sent to it as written. */
     options?: string[];
     actions?: Action[];
   }
@@ -34,24 +52,29 @@
   let panel: HTMLElement | undefined = $state();
   let log: HTMLElement | undefined = $state();
 
-  const SCRIPT: { q: string; a: string; actions: Action[] }[] = [
-    {
-      q: "What makes djmanzo different?",
-      a: "Live stems on any record, an assistant that explains its suggestions and can run the mix until you touch a control, a karaoke night built in, native on Linux as well as macOS — and a Hobbyist edition that is free for ever.",
-      actions: [{ kind: "go_to", value: "needle" }],
-    },
-    { q: "Which edition fits me?", a: "Tell the shop what you do — playing for fun, working, hosting karaoke, learning — and it points at the edition that carries exactly that.", actions: [{ kind: "go_to", value: "amp" }] },
-    { q: "Is it free?", a: "The Hobbyist edition is: two decks, the mixer, the library, cues, loops and pads, the effects, the sampler, recording, the keyboard and a controller. Any other edition can be tried for seven days.", actions: [{ kind: "start_trial", value: "" }] },
-    { q: "Will my controller work?", a: "Search the hardware list: mappings ship for eleven controllers and a generic two-deck one, written from each maker's table — none has yet met its device. Anything else you can map yourself.", actions: [{ kind: "go_to", value: "floor" }] },
-  ];
+  const ALL = CANNED.map((c) => c.id);
+  /** The canned questions not yet asked. */
+  const unasked = () => ALL.filter((id) => !lines.some((l) => l.from === "visitor" && l.canned === id));
+
+  /** A line in the visitor's language, as it reads now. */
+  function words(l: Line): string {
+    if (l.canned) return l.from === "visitor" ? CANNED_BY_ID[l.canned].q[i18n.lang] : CANNED_BY_ID[l.canned].a[i18n.lang];
+    if (l.say) return l.say.map((p) => t(p.key, p.vars)).join(" ");
+    return l.text ?? "";
+  }
 
   function hello() {
     if (lines.length) return;
-    lines.push({
-      from: "guide",
-      text: `Hi — I'm djmanzo's assistant. Ask me anything about the software, or tell me what you play and I'll show you around.${on === false ? " (The AI is resting right now, so I'll answer the common questions.)" : ""}`,
-      options: SCRIPT.map((s) => s.q),
-    });
+    lines.push({ from: "guide", say: on === false ? [{ key: "ask.hello" }, { key: "ask.resting" }] : [{ key: "ask.hello" }], offer: ALL });
+  }
+
+  /** A question offered as a button: answered from what djmanzo does, without the AI. */
+  function ask(id: string) {
+    if (busy) return;
+    lines.push({ from: "visitor", canned: id });
+    const left = unasked();
+    lines.push({ from: "guide", canned: id, actions: CANNED_BY_ID[id].actions, offer: left.length ? left : undefined });
+    void scroll();
   }
 
   async function toggle() {
@@ -69,35 +92,32 @@
     return el?.id ?? null;
   }
 
+  /** The visitor's own words: a canned question typed out is answered as one; anything else goes to the AI. */
   async function say(text: string) {
     text = text.trim();
     if (!text || busy) return;
     draft = "";
+    const typed = CANNED.find((c) => Object.values(c.q).some((q) => q.toLowerCase() === text.toLowerCase()));
+    if (typed) return ask(typed.id);
     lines.push({ from: "visitor", text });
-    const scripted = SCRIPT.find((s) => s.q === text);
-    if (scripted && on !== true) {
-      lines.push({ from: "guide", text: scripted.a, actions: scripted.actions });
-      return scroll();
-    }
     busy = true;
     void scroll();
-    const turns: Turn[] = lines.slice(-12).map((l) => ({ from: l.from, text: l.text }));
+    const turns: Turn[] = lines.slice(-12).map((l) => ({ from: l.from, text: words(l) }));
     try {
       const now = new Date();
       const answer = await post<GuideAnswer>("/api/guide", {
         turns,
-        context: { stage: stageOf(route, sectionInView()), style: skin().family, lang: navigator.language, time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` },
+        context: { stage: stageOf(route, sectionInView()), style: skin().family, lang: LANG_INFO[i18n.lang].tag, time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` },
       });
       if ("fallback" in answer) {
-        const s = scripted ?? SCRIPT[0];
-        const why = answer.fallback === "limit" ? "Today's free AI is used up" : answer.fallback === "off" ? "The AI is off" : "The AI did not answer";
-        lines.push({ from: "guide", text: `${why}, so here is the short answer. ${scripted ? scripted.a : "Pick a question below, or look around: everything here says what ships and what is planned."}`, options: scripted ? undefined : SCRIPT.map((x) => x.q), actions: s === scripted ? s.actions : [] });
+        const why: Key = answer.fallback === "limit" ? "ask.limit" : answer.fallback === "off" ? "ask.off" : "ask.silent";
+        lines.push({ from: "guide", say: [{ key: "ask.fallback", vars: { why: t(why) } }], offer: ALL });
       } else {
         for (const a of answer.actions) if (a.kind === "set_style") applyStyle(a.value);
         lines.push({ from: "guide", text: answer.say, options: answer.options, actions: answer.actions.filter((a) => a.kind !== "set_style" && a.kind !== "set_role" && a.kind !== "ask") });
       }
     } catch {
-      lines.push({ from: "guide", text: "I couldn't reach the server. The questions below still work.", options: SCRIPT.map((s) => s.q) });
+      lines.push({ from: "guide", say: [{ key: "ask.unreachable" }], offer: ALL });
     } finally {
       busy = false;
       void scroll();
@@ -109,7 +129,7 @@
     const id = skinForStyle(node);
     if (id && id !== skin().id) {
       choose(id);
-      lines.push({ from: "guide", text: `I've dressed the site in the ${SKIN_BY_ID[id].name} look for you — change it any time, top right.` });
+      lines.push({ from: "guide", say: [{ key: "ask.dressed", vars: { look: SKIN_BY_ID[id].name } }] });
     }
   }
 
@@ -117,15 +137,15 @@
     const ed = (v: string) => catalog.data?.editions[v as Edition]?.name ?? v;
     switch (a.kind) {
       case "go_to":
-        return a.value === "amp" ? "Open the shop" : `Show me: ${STAGE_TO[a.value]?.section ?? a.value}`;
+        return a.value === "amp" ? t("ask.act.shop") : t("ask.act.show", { place: a.value in STAGE_TO ? t(`ask.place.${a.value}` as Key) : a.value });
       case "show":
-        return "Show me the screen";
+        return t("ask.act.screen");
       case "recommend":
-        return `See ${ed(a.value)}`;
+        return t("ask.act.see", { edition: ed(a.value) });
       case "start_trial":
-        return "Try an edition free";
+        return t("ask.act.trial");
       case "open_checkout":
-        return "Go to checkout";
+        return t("ask.act.checkout");
       default:
         return a.value;
     }
@@ -162,25 +182,26 @@
 
 <div class="assistant">
   {#if open}
-    <div class="panel card" bind:this={panel} role="dialog" aria-label="Ask djmanzo" data-assistant>
+    <div class="panel card" bind:this={panel} role="dialog" aria-label={t("ask.title")} data-assistant>
       <header>
         <span class="pulse" class:off={on === false}></span>
-        <b>Ask djmanzo</b>
-        <span class="mono dim">{on === false ? "scripted answers" : "free AI, can be wrong"}</span>
-        <button class="x" onclick={() => (open = false)} aria-label="Close">×</button>
+        <b>{t("ask.title")}</b>
+        <span class="mono dim">{on === false ? t("ask.scripted") : t("ask.ai")}</span>
+        <button class="x" onclick={() => (open = false)} aria-label={t("ask.close")}>×</button>
       </header>
       <div class="log" bind:this={log} aria-live="polite">
         {#each lines as l, i (i)}
-          <div class="line {l.from}" data-line={l.from}>
-            <p>{l.text}</p>
+          <div class="line {l.from}" data-line={l.from} data-canned={l.canned}>
+            <p>{words(l)}</p>
             {#if l.actions?.length}
               <div class="acts">
                 {#each l.actions as a, j (j)}<button class="btn primary small" onclick={() => act(a)} data-act={a.kind}>{label(a)}</button>{/each}
               </div>
             {/if}
-            {#if l.options?.length && i === lines.length - 1}
+            {#if (l.options?.length || l.offer?.length) && i === lines.length - 1}
               <div class="opts">
-                {#each l.options as o (o)}<button class="chip" onclick={() => say(o)}>{o}</button>{/each}
+                {#each l.offer ?? [] as id (id)}<button class="chip" onclick={() => ask(id)} data-ask-canned={id}>{CANNED_BY_ID[id].q[i18n.lang]}</button>{/each}
+                {#each l.options ?? [] as o (o)}<button class="chip" onclick={() => say(o)}>{o}</button>{/each}
               </div>
             {/if}
           </div>
@@ -188,14 +209,14 @@
         {#if busy}<div class="line guide"><p class="typing"><i></i><i></i><i></i></p></div>{/if}
       </div>
       <form onsubmit={(e) => (e.preventDefault(), say(draft))}>
-        <input type="text" bind:value={draft} placeholder="What do you play? What do you need?" aria-label="Your question" maxlength="400" />
-        <button class="btn primary small" disabled={busy || !draft.trim()}>Send</button>
+        <input type="text" bind:value={draft} placeholder={t("ask.placeholder")} aria-label={t("ask.input")} maxlength="400" />
+        <button class="btn primary small" disabled={busy || !draft.trim()}>{t("ask.send")}</button>
       </form>
     </div>
   {/if}
   <button class="fab" onclick={toggle} aria-expanded={open} data-ask>
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
-    <span>{open ? "Close" : "Ask djmanzo"}</span>
+    <span>{open ? t("ask.close") : t("ask.title")}</span>
   </button>
 </div>
 

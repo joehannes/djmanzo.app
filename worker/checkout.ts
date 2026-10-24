@@ -51,6 +51,8 @@ export interface QuoteInput {
   voucher?: string | null;
   /** The country the buyer says they are in. */
   country?: string | null;
+  /** Bought for someone else: a gift voucher instead of a licence (buy once only). */
+  gift?: { for?: string | null; note?: string | null } | null;
 }
 
 export interface Quote {
@@ -90,7 +92,17 @@ export function checkInput(input: Partial<QuoteInput>): QuoteInput {
   // A voucher line typed into the promo box is a voucher.
   const line = input.voucher ? String(input.voucher) : voucher.isVoucherLine(input.promo) ? String(input.promo) : null;
   const promo = input.promo && !voucher.isVoucherLine(input.promo) ? String(input.promo) : null;
-  return { edition: input.edition as Edition, plan: input.plan as Bought, modules, promo, voucher: line ? line.slice(0, 4096) : null, country };
+  const gift = input.gift ? giftOf(input.gift) : null;
+  if (gift && input.plan !== "perpetual") fail(400, "A gift is an edition bought once: a subscription would go on charging you.");
+  return { edition: input.edition as Edition, plan: input.plan as Bought, modules, promo, voucher: line ? line.slice(0, 4096) : null, country, gift };
+}
+
+/** A gift's recipient and note, as the buyer typed them: an e-mail address (or none, for whoever they hand it to) and a short message. */
+export function giftOf(g: { for?: string | null; note?: string | null }): { for: string | null; note: string | null } {
+  const to = String(g.for ?? "").trim().toLowerCase();
+  if (to && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) fail(400, "A gift is held to an e-mail address, or to nobody: leave it empty to hand the voucher over yourself.");
+  const note = String(g.note ?? "").trim().slice(0, voucher.MOST_NOTE - 40);
+  return { for: to || null, note: note || null };
 }
 
 /** Whether a buyer pays the student and teacher price: marked by the crew, or a verified school address. */
@@ -117,7 +129,8 @@ function discounted(edition: Edition, plan: Bought, b: Band, student: boolean, c
  * two editions (EDITIONS.md). Priced as the buyer would pay for it today.
  */
 async function upgradeFrom(env: AppEnv, user: User | null, input: QuoteInput, b: Band, student: boolean): Promise<Quote["upgrade"]> {
-  if (!user || input.plan !== "perpetual") return null;
+  // A gift is a whole edition for someone else: the buyer's own licence is no credit towards it.
+  if (!user || input.plan !== "perpetual" || input.gift) return null;
   const target = modulesOf(input.edition, input.modules);
   let best: Quote["upgrade"] = null;
   for (const l of await userLicences(env, user.id)) {
@@ -215,7 +228,7 @@ function describe(q: Quote): string {
   return `djmanzo ${EDITION_INFO[q.edition].name}${custom} — ${PLAN_INFO[q.plan].name}${up}`;
 }
 
-async function newOrder(env: AppEnv, user: User, q: Quote, claimed: Band, proof: Order["proof"], provider: Order["provider"], renews: boolean): Promise<Order> {
+async function newOrder(env: AppEnv, user: User, q: Quote, claimed: Band, proof: Order["proof"], provider: Order["provider"], renews: boolean, gift: QuoteInput["gift"] = null): Promise<Order> {
   const order: Order = {
     id: `o_${randomId(12)}`,
     uid: user.id,
@@ -240,6 +253,7 @@ async function newOrder(env: AppEnv, user: User, q: Quote, claimed: Band, proof:
     createdAt: Date.now(),
     email: user.email,
     name: user.name,
+    ...(gift ? { gift: { for: gift.for ? [gift.for] : [], note: gift.note ?? null, voucher: null } } : {}),
   };
   await put(env.KV, `order:${order.id}`, order, undefined, { u: user.id, s: order.status, t: order.total, c: order.currency, e: order.edition, p: order.plan, v: provider, at: order.createdAt });
   return order;
@@ -260,7 +274,8 @@ export async function userLicences(env: AppEnv, uid: string): Promise<Licence[]>
  * one returns it, so a webhook and a browser finishing the same payment
  * cannot make two.
  */
-export async function issue(env: AppEnv, order: Order, user: User, opts: { expires?: number | null; subscription?: string | null; months?: number } = {}): Promise<{ licence: Licence }> {
+export async function issue(env: AppEnv, order: Order, user: User, opts: { expires?: number | null; subscription?: string | null; months?: number } = {}): Promise<{ licence: Licence; gift?: undefined } | { gift: Gift; licence?: undefined }> {
+  if (order.gift) return { gift: await giveGift(env, order, user) };
   if (order.licence) {
     const existing = await get<Licence>(env.KV, `licence:${order.licence}`);
     if (existing) return { licence: existing };
@@ -298,6 +313,129 @@ export async function issue(env: AppEnv, order: Order, user: User, opts: { expir
     }
   }
   return { licence };
+}
+
+/** A gift bought: the voucher line to hand over, and where it is taken. */
+export interface Gift {
+  id: string;
+  line: string;
+  edition: Edition;
+  modules?: string;
+  for: string[];
+  note: string | null;
+  /** Taken by whom, once it has been. */
+  taken: boolean;
+  /** Made by the demo checkout: shown, never takeable. */
+  rehearsal: boolean;
+}
+
+const giftOut = (r: voucher.VoucherRecord): Gift => ({
+  id: r.payload.id,
+  line: r.line,
+  edition: r.payload.edition,
+  ...(r.payload.modules ? { modules: r.payload.modules } : {}),
+  for: r.payload.for ?? [],
+  note: r.payload.note ?? null,
+  taken: r.taken.length > 0,
+  rehearsal: r.by?.startsWith("rehearsal:") ?? false,
+});
+
+/**
+ * A paid gift order: a signed gift voucher for the edition (100 %, the
+ * edition outright), held to the person the buyer named, with their note,
+ * and kept among the buyer's gifts. Idempotent, as `issue` is: an order
+ * that already has its voucher returns it.
+ */
+async function giveGift(env: AppEnv, order: Order, user: User): Promise<Gift> {
+  const had = order.gift?.voucher ? await voucher.record(env, order.gift.voucher) : null;
+  if (had) return giftOut(had);
+  // The demo checkout takes no money, so what it makes must be worth none: a
+  // gift line that is real and signed, but past its last day before it is
+  // made, which djmanzo and /redeem both refuse.
+  const rehearsal = order.provider === "demo" || !!user.demo;
+  const from = rehearsal ? "A rehearsal from the demo shop, not a real gift" : user.name ? `A gift from ${user.name}` : "A gift";
+  const note = [from, order.gift?.note].filter(Boolean).join(": ").slice(0, voucher.MOST_NOTE);
+  const now = Math.floor(Date.now() / 1000);
+  const [made] = await voucher.make(
+    env,
+    { edition: order.edition, modules: order.modules, percent: 100, for: order.gift?.for ?? [], note, count: 1, prefix: "MANZO-GIFT", ...(rehearsal ? { until: now - 1 } : {}) },
+    `${rehearsal ? "rehearsal" : "gift"}:${order.id}`,
+    now,
+  );
+  order.status = "paid";
+  order.paidAt = Date.now();
+  order.gift = { for: order.gift?.for ?? [], note: order.gift?.note ?? null, voucher: made.payload.id };
+  await saveOrder(env, order);
+  const gifts = (await get<string[]>(env.KV, `gifts:${user.id}`)) ?? [];
+  await put(env.KV, `gifts:${user.id}`, [...gifts, made.payload.id]);
+  if (order.promo) await consume(env, order.promo, user);
+  if (order.voucher) await voucher.take(env, order.voucher, { uid: user.id, account: accountsOf(user)[0] ?? null, at: Date.now(), order: order.id });
+  return giftOut(made);
+}
+
+/** The gifts an account has bought, newest first, with whether each has been taken. */
+export async function giftsOf(env: AppEnv, uid: string): Promise<Gift[]> {
+  const ids = (await get<string[]>(env.KV, `gifts:${uid}`)) ?? [];
+  const all = await Promise.all(ids.map((id) => voucher.record(env, id)));
+  return all.filter((r): r is voucher.VoucherRecord => !!r && !r.revoked).map(giftOut).reverse();
+}
+
+/**
+ * The crew's grant: a licence put straight into an account, with nothing
+ * to pay and nothing to redeem — for a friend, a tester, a refund made good.
+ * The account is named by its id, a verified e-mail address or a sign-in
+ * (`github:583231`). An order records who granted it and why.
+ */
+export async function grant(env: AppEnv, who: string, spec: { edition?: string; modules?: string[] | string; plan?: string; months?: number; why?: string | null }, by: string): Promise<{ order: Order; licence: Licence }> {
+  const user = await findAccount(env, who);
+  if (!user) fail(404, "No account by that id, e-mail address or sign-in. They need to sign in on the site once first.");
+  if (!EDITIONS.includes(spec.edition as Edition) || spec.edition === "hobbyist") fail(400, `Grant one of: ${EDITIONS.filter((e) => e !== "hobbyist").join(", ")}.`);
+  const plan = (spec.plan ?? "perpetual") as Plan;
+  if (!(["perpetual", "yearly", "monthly", "trial"] as string[]).includes(plan)) fail(400, "Grant it bought once, monthly, yearly or as a trial.");
+  const asked = Array.isArray(spec.modules) ? spec.modules : String(spec.modules ?? "").split(",");
+  const modules = spec.edition === "custom" ? modulesOf("custom", asked.map((m) => m.trim()).filter(isModule)) : undefined;
+  if (spec.edition === "custom" && !modules!.length) fail(400, "A Custom grant names its modules.");
+  const months = plan === "monthly" || plan === "yearly" ? Math.max(1, Math.min(120, Math.round(Number(spec.months ?? (plan === "yearly" ? 12 : 1))))) : undefined;
+  const order: Order = {
+    id: `o_${randomId(12)}`,
+    uid: user.id,
+    edition: spec.edition as Edition,
+    ...(modules ? { modules } : {}),
+    plan,
+    currency: "USD",
+    base: 0,
+    regional: 0,
+    discount: 0,
+    total: 0,
+    band: 1,
+    claimedBand: 1,
+    proof: { reason: "Granted by the crew." },
+    provider: "grant",
+    status: "pending",
+    renews: false,
+    createdAt: Date.now(),
+    email: user.email,
+    name: user.name,
+    granted: { by, why: spec.why ? String(spec.why).slice(0, 280) : null },
+  };
+  await saveOrder(env, order);
+  const out = await issue(env, order, user, months ? { months } : {});
+  if (!out.licence) fail(500, "A grant makes a licence.");
+  return { order, licence: out.licence };
+}
+
+/** An account by its id, a verified e-mail address, or a sign-in (`provider:sub`). */
+export async function findAccount(env: AppEnv, who: string): Promise<User | null> {
+  const w = String(who ?? "").trim();
+  if (!w) return null;
+  const direct = await get<User>(env.KV, `user:${w}`);
+  if (direct) return direct;
+  if (w.includes("@")) {
+    const uid = await env.KV.get(`email:${w.toLowerCase()}`);
+    return uid ? get<User>(env.KV, `user:${uid}`) : null;
+  }
+  const uid = await env.KV.get(`ident:${w}`);
+  return uid ? get<User>(env.KV, `user:${uid}`) : null;
 }
 
 function needsConfirm(q: Quote, reason: string) {
@@ -338,7 +476,7 @@ export async function demoCheckout(env: AppEnv, user: User, input: QuoteInput & 
   if (proof.refused) fail(451, proof.reason);
   const q = await quote(env, user, input, proof.band);
   if (!(await stands(env, user, input, proof, q)) && !input.acceptHigher) needsConfirm(q, proof.reason);
-  const order = await newOrder(env, user, q, claimed, { instrument: input.instrument, billing: input.billing, reason: proof.reason }, "demo", false);
+  const order = await newOrder(env, user, q, claimed, { instrument: input.instrument, billing: input.billing, reason: proof.reason }, "demo", false, input.gift);
   const out = await issue(env, order, user);
   return { order, ...out, proof };
 }
@@ -387,7 +525,7 @@ export async function startTrial(env: AppEnv, user: User, edition: string) {
 export async function freeCheckout(env: AppEnv, user: User, input: QuoteInput) {
   const q = await quote(env, user, input);
   if (q.total !== 0) fail(402, "There is still something to pay.");
-  const order = await newOrder(env, user, q, q.band, { reason: "Nothing to pay." }, "free", false);
+  const order = await newOrder(env, user, q, q.band, { reason: "Nothing to pay." }, "free", false, input.gift);
   return { order, ...(await issue(env, order, user)) };
 }
 
@@ -425,7 +563,8 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
   realBuyer(user);
   if (!/^pm_[A-Za-z0-9]+$/.test(input.paymentMethod || "")) fail(400, "The card form did not finish.");
   const pm = await stripe(env, "GET", `payment_methods/${input.paymentMethod}`);
-  const instrument: string | null = pm.card?.country ?? pm.sepa_debit?.country ?? pm.link?.country ?? null;
+  // The paying instrument's country: a card's (Apple Pay and Google Pay carry one), PayPal's payer, or Austria for EPS, whose banks are all Austrian.
+  const instrument: string | null = pm.card?.country ?? pm.sepa_debit?.country ?? pm.link?.country ?? pm.paypal?.country ?? (pm.type === "eps" ? "AT" : null);
   const billing: string | null = pm.billing_details?.address?.country ?? null;
   const claimed = band(input.country);
   const proof = proven({ instrument, billing }, claimed);
@@ -436,7 +575,7 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
 
   const customer = await stripeCustomer(env, user);
   await stripe(env, "POST", `payment_methods/${input.paymentMethod}/attach`, { customer });
-  const order = await newOrder(env, user, q, claimed, { instrument, billing, reason: proof.reason }, "stripe", q.plan !== "perpetual");
+  const order = await newOrder(env, user, q, claimed, { instrument, billing, reason: proof.reason }, "stripe", q.plan !== "perpetual", input.gift);
   const currency = q.currency.toLowerCase();
 
   if (q.plan === "perpetual") {
@@ -451,7 +590,8 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
         payment_method: input.paymentMethod,
         confirm: true,
         description: describe(q),
-        return_url: `${origin}/?order=${order.id}`,
+        // A method that leaves the page (PayPal, EPS) comes back to the shop, which finishes it (`Pricing.svelte`).
+        return_url: `${origin}/pricing?order=${order.id}#checkout`,
         metadata: { order: order.id, uid: user.id },
       },
       `pi-${order.id}`,
@@ -540,7 +680,7 @@ export async function stripeWebhook(env: AppEnv, req: Request): Promise<Response
   } else if (event.type === "payment_intent.succeeded" && o.metadata?.order) {
     const order = await get<Order>(env.KV, `order:${o.metadata.order}`);
     const user = order && (await get<User>(env.KV, `user:${order.uid}`));
-    if (order && user && order.plan === "perpetual" && !order.licence) await issue(env, order, user);
+    if (order && user && order.plan === "perpetual" && !order.licence && !order.gift?.voucher) await issue(env, order, user);
   } else if (event.type === "charge.refunded" && o.payment_intent) {
     // Find the order by the payment intent through its metadata.
     const pi = await stripe(env, "GET", `payment_intents/${o.payment_intent}`).catch(() => null);
@@ -570,7 +710,7 @@ export async function paypalCreate(env: AppEnv, user: User, input: QuoteInput) {
   realBuyer(user);
   const q = await quote(env, user, input);
   if (q.total === 0) fail(400, "Nothing to pay — use the free checkout.");
-  const order = await newOrder(env, user, q, q.band, { reason: "Waiting for PayPal." }, "paypal", false);
+  const order = await newOrder(env, user, q, q.band, { reason: "Waiting for PayPal." }, "paypal", false, input.gift);
   const pp = await paypal(
     env,
     "POST",
@@ -589,7 +729,7 @@ export async function paypalCreate(env: AppEnv, user: User, input: QuoteInput) {
 export async function paypalCapture(env: AppEnv, user: User, orderId: string, acceptHigher = false) {
   const order = await get<Order>(env.KV, `order:${orderId}`);
   if (!order || order.uid !== user.id || order.provider !== "paypal" || !order.providerRef) fail(404, "No such order.");
-  if (order.licence) return { order, ...(await issue(env, order, user)) };
+  if (order.licence || order.gift?.voucher) return { order, ...(await issue(env, order, user)) };
   const auth = await paypal(env, "POST", `/v2/checkout/orders/${order.providerRef}/authorize`, {}, `auth-${order.id}`);
   const authorization = auth.purchase_units?.[0]?.payments?.authorizations?.[0];
   // PayPal vouches for the account's country; the billing country is the card's or the address PayPal holds.
@@ -630,7 +770,7 @@ export async function transferCheckout(env: AppEnv, user: User, input: QuoteInpu
   realBuyer(user);
   if (!env.BANK_TRANSFER_DETAILS) fail(404, "Bank transfer is not offered.");
   const q = await quote(env, user, input);
-  const order = await newOrder(env, user, q, q.band, { billing: input.billing ?? null, reason: "Proven by the sending bank, checked by hand." }, "transfer", false);
+  const order = await newOrder(env, user, q, q.band, { billing: input.billing ?? null, reason: "Proven by the sending bank, checked by hand." }, "transfer", false, input.gift);
   return { order, instructions: env.BANK_TRANSFER_DETAILS, reference: order.id, display: money(q.total, q.currency) };
 }
 

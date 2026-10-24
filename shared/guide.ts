@@ -36,7 +36,7 @@ export interface GuideContext {
   where?: boolean;
   /** The sky over them, if they shared a location. */
   sky?: string;
-  /** The browser's language, e.g. "de-AT". */
+  /** The language the visitor reads the site in (the one they chose, else their browser's), e.g. "de" or "pt-BR". */
   lang?: string;
 }
 

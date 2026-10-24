@@ -55,6 +55,23 @@ put a bot check in front of new accounts.
 
 `ADMIN_EMAILS` (comma-separated) and `ADMIN_TOKEN` open the admin pages.
 
+**Backstage, the admin pages**, are at `https://<site>/backstage`, which
+leads to `/island/#/backstage`. The Account page also links there when you
+are signed in as crew. There are three ways in:
+
+- **The crew password.** There is no default password. Once you are in,
+  set one under *🔒 The crew's password* (at least 12 characters), and
+  change it there whenever you like. It is kept only as a salted PBKDF2
+  hash. One address gets ten wrong tries per quarter of an hour; right ones do not count.
+- **`ADMIN_TOKEN`**, a Worker secret you choose. It works in the same field
+  as the password, and it is the way back in if the password is forgotten.
+  Set or change it with `npx wrangler secret put ADMIN_TOKEN`, or in
+  Cloudflare → Workers → djmanzo → Settings → Variables and Secrets.
+  `crew-secret` is only the local test setting in `wrangler.jsonc`'s
+  `test` environment, never the live site's.
+- **Signing in** with an account whose verified e-mail address is in
+  `ADMIN_EMAILS`.
+
 ## 3. Selling
 
 | What | Secrets |
@@ -65,6 +82,63 @@ put a bot check in front of new accounts.
 | Signing licences | `LICENCE_PRIVATE_KEY`: the Ed25519 key whose public half is `DJMANZO_LICENCE_KEY`. Without it the site signs with the development key, which only djmanzo's debug builds believe |
 | The imprint | `IMPRINT_NAME`, `IMPRINT_ADDRESS`, `IMPRINT_EMAIL` (required by law before selling in the EU) |
 | How many computers at once | `MAX_ACTIVATIONS`, a variable: how many computers one person may have djmanzo activated on at once (3 when unset). They see and remove them on their account page |
+
+### Payments: the setup for an Austrian sole trader with a Wise account
+
+Everything in the table above can also be set in **Backstage → 💳
+Payments**, without a deploy. Keys set there are kept encrypted (AES-GCM,
+under a key derived from `LICENCE_PRIVATE_KEY`, or `ADMIN_TOKEN` when that
+is unset). They win over the Worker secrets of the same name, and the shop
+uses them within half a minute. Backstage shows a secret only as its last
+four characters. *Check the connections* asks Stripe and PayPal whether
+the keys work, whether charges and payouts are on, and where payouts go.
+
+**Recommended: Stripe, paying out to Wise.** One Stripe account takes
+cards, Apple Pay and Google Pay in one card form, and also PayPal and EPS
+(the Austrian bank-transfer button) once they are switched on. All of it
+pays out to your Wise EUR IBAN.
+
+1. Open a Stripe account at stripe.com as an **individual / sole trader
+   (Einzelunternehmen) in Austria**, verified with your Austrian passport.
+2. Under *Settings → Payouts*, add your **Wise EUR account's IBAN** (Wise
+   shows it under the EUR balance). Stripe accepts Wise, but counts it as a
+   non-standard account and warns that such payouts fail more often, so
+   check that a small first payout arrives.
+3. Under *Settings → Payment methods*, turn on **Cards, Apple Pay, Google
+   Pay, PayPal and EPS**. PayPal on Stripe is open to EU businesses and asks
+   you to connect, or create, a PayPal Business account during onboarding.
+   PayPal payments then reach the Stripe balance and pay out to Wise with
+   the rest.
+4. Under *Developers → API keys*, copy the publishable and secret keys
+   into Backstage → 💳 Payments.
+5. Under *Developers → Webhooks*, add the endpoint
+   `https://<site>/api/webhooks/stripe` for `payment_intent.succeeded`,
+   `invoice.paid`, `customer.subscription.deleted` and `charge.refunded`.
+   Put its signing secret (`whsec_…`) in Backstage too.
+6. In Backstage, press **Register this domain for Apple Pay and Google
+   Pay**. Apple Pay shows in the card form only on a domain registered with
+   Stripe.
+7. Press **Check the connections**, then buy something small with a real
+   card and refund it from Stripe's dashboard.
+
+**PayPal on its own** (the PayPal button that is not inside the card form)
+is also wired: a PayPal Business account, then an app under
+developer.paypal.com → *Apps & Credentials*, whose client id and secret go
+in Backstage with mode `live`. Withdraw from PayPal to Wise. You need it
+only if you want PayPal's own button as well as the one in Stripe's form.
+
+**Taxes: worth an hour with a Steuerberater.** As an Austrian
+*Kleinunternehmer* (under €55,000 a year) you charge no Austrian VAT. Sales
+of software to consumers in other EU countries stay under Austrian rules
+until they pass €10,000 a year across the EU; past that you charge the
+buyer's country's VAT through the EU's One-Stop-Shop (OSS). Consumers
+outside the EU can bring their own rules, the United Kingdom's among them.
+When this becomes a burden, a *merchant of record* sells in your name and
+files every country's tax: **Stripe Managed Payments** (Austria is
+eligible, still in preview, about 3.5 % on top of Stripe's fees), or
+**Paddle** (about 5 % + $0.50, with cards, Apple Pay, Google Pay and
+PayPal in its own checkout). The site's checkout would then hand over to
+theirs. That is a change to make when sales justify it, not before.
 
 ## 4. Downloads from GitHub
 

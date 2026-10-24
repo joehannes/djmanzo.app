@@ -150,15 +150,35 @@ test("the marketplace and forum are the working ones, and their links stay on th
   expect(errs).toEqual([]);
 });
 
-test("the assistant answers, and its answers lead somewhere", async ({ page }) => {
+test("the assistant answers its own questions from the facts, in the visitor's language, and only a question in the visitor's words goes to the AI", async ({ page }) => {
   const errs = errors(page);
+  const sent: { turns: { text: string }[]; context: { lang?: string } }[] = [];
+  await page.route("**/api/guide", async (r) => {
+    if (r.request().method() !== "POST") return r.fulfill({ json: { on: true } });
+    sent.push(r.request().postDataJSON());
+    return r.fulfill({ json: { say: "Antwort der KI.", options: [], actions: [] } });
+  });
   await page.goto("/?country=DE");
   await page.click("[data-ask]");
   await expect(page.locator("[data-assistant]")).toContainText("djmanzo's assistant");
   await page.getByRole("button", { name: "Is it free?" }).click();
-  await expect(page.locator("[data-assistant]")).toContainText("The Hobbyist edition is");
+  await expect(page.locator("[data-assistant]")).toContainText("The Hobbyist edition is, for ever");
   await page.locator("[data-assistant] [data-act=start_trial]").click();
   await expect(page).toHaveURL(/\/pricing$/);
+  // In German: the offered questions are German, answered at once, and the AI is never asked.
+  await page.goto("/?country=DE&lang=de");
+  await page.click("[data-ask]");
+  await page.locator("[data-ask-canned=controller]").click();
+  await expect(page.locator("[data-assistant] [data-canned=controller][data-line=guide]")).toContainText("Ehrlich gesagt: Keins wurde bisher am echten Gerät gespielt.");
+  await expect(page.locator("[data-ask-canned=controller]")).toHaveCount(0);
+  expect(sent).toHaveLength(0);
+  // A question in the visitor's own words goes to the AI, told the language they read the site in.
+  await page.getByRole("textbox", { name: "Deine Frage" }).fill("Kann ich damit auf einer Hochzeit auflegen?");
+  await page.getByRole("button", { name: "Senden" }).click();
+  await expect(page.locator("[data-assistant]")).toContainText("Antwort der KI.");
+  expect(sent).toHaveLength(1);
+  expect(sent[0].context.lang).toBe("de");
+  expect(sent[0].turns.at(-1)?.text).toBe("Kann ich damit auf einer Hochzeit auflegen?");
   expect(errs).toEqual([]);
 });
 
@@ -351,5 +371,96 @@ test("release notes: every version in the visitor's language, a feature's built 
   await expect(page.locator("[data-version='0.50.0'] li")).toHaveText(["New"]);
   // And the footer leads there.
   await expect(page.locator("footer a[href='/releases']")).toHaveText("リリースノート");
+  expect(errs).toEqual([]);
+});
+
+test("a gift bought at the shop: the voucher line and its link, kept in the account; the demo's is a rehearsal", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/pricing?lang=de");
+  await page.getByPlaceholder("Your DJ name").fill("Gift DJ");
+  await page.getByRole("button", { name: "Sign in for the demo" }).click();
+  await page.locator("[data-plan=perpetual]").click();
+  // Only bought once: a subscription cannot be a gift.
+  await page.locator("[data-plan=monthly]").click();
+  await expect(page.locator("[data-gift-toggle]")).toBeDisabled();
+  await page.locator("[data-plan=perpetual]").click();
+  await page.locator("[data-gift-toggle]").check();
+  await page.locator("[data-gift-for]").fill("lena@example.test");
+  await page.locator("[data-gift-note]").fill("Alles Gute");
+  await page.getByRole("button", { name: /Rehearse paying/ }).click();
+  await expect(page.locator("[data-gift-done]")).toContainText("Dein Geschenk ist fertig.");
+  await expect(page.locator("[data-gift-rehearsal]")).toBeVisible();
+  await expect(page.locator("[data-gift-line]")).toHaveValue(/^djmanzo-voucher-1\./);
+  await expect(page.locator("[data-gift-link]")).toHaveValue(/\/redeem\?voucher=djmanzo-voucher-1/);
+  await page.goto("/account?lang=de");
+  await expect(page.locator("[data-gifts]")).toContainText("Gekaufte Geschenke");
+  await expect(page.locator("[data-gifts]")).toContainText("für lena@example.test");
+  expect(errs).toEqual([]);
+});
+
+test("Backstage: the crew sets a password, comes in with it, and grants a licence to an account", async ({ page }) => {
+  const errs = errors(page);
+  // A DJ with an account, to grant to.
+  await page.goto("/account");
+  await page.getByPlaceholder("Your DJ name").fill("Granted DJ");
+  await page.getByRole("button", { name: "Sign in for the demo" }).click();
+  await expect(page.locator("[data-account-link]")).toHaveAttribute("data-account-name", "Granted DJ");
+  const uid = await page.evaluate(async () => ((await (await fetch("/api/me")).json()) as { user: { id: string } }).user.id);
+  await page.context().clearCookies();
+  // The address to remember leads to Backstage; a guess does not open it.
+  await page.goto("/backstage");
+  await expect(page).toHaveURL(/\/island\/#\/backstage$/);
+  await page.locator("[data-crew-password]").fill("not the password");
+  await page.getByRole("button", { name: "Come in" }).click();
+  await expect(page.getByText("That is not the crew's token or password.")).toBeVisible();
+  await page.locator("[data-crew-password]").fill("crew-secret");
+  await page.getByRole("button", { name: "Come in" }).click();
+  await page.locator("[data-password] summary").click();
+  // The local store outlives a run, so a password may be set already; the unit tests hold a fresh site to having none.
+  await expect(page.locator("[data-password]")).toContainText("There is no default password.");
+  await expect(page.locator("[data-password]")).toContainText(/None is set yet|One is set/);
+  await page.locator("[data-pw-new]").fill("a long crew password");
+  await page.locator("[data-pw-again]").fill("a long crew password");
+  await page.getByRole("button", { name: /(Set|Change) the password/ }).click();
+  await expect(page.locator("[data-pw-msg]")).toContainText("Saved.");
+  // Out, and in again with the password.
+  await page.context().clearCookies();
+  // A fresh load: the same address with only a hash would keep the page, and who it thinks is signed in.
+  await page.goto("/");
+  await page.goto("/island/#/backstage");
+  await page.locator("[data-crew-password]").fill("a long crew password");
+  await page.getByRole("button", { name: "Come in" }).click();
+  await page.locator("[data-grant] summary").click();
+  await page.locator("[data-grant-who]").fill(uid);
+  await page.locator("[data-grant-edition]").selectOption("karaoke");
+  await page.getByRole("button", { name: "Grant it" }).click();
+  await expect(page.locator("[data-granted]")).toContainText("Granted: karaoke, perpetual, for good, to Granted DJ");
+  expect(errs).toEqual([]);
+});
+
+test("Backstage: payments are set without a deploy, shown back only by their ends, and the shop follows", async ({ page, request }) => {
+  const errs = errors(page);
+  const clear = { values: { STRIPE_PUBLISHABLE_KEY: "", STRIPE_SECRET_KEY: "" } };
+  try {
+    await page.goto("/island/#/backstage");
+    await page.locator("[data-crew-password]").fill("crew-secret");
+    await page.getByRole("button", { name: "Come in" }).click();
+    await page.locator("[data-payments] summary").click();
+    await expect(page.locator("[data-pay-mode]")).toContainText("Card form: off");
+    await page.locator("[data-pay-field=STRIPE_PUBLISHABLE_KEY]").fill("pk_test_51E2eTestKeyPublishable");
+    await page.locator("[data-pay-field=STRIPE_SECRET_KEY]").fill("sk_test_51E2eTestKeySecretWXYZ");
+    await page.locator("[data-payments]").getByRole("button", { name: "Save" }).click();
+    await expect(page.locator("[data-pay-msg]")).toContainText("Saved.");
+    await expect(page.locator("[data-pay-mode]")).toContainText("Card form: test");
+    await expect(page.locator("[data-payments]")).toContainText("…WXYZ (backstage)");
+    await expect(page.locator("[data-payments]")).not.toContainText("sk_test_51E2eTestKeySecretWXYZ");
+    // The shop offers the card form now, and the demo checkout steps aside.
+    const pay = (await (await request.get("/api/catalog")).json()).pay;
+    expect(pay.stripe.key).toBe("pk_test_51E2eTestKeyPublishable");
+    expect(pay.demo).toBe(false);
+  } finally {
+    // The local store outlives a run: put the demo shop back for every other test.
+    await request.put("/api/admin/payments", { data: clear, headers: { authorization: "Bearer crew-secret" } });
+  }
   expect(errs).toEqual([]);
 });

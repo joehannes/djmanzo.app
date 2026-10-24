@@ -955,3 +955,98 @@ version and to all seven languages.
   test covers the page in German, the English fallback, and the footer
   link in Japanese. Mutation-tested: showing the notes only in English
   fails it.
+
+## Gifts, grants and the crew password (24 October)
+
+The owner asked whether the site can create licences and redemption
+codes, whether a gift can be bought, and whether the crew can give a
+licence to a specific account. The first two already existed: a licence
+on every paid order, signed vouchers (§135) and promo codes. The rest is
+new:
+
+- **A gift, bought at the shop.** *Buy it as a gift* sits under the
+  promo code. It is offered for *Buy once* only, because a subscription
+  would go on charging the giver. The buyer may name the person by e-mail
+  address and add a note. Paying mints a signed gift voucher for the
+  edition (100 %, `MANZO-GIFT-…`) instead of a licence for the buyer.
+  The voucher is held to that address if one was named, and carries
+  "A gift from <name>: <note>". The buyer gets the line and a
+  `/redeem?voucher=…` link to send, and *Gifts you bought* on the Account
+  page shows each gift and whether it has been taken. A gift is never
+  priced as an upgrade from the buyer's own licence. Every way to pay
+  makes one (card, PayPal, a bank transfer marked paid, a crew code that
+  makes it free) through `checkout.issue`, idempotently.
+- **The demo checkout's gift is a rehearsal.** The demo takes no money,
+  so its voucher is real and signed but past its last day before it is
+  made. djmanzo and `/redeem` both refuse it, and the screen says so.
+- **The crew grants a licence** straight into an account under
+  Backstage → *🔑 Grant a licence* (`POST /api/admin/licences`). The
+  account is named by e-mail address, id or sign-in (`github:…`). The
+  licence can be bought once, monthly or yearly for a number of months,
+  or a trial. Nothing is paid or redeemed, and an order with provider
+  `grant` records who granted it and why.
+- **The crew password** is set and changed under Backstage →
+  *🔒 The crew's password* (`GET`/`PUT /api/admin/password`). There is no
+  default. It is kept as a salted PBKDF2 hash (100,000 rounds, the most a
+  Worker runs). `/api/auth/owner` takes it or `ADMIN_TOKEN`, with ten wrong
+  tries a quarter of an hour per address (right ones do not count). `/backstage` leads to the island's
+  Backstage. How to get in is in SETUP.md.
+- **Tests:** `test/gift.test.ts` covers the gift's line, holder and note;
+  no licence for the buyer; taken by the right person only; a gift is
+  never a subscription or an upgrade; the demo's rehearsal is refused; the
+  grant by e-mail, id and sign-in, and its refusals; the password has no
+  default, is set, changed, hashed and throttled. Two browser tests cover
+  a gift at the shop (in German) shown in the account, and Backstage:
+  password set, used to come in, a licence granted. Mutation-tested: a
+  gift that issues a licence, a password check that lets anything in,
+  and a demo gift that is not a rehearsal each fail them.
+
+## Payments, set in Backstage (24 October)
+
+The owner asked for real payment integration, configurable in the admin
+section: card paying out to their Wise account, Apple Pay, Google Pay and
+PayPal, for an Austrian sole trader. SETUP.md, "Payments", has the
+recommended setup step by step. In short: one Stripe account whose card
+form takes cards, Apple Pay and Google Pay, plus PayPal and EPS once they
+are switched on in Stripe, all paying out to the Wise EUR IBAN. The
+direct PayPal integration stays as an alternative, and a merchant of
+record (Stripe Managed Payments, Paddle) is the move when VAT in many
+countries becomes the burden.
+
+- **`worker/payments.ts`.** Backstage → *💳 Payments* sets the Stripe and
+  PayPal keys, the bank-transfer details, demo mode, and whether the card
+  form offers Apple Pay and Google Pay.
+  - **Storage.** Values are kept in KV (`config:payments`) encrypted with
+    AES-GCM, under a key derived by HKDF from `LICENCE_PRIVATE_KEY` (or
+    `ADMIN_TOKEN`), so a KV dump alone gives away no key. If that secret
+    changes, the settings are reported unreadable rather than guessed at.
+  - **Precedence.** A value set here wins over the Worker secret of the
+    same name, and clearing it falls back to that secret. `handle` lays
+    the settings over the env for each request (read at most every thirty
+    seconds per Worker), so every existing reader of `env.STRIPE_*` and
+    `env.PAYPAL_*` follows without change.
+  - **What Backstage sees.** Each field's source, and a secret only as
+    its last four characters.
+  - **Checks.** `PUT` refuses what is not a key, and a live key paired
+    with a test key. *Check the connections* asks Stripe's `/v1/account`
+    (country, charges, payouts, the payout bank's last four digits) and
+    whether this domain is registered, and asks PayPal for a token. *Register
+    this domain* calls Stripe's `payment_method_domains`, which Apple Pay
+    needs.
+- **The card form** offers the wallets Backstage allows. A method that
+  leaves the page (PayPal through Stripe, EPS) returns to
+  `/pricing?order=…#checkout`, which finishes the order. The webhook
+  finishes it too, if the buyer never comes back. The buyer's country for
+  the regional price comes from the card (Apple Pay and Google Pay carry
+  one), from the PayPal payer, or is Austria for EPS.
+- **Tests:** `test/payments.test.ts` covers connecting Stripe without a
+  deploy (the card form appears, the demo steps aside); a secret shown only
+  by its end and unreadable in KV; precedence over a Worker secret and the
+  fall-back; refusals; the wallet switches; unreadable after the secret
+  changes; the checks and the domain registration with Stripe and PayPal
+  stood in for. A browser test sets test keys in Backstage and puts the
+  demo shop back afterwards. Mutation-tested: without the overlay, five of
+  them fail.
+- **Not proven here:** no real payment has been taken. No Stripe or PayPal
+  account was reachable from where this was built. The first live payment
+  is the proof: buy something small with a real card and refund it.

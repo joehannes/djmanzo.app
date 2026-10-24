@@ -20,6 +20,7 @@
   import { animate, gsap, reduced } from "../motion";
   import { region, shared } from "../region.svelte";
   import { RELEASES } from "../download";
+  import { t } from "../i18n.svelte";
 
   type Bought = Exclude<Plan, "trial">;
   const ORDER: Edition[] = ["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full", "custom"];
@@ -40,6 +41,22 @@
 
   let root: HTMLElement;
   let plan = $state<Bought>("perpetual");
+  /** Bought for someone else: a gift voucher instead of a licence. Buy once only. */
+  let asGift = $state(false);
+  let giftFor = $state("");
+  let giftNote = $state("");
+  const gift = $derived(asGift && plan === "perpetual" ? { for: giftFor.trim() || null, note: giftNote.trim() || null } : null);
+  let copied = $state<string | null>(null);
+  let returnError = $state<string | null>(null);
+  async function copy(what: string, text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      copied = what;
+      setTimeout(() => copied === what && (copied = null), 1500);
+    } catch {
+      // The line is on the page to copy by hand.
+    }
+  }
   let edition = $state<Edition>("pro");
   let modules = $state<Module[]>(["stems"]);
   let country = $state("US");
@@ -81,7 +98,7 @@
 
   let timer: ReturnType<typeof setTimeout>;
   $effect(() => {
-    const body = { edition, plan, country, promo: promo.trim() || null, modules: chosenModules };
+    const body = { edition, plan, country, promo: promo.trim() || null, modules: chosenModules, gift };
     clearTimeout(timer);
     if (edition === "hobbyist") return;
     timer = setTimeout(async () => {
@@ -126,6 +143,18 @@
     // A discount voucher from `/redeem`: its line goes in the promo box, where the quote and every checkout read it.
     const v = q.get("voucher");
     if (v) promo = v;
+    // Back from a way to pay that leaves the page (PayPal through Stripe, EPS): finish the order here.
+    const back = q.get("order");
+    const status = q.get("redirect_status");
+    if (back && status) {
+      history.replaceState(null, "", `${location.pathname}#checkout`);
+      if (status === "succeeded" || status === "pending")
+        void post("/api/checkout/stripe/finalize", { order: back }).then(
+          (r) => (done = r),
+          (e) => (returnError = (e as Error).message),
+        );
+      else returnError = "The payment was not completed. Nothing was taken; you can try again.";
+    }
     return animate(root);
   });
 </script>
@@ -187,7 +216,22 @@
   </section>
 
   <section class="wrap checkout" id="checkout" aria-labelledby="co-title">
-    {#if done}
+    {#if returnError}<p class="notice" role="alert" data-return-error>{returnError}</p>{/if}
+    {#if done?.gift}
+      <div class="done card" data-done data-gift-done>
+        <p class="eyebrow">🎁</p>
+        <h2 class="h2">{t("gift.done")}</h2>
+        <p class="lead">{t("gift.doneLead", { edition: c?.editions[done.gift.edition as Edition]?.name ?? done.gift.edition })}</p>
+        {#if done.gift.rehearsal}<p class="notice" data-gift-rehearsal>{t("gift.rehearsal")}</p>{/if}
+        <label class="field"><span class="mono">{t("gift.link")}</span>
+          <span class="copyrow"><input type="text" readonly value={`${location.origin}/redeem?voucher=${encodeURIComponent(done.gift.line)}`} data-gift-link /><button class="btn ghost small" onclick={() => copy("link", `${location.origin}/redeem?voucher=${encodeURIComponent(done.gift.line)}`)}>{copied === "link" ? t("gift.copied") : t("gift.copy")}</button></span>
+        </label>
+        <label class="field"><span class="mono">{t("gift.line")}</span>
+          <span class="copyrow"><textarea readonly rows="3" data-gift-line>{done.gift.line}</textarea><button class="btn ghost small" onclick={() => copy("line", done.gift.line)}>{copied === "line" ? t("gift.copied") : t("gift.copy")}</button></span>
+        </label>
+        <button class="btn ghost" onclick={() => (done = null)}>Back to the shop</button>
+      </div>
+    {:else if done}
       <div class="done card" data-done>
         <p class="eyebrow">Done</p>
         <h2 class="h2">It's yours.</h2>
@@ -232,6 +276,19 @@
               <label class="field"><span class="mono">Promo code</span><input type="text" bind:value={promo} placeholder="Optional" autocomplete="off" spellcheck="false" /></label>
             </div>
             {#if quote?.promo}<p class="hint" role="status">{quote.promo.ok ? "✓ " : ""}{quote.promo.reason}</p>{/if}
+            <div class="gift" data-gift>
+              <label class="mod"><input type="checkbox" bind:checked={asGift} disabled={plan !== "perpetual"} data-gift-toggle /> 🎁 {t("gift.toggle")}</label>
+              {#if plan !== "perpetual"}
+                <p class="fine">{t("gift.onlyOnce")}</p>
+              {:else if asGift}
+                <p class="fine">{t("gift.about")}</p>
+                <div class="row">
+                  <label class="field"><span class="mono">{t("gift.for")}</span><input type="email" bind:value={giftFor} placeholder="name@example.com" autocomplete="off" data-gift-for /></label>
+                  <label class="field"><span class="mono">{t("gift.note")}</span><input type="text" bind:value={giftNote} maxlength="200" data-gift-note /></label>
+                </div>
+                <p class="fine">{t("gift.forHint")}</p>
+              {/if}
+            </div>
             <p class="fine">A regional price needs a card issued in, and a billing address in, a country priced the same or lower; otherwise the checkout tells you the price you can show, and asks first. Students and teachers pay half with a school e-mail address — whichever is larger; discounts never stack.</p>
 
             <div class="ticket mono" aria-live="polite" data-ticket>
@@ -257,7 +314,7 @@
             {:else}
               <p class="dim">Signed in as <b>{session.user.name}</b>. The licence goes to this account.</p>
               {#if quote}
-                <Checkout {edition} modules={chosenModules} {plan} {country} {promo} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
+                <Checkout {edition} modules={chosenModules} {plan} {country} {promo} {gift} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
               {/if}
             {/if}
           {/if}
@@ -487,6 +544,24 @@
   }
   .summary,
   .pay,
+  .gift {
+    margin: 14px 0 4px;
+    padding: 12px 14px;
+    border: 1px dashed color-mix(in srgb, var(--accent) 45%, var(--line));
+    border-radius: 12px;
+  }
+  .copyrow {
+    display: flex;
+    gap: 8px;
+    align-items: start;
+  }
+  .copyrow input,
+  .copyrow textarea {
+    flex: 1;
+    min-width: 0;
+    font: 12px/1.4 var(--mono);
+    word-break: break-all;
+  }
   .done {
     padding: 26px;
   }

@@ -93,6 +93,106 @@
     return "code,bound_to\n" + minted.map((m) => `${m.code},${m.boundTo ?? ""}`).join("\n");
   }
 
+  // --- How the shop takes money (worker/payments.ts) ------------------------------------
+  const PAY_FIELDS: { key: string; label: string; secret: boolean; hint: string; area?: boolean }[] = [
+    { key: "STRIPE_PUBLISHABLE_KEY", label: "Stripe publishable key", secret: false, hint: "pk_live_… (Stripe → Developers → API keys)" },
+    { key: "STRIPE_SECRET_KEY", label: "Stripe secret key", secret: true, hint: "sk_live_… or a restricted rk_live_…" },
+    { key: "STRIPE_WEBHOOK_SECRET", label: "Stripe webhook signing secret", secret: true, hint: "whsec_… of the endpoint /api/webhooks/stripe" },
+    { key: "PAYPAL_CLIENT_ID", label: "PayPal client id", secret: false, hint: "PayPal developer → Apps & Credentials" },
+    { key: "PAYPAL_CLIENT_SECRET", label: "PayPal secret", secret: true, hint: "" },
+    { key: "PAYPAL_ENV", label: "PayPal mode", secret: false, hint: "live or sandbox" },
+    { key: "BANK_TRANSFER_DETAILS", label: "Bank transfer details", secret: false, hint: "Shown to a buyer who pays by transfer: account holder, IBAN, BIC", area: true },
+    { key: "DEMO_MODE", label: "Demo checkout", secret: false, hint: "auto (on until a real way to pay is set), on, or off" },
+  ];
+  let payView = $state<any>(null);
+  let payDraft = $state<Record<string, string>>({});
+  let payMsg = $state<string | null>(null);
+  let payCheck = $state<any>(null);
+  async function loadPayments() {
+    payView = await api("/api/admin/payments").catch((e) => ((payMsg = (e as Error).message), null));
+  }
+  async function savePayments(e: SubmitEvent) {
+    e.preventDefault();
+    payMsg = null;
+    const values = Object.fromEntries(Object.entries(payDraft).filter(([, v]) => v !== undefined && v !== ""));
+    try {
+      payView = await api("/api/admin/payments", { method: "PUT", json: { values, wallets: payView?.wallets } });
+      payDraft = {};
+      payMsg = "Saved. The shop uses it within half a minute.";
+    } catch (err) {
+      payMsg = (err as Error).message;
+    }
+  }
+  async function clearPayment(key: string) {
+    payMsg = null;
+    try {
+      payView = await api("/api/admin/payments", { method: "PUT", json: { values: { [key]: "" } } });
+      payMsg = `${key} cleared here; the Worker secret of that name, if any, is used again.`;
+    } catch (err) {
+      payMsg = (err as Error).message;
+    }
+  }
+  async function checkPayments() {
+    payCheck = null;
+    try {
+      payCheck = await post("/api/admin/payments/check");
+    } catch (err) {
+      payMsg = (err as Error).message;
+    }
+  }
+  async function registerApplePay() {
+    payMsg = null;
+    try {
+      const r = await post("/api/admin/payments/apple-pay");
+      payMsg = `Registered ${r.domain} with Stripe: Apple Pay ${r.applePay ?? "?"}, Google Pay ${r.googlePay ?? "?"}.`;
+    } catch (err) {
+      payMsg = (err as Error).message;
+    }
+  }
+
+  // --- A licence, granted straight into an account (checkout.grant) --------------------
+  let gWho = $state("");
+  let gEdition = $state<Edition>("pro");
+  let gModules = $state<string[]>([]);
+  let gPlan = $state<"perpetual" | "yearly" | "monthly" | "trial">("perpetual");
+  let gMonths = $state(12);
+  let gWhy = $state("");
+  let granted = $state<{ licence: { id: string; edition: string; plan: string; expires: number | null }; order: { name?: string; email?: string } } | null>(null);
+  let grantError = $state<string | null>(null);
+
+  async function grantLicence(e: SubmitEvent) {
+    e.preventDefault();
+    grantError = null;
+    granted = null;
+    try {
+      granted = await post("/api/admin/licences", { who: gWho, edition: gEdition, modules: gModules, plan: gPlan, months: gMonths, why: gWhy || null });
+    } catch (err) {
+      grantError = (err as Error).message;
+    }
+  }
+
+  // --- The crew's password (auth.setAdminPassword) -------------------------------------
+  let pwState = $state<{ set: boolean; at: number | null } | null>(null);
+  let pw1 = $state("");
+  let pw2 = $state("");
+  let pwMsg = $state<string | null>(null);
+  async function loadPassword() {
+    pwState = await api("/api/admin/password").catch(() => null);
+  }
+  async function setPassword(e: SubmitEvent) {
+    e.preventDefault();
+    pwMsg = null;
+    if (pw1 !== pw2) return void (pwMsg = "The two do not match.");
+    try {
+      await api("/api/admin/password", { method: "PUT", json: { password: pw1 } });
+      pw1 = pw2 = "";
+      pwMsg = "Saved. Use it to come in here from now on; the crew token still works.";
+      await loadPassword();
+    } catch (err) {
+      pwMsg = (err as Error).message;
+    }
+  }
+
   // --- Signed vouchers (worker/voucher.ts) ----------------------------------------
   let vEdition = $state<Edition>("full");
   let vModules = $state<string[]>([]);
@@ -288,9 +388,9 @@
 </script>
 
 {#if !session.admin}
-  <p>Backstage is for the crew. Sign in with an address on the crew list, or use the crew's token.</p>
+  <p>Backstage is for the crew. Sign in with an address on the crew list, or with the crew's password or token.</p>
   <form class="inline" onsubmit={ownerLogin}>
-    <input type="password" bind:value={token} placeholder="Crew token" aria-label="Crew token" autocomplete="current-password" />
+    <input type="password" bind:value={token} placeholder="Crew password or token" aria-label="Crew password or token" autocomplete="current-password" data-crew-password />
     <button class="btn primary">Come in</button>
   </form>
   {#if error}<p class="notice">{error}</p>{/if}
@@ -435,6 +535,82 @@
       </div>
       <p class="small muted">Withdrawing stops a voucher at the shop; a gift for anybody that djmanzo already wears offline stays worn.</p>
     {/if}
+  </details>
+
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPayments()} data-payments>
+    <summary>💳 Payments</summary>
+    <p class="small muted">How the shop takes money. The recommended setup: one <b>Stripe</b> account (Austria, sole trader) paying out to your Wise EUR IBAN, whose card form takes cards, Apple Pay and Google Pay — and PayPal and EPS once you turn them on in Stripe → Settings → Payment methods. PayPal on its own is an alternative. Keys set here are kept encrypted and win over the Worker secrets of the same name; empty a field to fall back to the secret. SETUP.md, "Payments", walks through it.</p>
+    {#if payView}
+      <p data-pay-mode>
+        Card form: <b>{payView.mode.stripe ?? "off"}</b>{#if payView.mode.stripe && !payView.mode.stripeWebhook} <span class="notice">— add the webhook secret, or a payment the browser never reports is lost</span>{/if} ·
+        PayPal: <b>{payView.mode.paypal ?? "off"}</b> · Bank transfer: <b>{payView.mode.transfer ? "on" : "off"}</b>
+      </p>
+      {#if payView.unreadable}<p class="notice">The kept settings were encrypted under a secret that has since changed; set the keys again.</p>{/if}
+      <form onsubmit={savePayments} class="grid">
+        {#each PAY_FIELDS as f (f.key)}
+          <label class="field">
+            <span>{f.label} {#if payView.fields[f.key]?.set}<span class="muted">— {payView.fields[f.key].shown} ({payView.fields[f.key].from}){#if payView.fields[f.key].from === "backstage"} <button type="button" class="btn quiet" onclick={() => clearPayment(f.key)}>clear</button>{/if}</span>{/if}</span>
+            {#if f.area}
+              <textarea bind:value={payDraft[f.key]} placeholder={f.hint} rows="3"></textarea>
+            {:else}
+              <input type={f.secret ? "password" : "text"} bind:value={payDraft[f.key]} placeholder={payView.fields[f.key]?.set ? "leave empty to keep it" : f.hint} autocomplete="off" spellcheck="false" data-pay-field={f.key} />
+            {/if}
+          </label>
+        {/each}
+        <fieldset><legend>In the card form</legend>
+          <label class="mod"><input type="checkbox" bind:checked={payView.wallets.applePay} /> Apple Pay</label>
+          <label class="mod"><input type="checkbox" bind:checked={payView.wallets.googlePay} /> Google Pay</label>
+        </fieldset>
+        <button class="btn primary">Save</button>
+      </form>
+      <div class="row">
+        <button class="btn" onclick={checkPayments} data-pay-check>Check the connections</button>
+        <button class="btn" onclick={registerApplePay}>Register this domain for Apple Pay and Google Pay</button>
+      </div>
+      {#if payCheck}
+        <ul class="small" data-pay-checked>
+          {#if payCheck.stripe}<li>Stripe: {payCheck.stripe.ok ? `connected (${payCheck.stripe.country ?? "?"}, ${payCheck.stripe.currency ?? "?"}); charges ${payCheck.stripe.charges ? "on" : "not yet on"}, payouts ${payCheck.stripe.payouts ? `on, to ${payCheck.stripe.payoutTo ?? "your bank"}` : "not yet on"}; this domain ${payCheck.stripe.applePayDomain ? `registered (Apple Pay ${payCheck.stripe.applePayDomain.applePay})` : "not registered for Apple Pay"}` : payCheck.stripe.said}</li>{/if}
+          {#if payCheck.paypal}<li>PayPal: {payCheck.paypal.ok ? `connected (${payCheck.paypal.mode})` : payCheck.paypal.said}</li>{/if}
+          {#if !payCheck.stripe && !payCheck.paypal}<li>Nothing to check: no keys are set.</li>{/if}
+        </ul>
+      {/if}
+    {/if}
+    {#if payMsg}<p class="notice" data-pay-msg>{payMsg}</p>{/if}
+  </details>
+
+  <details class="case" data-grant>
+    <summary>🔑 Grant a licence</summary>
+    <p class="small muted">Straight into an account, with nothing to pay or redeem: for a friend, a tester, a refund made good. Name the account by its e-mail address, its id, or a sign-in (github:1234567); they need to have signed in on the site once. djmanzo picks it up at the next sign-in.</p>
+    <form onsubmit={grantLicence} class="grid">
+      <label class="field"><span>Account</span><input type="text" bind:value={gWho} placeholder="dj@example.org" required data-grant-who /></label>
+      <div class="two">
+        <label class="field"><span>Edition</span><select bind:value={gEdition} data-grant-edition>{#each EDITIONS.filter((e) => e !== "hobbyist") as e (e)}<option value={e}>{e}</option>{/each}</select></label>
+        <label class="field"><span>How</span><select bind:value={gPlan} data-grant-plan><option value="perpetual">bought once, to keep</option><option value="yearly">for a number of months (yearly)</option><option value="monthly">for a number of months (monthly)</option><option value="trial">as a 7-day trial</option></select></label>
+      </div>
+      {#if gEdition === "custom"}
+        <fieldset><legend>Modules</legend><div class="chips">{#each MODULES as m (m)}<button type="button" class="chip" aria-pressed={gModules.includes(m)} onclick={() => (gModules = toggle(gModules, m))}>{m}</button>{/each}</div></fieldset>
+      {/if}
+      {#if gPlan === "yearly" || gPlan === "monthly"}
+        <label class="field"><span>Months</span><input type="number" min="1" max="120" bind:value={gMonths} /></label>
+      {/if}
+      <label class="field"><span>Why (kept with the order)</span><input type="text" maxlength="280" bind:value={gWhy} placeholder="Beta tester" /></label>
+      <button class="btn primary">Grant it</button>
+    </form>
+    {#if granted}<p class="notice" data-granted>Granted: {granted.licence.edition}, {granted.licence.plan}{granted.licence.expires ? ` until ${new Date(granted.licence.expires).toISOString().slice(0, 10)}` : ", for good"}, to {granted.order.name ?? granted.order.email ?? gWho}.</p>{/if}
+    {#if grantError}<p class="notice">{grantError}</p>{/if}
+  </details>
+
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPassword()} data-password>
+    <summary>🔒 The crew's password</summary>
+    <p class="small muted">There is no default password. {pwState?.set ? `One is set (since ${new Date(pwState.at ?? 0).toISOString().slice(0, 10)}); setting another replaces it.` : "None is set yet: until one is, Backstage opens with the ADMIN_TOKEN secret or an address on ADMIN_EMAILS."} It is kept only as a salted hash. The ADMIN_TOKEN secret always opens Backstage too, should the password be forgotten.</p>
+    <form onsubmit={setPassword} class="grid">
+      <div class="two">
+        <label class="field"><span>New password (at least 12 characters)</span><input type="password" minlength="12" bind:value={pw1} autocomplete="new-password" required data-pw-new /></label>
+        <label class="field"><span>Again</span><input type="password" minlength="12" bind:value={pw2} autocomplete="new-password" required data-pw-again /></label>
+      </div>
+      <button class="btn primary">{pwState?.set ? "Change the password" : "Set the password"}</button>
+    </form>
+    {#if pwMsg}<p class="notice" data-pw-msg>{pwMsg}</p>{/if}
   </details>
 
   <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadWishes()}>

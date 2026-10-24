@@ -108,7 +108,7 @@ export interface Order {
   promo?: string | null;
   /** The signed voucher that paid for it, or took money off it (`worker/voucher.ts`). */
   voucher?: string | null;
-  provider: "stripe" | "paypal" | "transfer" | "demo" | "free" | "voucher" | "trial";
+  provider: "stripe" | "paypal" | "transfer" | "demo" | "free" | "voucher" | "trial" | "grant";
   providerRef?: string | null;
   status: "pending" | "paid" | "failed" | "refunded" | "cancelled";
   /** A PayPal or prepaid plan does not renew; a Stripe subscription does. */
@@ -118,6 +118,14 @@ export interface Order {
   paidAt?: number;
   email?: string | null;
   name?: string | null;
+  /**
+   * Bought as a gift: paying for it mints a signed gift voucher for the
+   * edition (`worker/voucher.ts`) instead of a licence for the buyer, held to
+   * `for` when the buyer named the person, with the buyer's note.
+   */
+  gift?: { for: string[]; note: string | null; voucher?: string | null } | null;
+  /** Granted by the crew in Backstage: who, and why. */
+  granted?: { by: string; why: string | null } | null;
 }
 
 export interface Licence {

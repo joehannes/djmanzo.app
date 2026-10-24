@@ -23,11 +23,13 @@
     promo: string;
     /** A signed discount voucher's line, brought from /redeem. */
     voucher?: string;
+    /** Bought for someone else: a gift voucher instead of a licence. */
+    gift?: { for: string | null; note: string | null } | null;
     total: number;
     display: string;
-    ondone: (r: { licence: { id: string; edition: string; modules?: string[]; plan: string; expires: number | null; demo?: boolean } }) => void;
+    ondone: (r: { licence?: { id: string; edition: string; modules?: string[]; plan: string; expires: number | null; demo?: boolean }; gift?: { id: string; line: string; edition: string; rehearsal?: boolean } }) => void;
   }
-  let { edition, modules, plan, country, promo, voucher = "", total, display, ondone }: Props = $props();
+  let { edition, modules, plan, country, promo, voucher = "", gift = null, total, display, ondone }: Props = $props();
 
   type Method = "card" | "paypal" | "transfer" | "demo";
   const pay = $derived(catalog.data?.pay);
@@ -49,7 +51,7 @@
   let demoCard = $state(untrack(() => country));
   let demoBilling = $state(untrack(() => country));
 
-  const input = $derived({ edition, modules, plan, country, promo: promo || null, voucher: voucher || null });
+  const input = $derived({ edition, modules, plan, country, promo: promo || null, voucher: voucher || null, gift });
 
   function handle(e: unknown) {
     if (e instanceof ApiError && e.status === 409 && e.data.needsConfirm) {
@@ -131,7 +133,9 @@
           paymentMethodCreation: "manual",
           appearance: { theme: document.documentElement.dataset.day === "1" ? "stripe" : "night" },
         });
-        elements.create("payment").mount(cardHost);
+        // The wallets the crew allowed in Backstage; the rest of the methods are Stripe's dashboard's to turn on.
+        const w = pay.stripe!.wallets ?? { applePay: true, googlePay: true };
+        elements.create("payment", { wallets: { applePay: w.applePay ? "auto" : "never", googlePay: w.googlePay ? "auto" : "never" } }).mount(cardHost);
         elements.create("address", { mode: "billing", defaultValues: { address: { country } } }).mount(addressHost);
       } catch (e) {
         error = (e as Error).message;

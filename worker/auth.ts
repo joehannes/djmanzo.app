@@ -24,7 +24,7 @@
 
 import type { AppEnv } from "./env";
 import { grant, type AppLogin } from "./applicence";
-import { cookie, cookies, fail, randomId, same, b64url, unb64url, text } from "./http";
+import { clientIp, cookie, cookies, fail, randomId, same, b64url, unb64url, text } from "./http";
 import { get, put, type Session, type User } from "./store";
 
 export const SESSION_DAYS = 30;
@@ -534,9 +534,68 @@ export async function adminRequired(req: Request, env: AppEnv): Promise<User | {
   return user ?? { id: "token", name: "Owner" };
 }
 
-/** The owner's way in before any provider is set up: the admin token, exchanged for a session. */
+// --- The crew's password --------------------------------------------------------
+//
+// There is no default password. Until the owner sets one in Backstage, the
+// way in is the ADMIN_TOKEN secret or an account in ADMIN_EMAILS. A set
+// password is kept only as a PBKDF2 hash with its own salt (`admin:password`
+// in KV); ADMIN_TOKEN always works too, as the key under the doormat that
+// opens Backstage when the password is forgotten.
+
+/** The most PBKDF2 rounds a Worker will run. */
+export const PASSWORD_ROUNDS = 100_000;
+export const PASSWORD_MIN = 12;
+
+interface PasswordHash {
+  salt: string;
+  hash: string;
+  rounds: number;
+  at: number;
+  by: string;
+}
+
+async function pbkdf2(password: string, salt: Uint8Array, rounds: number): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: rounds }, key, 256);
+  return b64url(new Uint8Array(bits));
+}
+
+/** Set (or change) the crew's password. */
+export async function setAdminPassword(env: AppEnv, password: string, by: string): Promise<{ ok: true; at: number }> {
+  const pw = String(password ?? "");
+  if (pw.length < PASSWORD_MIN) fail(400, `A password of at least ${PASSWORD_MIN} characters.`);
+  if (pw.length > 256) fail(400, "That password is longer than anyone would type.");
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const record: PasswordHash = { salt: b64url(salt), hash: await pbkdf2(pw, salt, PASSWORD_ROUNDS), rounds: PASSWORD_ROUNDS, at: Date.now(), by };
+  await env.KV.put("admin:password", JSON.stringify(record));
+  return { ok: true, at: record.at };
+}
+
+/** Whether the crew's password is set, and when. */
+export async function adminPasswordSet(env: AppEnv): Promise<{ set: boolean; at: number | null }> {
+  const raw = await env.KV.get("admin:password");
+  const r = raw ? (JSON.parse(raw) as PasswordHash) : null;
+  return { set: !!r, at: r?.at ?? null };
+}
+
+async function passwordMatches(env: AppEnv, password: string): Promise<boolean> {
+  const raw = await env.KV.get("admin:password");
+  if (!raw || !password) return false;
+  const r = JSON.parse(raw) as PasswordHash;
+  return same(await pbkdf2(password, unb64url(r.salt), r.rounds), r.hash);
+}
+
+/** The owner's way in before any provider is set up: the admin token or the crew's password, exchanged for a session. */
 export async function ownerSignIn(req: Request, env: AppEnv, token: string): Promise<Response> {
-  if (!env.ADMIN_TOKEN || !(await same(token, env.ADMIN_TOKEN))) fail(403, "That is not the crew's token.");
+  // Ten wrong tries a quarter of an hour from one address: enough for a typo, not for guessing.
+  const misses = `owner-miss:${clientIp(req)}:${Math.floor(Date.now() / 900_000)}`;
+  const missed = Number((await env.KV.get(misses)) || "0");
+  if (missed >= 10) fail(429, "Too many wrong tries from here. Wait a quarter of an hour.");
+  const byToken = !!env.ADMIN_TOKEN && (await same(token, env.ADMIN_TOKEN));
+  if (!byToken && !(await passwordMatches(env, token))) {
+    await env.KV.put(misses, String(missed + 1), { expirationTtl: 1800 });
+    fail(403, "That is not the crew's token or password.");
+  }
   const user = await findOrCreate(env, "owner", { sub: "owner", email: null, verified: false, name: "Owner", avatar: null }, { owner: true });
   const res = await signedIn(env, user, new URL(req.url).origin + "/#backstage");
   return new Response(JSON.stringify({ ok: true }), { headers: { "content-type": "application/json", "set-cookie": res.headers.get("set-cookie")! } });
