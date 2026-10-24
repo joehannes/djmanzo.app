@@ -19,7 +19,20 @@ set in the dashboard survives a deploy.
 | Cloudflare account id | CI secret `CLOUDFLARE_ACCOUNT_ID` | Only for deploying from CI; `wrangler login` needs none |
 | Read access to djmanzo for `app/` | a deploy key or token wherever `git submodule update` runs | djmanzo is private. The site **builds without** `app/`; only the tests and `npm run facts:drift` read it |
 
-Deploy with `npm run deploy`. Database changes: `npx wrangler d1 migrations apply djmanzo --remote`.
+**From this repository, by itself:** `.github/workflows/deploy.yml` builds and
+deploys on every push to `main` (and by hand, Actions → Deploy → Run workflow),
+database migrations first. It needs the repository secrets
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; `APP_READ_TOKEN` (read
+access to joehannes/djmanzo) adds the unit tests before deploying.
+
+**If the djmanzo Worker is connected to Git in the Cloudflare dashboard**
+(Workers & Pages → djmanzo → Settings → Builds), it still points at
+joehannes/djmanzo with `website/` as its root, which no longer exists:
+disconnect it, or point it at joehannes/djmanzo.app with the root `/` and
+build command `npm run build` — and then leave the workflow's secrets unset,
+so the site is deployed one way only.
+
+By hand: `npm run deploy`. Database changes: `npx wrangler d1 migrations apply djmanzo --remote`.
 
 ## 2. Signing in
 
