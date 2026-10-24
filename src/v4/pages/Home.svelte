@@ -15,6 +15,7 @@
   import Live from "../sections/Live.svelte";
   import Faq from "../sections/Faq.svelte";
   import Closing from "../sections/Closing.svelte";
+  import RoadAhead from "../sections/RoadAhead.svelte";
   import Highlights from "../sections/Highlights.svelte";
   import Keys from "../sections/Keys.svelte";
   import Karaoke from "../sections/Karaoke.svelte";
@@ -92,6 +93,7 @@
 
   <Live />
   <Faq />
+  <RoadAhead compact />
   <Closing />
 </div>
 

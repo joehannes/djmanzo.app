@@ -225,12 +225,12 @@ test("signing in stays on this site, and every page knows who is signed in", asy
   await expect(page).toHaveURL(/\/account$/);
   await page.getByPlaceholder("Your DJ name").fill("Night Owl");
   await page.getByRole("button", { name: "Sign in for the demo" }).click();
-  await expect(page.locator("[data-account-link]")).toContainText("Night Owl");
+  await expect(page.locator("[data-account-link]")).toHaveAttribute("aria-label", /Night Owl/);
 
   // Every page, loaded afresh, knows.
   for (const path of ["/", "/pricing", "/outboard", "/talkback", "/wishes"]) {
     await page.goto(path);
-    await expect(page.locator("[data-account-link]"), path).toContainText("Night Owl");
+    await expect(page.locator("[data-account-link]"), path).toHaveAttribute("data-account-name", "Night Owl");
   }
   // Back from a provider: the page it left from says so, and the address is clean again.
   await page.goto("/pricing?signedin=github");
@@ -238,6 +238,32 @@ test("signing in stays on this site, and every page knows who is signed in", asy
   await expect(page).toHaveURL(/\/pricing$/);
   expect(visited.filter((p) => p.startsWith("/island"))).toEqual([]);
   expect(errs).toEqual([]);
+});
+
+test("signed in with a very long name, the bar still fits the screen: the avatar alone, the name in its label", async ({ page }) => {
+  const name = "DJ Maximiliano Alessandro de la Cruz Bartholomew-Featherstonehaugh the Third";
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/account");
+  await page.getByPlaceholder("Your DJ name").fill(name);
+  await page.getByRole("button", { name: "Sign in for the demo" }).click();
+  const link = page.locator("[data-account-link]");
+  // The server keeps a name to 48 characters; the label carries what it kept.
+  await expect(link).toHaveAttribute("aria-label", new RegExp(name.slice(0, 40)));
+  await expect(link).not.toContainText("Maximiliano");
+  for (const width of [1600, 1366, 1280, 1200, 1100, 1081, 900, 640, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/pricing");
+    await expect(link).toBeVisible();
+    // Every visible thing in the bar ends inside the screen: a button cut off at the edge counts as not fitting.
+    const past = await page.evaluate(() =>
+      [...document.querySelectorAll("header.bar .inner > * , header.bar .right > *")]
+        .filter((e) => (e as HTMLElement).offsetParent !== null && getComputedStyle(e).position !== "fixed")
+        .map((e) => ({ what: (e.textContent ?? "").trim().slice(0, 24) || e.className, right: Math.ceil(e.getBoundingClientRect().right) }))
+        .filter((e) => e.right > innerWidth),
+    );
+    expect(past, `${width}px: the bar fits`).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), `${width}px: nothing goes sideways`).toBeLessThanOrEqual(0);
+  }
 });
 
 test("a panel's screenshot opens close up, every spot on it, and the whole window is a press away", async ({ page }) => {

@@ -31,12 +31,12 @@
   ];
 </script>
 
-<section class="section karaoke" id="karaoke" aria-labelledby="karaoke-title">
+<section class="section karaoke" id="karaoke" aria-labelledby="karaoke-title" data-mic-on-arrival>
   <div class="wrap">
     <div class="intro">
       <div>
         <p class="eyebrow" data-reveal>Karaoke</p>
-        <h2 class="h2" id="karaoke-title" data-reveal>A whole karaoke night,<br />in the same download.</h2>
+        <h2 class="h2" id="karaoke-title" data-split>A whole karaoke night,<br />in the same download.</h2>
       </div>
       <p class="lead" data-reveal>
         The queue and the singers' screen, the voice taken out of any record in your collection — or left in, quietly, as a guide — a microphone and its effects for every singer, phones that put names down, a quiz, scores, and a song made for the guest who sang. The Karaoke edition carries all of it; so does Full.

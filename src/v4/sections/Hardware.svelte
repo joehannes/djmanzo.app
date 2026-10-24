@@ -18,7 +18,7 @@
     <div class="top">
       <div>
         <p class="eyebrow" data-reveal>Hardware</p>
-        <h2 class="h2" id="hw-title" data-reveal>Plug in what you own.</h2>
+        <h2 class="h2" id="hw-title" data-split>Plug in what you own.</h2>
         <p class="lead" data-reveal>Mappings written from each maker's own MIDI table ship with djmanzo. Anything else, map yourself: press a control, choose what it does, save. Your laptop's keyboard is a controller too.</p>
       </div>
       <div class="pic" data-reveal aria-hidden="true"><div class="img" data-parallax="0.2" style:background-image={`url(${art("gear")})`}></div></div>

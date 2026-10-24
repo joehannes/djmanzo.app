@@ -47,7 +47,7 @@
 <section class="section tour" id="tour" aria-labelledby="tour-title">
   <div class="wrap">
     <p class="eyebrow" data-reveal>The application</p>
-    <h2 class="h2" id="tour-title" data-reveal>Everything a night needs, on one screen at a time.</h2>
+    <h2 class="h2" id="tour-title" data-split>Everything a night needs, on one screen at a time.</h2>
     <p class="lead" data-reveal>Real screenshots of djmanzo, shown in {shot?.theme ?? "its"} theme — the one closest to your look. The numbers point out what is on each screen; press the picture to see it full size.</p>
 
     <div class="tabs" role="tablist" aria-label="Screens" tabindex="-1" onkeydown={keys} data-reveal>

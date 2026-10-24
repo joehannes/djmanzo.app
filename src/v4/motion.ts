@@ -7,8 +7,10 @@
 
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { micTap, needle, scratch } from "./sfx.svelte";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
 export { gsap, ScrollTrigger };
 
@@ -19,8 +21,29 @@ export const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matc
  * `[data-parallax="0.2"]` ones against the scroll by that much of their size.
  */
 export function animate(root: HTMLElement): () => void {
-  if (reduced()) return () => {};
+  // The booth's small sounds answer the visitor's own presses, motion or not.
+  const press = (e: Event) => {
+    const t = (e.target as HTMLElement | null)?.closest<HTMLElement>("a.btn.primary, button.btn.primary, [data-file], [data-sound]");
+    if (!t) return;
+    const kind = t.dataset.sound;
+    if (kind === "scratch") scratch();
+    else if (kind === "mic") micTap();
+    else needle();
+  };
+  root.addEventListener("click", press);
+  if (reduced()) return () => root.removeEventListener("click", press);
+  const splits: SplitText[] = [];
   const ctx = gsap.context(() => {
+    // Headings rise word by word, like faders pushed up in turn.
+    for (const h of root.querySelectorAll<HTMLElement>("[data-split]")) {
+      const split = new SplitText(h, { type: "words", wordsClass: "split-word" });
+      splits.push(split);
+      gsap.from(split.words, { yPercent: 110, opacity: 0, duration: 0.7, ease: "back.out(1.6)", stagger: 0.06, scrollTrigger: { trigger: h, start: "top 88%", once: true } });
+    }
+    // A karaoke section says hello the way a host does: tapping the microphone.
+    for (const k of root.querySelectorAll<HTMLElement>("[data-mic-on-arrival]")) {
+      ScrollTrigger.create({ trigger: k, start: "top 70%", once: true, onEnter: () => micTap() });
+    }
     const reveal = gsap.utils.toArray<HTMLElement>(root.querySelectorAll("[data-reveal]"));
     gsap.set(reveal, { opacity: 0, y: 26 });
     ScrollTrigger.batch(reveal, {
@@ -41,7 +64,9 @@ export function animate(root: HTMLElement): () => void {
   const refresh = () => ScrollTrigger.refresh();
   addEventListener("load", refresh, { once: true });
   return () => {
+    root.removeEventListener("click", press);
     removeEventListener("load", refresh);
+    for (const sp of splits) sp.revert();
     ctx.revert();
   };
 }

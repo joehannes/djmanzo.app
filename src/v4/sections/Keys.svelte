@@ -83,7 +83,7 @@
   <div class="wrap grid">
     <div class="copy">
       <p class="eyebrow" data-reveal>Your hands</p>
-      <h2 class="h2" id="keys-title" data-reveal>Keys that read as words.</h2>
+      <h2 class="h2" id="keys-title" data-split>Keys that read as words.</h2>
       <p class="lead" data-reveal>
         Press <kbd>Space</kbd> and djmanzo shows every key. <kbd>d</kbd> <kbd>1</kbd> <kbd>p</kbd> is <b>d</b>eck <b>1</b> <b>p</b>lay; <kbd>o</kbd> <kbd>i</kbd> opens the s<b>i</b>ngers. Nothing to memorise first: the guide is there until your fingers know the way.
       </p>

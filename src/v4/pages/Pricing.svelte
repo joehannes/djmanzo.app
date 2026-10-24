@@ -181,7 +181,7 @@
   </section>
 
   <section class="wrap matrix-wrap" aria-labelledby="matrix-title">
-    <h2 class="h2" id="matrix-title" data-reveal>What each edition carries</h2>
+    <h2 class="h2" id="matrix-title" data-split>What each edition carries</h2>
     <p class="lead" data-reveal>Feature by feature, so you can see what you get — the free Hobbyist edition included. Every edition has the foundation: two decks, the mixer, the library, cues, loops and pads, the effects, the sampler, recording, the keyboard and a controller, the launcher and the mnemonic keys. What an edition lacks shows in djmanzo as a quiet card naming the edition that has it.</p>
     <div data-reveal><EditionMatrix chosen={edition} onpick={(e) => pick(e)} /></div>
   </section>
@@ -286,7 +286,7 @@
   </section>
 
   <section class="wrap market" aria-labelledby="mk-title">
-    <h2 class="h2" id="mk-title" data-reveal>What the others charge</h2>
+    <h2 class="h2" id="mk-title" data-split>What the others charge</h2>
     <p class="lead" data-reveal>Published prices, in US dollars, each linked to where it came from, so you can compare for yourself.</p>
     <div class="card table" data-reveal>
       <table>

@@ -44,7 +44,7 @@
   <div class="wrap grid">
     <div>
       <p class="eyebrow" data-reveal>Questions</p>
-      <h2 class="h2" id="faq-title" data-reveal>Straight answers.</h2>
+      <h2 class="h2" id="faq-title" data-split>Straight answers.</h2>
       <p class="lead" data-reveal>Something missing? <a href={href("community")}>Ask in the forum</a>, or ask the assistant at the bottom of the page.</p>
     </div>
     <div class="groups">

@@ -15,13 +15,16 @@
   import { LOOKS, svgUri } from "./looks";
   import { href, navigate, type Route } from "./router";
   import { RELEASES, downloadLabel, osOf } from "./download";
+  import { restore, setSounds, sounds } from "./sfx.svelte";
+  import OsIcon from "./OsIcon.svelte";
 
   let { route }: { route: Route } = $props();
 
   let solid = $state(false);
   let menu = $state(false);
   let picker = $state(false);
-  const dl = downloadLabel(osOf(navigator.userAgent));
+  const os = osOf(navigator.userAgent);
+  const dl = downloadLabel(os);
   /** The cheapest edition bought once, at the visitor's price. */
   const from = $derived.by(() => {
     const c = catalog.data;
@@ -54,6 +57,7 @@
   }
 
   onMount(() => {
+    restore();
     const scroll = () => (solid = scrollY > 40);
     scroll();
     addEventListener("scroll", scroll, { passive: true });
@@ -86,6 +90,13 @@
     </nav>
 
     <div class="right">
+      <button
+        class="sound-btn"
+        aria-pressed={sounds.on}
+        title={sounds.on ? "Sounds on: the booth's small noises as you go. Press to switch them off." : "Sounds off. Press for the booth's small noises: a needle, a scratch, a cue."}
+        aria-label={sounds.on ? "Switch the site's sounds off" : "Switch the site's sounds on"}
+        onclick={() => setSounds(!sounds.on)}
+        data-sounds>{sounds.on ? "🔊" : "🔈"}</button>
       <div class="skins">
         <button class="skin-btn" aria-haspopup="true" aria-expanded={picker} onclick={() => (picker = !picker)} data-skin-picker>
           <span class="swatch" style:background={`linear-gradient(135deg, ${skin().tokens.accent}, ${skin().tokens.accent2})`}></span>
@@ -109,9 +120,9 @@
         {/if}
       </div>
       {#if session.user}
-        <a class="nav account signed" class:on={route.page === "account"} href={href("account")} title="Your account and licences" data-account-link>
-          {#if session.user.avatar}<img src={session.user.avatar} alt="" width="22" height="22" />{:else}<span class="initial" aria-hidden="true">{session.user.name.slice(0, 1)}</span>{/if}
-          <span class="who">{session.user.name}</span>
+        <!-- The avatar alone, so a long name never pushes the bar past the screen; the name is in the tooltip and the label. -->
+        <a class="nav account signed" class:on={route.page === "account"} href={href("account")} title={`${session.user.name}: your account and licences`} aria-label={`Signed in as ${session.user.name}: your account and licences`} data-account-link data-account-name={session.user.name}>
+          {#if session.user.avatar}<img src={session.user.avatar} alt="" width="28" height="28" />{:else}<span class="initial" aria-hidden="true">{[...session.user.name.trim()][0]?.toUpperCase() ?? "?"}</span>{/if}
         </a>
       {:else}
         <a class="nav account" class:on={route.page === "account"} href={href("account")} data-account-link>Sign in</a>
@@ -119,13 +130,31 @@
       {#if solid && route.page !== "pricing" && from}
         <a class="price mono" href={href("pricing")} data-from>Free · editions from {from}</a>
       {/if}
-      <a class="btn primary small dl" href={RELEASES} title={dl.note} data-download>{dl.label}</a>
+      <!-- A download arrow and the visitor's system, no words: the words are in the label and the tooltip. -->
+      <a class="btn primary small dl" href={RELEASES} title={`${dl.label}. ${dl.note}`} aria-label={dl.label} data-download data-sound="scratch">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6.5 10 12 15.5 17.5 10M4 20h16" /></svg>
+        <OsIcon {os} />
+      </a>
       <button class="burger" aria-label="Menu" aria-expanded={menu} onclick={() => (menu = !menu)}><span></span><span></span></button>
     </div>
   </div>
 </header>
 
 <style>
+  .sound-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 99px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .sound-btn[aria-pressed="true"] {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
   .swatch.tile {
     border: 1px solid var(--line);
   }
@@ -141,10 +170,14 @@
     align-items: center;
     gap: 8px;
   }
+  .account.signed {
+    padding: 3px;
+    border-radius: 50%;
+  }
   .account img,
   .account .initial {
-    width: 22px;
-    height: 22px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     object-fit: cover;
   }
@@ -154,12 +187,6 @@
     background: var(--accent);
     color: var(--on-accent);
     font: 700 12px/1 var(--display);
-  }
-  .account .who {
-    max-width: 12ch;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   .skip {
     position: absolute;
@@ -362,6 +389,18 @@
     background: var(--text);
     border-radius: 2px;
   }
+  .dl {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding-inline: 14px;
+  }
+  /* Between the full menu and the folded one, the bar is tight: the look's name goes, so nothing is cut. */
+  @media (max-width: 1360px) {
+    .skin-name {
+      display: none;
+    }
+  }
   @media (max-width: 1080px) {
     .links {
       display: none;
@@ -392,9 +431,12 @@
   }
   @media (max-width: 640px) {
     .skin-name,
-    .account,
-    .dl {
+    .account:not(.signed),
+    .beta {
       display: none;
+    }
+    .dl {
+      padding-inline: 10px;
     }
     .inner {
       gap: 10px;

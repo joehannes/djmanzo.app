@@ -25,7 +25,7 @@
     </div>
     <div class="words">
       <p class="eyebrow" data-reveal>{eyebrow}</p>
-      <h2 class="h2" id={`${id}-title`} data-reveal>{title}</h2>
+      <h2 class="h2" id={`${id}-title`} data-split>{title}</h2>
       <p class="lead" data-reveal>{lead}</p>
       <FactList ids={facts} />
       {@render children?.()}

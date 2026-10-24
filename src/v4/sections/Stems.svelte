@@ -18,7 +18,7 @@
   <div class="wrap grid">
     <div>
       <p class="eyebrow" data-reveal>Stems</p>
-      <h2 class="h2" id="stems-title" data-reveal>Take any record apart. While it plays.</h2>
+      <h2 class="h2" id="stems-title" data-split>Take any record apart. While it plays.</h2>
       <p class="lead" data-reveal>Switch a part off and on: the groove keeps time and key, because the parts were never apart in the first place. In djmanzo the same happens to your own records, separated ahead of the playhead.</p>
       <FactList ids={["stems", "outputs"]} />
     </div>

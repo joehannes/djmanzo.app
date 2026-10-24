@@ -68,7 +68,7 @@
 <section class="section live" id="community" aria-labelledby="live-title">
   <div class="wrap">
     <p class="eyebrow" data-reveal>Made by DJs</p>
-    <h2 class="h2" id="live-title" data-reveal>A marketplace that costs nothing. A forum that stays on topic.</h2>
+    <h2 class="h2" id="live-title" data-split>A marketplace that costs nothing. A forum that stays on topic.</h2>
     <p class="lead" data-reveal>Themes, skins and visuals made by DJs for djmanzo, free, signed by their makers and checked before they are listed. And a place to ask the question everyone at the gig was thinking.</p>
 
     <div class="cols">

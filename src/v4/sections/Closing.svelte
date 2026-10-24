@@ -27,7 +27,7 @@
   <div class="shade" aria-hidden="true"></div>
   <div class="wrap inner">
     <p class="eyebrow" data-reveal>Download</p>
-    <h2 class="h1" id="dl-title" data-reveal>Your next night<br />starts free.</h2>
+    <h2 class="h1" id="dl-title" data-split>Your next night<br />starts free.</h2>
     <p class="lead" data-reveal>
       One download for every edition. It starts as the Hobbyist edition, free for ever; a licence or a 7-day trial unlocks the rest, in Settings → Licence.
       {#if release?.version}<span class="mono">Newest: v{release.version}.</span>{/if}

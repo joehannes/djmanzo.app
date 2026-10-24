@@ -14,6 +14,9 @@
   import { pick } from "../shots";
   import { href } from "../router";
   import Shot from "../sections/Shot.svelte";
+  import RoadAhead from "../sections/RoadAhead.svelte";
+  import { SOON_WORDS } from "../../../shared/facts";
+  import { tick } from "../sfx.svelte";
 
   const NAMED: Edition[] = ["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full"];
   /** The screen that shows an area best. */
@@ -49,7 +52,7 @@
   <header class="head">
     <div class="wrap">
       <p class="eyebrow">Every feature</p>
-      <h1 class="h1">All of it,<br />and how far it is.</h1>
+      <h1 class="h1" data-split>All of it,<br />and how far it is.</h1>
       <p class="lead">
         {counts.shipped} features ship, {counts.part} are part-built and {counts.planned} are planned — each with what it does, which editions carry it, and what has not yet been proven. djmanzo is in beta: tested in its own repository, against stand-ins where the hardware was missing, and not yet through a real gig.
       </p>
@@ -94,12 +97,18 @@
           <ul class="list">
             {#each g.facts as f (f.id)}
               {@const eds = editionsOf(f)}
-              <li class="fact card" data-fact={f.id}>
+              <li class="fact card" data-fact={f.id} onpointerenter={tick}>
                 <div class="top">
                   <h3>{f.name}</h3>
-                  <span class="status {f.status}">{WORD[f.status]}</span>
+                  {#if f.soon}
+                    <span class="status soon {f.soon.how}" title={f.soon.waits}>{SOON_WORDS[f.soon.how]}</span>
+                  {:else}
+                    <span class="status {f.status}">{WORD[f.status]}</span>
+                  {/if}
                 </div>
                 <p>{f.about}</p>
+                {#if f.scene}<p class="scene"><span aria-hidden="true">🎧</span> {f.scene}</p>{/if}
+                {#if f.soon}<p class="waits small">{f.soon.waits}</p>{/if}
                 {#if f.caveat}<p class="caveat">{f.caveat}</p>{/if}
                 <div class="in">
                   {#if f.status === "planned"}
@@ -118,9 +127,27 @@
       {/each}
     </div>
   </div>
+  <RoadAhead />
 </div>
 
 <style>
+  .scene {
+    margin: 8px 0 0;
+    padding: 8px 10px;
+    border-left: 2px solid var(--accent);
+    background: color-mix(in srgb, var(--accent) 7%, transparent);
+    border-radius: 0 8px 8px 0;
+    font-style: italic;
+    font-size: 14px;
+  }
+  .waits {
+    margin: 6px 0 0;
+    color: var(--dim);
+  }
+  .status.soon.almost {
+    background: var(--accent);
+    color: var(--bg);
+  }
   .head {
     padding: calc(var(--bar) + 64px) 0 28px;
     background:
