@@ -3,15 +3,29 @@
   out: numbered spots on the picture (`hotspots.ts`), a legend that names
   each one, and a press on the picture to see it full screen at its own
   size. A spot is a button: hovered, focused or pressed it says what it
-  marks, and the legend lights the same number.
+  marks, and the legend lights the same number. Where a screen's subject is
+  one panel (`FOCUS`), the picture opens on a close-up of it, enlarged, with
+  its spots where they fall there, and the whole window a press away.
 -->
 <script lang="ts">
   import type { Shot } from "../../signal/shots";
-  import { SPOTS, type Spot } from "../hotspots";
+  import { FOCUS, SPOTS, type Spot } from "../hotspots";
 
   let { shot, legend = true, label = "" }: { shot: Shot; legend?: boolean; label?: string } = $props();
 
   const spots = $derived<Spot[]>(SPOTS[shot.screen] ?? []);
+  let whole = $state(false);
+  const region = $derived(FOCUS[shot.screen] ?? null);
+  const focus = $derived(whole ? null : region);
+  /** Where a spot falls in what is shown: the close-up's own percentages, or null when it is outside it. */
+  const at = (s: Spot) => {
+    if (!focus) return { x: s.x, y: s.y };
+    const x = ((s.x - focus.x) / focus.w) * 100;
+    const y = ((s.y - focus.y) / focus.h) * 100;
+    return x >= 0 && x <= 100 && y >= 0 && y <= 100 ? { x, y } : null;
+  };
+  /** The close-up's own shape, from the picture's pixels. */
+  const ratio = $derived(focus ? (focus.w * shot.width) / (focus.h * shot.height) : shot.width / shot.height);
   let lit = $state<number | null>(null);
   let dialog: HTMLDialogElement | undefined = $state();
 
@@ -22,16 +36,29 @@
 
 <figure class="shot" data-shot-frame={shot.screen}>
   <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="mono">djmanzo{label ? ` — ${label}` : ""}</span></div>
-  <div class="pic">
+  <div class="pic" class:focused={!!focus} style:aspect-ratio={focus ? String(ratio) : null} style:width={focus ? `min(100%, calc(78vh * ${ratio}))` : null} data-focus={focus ? "close" : "whole"}>
     <button class="zoom" onclick={zoom} aria-label="See it full screen: {shot.alt}">
-      <img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} loading="lazy" decoding="async" data-shot={shot.theme} />
+      <img
+        src={shot.src}
+        alt={shot.alt}
+        width={shot.width}
+        height={shot.height}
+        loading="lazy"
+        decoding="async"
+        data-shot={shot.theme}
+        style:width={focus ? `${(100 / focus.w) * 100}%` : null}
+        style:left={focus ? `${(-focus.x / focus.w) * 100}%` : null}
+        style:top={focus ? `${(-focus.y / focus.h) * 100}%` : null}
+      />
     </button>
     {#each spots as s, i (i)}
+      {@const p = at(s)}
+      {#if p}
       <button
         class="spot"
         class:lit={lit === i}
-        style:left={`${s.x}%`}
-        style:top={`${s.y}%`}
+        style:left={`${p.x}%`}
+        style:top={`${p.y}%`}
         onmouseenter={() => (lit = i)}
         onmouseleave={() => (lit = null)}
         onfocus={() => (lit = i)}
@@ -41,11 +68,16 @@
         data-spot>{i + 1}</button
       >
       {#if lit === i}
-        <span class="tip" role="tooltip" style:left={`${Math.min(Math.max(s.x, 14), 86)}%`} style:top={`${s.y}%`} class:below={s.y < 30}><b>{s.title}</b>{s.text}</span>
+        <span class="tip" role="tooltip" style:left={`${Math.min(Math.max(p.x, 14), 86)}%`} style:top={`${p.y}%`} class:below={p.y < 30}><b>{s.title}</b>{s.text}</span>
+      {/if}
       {/if}
     {/each}
   </div>
-  <figcaption class="mono">{shot.shows} · {shot.theme} theme{shot.skin ? `, ${shot.skin} skin` : ""} · <button class="linkish" onclick={zoom}>full size</button></figcaption>
+  <figcaption class="mono">
+    {shot.shows} · {shot.theme} theme{shot.skin ? `, ${shot.skin} skin` : ""} ·
+    {#if region}<button class="linkish" onclick={() => (whole = !whole)} aria-pressed={whole} data-whole>{whole ? "close-up" : "whole window"}</button> ·{/if}
+    <button class="linkish" onclick={zoom}>full size</button>
+  </figcaption>
 </figure>
 
 {#if legend && spots.length}
@@ -100,6 +132,21 @@
   }
   .pic {
     position: relative;
+  }
+  .pic.focused {
+    overflow: hidden;
+    margin: 0 auto;
+    background: var(--raised);
+  }
+  .pic.focused .zoom {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  .pic.focused img {
+    position: absolute;
+    max-width: none;
+    height: auto;
   }
   .zoom {
     display: block;

@@ -93,8 +93,8 @@
     <a href="#till" onclick={(e) => (e.preventDefault(), go("till"))}>Editions</a>
     <a href="/outboard">Market</a>
     <a href="/talkback">Forum</a>
-    <a href="/island/#/muro">Wishlist</a>
-    <a href="/island/#/pase">Sign in</a>
+    <a href="/wishes">Wishlist</a>
+    <a href="/account">Sign in</a>
   </nav>
   {#if sound.source}
     <button class="hush" onclick={() => stopAll()} data-hush>Hush</button>

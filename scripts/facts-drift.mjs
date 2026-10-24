@@ -1,8 +1,10 @@
 // Has the application's documentation changed since the website's facts were
 // last read against it? `shared/facts.ts` names the commit it was checked
 // against; this prints every change to the documents it draws on since then,
-// on this branch and on main, and exits non-zero if there is any. Read the
-// changes, correct `shared/facts.ts`, move the commit forward, then deploy.
+// up to the application's main, and exits non-zero if there is any. The
+// application is `app/`, djmanzo checked out as a submodule; its main is
+// fetched first. Read the changes, correct `shared/facts.ts`, move the commit
+// forward (and `git -C app checkout` it, so the tests read the same), then deploy.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -15,20 +17,14 @@ if (!commit || !sources.length) {
   console.error("shared/facts.ts names no commit or no sources.");
   process.exit(2);
 }
-const git = (...args) => execFileSync("git", args, { cwd: `${here}/..`, encoding: "utf8" }).trim();
+const git = (...args) => execFileSync("git", args, { cwd: `${here}/app`, encoding: "utf8" }).trim();
 let drift = false;
-// This branch since the commit; and main since it last parted from that commit
-// (three dots), so this branch's own edits are not mistaken for main's.
-// When the commit read is main's and not yet merged here, this branch's own documents are not the
-// application's to drift from: only main is compared.
-let ancestor = true;
 try {
-  git("merge-base", "--is-ancestor", commit, "HEAD");
+  git("fetch", "--quiet", "origin", "main");
 } catch {
-  ancestor = false;
-  console.log(`(${commit.slice(0, 9)} is main's, not yet merged into this branch: comparing main only)`);
+  console.log("(could not fetch the application's main: comparing with what app/ already has)");
 }
-const ranges = [...(ancestor ? [["HEAD", `${commit}..HEAD`]] : []), ["origin/main", `${commit}...origin/main`]];
+const ranges = [["origin/main", `${commit}..origin/main`]];
 for (const [target, range] of ranges) {
   let stat;
   try {

@@ -9,6 +9,11 @@ export const LISTED_KINDS = [
   { kind: "theme", name: "Themes", what: "Fourteen colours for a dark room and a light one, every pair you read held to its contrast, worn on one of djmanzo's themes." },
   { kind: "skin", name: "Skins", what: "SVG tiles drawn faintly over a theme: still, drifting or breathing with the bass. A tile can only draw." },
   { kind: "visuals", name: "Visuals", what: "Looks for the projector, layered from djmanzo's own effects and MilkDrop presets." },
+  {
+    kind: "keys",
+    name: "Keyboard sets",
+    what: "Mnemonic keys under Space for one way of working: a karaoke night, a style, a wedding. Worn from the Keys panel, under your own keys, adding to djmanzo's and never taking one of them over.",
+  },
 ] as const;
 
 export type ListedKind = (typeof LISTED_KINDS)[number]["kind"];
@@ -50,8 +55,8 @@ export const DONATION_PLATFORMS = [
   { name: "PayPal.me", hosts: ["paypal.me", "www.paypal.me"], path: /^\/[A-Za-z0-9]{2,40}\/?$/ },
 ] as const;
 
-/** The most donation links a maker shows. */
-export const MOST_LINKS = 3;
+/** The most donation links a maker shows: as many as djmanzo signs into a pack (`dj_app::account::MOST`). */
+export const MOST_LINKS = 6;
 
 /** A link to a maker's own page on an official platform, made plain; anything else is refused. */
 export function donationLink(text: string): { url: string; platform: string } | null {

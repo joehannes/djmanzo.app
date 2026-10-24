@@ -6,6 +6,8 @@
   you posted. Everything the island's pass did, without leaving the site.
 -->
 <script lang="ts">
+  /** Where someone can support djmanzo, as /api/me names them (worker/support.ts). */
+  const SUPPORT_PLATFORM: Record<string, string> = { patreon: "Patreon", github: "GitHub Sponsors", kofi: "Ko-fi", buymeacoffee: "Buy Me a Coffee" };
   import { onMount } from "svelte";
   import { api, post } from "../../lib/api";
   import { session } from "../../lib/session.svelte";
@@ -136,7 +138,8 @@
             <p class="dim">
               {session.user.email ?? "No e-mail address shared"}
               {#if session.user.demo}<span class="tag">demo account</span>{/if}
-              {#if session.user.supporter}<span class="tag gold">Supports djmanzo on Patreon</span>{/if}
+              {#each session.user.supports ?? [] as p (p)}<span class="tag gold" data-supports={p}>Supports djmanzo on {SUPPORT_PLATFORM[p] ?? p}</span>{/each}
+              {#if session.user.githubSponsors}<a class="tag" href={session.user.githubSponsors} rel="noopener">Your GitHub Sponsors page, verified</a>{/if}
             </p>
           </div>
           <button class="btn ghost small out" onclick={signOut} data-signout>Sign out</button>
@@ -248,6 +251,12 @@
             {#if connectable.some((p) => p.id === "patreon")}
               <p class="dim small">Connecting Patreon shows your own Patreon page as verified on your profile and your packs{session.user.supporter ? "" : ", and marks you as a supporter if you support djmanzo there"}.</p>
             {/if}
+            {#if connectable.some((p) => p.id === "github")}
+              <p class="dim small">Connecting GitHub does the same for GitHub Sponsors: your own Sponsors page, verified, and a supporter's mark if you sponsor djmanzo.</p>
+            {/if}
+          {/if}
+          {#if !session.user.demo && !(session.user.supports ?? []).some((p) => p === "kofi" || p === "buymeacoffee")}
+            <p class="dim small" data-support-email>Support djmanzo on Ko-fi or Buy Me a Coffee with the address this account has{session.user.email ? ` (${session.user.email})` : ""}, and this page marks you a supporter by itself.</p>
           {/if}
         </section>
 

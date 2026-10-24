@@ -39,6 +39,12 @@ export interface Secrets {
   PATREON_CLIENT_SECRET: string;
   /** A variable: djmanzo's own Patreon campaign id, so its patrons are marked as supporters. */
   PATREON_CAMPAIGN_ID: string;
+  /** A variable: djmanzo's own account on GitHub Sponsors (a login), so its sponsors who sign in with GitHub are marked as supporters. */
+  GITHUB_SPONSORS_LOGIN: string;
+  /** Ko-fi's webhook verification token (Ko-fi → Settings → API), for /api/webhooks/kofi. */
+  KOFI_VERIFICATION_TOKEN: string;
+  /** Buy Me a Coffee's webhook secret, for /api/webhooks/buymeacoffee. */
+  BUYMEACOFFEE_WEBHOOK_SECRET: string;
   /**
    * A variable: the callback path a provider app was registered with, when it
    * is the one used until 18 October (`/auth/callback`). Unset: `/callback`.

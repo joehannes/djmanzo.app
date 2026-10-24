@@ -1,5 +1,5 @@
 <!--
-  Where people can support you: a few words about yourself and up to three
+  Where people can support you: a few words about yourself and up to six
   pages on the official platforms (Patreon, Ko-fi, Liberapay, GitHub
   Sponsors, Buy Me a Coffee, Open Collective, PayPal.me), shown on your
   profile, your packs and beside your name in the forum. A Patreon page

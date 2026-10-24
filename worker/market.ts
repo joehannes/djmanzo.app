@@ -15,6 +15,7 @@
 
 import { LISTED_KINDS, MOST_LINKS, bayesian, donationLink, type ListedKind } from "../shared/outboard";
 import { PackError, checkArchive, sha256, type Checked } from "./djpack";
+import { placesOf } from "./keyset";
 import type { AppEnv } from "./env";
 import { brake, fail, text } from "./http";
 import { notify } from "./moderation";
@@ -57,7 +58,7 @@ export function packId(name: string, fingerprint: string): string {
 }
 
 /** What a listing shows without opening the pack. */
-function preview(pack: Checked): Record<string, unknown> {
+export function previewOf(pack: Checked): Record<string, unknown> {
   const m = pack.manifest;
   if (m.kind === "theme" && m.theme) return { theme: m.theme.name, base: m.theme.base, dark: m.theme.dark, light: m.theme.light };
   if (m.kind === "skin") {
@@ -65,10 +66,14 @@ function preview(pack: Checked): Record<string, unknown> {
     const tile = skin ? new TextDecoder().decode(pack.files.get(skin.tile)) : "";
     return { skins: m.skins.map((s) => s.name), tile, size: skin?.size, opacity: skin?.opacity };
   }
+  if (m.kind === "keys" && m.keys) {
+    const set = m.keys;
+    return { set: set.name, about: set.about, purpose: set.purpose, edition: set.edition, keys: placesOf(set), support: m.support };
+  }
   return { looks: m.looks.map((l) => l.name), presets: Object.keys(m.files).length };
 }
 
-const blobKey = (id: string, version: string) => `packs/${id}/${encodeURIComponent(version)}.djpack`;
+export const blobKey = (id: string, version: string) => `packs/${id}/${encodeURIComponent(version)}.djpack`;
 
 /** An upload: checked, then kept, waiting for the crew. */
 export async function upload(env: AppEnv, user: User, bytes: Uint8Array, changelog: string) {
@@ -104,7 +109,7 @@ export async function upload(env: AppEnv, user: User, bytes: Uint8Array, changel
   const statements = [
     store
       .prepare("INSERT INTO versions (item, version, sha256, size, manifest, preview, changelog, created) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(id, version, digest, bytes.length, JSON.stringify(m), JSON.stringify(preview(pack)), text(changelog, 1200), now),
+      .bind(id, version, digest, bytes.length, JSON.stringify(m), JSON.stringify(previewOf(pack)), text(changelog, 1200), now),
   ];
   if (held) statements.push(store.prepare("UPDATE items SET updated = ? WHERE id = ?").bind(now, id));
   else

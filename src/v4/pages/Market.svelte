@@ -21,7 +21,7 @@
     <div class="wrap">
       <p class="eyebrow">Marketplace</p>
       <h1 class="h1">Made by DJs.<br />Free for everyone.</h1>
-      <p class="lead">Themes, skins and visuals for djmanzo, made and shared by the people who play it. Every pack is signed by its maker and checked before it is listed. No payments, no commission — a maker may link their own tip jar.</p>
+      <p class="lead">Themes, skins, visuals and keyboard sets for djmanzo, made and shared by the people who play it. Every pack is signed by its maker and checked before it is listed. No payments, no commission — a maker may link their own tip jar.</p>
       <ul class="kinds">
         {#each LISTED_KINDS as k (k.kind)}
           <li data-reveal><b>{k.name}</b><span>{k.what}</span></li>

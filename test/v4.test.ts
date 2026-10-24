@@ -185,3 +185,49 @@ describe("screenshots in the visitor's look", () => {
     expect(pick("no-such-screen", SKIN_BY_ID.club.themes)).toBeNull();
   });
 });
+
+describe("a screenshot's close-up", () => {
+  it("is inside its picture, and loses none of its numbered spots", async () => {
+    const { FOCUS, SPOTS } = await import("../src/v4/hotspots");
+    for (const [screen, r] of Object.entries(FOCUS)) {
+      expect(r.x >= 0 && r.y >= 0 && r.x + r.w <= 100 && r.y + r.h <= 100, screen).toBe(true);
+      expect(SPOTS[screen]?.length, screen).toBeGreaterThan(0);
+      for (const s of SPOTS[screen]) {
+        expect(s.x > r.x && s.x < r.x + r.w && s.y > r.y && s.y < r.y + r.h, `${screen}: ${s.title}`).toBe(true);
+      }
+    }
+  });
+});
+
+describe("the highlights", () => {
+  it("name only features the facts have, so none is quietly left out of a list", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { FACT_BY_ID, AREAS } = await import("../shared/facts");
+    const source = readFileSync(new URL("../src/v4/sections/Highlights.svelte", import.meta.url), "utf8");
+    const lists = [...source.matchAll(/area: "([a-z]+)" as Area, facts: \[([^\]]*)\]/g)];
+    expect(lists.length).toBe(10);
+    for (const [, area, ids] of lists) {
+      expect(AREAS.some((a) => a.id === area), area).toBe(true);
+      for (const id of ids.match(/"([^"]+)"/g)!.map((x) => x.slice(1, -1))) expect(FACT_BY_ID[id], id).toBeTruthy();
+    }
+  });
+});
+
+describe("the visitor's own country, inside their region's look", () => {
+  it("has a welcome, its floors' music and two or three national colours for every country it names", async () => {
+    const { FLAVOURS, flavourOf } = await import("../shared/flavours");
+    expect(Object.keys(FLAVOURS).length).toBeGreaterThanOrEqual(40);
+    for (const [code, f] of Object.entries(FLAVOURS)) {
+      expect(code).toMatch(/^[A-Z]{2}$/);
+      expect(new Intl.DisplayNames(["en"], { type: "region" }).of(code), code).not.toBe(code);
+      expect(f.hello.trim().length, code).toBeGreaterThan(1);
+      expect(f.scene, code).toMatch(/\w/);
+      expect(f.colours.length, code).toBeGreaterThanOrEqual(2);
+      expect(f.colours.length, code).toBeLessThanOrEqual(3);
+      for (const c of f.colours) expect(c, code).toMatch(/^#[0-9A-F]{6}$/);
+    }
+    expect(flavourOf("do")?.scene).toMatch(/merengue/);
+    expect(flavourOf("XX")).toBeNull();
+    expect(flavourOf(null)).toBeNull();
+  });
+});

@@ -6,8 +6,12 @@ import { DEV_PKCS8 } from "../worker/licence";
 import type { Licence } from "../worker/store";
 
 // services/licence is the protocol's reference: its development key and its
-// test vectors, written by its own tests and read by dj_app::licence's.
-const service = (p: string) => readFileSync(new URL(`../../services/licence/${p}`, import.meta.url), "utf8");
+// test vectors, written by its own tests and read by dj_app::licence's (here
+// from app/, djmanzo checked out as a submodule). The monthly plan's vector is
+// the website's own until djmanzo's main carries plans that lapse: it was
+// written by the website branch's services/licence, which main does not have.
+const service = (p: string) => readFileSync(new URL(`../app/services/licence/${p}`, import.meta.url), "utf8");
+const own = (p: string) => readFileSync(new URL(`./fixtures/licence/${p}`, import.meta.url), "utf8");
 const devKey = JSON.parse(service("test/dev-key.json")) as { pkcs8: string; public: string };
 const NOW = 1_792_000_000;
 
@@ -26,7 +30,7 @@ describe("the licence line is the application's", () => {
 
   it("signs its monthly-plan vector byte for byte, paid_until and all", async () => {
     const payload = entitlement("google:1093", { purchases: [{ edition: "pro", until: NOW + 20 * DAY }] }, NOW - 10_000)!;
-    expect(await signLine(payload, await devSigner())).toBe(service("test/vector-subscription.txt"));
+    expect(await signLine(payload, await devSigner())).toBe(own("vector-subscription.txt"));
   });
 
   it("signs with the same development key djmanzo's debug builds believe, when no key is set", () => {

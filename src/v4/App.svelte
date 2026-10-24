@@ -28,6 +28,7 @@
   import Wishes from "./pages/Wishes.svelte";
   import Features from "./pages/Features.svelte";
   import Toast from "./Toast.svelte";
+  import { flavourOf } from "../../shared/flavours";
 
   let route = $state<Route>(parse(location.pathname));
   let ready = $state(false);
@@ -36,7 +37,13 @@
     const root = document.documentElement;
     const s = skin();
     const look = LOOKS[s.id];
-    for (const [k, v] of Object.entries({ ...cssVars(s), ...lookVars(look, s.tokens.accent, s.tokens.accent2) })) root.style.setProperty(k, v);
+    const vars = { ...cssVars(s), ...lookVars(look, s.tokens.accent, s.tokens.accent2) };
+    // The visitor's own country, under the region's look: its colours as a rule under the bar and a faint light from the top.
+    const flavour = flavourOf(region.country);
+    const lit = flavour?.colours.find((c) => c.toUpperCase() !== "#FFFFFF" && c !== "#000000");
+    if (flavour && lit) vars["--glow"] = `${vars["--glow"]}, radial-gradient(40% 30% at 50% 0%, ${lit}24, transparent 70%)`;
+    root.style.setProperty("--flag", flavour ? `linear-gradient(90deg, ${flavour.colours.map((c, i, all) => `${c} ${(i / all.length) * 100}% ${((i + 1) / all.length) * 100}%`).join(", ")})` : "none");
+    for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
     // The skin's display face, fetched only when it is worn.
     const href = fontHref(look);
     if (!document.querySelector(`link[data-face][href="${href}"]`)) {

@@ -62,8 +62,8 @@ describe("a style inherits from its family", () => {
 });
 
 describe("the djmanzo looks it names are real", () => {
-  const packages = readFileSync(new URL("../../ui/src/controls/themes/packages.ts", import.meta.url), "utf8");
-  const skins = readFileSync(new URL("../../ui/src/skins/skins.ts", import.meta.url), "utf8");
+  const packages = readFileSync(new URL("../app/ui/src/controls/themes/packages.ts", import.meta.url), "utf8");
+  const skins = readFileSync(new URL("../app/ui/src/skins/skins.ts", import.meta.url), "utf8");
   const themeId = new Map([...packages.matchAll(/id: "(pkg-[a-z-]+)",\s*name: "([^"]+)"/g)].map((m) => [m[2], m[1]]));
   const skinSuits = new Map(
     [...skins.matchAll(/name: "([^"]+)",[\s\S]*?suits: \[([^\]]*)\]/g)].map((m) => [m[1], [...m[2].matchAll(/"([^"]+)"/g)].map((x) => x[1])]),

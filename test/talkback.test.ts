@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hot, trustLevel } from "../shared/talkback";
 import { post } from "../worker/talkback";
+import { CREW } from "../worker/seed";
 import type { Screen } from "../worker/moderation";
 import { browser, crew, openSite, person } from "./people";
 
@@ -25,8 +26,10 @@ describe("a new account grows into Talkback", () => {
     const held = await write(fresh.call, { title: "Hello from Linz", body: "First gig next week." });
     expect(held.data).toMatchObject({ status: "held" });
     // Its author sees it; nobody else does.
-    expect((await fresh.call("/api/talkback/posts")).data.map((p: { id: string }) => p.id)).toEqual([held.data.id]);
-    expect((await browser(env)("/api/talkback/posts")).data).toEqual([]);
+    // (The crew's own threads are there from the start: seed.test.ts.)
+    const theirs = (posts: { id: string; uid: string }[]) => posts.filter((p) => p.uid !== CREW).map((p) => p.id);
+    expect(theirs((await fresh.call("/api/talkback/posts")).data)).toEqual([held.data.id]);
+    expect(theirs((await browser(env)("/api/talkback/posts")).data)).toEqual([]);
     expect((await browser(env)(`/api/talkback/posts/${held.data.id}`)).status).toBe(404);
   });
 
@@ -78,7 +81,9 @@ describe("posts, comments and votes", () => {
     const older = await write(ana.call, { title: "Harmonic mixing basics", body: "The Camelot wheel, explained." });
     const newer = await write(ana.call, { title: "Echo out", body: "A delay on the outgoing record." });
     for (const v of voters) await v.call("/api/talkback/vote", { method: "POST", json: { kind: "post", id: older.data.id, value: 1 } });
-    const ids = async (q: string) => (await browser(env)(`/api/talkback/posts?c=mixing&${q}`)).data.map((p: { id: string }) => p.id);
+    // Past the crew's threads, pinned or not (seed.test.ts holds those).
+    const ids = async (q: string) =>
+      (await browser(env)(`/api/talkback/posts?c=mixing&${q}`)).data.filter((p: { uid: string }) => p.uid !== CREW).map((p: { id: string }) => p.id);
     expect((await ids("sort=hot"))[0]).toBe(older.data.id);
     expect((await ids("sort=new"))[0]).toBe(newer.data.id);
     expect(await ids("q=camelot")).toEqual([older.data.id]);

@@ -39,7 +39,7 @@
   <div class="cork" data-cork>
     {#if wishes && wishes.length}
       {#each wishes as w, i (w.id)}
-        <a class="slip {w.status}" href="/island/#/muro" style:--tilt={`${((i * 37) % 7) - 3}deg`} data-wish>
+        <a class="slip {w.status}" href="/wishes" style:--tilt={`${((i * 37) % 7) - 3}deg`} data-wish>
           <b>{w.title}</b>
           <small>▲ {w.votes} · {STAMP[w.status]}</small>
           {#if w.status === "shipped"}<span class="stamp" aria-hidden="true">BUILT</span>{/if}
@@ -53,7 +53,7 @@
     <h2>Requests welcome</h2>
     <p>Ask for what djmanzo should do next, or back someone else's wish. The most wanted get built first, and the board says where each one stands.</p>
     {#if built}<p><b>{built}</b> {built === 1 ? "wish has" : "wishes have"} already been built.</p>{/if}
-    <a class="go" href="/island/#/muro">Make a wish</a>
+    <a class="go" href="/wishes">Make a wish</a>
   </aside>
 </div>
 

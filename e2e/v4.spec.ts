@@ -40,7 +40,7 @@ test("the look follows where the visitor is, and the deck plays that place's mus
   // A Dominican visitor hears merengue first, and sees the app in its Caribbean theme.
   await expect(page.locator("[data-groove=merengue]")).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-tab=perform]")).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator("img[data-shot]")).toHaveAttribute("data-shot", "Caribbean");
+  await expect(page.locator("#tour-panel img[data-shot]")).toHaveAttribute("data-shot", "Caribbean");
   // The page is in the skin's colours.
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--accent").trim())).toBe("#ff6b3d");
   expect(errs).toEqual([]);
@@ -97,7 +97,7 @@ test("the tour and the hardware search", async ({ page }) => {
   await page.locator("#tour").scrollIntoViewIfNeeded();
   await page.click("[data-tab=karaoke]");
   await expect(page.locator("[data-tab=karaoke]")).toHaveAttribute("aria-selected", "true");
-  await expect(page.locator("#tour-panel [data-fact=karaoke]")).toBeVisible();
+  await expect(page.locator("#tour-panel [data-fact=k-rotation]")).toBeVisible();
   await page.keyboard.press("ArrowRight");
   await expect(page.locator("[data-tab=practice]")).toHaveAttribute("aria-selected", "true");
 
@@ -211,5 +211,64 @@ test("a page that is only words is shown in the site's frame, and the site's own
   await page.goBack();
   await expect(page).toHaveURL(/\/terms$/);
   expect(await page.evaluate(() => (window as unknown as { stayed?: boolean }).stayed)).toBe(true);
+  expect(errs).toEqual([]);
+});
+
+test("signing in stays on this site, and every page knows who is signed in", async ({ page }) => {
+  const errs = errors(page);
+  const visited: string[] = [];
+  page.on("framenavigated", (f) => {
+    if (f === page.mainFrame()) visited.push(new URL(f.url()).pathname);
+  });
+  await page.goto("/features");
+  await page.locator("[data-account-link]").click();
+  await expect(page).toHaveURL(/\/account$/);
+  await page.getByPlaceholder("Your DJ name").fill("Night Owl");
+  await page.getByRole("button", { name: "Sign in for the demo" }).click();
+  await expect(page.locator("[data-account-link]")).toContainText("Night Owl");
+
+  // Every page, loaded afresh, knows.
+  for (const path of ["/", "/pricing", "/outboard", "/talkback", "/wishes"]) {
+    await page.goto(path);
+    await expect(page.locator("[data-account-link]"), path).toContainText("Night Owl");
+  }
+  // Back from a provider: the page it left from says so, and the address is clean again.
+  await page.goto("/pricing?signedin=github");
+  await expect(page.getByText(/signed in with GitHub/i)).toBeVisible();
+  await expect(page).toHaveURL(/\/pricing$/);
+  expect(visited.filter((p) => p.startsWith("/island"))).toEqual([]);
+  expect(errs).toEqual([]);
+});
+
+test("a panel's screenshot opens close up, every spot on it, and the whole window is a press away", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/?country=DE");
+  const shot = page.locator("[data-shot-frame=mykeys]").first();
+  await shot.scrollIntoViewIfNeeded();
+  await expect(shot.locator("[data-focus]")).toHaveAttribute("data-focus", "close");
+  await expect(shot.locator("[data-spot]")).toHaveCount(5);
+  // Close up, the picture is drawn larger than the frame it is in.
+  const frame = await shot.locator("[data-focus]").boundingBox();
+  const img = await shot.locator("img").boundingBox();
+  expect(img!.width).toBeGreaterThan(frame!.width * 2);
+  await shot.locator("[data-whole]").click();
+  await expect(shot.locator("[data-focus]")).toHaveAttribute("data-focus", "whole");
+  expect(Math.round((await shot.locator("img").boundingBox())!.width)).toBe(Math.round((await shot.locator("[data-focus]").boundingBox())!.width));
+  expect(errs).toEqual([]);
+});
+
+test("the visitor's own country is welcomed in its words and colours, and a country not listed sees its region alone", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/?country=DO");
+  const local = page.locator("[data-local]");
+  await expect(local).toHaveAttribute("data-local", "DO");
+  await expect(local).toContainText("¡Bienvenido!");
+  await expect(local).toContainText("Dominican Republic");
+  await expect(local).toContainText("merengue");
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--flag"))).toContain("linear-gradient");
+  await page.goto("/?country=DE");
+  await expect(page.locator("[data-local]")).toContainText("Willkommen!");
+  await page.goto("/?country=IS");
+  await expect(page.locator("[data-local]")).toHaveCount(0);
   expect(errs).toEqual([]);
 });

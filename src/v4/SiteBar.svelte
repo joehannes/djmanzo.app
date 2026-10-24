@@ -174,6 +174,18 @@
     padding: 8px 12px;
     border-radius: 8px;
   }
+  /* The visitor's country's colours, a thin rule under the bar (App.svelte sets --flag). */
+  .bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--flag, none);
+    opacity: 0.75;
+    pointer-events: none;
+  }
   .bar {
     position: fixed;
     inset: 0 0 auto 0;

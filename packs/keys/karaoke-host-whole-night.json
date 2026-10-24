@@ -1,0 +1,199 @@
+{
+ "name": "Karaoke host: the whole night",
+ "version": "1.0.0",
+ "licence": "CC0-1.0",
+ "author": "djmanzo crew",
+ "description": "Everything of djmanzo's own Karaoke host set, and the rest of a karaoke night beside it: the recorded singer as a guide, as recorded or out; talking over the music; the karaoke boards; break music between singers. It adds two keys to djmanzo's Stems group as well, so the guide vocal is under Space s wherever you are.",
+ "set": {
+  "name": "Karaoke host: the whole night",
+  "purpose": "karaoke",
+  "edition": "karaoke",
+  "about": "Space k, as djmanzo's Karaoke host has it, and more: k g the recorded singer as a guide, k r as recorded, k x out; k t talks over the music, k T stops; k w the karaoke board, k W the evening before; k a break music between singers, k A back to you. Space s g and s r put the guide under Stems too.",
+  "keys": [
+   {
+    "keys": [
+     "k",
+     "1"
+    ],
+    "label": "Next singer on deck 1",
+    "run": "action karaoke load 1"
+   },
+   {
+    "keys": [
+     "k",
+     "2"
+    ],
+    "label": "Next singer on deck 2",
+    "run": "action karaoke load 2"
+   },
+   {
+    "keys": [
+     "k",
+     "b"
+    ],
+    "label": "Bring them in",
+    "run": "action karaoke bring_in"
+   },
+   {
+    "keys": [
+     "k",
+     "s"
+    ],
+    "label": "They have sung",
+    "run": "action karaoke sang"
+   },
+   {
+    "keys": [
+     "k",
+     "o"
+    ],
+    "label": "Microphone open",
+    "run": "action mic on"
+   },
+   {
+    "keys": [
+     "k",
+     "c"
+    ],
+    "label": "Microphone closed",
+    "run": "action mic off"
+   },
+   {
+    "keys": [
+     "k",
+     "u"
+    ],
+    "label": "The current deck a semitone up",
+    "run": "action deck @ key 1"
+   },
+   {
+    "keys": [
+     "k",
+     "d"
+    ],
+    "label": "The current deck a semitone down",
+    "run": "action deck @ key -1"
+   },
+   {
+    "keys": [
+     "k",
+     "h"
+    ],
+    "label": "The current deck home, in its own key",
+    "run": "action deck @ key 0"
+   },
+   {
+    "keys": [
+     "k",
+     "v"
+    ],
+    "label": "The current deck's vocal out or back",
+    "run": "action deck @ stem_mute vocal"
+   },
+   {
+    "keys": [
+     "k",
+     "p"
+    ],
+    "label": "The singers' panel",
+    "run": "surface karaoke"
+   },
+   {
+    "keys": [
+     "k",
+     "g"
+    ],
+    "label": "The recorded singer as a guide",
+    "run": "action deck @ voice 0.25"
+   },
+   {
+    "keys": [
+     "k",
+     "r"
+    ],
+    "label": "The recorded singer as recorded",
+    "run": "action deck @ voice 1"
+   },
+   {
+    "keys": [
+     "k",
+     "x"
+    ],
+    "label": "The recorded singer out",
+    "run": "action deck @ voice 0"
+   },
+   {
+    "keys": [
+     "k",
+     "t"
+    ],
+    "label": "Talk over the music",
+    "run": "action mic talkover_on"
+   },
+   {
+    "keys": [
+     "k",
+     "T"
+    ],
+    "label": "Stop talking over the music",
+    "run": "action mic talkover_off"
+   },
+   {
+    "keys": [
+     "k",
+     "w"
+    ],
+    "label": "The karaoke board",
+    "run": "board karaoke"
+   },
+   {
+    "keys": [
+     "k",
+     "W"
+    ],
+    "label": "The karaoke board for the evening before",
+    "run": "board karaoke-prep"
+   },
+   {
+    "keys": [
+     "k",
+     "q"
+    ],
+    "label": "What the room asked for",
+    "run": "surface requests"
+   },
+   {
+    "keys": [
+     "k",
+     "a"
+    ],
+    "label": "Break music between singers (automix on)",
+    "run": "action automix on"
+   },
+   {
+    "keys": [
+     "k",
+     "A"
+    ],
+    "label": "Back to you (automix off)",
+    "run": "action automix off"
+   },
+   {
+    "keys": [
+     "s",
+     "g"
+    ],
+    "label": "The current deck's singer as a guide",
+    "run": "action deck @ voice 0.25"
+   },
+   {
+    "keys": [
+     "s",
+     "r"
+    ],
+    "label": "The current deck's singer as recorded",
+    "run": "action deck @ voice 1"
+   }
+  ]
+ }
+}

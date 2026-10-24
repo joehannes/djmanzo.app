@@ -1,0 +1,127 @@
+{
+ "name": "Noche latina",
+ "version": "1.0.0",
+ "licence": "CC0-1.0",
+ "author": "djmanzo crew",
+ "description": "For nights that go from bachata at 125 to merengue at 150 and back through salsa, cumbia and dembow: a wide pitch range with the key held, a grid tapped in for records played by people rather than machines, sixteen-beat jumps past long intros, and an eight-beat loop for a montuno to ride. On Space n, for noche; it adds Space d t, tap the grid, to djmanzo's Deck group.",
+ "set": {
+  "name": "Noche latina",
+  "purpose": "open-format",
+  "edition": "",
+  "about": "Space n, for noche: n w a wide pitch range (±25 %), n 8 back to ±8; n k keylock, so a bachata can climb to merengue and keep its key; n t taps the grid; n l loops eight beats, n o lets go; n j jumps sixteen beats forward, n J back; n c doubles deck 1 on deck 2; n f filters down, n F opens it. Space d t taps the grid too.",
+  "keys": [
+   {
+    "keys": [
+     "n",
+     "w"
+    ],
+    "label": "Wide pitch range (±25 %)",
+    "run": "action deck @ pitch_range 25"
+   },
+   {
+    "keys": [
+     "n",
+     "8"
+    ],
+    "label": "Narrow pitch range (±8 %)",
+    "run": "action deck @ pitch_range 8"
+   },
+   {
+    "keys": [
+     "n",
+     "k"
+    ],
+    "label": "Keylock on or off",
+    "run": "action deck @ keylock_toggle"
+   },
+   {
+    "keys": [
+     "n",
+     "s"
+    ],
+    "label": "Sync on or off",
+    "run": "action deck @ sync_toggle"
+   },
+   {
+    "keys": [
+     "n",
+     "t"
+    ],
+    "label": "Tap the grid",
+    "run": "action deck @ grid_tap"
+   },
+   {
+    "keys": [
+     "n",
+     "l"
+    ],
+    "label": "Loop eight beats (the montuno)",
+    "run": "action deck @ loop 8"
+   },
+   {
+    "keys": [
+     "n",
+     "o"
+    ],
+    "label": "Loop off",
+    "run": "action deck @ loop_off"
+   },
+   {
+    "keys": [
+     "n",
+     "j"
+    ],
+    "label": "Jump sixteen beats forward",
+    "run": "action deck @ beatjump 16"
+   },
+   {
+    "keys": [
+     "n",
+     "J"
+    ],
+    "label": "Jump sixteen beats back",
+    "run": "action deck @ beatjump -16"
+   },
+   {
+    "keys": [
+     "n",
+     "c"
+    ],
+    "label": "Double deck 1 on deck 2",
+    "run": "action deck 2 clone 1"
+   },
+   {
+    "keys": [
+     "n",
+     "f"
+    ],
+    "label": "Filter down",
+    "run": "action deck @ filter -0.5"
+   },
+   {
+    "keys": [
+     "n",
+     "F"
+    ],
+    "label": "Filter open",
+    "run": "action deck @ filter 0"
+   },
+   {
+    "keys": [
+     "n",
+     "a"
+    ],
+    "label": "Let the automix mix",
+    "run": "action automix on"
+   },
+   {
+    "keys": [
+     "d",
+     "t"
+    ],
+    "label": "Tap the grid",
+    "run": "action deck @ grid_tap"
+   }
+  ]
+ }
+}

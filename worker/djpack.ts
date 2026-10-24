@@ -21,14 +21,20 @@
  */
 
 import RULES from "../shared/packrules.json";
+import SUPPORT from "../shared/keyrules.json";
+import { setProblem, takesOver, type KeySet } from "./keyset";
 
 export const MANIFEST = "pack.json";
 export const SIGNATURE = "pack.sig";
 const PRESETS = "milkdrop/";
 const SKINS = "skins/";
 
-export type Kind = "visuals" | "theme" | "skin";
-export const KINDS: Kind[] = ["visuals", "theme", "skin"];
+export type Kind = "visuals" | "theme" | "skin" | "keys";
+export const KINDS: Kind[] = ["visuals", "theme", "skin", "keys"];
+/** Kinds djmanzo installs and the website cannot check yet: named in the refusal, not called unknown. */
+const NOT_YET = ["technique", "mapping", "knowledge", "lessons"];
+/** A keys pack's keyboard map: djmanzo reads one; the website does not take one yet. */
+const KEYBOARD_MAP = "keyboard.toml";
 
 export interface Layer {
   kind: string;
@@ -66,6 +72,11 @@ export interface PackSkin {
   opacity: number;
   motion?: string | null;
 }
+/** Where to thank a pack's maker (§137), signed with the rest. */
+export interface Support {
+  kind: string;
+  url: string;
+}
 export interface Manifest {
   format: number;
   name: string;
@@ -79,6 +90,8 @@ export interface Manifest {
   looks: Look[];
   theme: PackTheme | null;
   skins: PackSkin[];
+  keys: KeySet | null;
+  support: Support[];
 }
 
 /** A pack that has passed {@link check}. */
@@ -270,7 +283,25 @@ function parseManifest(bytes: Uint8Array): Manifest {
   const format = num(raw, "format");
   if (!Number.isInteger(format) || format < 0 || format > 0xffffffff) throw new TypeError("`format` is not a whole number");
   const kind = raw.kind === undefined ? "visuals" : raw.kind;
+  if (NOT_YET.includes(String(kind))) throw new NotYet(String(kind));
   if (!KINDS.includes(kind as Kind)) throw new TypeError(`unknown kind ${q(String(kind))}`);
+  let keys: KeySet | null = null;
+  if (raw.keys !== undefined && raw.keys !== null) {
+    const k = raw.keys;
+    if (!isObj(k) || !Array.isArray(k.keys)) throw new TypeError("`keys` is not a keyboard set");
+    keys = {
+      name: str(k, "name"),
+      about: str(k, "about", ""),
+      purpose: str(k, "purpose"),
+      edition: str(k, "edition", ""),
+      keys: k.keys.map((e) => {
+        if (!isObj(e)) throw new TypeError("a key is not an object");
+        return { keys: strs(e.keys, "keys"), label: str(e, "label"), run: str(e, "run") };
+      }),
+    };
+  }
+  const support = (raw.support === undefined ? [] : raw.support) as unknown;
+  if (!Array.isArray(support)) throw new TypeError("`support` is not a list");
   const looks = (raw.looks === undefined ? [] : raw.looks) as unknown;
   if (!Array.isArray(looks)) throw new TypeError("`looks` is not a list");
   const skins = (raw.skins === undefined ? [] : raw.skins) as unknown;
@@ -329,12 +360,40 @@ function parseManifest(bytes: Uint8Array): Manifest {
         motion: opt(s, "motion"),
       };
     }),
+    keys,
+    support: support.map((x): Support => {
+      if (!isObj(x)) throw new TypeError("a support link is not an object");
+      return { kind: str(x, "kind"), url: str(x, "url") };
+    }),
   };
 }
 
+/** A kind djmanzo installs that the website does not check yet. */
+export class NotYet extends Error {
+  constructor(readonly kind: string) {
+    super(kind);
+  }
+}
+
+/** `dj_app::account::check_support`: why a support link is not one djmanzo puts in a pack, or null. */
+export function supportProblem(link: Support): string | null {
+  const known = SUPPORT.support.find((k) => k.kind === link.kind);
+  if (!known) return `${q(link.kind)} is not a kind of support link djmanzo knows`;
+  const url = link.url.trim();
+  if (url.length > 300) return "that link is too long";
+  const rest = url.startsWith("https://") ? url.slice("https://".length) : null;
+  const host = rest === null ? null : (rest.split(/[/?#]/)[0].split("@").pop() ?? "").split(":")[0].toLowerCase();
+  if (!host || !host.includes(".") || /\s/.test(host)) return `a ${known.name} link begins https:// and names a site`;
+  if (known.hosts.length === 0) return null;
+  return known.hosts.some((h) => host === h || host.endsWith(`.${h}`)) ? null : `a ${known.name} link is on ${known.hosts[0]}, and this one is on ${host}`;
+}
+
+/** The most support links a pack may carry (`dj_app::account::MOST`). */
+const MOST_SUPPORT = 6;
+
 // --- The checks ----------------------------------------------------------------------------
 
-const KIND_NAME: Record<Kind, string> = { visuals: "visuals", theme: "theme", skin: "skin" };
+const KIND_NAME: Record<Kind, string> = { visuals: "visuals", theme: "theme", skin: "skin", keys: "keys" };
 const sorted = (keys: Iterable<string>) => [...keys].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 
 function isTilePath(path: string): boolean {
@@ -350,6 +409,7 @@ function isPresetPath(path: string): boolean {
 }
 function holds(kind: Kind, path: string): string | null {
   if (kind === "visuals") return isPresetPath(path) ? null : "presets: MilkDrop presets under milkdrop/";
+  if (kind === "keys") return path === KEYBOARD_MAP ? null : "its manifest, and a keyboard map in keyboard.toml";
   if (isTilePath(path)) return null;
   return kind === "skin" ? "SVG tiles under skins/" : "its manifest, and its skins' SVG tiles under skins/";
 }
@@ -547,6 +607,16 @@ function checkSkins(m: Manifest, files: Map<string, Uint8Array>) {
   }
 }
 
+/** A keys pack's set (`dj_app::packs::check_keys`), and the website's rules over it. */
+function checkKeys(m: Manifest) {
+  const set = m.keys ?? no("it is a keys pack with no keyboard set");
+  const why = setProblem(set);
+  if (why) no(why);
+  if (Object.hasOwn(m.files, KEYBOARD_MAP)) no("it carries a keyboard map: djmanzo reads one, and Outboard cannot check one yet, so share it as a file for now");
+  const over = takesOver(set);
+  if (over) no(over);
+}
+
 /** Check a pack whole, as `dj_app::packs::check` does, then the website's one stricter rule. */
 export async function check(files: Map<string, Uint8Array>): Promise<Checked> {
   const manifestBytes = files.get(MANIFEST) ?? no(`it has no ${MANIFEST}: it is not a djmanzo pack`);
@@ -554,6 +624,7 @@ export async function check(files: Map<string, Uint8Array>): Promise<Checked> {
   try {
     m = parseManifest(manifestBytes);
   } catch (e) {
+    if (e instanceof NotYet) return no(`it is a ${e.kind} pack: djmanzo installs those, and Outboard cannot check one yet, so share it as a file for now`);
     return no(`its ${MANIFEST} could not be read: ${(e as Error).message}`);
   }
   if (m.format !== RULES.format) no(`it is in pack format ${m.format}, and this djmanzo reads format ${RULES.format}: a newer djmanzo may read it`);
@@ -561,6 +632,11 @@ export async function check(files: Map<string, Uint8Array>): Promise<Checked> {
   short(m.author, "author");
   short(m.licence, "licence");
   short(m.version, "version");
+  if (m.support.length > MOST_SUPPORT) no(`it carries more than ${MOST_SUPPORT} support links`);
+  for (const link of m.support) {
+    const why = supportProblem(link);
+    if (why) no(`a support link in it: ${why}`);
+  }
   if (chars(m.description) > RULES.long) no(`its description is longer than ${RULES.long} characters`);
 
   // The signature, before anything the manifest says is believed.
@@ -589,13 +665,21 @@ export async function check(files: Map<string, Uint8Array>): Promise<Checked> {
 
   // What it holds is what its kind holds, and nothing another kind does.
   const stray =
-    m.kind === "visuals" ? m.theme !== null || m.skins.length > 0 : m.kind === "theme" ? m.looks.length > 0 : m.looks.length > 0 || m.theme !== null;
+    (m.kind === "visuals"
+      ? m.theme !== null || m.skins.length > 0
+      : m.kind === "theme"
+        ? m.looks.length > 0
+        : m.kind === "skin"
+          ? m.looks.length > 0 || m.theme !== null
+          : m.looks.length > 0 || m.theme !== null || m.skins.length > 0) ||
+    (m.kind !== "keys" && m.keys !== null);
   if (stray) no(`it is a ${KIND_NAME[m.kind]} pack and carries another kind's contents as well`);
   if (m.kind === "visuals") checkVisuals(m, files);
   else if (m.kind === "theme") {
     checkTheme(m.theme);
     if (m.skins.length > 0) checkSkins(m, files);
-  } else checkSkins(m, files);
+  } else if (m.kind === "keys") checkKeys(m);
+  else checkSkins(m, files);
 
   // The website's own rule: every tile it would hand out only draws.
   for (const path of sorted(Object.keys(m.files))) {
