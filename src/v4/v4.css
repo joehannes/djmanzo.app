@@ -1,0 +1,408 @@
+/*
+ * The site's look: near-black surfaces, one accent per skin, Space Grotesk
+ * for headings, Inter for text, JetBrains Mono for the numbers a DJ reads
+ * (tempo, key, prices, versions). The colours are set per skin on :root by
+ * `App.svelte`; these are the Studio skin's, for the first paint.
+ */
+
+:root {
+  --bg: #0b0c0e;
+  --surface: #14161a;
+  --raised: #1e2228;
+  --line: #2a2f37;
+  --text: #eceef1;
+  --dim: #9aa1ab;
+  --accent: #ffb547;
+  --accent-2: #c6f432;
+  --on-accent: #1c1203;
+  --display: "Space Grotesk", "Inter", system-ui, sans-serif;
+  --body: "Inter", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --radius: 14px;
+  --gutter: clamp(16px, 4vw, 40px);
+  --bar: 64px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--bar) + 12px);
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 400 16px/1.6 var(--body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.4s;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+/*
+ * The skin's pattern, woven faintly behind everything (`looks.ts`): a fixed
+ * layer, so it does not scroll with the words, masked to fade towards the
+ * middle of the screen where people read.
+ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: var(--pattern, none);
+  background-size: var(--pattern-size, 40px) var(--pattern-size, 40px);
+  opacity: var(--pattern-opacity, 0.06);
+  mask-image: radial-gradient(110% 80% at 50% 45%, transparent 18%, black 72%);
+  transition: opacity 0.4s;
+}
+body {
+  isolation: isolate;
+}
+
+/* A band between sections, in the skin's ornament: papel picado, kente, arches, marigolds… */
+.divider {
+  height: 48px;
+  background-image: var(--divider, none);
+  background-size: auto 48px;
+  background-repeat: repeat-x;
+  background-position: center;
+  opacity: 0.55;
+  mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
+}
+
+/* The eyebrow carries the skin's symbol. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.eyebrow::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  flex: none;
+  background: var(--motif, none) center / contain no-repeat;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+.eyebrow {
+  font: 500 12px/1.4 var(--mono);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 14px;
+}
+
+.h1,
+.h2,
+.h3 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+.h1 {
+  font-size: clamp(2.7rem, 7vw, 5.6rem);
+  line-height: 0.98;
+}
+.h2 {
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
+  line-height: 1.05;
+}
+.h3 {
+  font-size: clamp(1.2rem, 2vw, 1.5rem);
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.lead {
+  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  color: var(--dim);
+  max-width: 40rem;
+  margin: 16px 0 0;
+}
+
+.mono {
+  font-family: var(--mono);
+}
+
+.dim {
+  color: var(--dim);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 22px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font: 600 15px/1 var(--body);
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform 0.15s,
+    background-color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.btn.primary:hover {
+  box-shadow: 0 8px 30px -6px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.btn.ghost {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--text) 18%, transparent);
+  backdrop-filter: blur(8px);
+}
+.btn.ghost:hover {
+  border-color: color-mix(in srgb, var(--text) 40%, transparent);
+}
+.btn.small {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--text);
+  font: 500 14px/1 var(--body);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+.chip:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+.chip[aria-pressed="true"],
+.chip.on {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: var(--accent);
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  white-space: nowrap;
+}
+.status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.status.shipped {
+  color: var(--accent-2);
+}
+.status.part {
+  color: var(--accent);
+}
+.status.planned {
+  color: var(--dim);
+}
+
+.caveat {
+  font-size: 13px;
+  color: var(--dim);
+  border-left: 2px solid var(--line);
+  padding-left: 10px;
+  margin: 10px 0 0;
+}
+
+.section {
+  position: relative;
+  padding: clamp(72px, 11vw, 140px) 0;
+}
+/* Each section falls in the skin's light. */
+.section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--glow, none);
+  opacity: 0.8;
+}
+.section + .section {
+  border-top: 1px solid color-mix(in srgb, var(--line) 60%, transparent);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The reused marketplace, forum and checkout (built for the earlier pages), in this look. */
+.content {
+  --ink: var(--text);
+  --glow: var(--accent);
+  --night: var(--bg);
+}
+.content h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: 1.45rem;
+  margin: 28px 0 10px;
+}
+.content .note,
+.content .muted,
+.content .small {
+  font-size: 13px;
+  color: var(--dim);
+}
+.content .link {
+  font: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.content .go,
+.content .btn.primary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 600 14px/1 var(--body);
+  text-decoration: none;
+  cursor: pointer;
+}
+.content .go:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.content .quiet,
+.content .btn:not(.primary) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+  font: 500 14px/1 var(--body);
+  text-decoration: none;
+  cursor: pointer;
+}
+.content .notice {
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.content input[type="text"],
+.content input[type="search"],
+.content input[type="email"],
+.content input:not([type]),
+.content textarea,
+.content select {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--text);
+  max-width: 100%;
+}
+.content textarea {
+  min-height: 6rem;
+}
+.content .card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+}
+.content .field {
+  display: grid;
+  gap: 4px;
+}

@@ -1,0 +1,45 @@
+{
+  "name": "djmanzo-website",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "The djmanzo website: Isla Manzo, an island to explore, and the shop. One Cloudflare Worker with a KV namespace.",
+  "scripts": {
+    "dev": "vite",
+    "build": "svelte-check --tsconfig ./tsconfig.json && vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json && tsc -p worker/tsconfig.json --noEmit",
+    "test": "vitest run",
+    "preview": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "test:e2e": "playwright test",
+    "facts:drift": "node scripts/facts-drift.mjs",
+    "shots": "node scripts/shots.mjs",
+    "packs": "cargo run --release --quiet --manifest-path tools/packsmith/Cargo.toml -- make packs/keys public/packs/crew",
+    "packs:rules": "cargo run --release --quiet --manifest-path tools/packsmith/Cargo.toml -- rules shared/keyrules.json && cargo run --release --quiet --manifest-path tools/packsmith/Cargo.toml -- fixtures test/fixtures/keys"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261016.1",
+    "@playwright/test": "^1.62.1",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@types/d3-geo": "^3.1.1",
+    "@types/three": "^0.186.0",
+    "@types/topojson-client": "^3.1.5",
+    "svelte": "^5.57.2",
+    "svelte-check": "^4.7.7",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5",
+    "wrangler": "^4.151.1"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "d3-geo": "^3.1.1",
+    "gsap": "^3.15.0",
+    "motion": "^14.3.0",
+    "three": "^0.186.1",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2",
+    "zod": "^4.6.7"
+  },
+  "license": "SEE LICENSE IN ../LICENSE.md"
+}

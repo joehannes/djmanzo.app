@@ -1,0 +1,151 @@
+{
+ "name": "Practice drills",
+ "version": "1.0.0",
+ "licence": "CC0-1.0",
+ "author": "djmanzo crew",
+ "description": "Everything of djmanzo's own Learning set on Space l, and the moves a practice session repeats: a loop to practise over, back eight beats to try again, the grid tapped in, the headphones, quantize, and the guides to the next record, the energy of the night and what to do when something goes wrong.",
+ "set": {
+  "name": "Practice drills",
+  "purpose": "practice",
+  "edition": "apprentice",
+  "about": "Space l, as djmanzo's Learning has it, and more: l 4 loops four beats to practise over, l o lets go; l j goes back eight beats to try again; l t taps the grid; l h the current deck in the headphones; l q quantize; l n, l e and l x the guides to the next record, the night's energy and trouble.",
+  "keys": [
+   {
+    "keys": [
+     "l",
+     "c"
+    ],
+    "label": "The course",
+    "run": "surface course"
+   },
+   {
+    "keys": [
+     "l",
+     "p"
+    ],
+    "label": "The practice lab",
+    "run": "surface practice"
+   },
+   {
+    "keys": [
+     "l",
+     "r"
+    ],
+    "label": "Rehearse a pair",
+    "run": "surface pair"
+   },
+   {
+    "keys": [
+     "l",
+     "a"
+    ],
+    "label": "Practice, as an activity",
+    "run": "switch activity practice"
+   },
+   {
+    "keys": [
+     "l",
+     "g"
+    ],
+    "label": "The guide to learning",
+    "run": "guide learn"
+   },
+   {
+    "keys": [
+     "l",
+     "m"
+    ],
+    "label": "The guide to a first mix",
+    "run": "guide mix"
+   },
+   {
+    "keys": [
+     "l",
+     "k"
+    ],
+    "label": "Every key",
+    "run": "surface keys"
+   },
+   {
+    "keys": [
+     "l",
+     "s"
+    ],
+    "label": "Sync the current deck",
+    "run": "action deck @ sync_toggle"
+   },
+   {
+    "keys": [
+     "l",
+     "4"
+    ],
+    "label": "Loop four beats to practise over",
+    "run": "action deck @ loop 4"
+   },
+   {
+    "keys": [
+     "l",
+     "o"
+    ],
+    "label": "Loop off",
+    "run": "action deck @ loop_off"
+   },
+   {
+    "keys": [
+     "l",
+     "j"
+    ],
+    "label": "Back eight beats, to try again",
+    "run": "action deck @ beatjump -8"
+   },
+   {
+    "keys": [
+     "l",
+     "t"
+    ],
+    "label": "Tap the grid",
+    "run": "action deck @ grid_tap"
+   },
+   {
+    "keys": [
+     "l",
+     "h"
+    ],
+    "label": "The current deck in the headphones",
+    "run": "action deck @ cue_toggle"
+   },
+   {
+    "keys": [
+     "l",
+     "q"
+    ],
+    "label": "Quantize on",
+    "run": "action quantize on"
+   },
+   {
+    "keys": [
+     "l",
+     "n"
+    ],
+    "label": "The guide to the next record",
+    "run": "guide next"
+   },
+   {
+    "keys": [
+     "l",
+     "e"
+    ],
+    "label": "The guide to the night's energy",
+    "run": "guide energy"
+   },
+   {
+    "keys": [
+     "l",
+     "x"
+    ],
+    "label": "If something goes wrong",
+    "run": "guide trouble"
+   }
+  ]
+ }
+}

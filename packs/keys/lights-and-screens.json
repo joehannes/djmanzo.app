@@ -1,0 +1,71 @@
+{
+ "name": "Lights and screens",
+ "version": "1.0.0",
+ "licence": "CC0-1.0",
+ "author": "djmanzo crew",
+ "description": "The show around the music on one letter: the lights, the video and the camera, the crowd and the room, and the Live board. On Space i, for illumination.",
+ "set": {
+  "name": "Lights and screens",
+  "purpose": "other",
+  "edition": "",
+  "about": "Space i: i l the lights, i v the video, i y the camera, i w the crowd, i r the room; i b the Live board, i s the Social board.",
+  "keys": [
+   {
+    "keys": [
+     "i",
+     "l"
+    ],
+    "label": "The lights",
+    "run": "surface lighting"
+   },
+   {
+    "keys": [
+     "i",
+     "v"
+    ],
+    "label": "The video",
+    "run": "surface video"
+   },
+   {
+    "keys": [
+     "i",
+     "y"
+    ],
+    "label": "The camera",
+    "run": "surface camera"
+   },
+   {
+    "keys": [
+     "i",
+     "w"
+    ],
+    "label": "The crowd",
+    "run": "surface crowd"
+   },
+   {
+    "keys": [
+     "i",
+     "r"
+    ],
+    "label": "The room",
+    "run": "surface room"
+   },
+   {
+    "keys": [
+     "i",
+     "b"
+    ],
+    "label": "The Live board",
+    "run": "board live"
+   },
+   {
+    "keys": [
+     "i",
+     "s"
+    ],
+    "label": "The Social board",
+    "run": "board social"
+   }
+  ]
+ }
+}

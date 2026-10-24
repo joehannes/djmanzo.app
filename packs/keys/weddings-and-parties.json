@@ -1,0 +1,127 @@
+{
+ "name": "Weddings and parties",
+ "version": "1.0.0",
+ "licence": "CC0-1.0",
+ "author": "djmanzo crew",
+ "description": "For a mobile DJ with a microphone in one hand and someone's cousin at the other elbow: the microphone and talking over, the automix for dinner, the requests and the plan for the night, the set recorded, the limiter on a rented PA, and safe for when anything goes wrong. On Space q.",
+ "set": {
+  "name": "Weddings and parties",
+  "purpose": "mobile",
+  "edition": "",
+  "about": "Space q: q o opens the microphone, q c closes it; q t talks over, q T stops; q a lets the automix play dinner, q n mixes now; q r the requests, q p the plan, q e the event; q m records the night, q M stops; q l puts the limiter on; q s is safe: every control back and flat.",
+  "keys": [
+   {
+    "keys": [
+     "q",
+     "o"
+    ],
+    "label": "Microphone open",
+    "run": "action mic on"
+   },
+   {
+    "keys": [
+     "q",
+     "c"
+    ],
+    "label": "Microphone closed",
+    "run": "action mic off"
+   },
+   {
+    "keys": [
+     "q",
+     "t"
+    ],
+    "label": "Talk over the music",
+    "run": "action mic talkover_on"
+   },
+   {
+    "keys": [
+     "q",
+     "T"
+    ],
+    "label": "Stop talking over",
+    "run": "action mic talkover_off"
+   },
+   {
+    "keys": [
+     "q",
+     "a"
+    ],
+    "label": "Let the automix play",
+    "run": "action automix on"
+   },
+   {
+    "keys": [
+     "q",
+     "x"
+    ],
+    "label": "Take the automix back",
+    "run": "action automix off"
+   },
+   {
+    "keys": [
+     "q",
+     "n"
+    ],
+    "label": "Mix to the next record now",
+    "run": "action automix now"
+   },
+   {
+    "keys": [
+     "q",
+     "r"
+    ],
+    "label": "What the room asked for",
+    "run": "surface requests"
+   },
+   {
+    "keys": [
+     "q",
+     "p"
+    ],
+    "label": "The plan for the night",
+    "run": "surface plan"
+   },
+   {
+    "keys": [
+     "q",
+     "e"
+    ],
+    "label": "The event",
+    "run": "surface event"
+   },
+   {
+    "keys": [
+     "q",
+     "m"
+    ],
+    "label": "Record the night",
+    "run": "action record on"
+   },
+   {
+    "keys": [
+     "q",
+     "M"
+    ],
+    "label": "Stop recording",
+    "run": "action record off"
+   },
+   {
+    "keys": [
+     "q",
+     "l"
+    ],
+    "label": "Limiter on",
+    "run": "action limiter on"
+   },
+   {
+    "keys": [
+     "q",
+     "s"
+    ],
+    "label": "Safe: every control back, flat",
+    "run": "action safe"
+   }
+  ]
+ }
+}

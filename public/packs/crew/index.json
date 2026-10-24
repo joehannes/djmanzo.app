@@ -1,0 +1,46 @@
+{
+  "packs": [
+    {
+      "file": "cuts-and-scratch-7884d9c2-1.0.0.djpack",
+      "name": "Cuts and scratch",
+      "sha256": "ac1ac07ba5889da466427630e03f924c444831ea4229f52d5fe8b151e3e253d6",
+      "version": "1.0.0"
+    },
+    {
+      "file": "karaoke-host-the-whole-night-7884d9c2-1.0.0.djpack",
+      "name": "Karaoke host: the whole night",
+      "sha256": "36e1bc2f974f3688c0866ac829f54da6a8061fd400326308e0eb0d015e7d2ea1",
+      "version": "1.0.0"
+    },
+    {
+      "file": "lights-and-screens-7884d9c2-1.0.0.djpack",
+      "name": "Lights and screens",
+      "sha256": "c7b4ca1b4a8c7df197bc9848497af8ea93f63df56510fcf17a4283a96e6c9b6e",
+      "version": "1.0.0"
+    },
+    {
+      "file": "noche-latina-7884d9c2-1.0.0.djpack",
+      "name": "Noche latina",
+      "sha256": "02427f24d2699c21fb39aa9675f9fd0204ed5d844c105cf8d114afd1a73a541a",
+      "version": "1.0.0"
+    },
+    {
+      "file": "practice-drills-7884d9c2-1.0.0.djpack",
+      "name": "Practice drills",
+      "sha256": "a0514a1babf2ecbe9bbf099da254d4e5d365c50803ef27ac641de4bbae34ec1a",
+      "version": "1.0.0"
+    },
+    {
+      "file": "underground-long-blends-7884d9c2-1.0.0.djpack",
+      "name": "Underground: long blends",
+      "sha256": "c6bbf84af1c31d3d61cf20da079eb7483953e920778c3bb54836a450a24205ef",
+      "version": "1.0.0"
+    },
+    {
+      "file": "weddings-and-parties-7884d9c2-1.0.0.djpack",
+      "name": "Weddings and parties",
+      "sha256": "e6aa051801262158436239c5f45311bd4015c524168c1c2c096e1aebab64093b",
+      "version": "1.0.0"
+    }
+  ]
+}

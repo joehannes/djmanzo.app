@@ -1,0 +1,18 @@
+{
+  "changed-after-signing.djpack": "its signature does not match: it was changed after it was signed, or signed with another key",
+  "climbing.djpack": "\"../outside.svg\" points outside the pack",
+  "good-skin.djpack": "ok",
+  "good-theme.djpack": "ok",
+  "good-visuals.djpack": "ok",
+  "low-contrast.djpack": "Moss's dark --text on --bg has a contrast of 1.1, and needs 4.5",
+  "no-manifest.djpack": "it has no pack.json: it is not a djmanzo pack",
+  "scripted-tile.djpack": "Dots's tile does more than draw: a tile may hold no script, link, image, stylesheet or anything fetched",
+  "tampered-file.djpack": "skins/dots.svg is not the file that was signed",
+  "theme-with-skins.djpack": "ok",
+  "too-strong.djpack": "Dots is drawn at 0.3; a skin is drawn at 0.10 to 0.18, faint enough to read through",
+  "unknown-base.djpack": "Moss is worn on \"pkg-nowhere\", which is not a theme djmanzo ships",
+  "unlisted-file.djpack": "skins/extra.svg is in it and not listed, so not signed",
+  "unreferenced-scripted-tile.djpack": "ok",
+  "unsigned.djpack": "it is not signed: there is no pack.sig",
+  "wrong-kind.djpack": "it is a visuals pack and carries another kind's contents as well"
+}

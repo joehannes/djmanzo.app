@@ -1,0 +1,159 @@
+{
+ "name": "Underground: long blends",
+ "version": "1.0.0",
+ "licence": "CC0-1.0",
+ "author": "djmanzo crew",
+ "description": "Techno and house mixed the long way: the current deck's bass, mids and highs out and back on one letter each (Shift brings it back), a filter, sixteen- and thirty-two-beat loops, thirty-two-beat jumps, quantize. On Space u, for underground; it adds the limiter to djmanzo's Mixer group as Space m l and m L.",
+ "set": {
+  "name": "Underground: long blends",
+  "purpose": "club",
+  "edition": "",
+  "about": "Space u, for underground, on the current deck: u b bass out, u B back; u m mids out, u M back; u h highs out, u H back; u f filters down, u F opens; u l loops sixteen beats, u L thirty-two, u o lets go; u j jumps thirty-two forward, u J back; u s sync; u q quantize on, u Q off. Space m l and m L put the limiter on and off.",
+  "keys": [
+   {
+    "keys": [
+     "u",
+     "b"
+    ],
+    "label": "Bass out",
+    "run": "action deck @ eq_low 0"
+   },
+   {
+    "keys": [
+     "u",
+     "B"
+    ],
+    "label": "Bass back",
+    "run": "action deck @ eq_low 1"
+   },
+   {
+    "keys": [
+     "u",
+     "m"
+    ],
+    "label": "Mids out",
+    "run": "action deck @ eq_mid 0"
+   },
+   {
+    "keys": [
+     "u",
+     "M"
+    ],
+    "label": "Mids back",
+    "run": "action deck @ eq_mid 1"
+   },
+   {
+    "keys": [
+     "u",
+     "h"
+    ],
+    "label": "Highs out",
+    "run": "action deck @ eq_high 0"
+   },
+   {
+    "keys": [
+     "u",
+     "H"
+    ],
+    "label": "Highs back",
+    "run": "action deck @ eq_high 1"
+   },
+   {
+    "keys": [
+     "u",
+     "f"
+    ],
+    "label": "Filter down",
+    "run": "action deck @ filter -0.6"
+   },
+   {
+    "keys": [
+     "u",
+     "F"
+    ],
+    "label": "Filter open",
+    "run": "action deck @ filter 0"
+   },
+   {
+    "keys": [
+     "u",
+     "l"
+    ],
+    "label": "Loop sixteen beats",
+    "run": "action deck @ loop 16"
+   },
+   {
+    "keys": [
+     "u",
+     "L"
+    ],
+    "label": "Loop thirty-two beats",
+    "run": "action deck @ loop 32"
+   },
+   {
+    "keys": [
+     "u",
+     "o"
+    ],
+    "label": "Loop off",
+    "run": "action deck @ loop_off"
+   },
+   {
+    "keys": [
+     "u",
+     "j"
+    ],
+    "label": "Jump thirty-two beats forward",
+    "run": "action deck @ beatjump 32"
+   },
+   {
+    "keys": [
+     "u",
+     "J"
+    ],
+    "label": "Jump thirty-two beats back",
+    "run": "action deck @ beatjump -32"
+   },
+   {
+    "keys": [
+     "u",
+     "s"
+    ],
+    "label": "Sync on or off",
+    "run": "action deck @ sync_toggle"
+   },
+   {
+    "keys": [
+     "u",
+     "q"
+    ],
+    "label": "Quantize on",
+    "run": "action quantize on"
+   },
+   {
+    "keys": [
+     "u",
+     "Q"
+    ],
+    "label": "Quantize off",
+    "run": "action quantize off"
+   },
+   {
+    "keys": [
+     "m",
+     "l"
+    ],
+    "label": "Limiter on",
+    "run": "action limiter on"
+   },
+   {
+    "keys": [
+     "m",
+     "L"
+    ],
+    "label": "Limiter off",
+    "run": "action limiter off"
+   }
+  ]
+ }
+}

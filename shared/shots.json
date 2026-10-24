@@ -1,0 +1,912 @@
+[
+ {
+  "src": "/shots/app/autopilot--organic-base.webp",
+  "screen": "autopilot",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Autopilot: the assistant mixing, the room, what could come next",
+  "alt": "Autopilot: the assistant mixing, the room, what could come next — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--organic-base.webp",
+  "screen": "dig",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/event--organic-base.webp",
+  "screen": "event",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Event: the night prepared, and its plan",
+  "alt": "Event: the night prepared, and its plan — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/guides--caribbean.webp",
+  "screen": "guides",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "The assistant's guides",
+  "alt": "The assistant's guides — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/guides--organic-base.webp",
+  "screen": "guides",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "The assistant's guides",
+  "alt": "The assistant's guides — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--organic-base.webp",
+  "screen": "karaoke",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/keys--organic-base.webp",
+  "screen": "keys",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Space: the guide to every key, sequences that read as words",
+  "alt": "Space: the guide to every key, sequences that read as words — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/launcher--caribbean.webp",
+  "screen": "launcher",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "The launcher (0): every view one key away",
+  "alt": "The launcher (0): every view one key away — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/launcher--organic-base.webp",
+  "screen": "launcher",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "The launcher (0): every view one key away",
+  "alt": "The launcher (0): every view one key away — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/lighting--organic-base.webp",
+  "screen": "lighting",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Lights: the room's lights over Art-Net or sACN, following the music",
+  "alt": "Lights: the room's lights over Art-Net or sACN, following the music — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mix--organic-base.webp",
+  "screen": "mix",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Mix: two decks and the mixer",
+  "alt": "Mix: two decks and the mixer — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mykeys--organic-base.webp",
+  "screen": "mykeys",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map",
+  "alt": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/palette--caribbean.webp",
+  "screen": "palette",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "The command palette (Ctrl/Cmd + K)",
+  "alt": "The command palette (Ctrl/Cmd + K) — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/palette--organic-base.webp",
+  "screen": "palette",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "The command palette (Ctrl/Cmd + K)",
+  "alt": "The command palette (Ctrl/Cmd + K) — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/perform--organic-base.webp",
+  "screen": "perform",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Perform: stems and the sampler",
+  "alt": "Perform: stems and the sampler — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/playlist--organic-base.webp",
+  "screen": "playlist",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "A playlist under the deck: Karaoke Favourites, going on by itself, round again",
+  "alt": "A playlist under the deck: Karaoke Favourites, going on by itself, round again — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/practice--organic-base.webp",
+  "screen": "practice",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Practice: the practice lab and the headphone deck",
+  "alt": "Practice: the practice lab and the headphone deck — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/prepare--organic-base.webp",
+  "screen": "prepare",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Prepare: records on their way to a deck, and the set plan",
+  "alt": "Prepare: records on their way to a deck, and the set plan — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/requests--organic-base.webp",
+  "screen": "requests",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Requests: what the room asked for",
+  "alt": "Requests: what the room asked for — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/settings--organic-base.webp",
+  "screen": "settings",
+  "theme": "Organic Base",
+  "skin": null,
+  "shows": "Settings",
+  "alt": "Settings — djmanzo in the Organic Base theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/autopilot--club.webp",
+  "screen": "autopilot",
+  "theme": "Club",
+  "skin": null,
+  "shows": "Autopilot: the assistant mixing, the room, what could come next",
+  "alt": "Autopilot: the assistant mixing, the room, what could come next — djmanzo in the Club theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/autopilot--daylight.webp",
+  "screen": "autopilot",
+  "theme": "Daylight",
+  "skin": null,
+  "shows": "Autopilot: the assistant mixing, the room, what could come next",
+  "alt": "Autopilot: the assistant mixing, the room, what could come next — djmanzo in the Daylight theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/autopilot--stem-lab.webp",
+  "screen": "autopilot",
+  "theme": "Stem Lab",
+  "skin": null,
+  "shows": "Autopilot: the assistant mixing, the room, what could come next",
+  "alt": "Autopilot: the assistant mixing, the room, what could come next — djmanzo in the Stem Lab theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/autopilot--velvet.webp",
+  "screen": "autopilot",
+  "theme": "Velvet",
+  "skin": null,
+  "shows": "Autopilot: the assistant mixing, the room, what could come next",
+  "alt": "Autopilot: the assistant mixing, the room, what could come next — djmanzo in the Velvet theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--aurora.webp",
+  "screen": "dig",
+  "theme": "Aurora",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Aurora theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--bachata-rosa.webp",
+  "screen": "dig",
+  "theme": "Bachata Rosa",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Bachata Rosa theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--bioluminescent-bay.webp",
+  "screen": "dig",
+  "theme": "Bioluminescent Bay",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Bioluminescent Bay theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--booth.webp",
+  "screen": "dig",
+  "theme": "Booth",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Booth theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--caribbean.webp",
+  "screen": "dig",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--carnaval.webp",
+  "screen": "dig",
+  "theme": "Carnaval",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Carnaval theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--club.webp",
+  "screen": "dig",
+  "theme": "Club",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Club theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--colour-blind-safe.webp",
+  "screen": "dig",
+  "theme": "Colour Blind Safe",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Colour Blind Safe theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--cyber-trance.webp",
+  "screen": "dig",
+  "theme": "Cyber Trance",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Cyber Trance theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--daylight.webp",
+  "screen": "dig",
+  "theme": "Daylight",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Daylight theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--festival.webp",
+  "screen": "dig",
+  "theme": "Festival",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Festival theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--industrial-techno.webp",
+  "screen": "dig",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--karaoke-neon.webp",
+  "screen": "dig",
+  "theme": "Karaoke Neon",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Karaoke Neon theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--latin.webp",
+  "screen": "dig",
+  "theme": "Latin",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Latin theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--lounge.webp",
+  "screen": "dig",
+  "theme": "Lounge",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Lounge theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--malecon-night.webp",
+  "screen": "dig",
+  "theme": "Malecón Night",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Malecón Night theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--scratch.webp",
+  "screen": "dig",
+  "theme": "Scratch",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Scratch theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--signal.webp",
+  "screen": "dig",
+  "theme": "Signal",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Signal theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--spectrum.webp",
+  "screen": "dig",
+  "theme": "Spectrum",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Spectrum theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--spotlight.webp",
+  "screen": "dig",
+  "theme": "Spotlight",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Spotlight theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--stem-lab.webp",
+  "screen": "dig",
+  "theme": "Stem Lab",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Stem Lab theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--studio.webp",
+  "screen": "dig",
+  "theme": "Studio",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Studio theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--sunset.webp",
+  "screen": "dig",
+  "theme": "Sunset",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Sunset theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--velvet.webp",
+  "screen": "dig",
+  "theme": "Velvet",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Velvet theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--watershed-living.webp",
+  "screen": "dig",
+  "theme": "Watershed Living",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Watershed Living theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--wedding.webp",
+  "screen": "dig",
+  "theme": "Wedding",
+  "skin": null,
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Wedding theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/event--aurora.webp",
+  "screen": "event",
+  "theme": "Aurora",
+  "skin": null,
+  "shows": "Event: the night prepared, and its plan",
+  "alt": "Event: the night prepared, and its plan — djmanzo in the Aurora theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/event--bachata-rosa.webp",
+  "screen": "event",
+  "theme": "Bachata Rosa",
+  "skin": null,
+  "shows": "Event: the night prepared, and its plan",
+  "alt": "Event: the night prepared, and its plan — djmanzo in the Bachata Rosa theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/event--cyber-trance.webp",
+  "screen": "event",
+  "theme": "Cyber Trance",
+  "skin": null,
+  "shows": "Event: the night prepared, and its plan",
+  "alt": "Event: the night prepared, and its plan — djmanzo in the Cyber Trance theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/event--wedding.webp",
+  "screen": "event",
+  "theme": "Wedding",
+  "skin": null,
+  "shows": "Event: the night prepared, and its plan",
+  "alt": "Event: the night prepared, and its plan — djmanzo in the Wedding theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--colour-blind-safe.webp",
+  "screen": "karaoke",
+  "theme": "Colour Blind Safe",
+  "skin": null,
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Colour Blind Safe theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--festival.webp",
+  "screen": "karaoke",
+  "theme": "Festival",
+  "skin": null,
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Festival theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--malecon-night.webp",
+  "screen": "karaoke",
+  "theme": "Malecón Night",
+  "skin": null,
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Malecón Night theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--studio.webp",
+  "screen": "karaoke",
+  "theme": "Studio",
+  "skin": null,
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Studio theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/keys--caribbean.webp",
+  "screen": "keys",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Space: the guide to every key, sequences that read as words",
+  "alt": "Space: the guide to every key, sequences that read as words — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/keys--industrial-techno.webp",
+  "screen": "keys",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Space: the guide to every key, sequences that read as words",
+  "alt": "Space: the guide to every key, sequences that read as words — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/lighting--caribbean.webp",
+  "screen": "lighting",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Lights: the room's lights over Art-Net or sACN, following the music",
+  "alt": "Lights: the room's lights over Art-Net or sACN, following the music — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/lighting--industrial-techno.webp",
+  "screen": "lighting",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Lights: the room's lights over Art-Net or sACN, following the music",
+  "alt": "Lights: the room's lights over Art-Net or sACN, following the music — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mykeys--caribbean.webp",
+  "screen": "mykeys",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map",
+  "alt": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mykeys--industrial-techno.webp",
+  "screen": "mykeys",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map",
+  "alt": "Keys: your own keys under Space, the four keyboard sets to wear, the keyboard map — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/perform--booth.webp",
+  "screen": "perform",
+  "theme": "Booth",
+  "skin": null,
+  "shows": "Perform: stems and the sampler",
+  "alt": "Perform: stems and the sampler — djmanzo in the Booth theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/perform--caribbean.webp",
+  "screen": "perform",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "Perform: stems and the sampler",
+  "alt": "Perform: stems and the sampler — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/perform--carnaval.webp",
+  "screen": "perform",
+  "theme": "Carnaval",
+  "skin": null,
+  "shows": "Perform: stems and the sampler",
+  "alt": "Perform: stems and the sampler — djmanzo in the Carnaval theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/perform--spectrum.webp",
+  "screen": "perform",
+  "theme": "Spectrum",
+  "skin": null,
+  "shows": "Perform: stems and the sampler",
+  "alt": "Perform: stems and the sampler — djmanzo in the Spectrum theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/playlist--caribbean.webp",
+  "screen": "playlist",
+  "theme": "Caribbean",
+  "skin": null,
+  "shows": "A playlist under the deck: Karaoke Favourites, going on by itself, round again",
+  "alt": "A playlist under the deck: Karaoke Favourites, going on by itself, round again — djmanzo in the Caribbean theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/practice--scratch.webp",
+  "screen": "practice",
+  "theme": "Scratch",
+  "skin": null,
+  "shows": "Practice: the practice lab and the headphone deck",
+  "alt": "Practice: the practice lab and the headphone deck — djmanzo in the Scratch theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/practice--spotlight.webp",
+  "screen": "practice",
+  "theme": "Spotlight",
+  "skin": null,
+  "shows": "Practice: the practice lab and the headphone deck",
+  "alt": "Practice: the practice lab and the headphone deck — djmanzo in the Spotlight theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/practice--watershed-living.webp",
+  "screen": "practice",
+  "theme": "Watershed Living",
+  "skin": null,
+  "shows": "Practice: the practice lab and the headphone deck",
+  "alt": "Practice: the practice lab and the headphone deck — djmanzo in the Watershed Living theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/prepare--bioluminescent-bay.webp",
+  "screen": "prepare",
+  "theme": "Bioluminescent Bay",
+  "skin": null,
+  "shows": "Prepare: records on their way to a deck, and the set plan",
+  "alt": "Prepare: records on their way to a deck, and the set plan — djmanzo in the Bioluminescent Bay theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/prepare--industrial-techno.webp",
+  "screen": "prepare",
+  "theme": "Industrial Techno",
+  "skin": null,
+  "shows": "Prepare: records on their way to a deck, and the set plan",
+  "alt": "Prepare: records on their way to a deck, and the set plan — djmanzo in the Industrial Techno theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/prepare--latin.webp",
+  "screen": "prepare",
+  "theme": "Latin",
+  "skin": null,
+  "shows": "Prepare: records on their way to a deck, and the set plan",
+  "alt": "Prepare: records on their way to a deck, and the set plan — djmanzo in the Latin theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/prepare--signal.webp",
+  "screen": "prepare",
+  "theme": "Signal",
+  "skin": null,
+  "shows": "Prepare: records on their way to a deck, and the set plan",
+  "alt": "Prepare: records on their way to a deck, and the set plan — djmanzo in the Signal theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/requests--karaoke-neon.webp",
+  "screen": "requests",
+  "theme": "Karaoke Neon",
+  "skin": null,
+  "shows": "Requests: what the room asked for",
+  "alt": "Requests: what the room asked for — djmanzo in the Karaoke Neon theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/requests--lounge.webp",
+  "screen": "requests",
+  "theme": "Lounge",
+  "skin": null,
+  "shows": "Requests: what the room asked for",
+  "alt": "Requests: what the room asked for — djmanzo in the Lounge theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/requests--sunset.webp",
+  "screen": "requests",
+  "theme": "Sunset",
+  "skin": null,
+  "shows": "Requests: what the room asked for",
+  "alt": "Requests: what the room asked for — djmanzo in the Sunset theme",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/autopilot--velvet--glowing-plankton.webp",
+  "screen": "autopilot",
+  "theme": "Velvet",
+  "skin": "Glowing plankton",
+  "shows": "Autopilot: the assistant mixing, the room, what could come next",
+  "alt": "Autopilot: the assistant mixing, the room, what could come next — djmanzo in the Velvet theme, worn with the Glowing plankton skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--bioluminescent-bay--waves.webp",
+  "screen": "dig",
+  "theme": "Bioluminescent Bay",
+  "skin": "Waves",
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Bioluminescent Bay theme, worn with the Waves skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--caribbean--palms.webp",
+  "screen": "dig",
+  "theme": "Caribbean",
+  "skin": "Palm shadows",
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Caribbean theme, worn with the Palm shadows skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--carnaval--papel-picado.webp",
+  "screen": "dig",
+  "theme": "Carnaval",
+  "skin": "Papel picado",
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Carnaval theme, worn with the Papel picado skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--industrial-techno--trash-polka.webp",
+  "screen": "dig",
+  "theme": "Industrial Techno",
+  "skin": "Trash polka",
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Industrial Techno theme, worn with the Trash polka skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/dig--velvet--glowing-plankton.webp",
+  "screen": "dig",
+  "theme": "Velvet",
+  "skin": "Glowing plankton",
+  "shows": "Dig: the library open under the decks, and what could come next",
+  "alt": "Dig: the library open under the decks, and what could come next — djmanzo in the Velvet theme, worn with the Glowing plankton skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--caribbean--palms.webp",
+  "screen": "karaoke",
+  "theme": "Caribbean",
+  "skin": "Palm shadows",
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Caribbean theme, worn with the Palm shadows skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--carnaval--papel-picado.webp",
+  "screen": "karaoke",
+  "theme": "Carnaval",
+  "skin": "Papel picado",
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Carnaval theme, worn with the Papel picado skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/karaoke--karaoke-neon--halftone.webp",
+  "screen": "karaoke",
+  "theme": "Karaoke Neon",
+  "skin": "Halftone",
+  "shows": "Karaoke: the singers' panel and the library",
+  "alt": "Karaoke: the singers' panel and the library — djmanzo in the Karaoke Neon theme, worn with the Halftone skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/mix--karaoke-neon--halftone.webp",
+  "screen": "mix",
+  "theme": "Karaoke Neon",
+  "skin": "Halftone",
+  "shows": "Mix: two decks and the mixer",
+  "alt": "Mix: two decks and the mixer — djmanzo in the Karaoke Neon theme, worn with the Halftone skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/perform--bioluminescent-bay--waves.webp",
+  "screen": "perform",
+  "theme": "Bioluminescent Bay",
+  "skin": "Waves",
+  "shows": "Perform: stems and the sampler",
+  "alt": "Perform: stems and the sampler — djmanzo in the Bioluminescent Bay theme, worn with the Waves skin",
+  "width": 1600,
+  "height": 900
+ },
+ {
+  "src": "/shots/app/perform--industrial-techno--trash-polka.webp",
+  "screen": "perform",
+  "theme": "Industrial Techno",
+  "skin": "Trash polka",
+  "shows": "Perform: stems and the sampler",
+  "alt": "Perform: stems and the sampler — djmanzo in the Industrial Techno theme, worn with the Trash polka skin",
+  "width": 1600,
+  "height": 900
+ }
+]

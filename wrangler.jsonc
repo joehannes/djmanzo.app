@@ -1,0 +1,81 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "djmanzo",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-16",
+  // The Svelte build: the professional site at /, the earlier versions at
+  // /signal/, /shop/ and /island/. The Worker runs first for the API, the
+  // sign-in routes, djmanzo's licence protocol, the old /v4/ preview address,
+  // and the pages it renders for search engines and link previews; everything
+  // else is a static file.
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*", "/auth/*", "/login/*", "/callback/*", "/licence", "/renew", "/signout", "/v4", "/v4/", "/v4/index.html",
+      // Taking a signed voucher (worker/redeem.ts).
+      "/redeem",
+      // Pages with an address of their own, rendered with their words (worker/seo.ts).
+      "/", "/features", "/wishes", "/account", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
+    ]
+  },
+  "kv_namespaces": [{ "binding": "KV", "id": "63033c23be2046b08d74b2dc6d3902b1" }],
+  // Outboard and Talkback (§139): migrations/ applied with
+  // `npx wrangler d1 migrations apply djmanzo --remote`.
+  "d1_databases": [{ "binding": "DB", "database_name": "djmanzo", "database_id": "cf50ba3d-cc96-45d5-b8af-9ba9ea48658f", "migrations_dir": "migrations" }],
+  // Outboard's packs (and later the owner's loops and videos), served through
+  // the Worker; R2 was enabled on the account on 19 October.
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "djmanzo-media" }],
+  // Workers AI writes blog drafts when no ANTHROPIC_API_KEY secret is set.
+  "ai": { "binding": "AI" },
+  "vars": {
+    "SITE_NAME": "djmanzo",
+    // Any of these may also be set as secrets; a provider whose client id is
+    // missing is simply not offered. With none configured the site runs in
+    // demo mode and says so on every checkout and sign-in screen.
+    // ADMIN_EMAILS and ADMIN_TOKEN are secrets, never committed.
+    "DEMO_MODE": "auto",
+    "MAJOR_VERSION": "1",
+    "DOWNLOAD_BASE": "https://github.com/joehannes/djmanzo/releases/latest",
+    // What a djmanzo release names to sign in here (the owner set them on the
+    // Worker, 18 October). The Worker itself does not read them; a release
+    // takes them from the repository variables of the same names. Both are
+    // public: the site's address, and the `standard` field of
+    // /api/licence/public-key.
+    "DJMANZO_LICENCE_SERVICE": "https://djmanzo.johannes-neugschwentner.workers.dev",
+    "DJMANZO_LICENCE_KEY": "v/49WdbmMIr+dpxWg/bHppIJdOZqBJzGYnyrvUwzqoQ=",
+    // Public keys besides the shop's own whose vouchers /redeem believes
+    // (worker/voucher.ts): the desktop side's gift key, so the gift it made,
+    // MANZO-GIFT-LT5VUK, is honoured here as djmanzo honours it.
+    "DJMANZO_GIFT_KEYS": "D3CJiHuiUTvveveS69VWZJohTjd6i216vrgSFH6d4gg="
+  },
+  // A variable set in the dashboard survives a deploy.
+  "keep_vars": true,
+  "observability": { "enabled": true, "traces": { "enabled": true } },
+  // The browser tests' site (`wrangler dev --env test`, local only, never
+  // deployed): stand-in R2 and an imprint, so uploading and posting can be
+  // driven. A named environment inherits none of the bindings above. Its ids
+  // are placeholders that exist only locally, so it cannot reach the real
+  // site's data even if deployed by mistake.
+  "env": {
+    "test": {
+      "kv_namespaces": [{ "binding": "KV", "id": "00000000000000000000000000000000" }],
+      "d1_databases": [{ "binding": "DB", "database_name": "djmanzo", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "djmanzo-media-test" }],
+      "ai": { "binding": "AI" },
+      "vars": {
+        "SITE_NAME": "djmanzo",
+        "DEMO_MODE": "auto",
+        "MAJOR_VERSION": "1",
+        "DOWNLOAD_BASE": "https://github.com/joehannes/djmanzo/releases/latest",
+        "IMPRINT_NAME": "Test Owner",
+        "IMPRINT_ADDRESS": "Teststraße 1, 4020 Linz, Austria",
+        "IMPRINT_EMAIL": "owner@example.test",
+        "ADMIN_TOKEN": "crew-secret",
+        // The browser tests drive the scripted guide; no real AI is called, and none of the free share spent.
+        "AI_PROVIDER": "off"
+      }
+    }
+  }
+}
