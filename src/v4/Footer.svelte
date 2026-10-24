@@ -22,6 +22,7 @@
       <a href={href("features")}>{t("foot.features")}</a>
       <a href={href("pricing")}>{t("foot.pricing")}</a>
       <a href={RELEASES}>{t("foot.download")}</a>
+      <a href={href("releases")}>{t("foot.notes")}</a>
       <a href="/api/outboard/packs.json">{t("foot.packs")}</a>
     </nav>
     <nav aria-label={t("foot.community")}>

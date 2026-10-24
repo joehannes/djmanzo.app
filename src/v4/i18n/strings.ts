@@ -139,6 +139,17 @@ const en = {
   "hero.playing": "Drawn from the music as it plays, and from what is coming, ahead of the playhead.",
   "hero.idle": "Press play: a sketch of the groove, made on the spot. djmanzo plays your own records.",
   "hero.wave": "The deck's waveform: low, mid and high, the part ahead of the playhead still to play",
+  "notes.eyebrow": "Release notes",
+  "notes.title": "What changed, version by version",
+  "notes.lead": "Every change to djmanzo is a version. A new feature is a minor version, built for every system; a fix or a step on the way is a patch, which the next build carries.",
+  "notes.built": "Built for every system",
+  "notes.patch": "Patch · in the next build",
+  "notes.download": "Download",
+  "notes.unfetched": "The release notes could not be fetched just now. Try again in a minute.",
+  "notes.none": "No release notes yet.",
+  "notes.all": "Every version's notes",
+  "notes.new": "What's new",
+  "foot.notes": "Release notes",
 };
 
 export type Key = keyof typeof en;
@@ -237,6 +248,17 @@ const es: Partial<Record<Key, string>> = {
   "hero.playing": "Dibujada a partir de la música mientras suena, y de lo que viene por delante del cabezal.",
   "hero.idle": "Pulsa play: un boceto del groove, hecho al momento. djmanzo reproduce tus propios temas.",
   "hero.wave": "La forma de onda del plato: graves, medios y agudos; la parte por delante del cabezal aún por sonar",
+  "notes.eyebrow": "Notas de versión",
+  "notes.title": "Qué cambió, versión a versión",
+  "notes.lead": "Cada cambio en djmanzo es una versión. Una función nueva es una versión menor, compilada para todos los sistemas; un arreglo o un paso intermedio es un parche, que llega con la siguiente compilación.",
+  "notes.built": "Compilada para todos los sistemas",
+  "notes.patch": "Parche · en la próxima compilación",
+  "notes.download": "Descargar",
+  "notes.unfetched": "No se pudieron cargar las notas de versión. Inténtalo de nuevo en un minuto.",
+  "notes.none": "Aún no hay notas de versión.",
+  "notes.all": "Las notas de cada versión",
+  "notes.new": "Novedades",
+  "foot.notes": "Notas de versión",
 };
 
 const pt: Partial<Record<Key, string>> = {
@@ -334,6 +356,17 @@ const pt: Partial<Record<Key, string>> = {
   "hero.playing": "Desenhada a partir da música enquanto toca, e do que vem à frente do cursor.",
   "hero.idle": "Aperte play: um esboço do groove, feito na hora. O djmanzo toca as suas próprias faixas.",
   "hero.wave": "A forma de onda do deck: graves, médios e agudos; a parte à frente do cursor ainda por tocar",
+  "notes.eyebrow": "Notas de versão",
+  "notes.title": "O que mudou, versão por versão",
+  "notes.lead": "Cada mudança no djmanzo é uma versão. Um recurso novo é uma versão menor, compilada para todos os sistemas; uma correção ou um passo no caminho é um patch, que vem na próxima compilação.",
+  "notes.built": "Compilada para todos os sistemas",
+  "notes.patch": "Patch · na próxima compilação",
+  "notes.download": "Baixar",
+  "notes.unfetched": "Não foi possível carregar as notas de versão agora. Tente de novo em um minuto.",
+  "notes.none": "Ainda não há notas de versão.",
+  "notes.all": "As notas de cada versão",
+  "notes.new": "Novidades",
+  "foot.notes": "Notas de versão",
 };
 
 const de: Partial<Record<Key, string>> = {
@@ -431,6 +464,17 @@ const de: Partial<Record<Key, string>> = {
   "hero.playing": "Gezeichnet aus der Musik, während sie läuft, und aus dem, was vor dem Abspielkopf noch kommt.",
   "hero.idle": "Drück Play: eine Skizze des Grooves, live erzeugt. djmanzo spielt deine eigenen Tracks.",
   "hero.wave": "Die Wellenform des Decks: Bässe, Mitten und Höhen; der Teil vor dem Abspielkopf kommt noch",
+  "notes.eyebrow": "Versionshinweise",
+  "notes.title": "Was sich geändert hat, Version für Version",
+  "notes.lead": "Jede Änderung an djmanzo ist eine Version. Eine neue Funktion ist eine Minor-Version, gebaut für jedes System; ein Fix oder ein Schritt auf dem Weg ist ein Patch, den der nächste Build mitbringt.",
+  "notes.built": "Gebaut für jedes System",
+  "notes.patch": "Patch · im nächsten Build",
+  "notes.download": "Download",
+  "notes.unfetched": "Die Versionshinweise konnten gerade nicht geladen werden. Versuch es in einer Minute noch einmal.",
+  "notes.none": "Noch keine Versionshinweise.",
+  "notes.all": "Die Hinweise jeder Version",
+  "notes.new": "Neu",
+  "foot.notes": "Versionshinweise",
 };
 
 const fr: Partial<Record<Key, string>> = {
@@ -528,6 +572,17 @@ const fr: Partial<Record<Key, string>> = {
   "hero.playing": "Dessinée à partir de la musique pendant qu'elle joue, et de ce qui arrive devant la tête de lecture.",
   "hero.idle": "Appuyez sur play : une esquisse du groove, faite sur le moment. djmanzo joue vos propres morceaux.",
   "hero.wave": "La forme d'onde de la platine : graves, médiums et aigus ; la partie devant la tête de lecture reste à jouer",
+  "notes.eyebrow": "Notes de version",
+  "notes.title": "Ce qui a changé, version par version",
+  "notes.lead": "Chaque changement de djmanzo est une version. Une nouvelle fonction est une version mineure, compilée pour tous les systèmes ; un correctif ou une étape intermédiaire est un patch, que la prochaine compilation apporte.",
+  "notes.built": "Compilée pour tous les systèmes",
+  "notes.patch": "Patch · dans la prochaine compilation",
+  "notes.download": "Télécharger",
+  "notes.unfetched": "Les notes de version n'ont pas pu être chargées. Réessayez dans une minute.",
+  "notes.none": "Pas encore de notes de version.",
+  "notes.all": "Les notes de chaque version",
+  "notes.new": "Nouveautés",
+  "foot.notes": "Notes de version",
 };
 
 const it: Partial<Record<Key, string>> = {
@@ -624,6 +679,17 @@ const it: Partial<Record<Key, string>> = {
   "hero.playing": "Disegnata dalla musica mentre suona, e da ciò che arriva oltre la testina.",
   "hero.idle": "Premi play: uno schizzo del groove, creato al momento. djmanzo suona i tuoi brani.",
   "hero.wave": "La forma d'onda del deck: bassi, medi e alti; la parte oltre la testina è ancora da suonare",
+  "notes.eyebrow": "Note di versione",
+  "notes.title": "Cosa è cambiato, versione per versione",
+  "notes.lead": "Ogni modifica a djmanzo è una versione. Una nuova funzione è una versione minore, compilata per ogni sistema; una correzione o un passo intermedio è una patch, che arriva con la prossima build.",
+  "notes.built": "Compilata per ogni sistema",
+  "notes.patch": "Patch · nella prossima build",
+  "notes.download": "Scarica",
+  "notes.unfetched": "Non è stato possibile caricare le note di versione. Riprova tra un minuto.",
+  "notes.none": "Ancora nessuna nota di versione.",
+  "notes.all": "Le note di ogni versione",
+  "notes.new": "Novità",
+  "foot.notes": "Note di versione",
 };
 
 const ja: Partial<Record<Key, string>> = {
@@ -721,6 +787,17 @@ const ja: Partial<Record<Key, string>> = {
   "hero.playing": "再生中の音楽と、再生位置の先にこれから来る部分から描いています。",
   "hero.idle": "再生を押すと、その場で作ったグルーヴのスケッチが流れます。djmanzoで流すのはあなた自身の曲です。",
   "hero.wave": "デッキの波形：低域・中域・高域。再生位置の先はこれから流れる部分",
+  "notes.eyebrow": "リリースノート",
+  "notes.title": "バージョンごとの変更点",
+  "notes.lead": "djmanzoへの変更はすべてバージョンになります。新機能はマイナーバージョンとして、すべてのシステム向けにビルドされます。修正や途中の一歩はパッチとして、次のビルドに含まれます。",
+  "notes.built": "すべてのシステム向けにビルド",
+  "notes.patch": "パッチ · 次のビルドに収録",
+  "notes.download": "ダウンロード",
+  "notes.unfetched": "リリースノートを読み込めませんでした。1分後にもう一度お試しください。",
+  "notes.none": "リリースノートはまだありません。",
+  "notes.all": "すべてのバージョンのノート",
+  "notes.new": "新着",
+  "foot.notes": "リリースノート",
 };
 
 export const STRINGS: Record<Lang, Partial<Record<Key, string>>> = { en, es, pt, de, fr, it, ja };

@@ -8,7 +8,7 @@
  * `/signal/`).
  */
 
-export const PAGES = ["home", "features", "pricing", "market", "community", "account", "wishes", "read"] as const;
+export const PAGES = ["home", "features", "pricing", "market", "community", "account", "wishes", "releases", "read"] as const;
 export type PageId = (typeof PAGES)[number];
 
 export interface Route {
@@ -24,10 +24,11 @@ const PATH_OF: Record<Exclude<PageId, "home" | "read">, string> = {
   community: "talkback",
   account: "account",
   wishes: "wishes",
+  releases: "releases",
 };
 const PAGE_OF: Record<string, PageId> = Object.fromEntries(Object.entries(PATH_OF).map(([page, path]) => [path, page as PageId]));
 /** Pages that take nothing after their name. */
-const BARE: PageId[] = ["pricing", "account", "wishes"];
+const BARE: PageId[] = ["pricing", "account", "wishes", "releases"];
 /** Pages the Worker writes: shown as they came, inside the site. */
 const READ = ["blog", "imprint", "terms", "rules", "privacy"];
 

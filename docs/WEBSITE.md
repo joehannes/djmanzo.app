@@ -921,3 +921,37 @@ entrance are whole again, in the new words.
 - **Next**: the home sections' own texts, the other pages, the facts
   (`shared/facts.ts`), the look names and the visitor's country line
   (`shared/flavours.ts`), and the server-rendered pages for search engines.
+
+## Release notes, every version, in the visitor's language (24 October)
+
+The owner's rule: every commit to djmanzo is a patch version, every
+feature a minor version built for every system, and every push carries
+release notes in the seven languages the site speaks. They are djmanzo's
+`contracts/release-notes.json`. djmanzo's own test holds them to its
+version and to all seven languages.
+
+- **The Worker** reads that file from djmanzo's `main` with
+  `GITHUB_RELEASES_TOKEN` and keeps it ten minutes (`worker/notes.ts`,
+  `GET /api/release-notes`). It keeps only versions that have a date and
+  English notes, and marks a minor or major version `built`. When GitHub
+  refuses, it answers 502 with GitHub's reason.
+- **`/releases`** (`pages/Releases.svelte`) shows every version newest
+  first, like a tracklist, in the visitor's language. A language a
+  version lacks falls back to English. A minor version is drawn as a
+  record, "built for every system", with Download beside it. A patch is a
+  smaller line, "in the next build". `/releases#v0.50.0` links to one
+  version. The Worker also renders the page in English for search engines,
+  and it is in the sitemap.
+- **What's new** on the home page shows the three newest versions from the
+  same notes, each linking to its place on `/releases`. The footer links
+  to the page.
+- **A trap found driving it:** a refused `fetch` whose body is never read
+  stays open in Chromium. The page then never reaches network idle, and
+  the phone test timed out. Both readers now read the body of a refusal
+  too.
+- **Tests:** `test/notes.test.ts` covers the shape the Worker keeps, the
+  route with GitHub stood in for (token sent, cached, a refusal said and
+  asked again), and djmanzo's own file read whole from `app/`. A browser
+  test covers the page in German, the English fallback, and the footer
+  link in Japanese. Mutation-tested: showing the notes only in English
+  fails it.

@@ -26,6 +26,7 @@ import { SUBTITLE, TITLE } from "../src/signal/auxiliary/routes";
 import type { AppEnv } from "./env";
 import { HttpError, SECURITY_HEADERS } from "./http";
 import * as blog from "./blog";
+import * as releaseNotes from "./notes";
 import * as community from "./community";
 import * as market from "./market";
 import * as people from "./people";
@@ -442,6 +443,29 @@ function features(origin: string): Page {
   };
 }
 
+/** What changed in djmanzo, version by version, in English; the page itself speaks the visitor's language. */
+async function releasesPage(env: AppEnv, origin: string): Promise<Page> {
+  const got = await releaseNotes.list(env);
+  const list = "list" in got ? got.list : [];
+  return {
+    status: 200,
+    title: `Release notes — ${SITE}`,
+    description: "What changed in djmanzo, version by version: every feature a minor version, built for every system; every fix and step on the way a patch.",
+    path: "/releases",
+    jsonld: [{ "@type": "WebPage", name: "Release notes", url: `${origin}/releases` }, crumbs(origin, [["Release notes", "/releases"]])],
+    body: [
+      `<h1>Release notes</h1>`,
+      `<p>Every change to djmanzo is a version. A new feature is a minor version, built for every system; a fix or a step on the way is a patch, which the next build carries.</p>`,
+      ...(list.length
+        ? list.slice(0, 60).map(
+            (r) =>
+              `<h2 id="v${esc(r.version)}">v${esc(r.version)} — ${esc(r.title.en ?? "")}</h2>\n<p><time datetime="${esc(r.date)}">${esc(r.date)}</time> · ${r.built ? "built for every system" : "a patch, in the next build"}</p>\n<ul>${(r.notes.en ?? []).map((l) => `<li>${esc(l)}</li>`).join("")}</ul>`,
+          )
+        : [`<p>The release notes could not be read just now.</p>`]),
+    ].join("\n"),
+  };
+}
+
 /** The feature requests, most wanted first, each with what became of it. */
 async function wishesPage(env: AppEnv, origin: string): Promise<Page> {
   const list = await community.wishes(env);
@@ -545,6 +569,7 @@ export async function pageFor(env: AppEnv, url: URL): Promise<Page | null> {
   if ((first === "imprint" || first === "terms" || first === "rules" || first === "privacy") && parts.length === 1) return legal(env, origin, first);
   if (first === "features" && parts.length === 1) return features(origin);
   if (first === "wishes" && parts.length === 1) return wishesPage(env, origin);
+  if (first === "releases" && parts.length === 1) return releasesPage(env, origin);
   if (first === "account" && parts.length === 1) return account(origin);
   if (first === "blog") {
     const lang = url.searchParams.get("lang") || "en";
@@ -585,7 +610,7 @@ const xml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 /** Everything anyone may read, with when it last changed where that is known. */
 export async function sitemap(env: AppEnv, origin: string): Promise<Response> {
   type Entry = { path: string; lastmod?: number; alternates?: { lang: string; path: string }[] };
-  const entries: Entry[] = ["/", "/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/features", "/wishes"].map((path) => ({ path }));
+  const entries: Entry[] = ["/", "/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/features", "/wishes", "/releases"].map((path) => ({ path }));
   entries.push(...COMMUNITIES.map((c) => ({ path: `/talkback/c/${c.id}` })));
   if (env.DB) {
     const items = await market.listing(env);

@@ -43,7 +43,7 @@ export const MOST_NOTES = 4000;
 const UA = { "user-agent": "djmanzo-website", accept: "application/vnd.github+json" };
 
 /** GitHub's headers, with the read token when the owner has set one. */
-function headers(env: AppEnv, accept = UA.accept): Record<string, string> {
+export function headers(env: AppEnv, accept = UA.accept): Record<string, string> {
   const h: Record<string, string> = { "user-agent": UA["user-agent"], accept };
   if (env.GITHUB_RELEASES_TOKEN) h.authorization = `Bearer ${env.GITHUB_RELEASES_TOKEN}`;
   return h;

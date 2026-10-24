@@ -30,6 +30,7 @@ import * as model from "./model";
 import * as promo from "./promo";
 import * as redeem from "./redeem";
 import * as update from "./update";
+import * as releaseNotes from "./notes";
 import * as voucher from "./voucher";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
@@ -212,6 +213,7 @@ route("GET", "/api/update/:target/:arch/:current", (c) => update.check(c.env, c.
 // The newest release's installers, and one of its files (`worker/update.ts`).
 route("GET", "/api/download", (c) => update.downloads(c.env, c.url.origin));
 route("GET", "/api/releases", (c) => update.recent(c.env));
+route("GET", "/api/release-notes", (c) => releaseNotes.notes(c.env));
 route("GET", "/download/latest/:key", (c) => update.newest(c.env, c.params.key));
 route("GET", "/download/:file", (c) => update.file(c.env, decodeURIComponent(c.params.file)));
 

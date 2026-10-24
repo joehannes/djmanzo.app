@@ -19,7 +19,7 @@
       // The newest release's files, through the site (worker/update.ts).
       "/download/*",
       // Pages with an address of their own, rendered with their words (worker/seo.ts).
-      "/", "/features", "/wishes", "/account", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
+      "/", "/features", "/wishes", "/releases", "/account", "/outboard", "/outboard/*", "/talkback", "/talkback/*", "/imprint", "/terms", "/rules", "/privacy", "/blog", "/blog/*", "/robots.txt", "/sitemap.xml"
     ]
   },
   "kv_namespaces": [{ "binding": "KV", "id": "63033c23be2046b08d74b2dc6d3902b1" }],

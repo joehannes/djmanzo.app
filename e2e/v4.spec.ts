@@ -325,3 +325,31 @@ test("the flag beside the look picks the language: the bar, the welcome written 
   await expect(page.locator("footer")).toContainText("利用規約");
   expect(errs).toEqual([]);
 });
+
+test("release notes: every version in the visitor's language, a feature's built for every system, a patch carried by the next build", async ({ page }) => {
+  const errs = errors(page);
+  const lines = (s: string) => Object.fromEntries(["en", "es", "pt", "de", "fr", "it", "ja"].map((l) => [l, [`${s} (${l})`]]));
+  const titles = (s: string) => Object.fromEntries(["en", "es", "pt", "de", "fr", "it", "ja"].map((l) => [l, `${s} (${l})`]));
+  // djmanzo's notes, as /api/release-notes serves them from GitHub.
+  await page.route("**/api/release-notes", (r) =>
+    r.fulfill({
+      json: [
+        { version: "0.50.1", date: "2026-10-25", built: false, title: titles("A fix"), notes: lines("Fixed") },
+        { version: "0.50.0", date: "2026-10-24", built: true, title: titles("A feature"), notes: { en: ["New"], de: ["Neu"] } },
+      ],
+    }),
+  );
+  await page.goto("/releases?lang=de#v0.50.0");
+  await expect(page.locator("h1")).toHaveText("Was sich geändert hat, Version für Version");
+  await expect(page.locator("[data-version]")).toHaveCount(2);
+  await expect(page.locator("[data-version='0.50.1']")).toContainText("Patch · im nächsten Build");
+  await expect(page.locator("[data-version='0.50.1']")).toContainText("Fixed (de)");
+  await expect(page.locator("[data-version='0.50.0']")).toContainText("Gebaut für jedes System · Download");
+  await expect(page.locator("[data-version='0.50.0'] li")).toHaveText(["Neu"]);
+  // A language the notes lack falls back to English.
+  await page.goto("/releases?lang=ja");
+  await expect(page.locator("[data-version='0.50.0'] li")).toHaveText(["New"]);
+  // And the footer leads there.
+  await expect(page.locator("footer a[href='/releases']")).toHaveText("リリースノート");
+  expect(errs).toEqual([]);
+});

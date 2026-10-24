@@ -27,6 +27,7 @@
   import Account from "./pages/Account.svelte";
   import Wishes from "./pages/Wishes.svelte";
   import Features from "./pages/Features.svelte";
+  import Releases from "./pages/Releases.svelte";
   import Toast from "./Toast.svelte";
   import { flavourOf } from "../../shared/flavours";
   import { i18n } from "./i18n.svelte";
@@ -127,6 +128,8 @@
     <Account />
   {:else if route.page === "wishes"}
     <Wishes />
+  {:else if route.page === "releases"}
+    <Releases />
   {:else if route.page === "read"}
     <Read />
   {:else}

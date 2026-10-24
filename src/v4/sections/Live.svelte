@@ -11,7 +11,7 @@
   import Preview from "../../signal/auxiliary/Preview.svelte";
   import { href } from "../router";
   import { shared } from "../region.svelte";
-  import { RELEASES } from "../download";
+  import { LANG_INFO, i18n, t } from "../i18n.svelte";
 
   interface Card {
     id: string;
@@ -32,36 +32,38 @@
     comments: number;
     created: number;
   }
-  interface Release {
-    name: string;
-    tag_name: string;
-    published_at: string;
-    html_url: string;
-    body: string | null;
-    prerelease: boolean;
+  /** A version's notes (`/api/release-notes`, djmanzo's contracts/release-notes.json). */
+  interface Note {
+    version: string;
+    date: string;
+    built: boolean;
+    title: Partial<Record<keyof typeof LANG_INFO, string>>;
+    notes: Partial<Record<keyof typeof LANG_INFO, string[]>>;
   }
 
   let items = $state<Card[] | null>(null);
   let posts = $state<Post[] | null>(null);
-  let releases = $state<Release[] | null>(null);
+  let releases = $state<Note[] | null>(null);
   const communityName = (id: string) => COMMUNITIES.find((c) => c.id === id)?.name ?? id;
-  const date = (s: string | number) => new Date(s).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
 
-  /** A release's first sentence of prose, past its heading and its download table. */
-  function gist(body: string | null): string {
-    const line = (body ?? "")
-      .split("\n")
-      .map((l) => l.trim())
-      .find((l) => l && !l.startsWith("#") && !l.startsWith("|"));
-    return (line ?? "").replace(/[*_`]/g, "").slice(0, 180);
-  }
+  /** A version's title and first line, in the visitor's language where the notes have it. */
+  const titleOf = (n: Note) => n.title[i18n.lang] ?? n.title.en ?? "";
+  const gist = (n: Note) => (n.notes[i18n.lang] ?? n.notes.en ?? [])[0]?.slice(0, 200) ?? "";
+  const day = (d: string) => {
+    try {
+      return new Intl.DateTimeFormat(LANG_INFO[i18n.lang].tag, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${d}T00:00:00Z`));
+    } catch {
+      return d;
+    }
+  };
 
   onMount(() => {
     api<Card[]>("/api/outboard/items").then((r) => (items = r.slice(0, 4)), () => (items = []));
     api<Post[]>("/api/talkback/posts?sort=hot").then((r) => (posts = r.slice(0, 5)), () => (posts = []));
-    fetch("/api/releases")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((r: Release[]) => (releases = r), () => (releases = []));
+    // A refusal's body is read too: one left unread holds the request open.
+    fetch("/api/release-notes")
+      .then(async (r) => (r.ok ? r.json() : (await r.text(), [])))
+      .then((r: Note[]) => (releases = r.slice(0, 3)), () => (releases = []));
   });
 </script>
 
@@ -114,20 +116,20 @@
     </div>
 
     <div class="releases" id="releases">
-      <header><h3 class="h3" data-reveal>What's new</h3><a href={RELEASES} class="more">Download →</a></header>
+      <header><h3 class="h3" data-reveal>{t("notes.new")}</h3><a href={href("releases")} class="more">{t("notes.all")} →</a></header>
       {#if releases && releases.length}
         <ol class="rel">
-          {#each releases as r (r.tag_name)}
-            <li data-reveal data-release={r.tag_name}>
-              <span class="mono tag">{r.tag_name}</span>
-              <span class="mono when">{date(r.published_at)}</span>
-              <a href={r.html_url}>{r.name}</a>
-              {#if gist(r.body)}<p>{gist(r.body)}</p>{/if}
+          {#each releases as r (r.version)}
+            <li data-reveal data-release={`v${r.version}`}>
+              <span class="mono tag">v{r.version}{#if r.built}{` · ${t("notes.built")}`}{/if}</span>
+              <span class="mono when">{day(r.date)}</span>
+              <a href={`${href("releases")}#v${r.version}`}>{titleOf(r)}</a>
+              {#if gist(r)}<p>{gist(r)}</p>{/if}
             </li>
           {/each}
         </ol>
       {:else if releases}
-        <p class="empty">The newest release is on <a href={RELEASES}>the download screen</a>.</p>
+        <p class="empty"><a href={href("releases")}>{t("notes.all")}</a></p>
       {/if}
     </div>
   </div>

@@ -77,7 +77,7 @@ licence unlocks the rest — so a buyer and a Hobbyist get the same file:
 
 | What | Where |
 |---|---|
-| `GITHUB_RELEASES_TOKEN` | secret: a **fine-grained** personal access token for joehannes/djmanzo only, *Contents: read*, nothing else. The site lists the latest release with it and streams the asset to the visitor, so the token never leaves the Worker |
+| `GITHUB_RELEASES_TOKEN` | secret: a **fine-grained** personal access token for joehannes/djmanzo only, *Contents: read*, nothing else. The site lists the latest release with it and streams the asset to the visitor, so the token never leaves the Worker; it also reads djmanzo's `contracts/release-notes.json` for the release notes page (`/releases`). Without it GitHub allows 60 unauthenticated requests an hour |
 
 The other way is to publish the installers somewhere public (a public
 `djmanzo-releases` repository the release workflow also uploads to, or R2).
