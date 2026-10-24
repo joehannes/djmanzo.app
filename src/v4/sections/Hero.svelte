@@ -80,11 +80,11 @@
     {/if}
     <p class="eyebrow" data-hero-rise>DJ and karaoke software · macOS and Linux</p>
     <h1 class="h1" id="hero-title" bind:this={title}>
-      <span class="line"><span>Play the room.</span></span>
-      <span class="line"><span class="accent">Hear it think.</span></span>
+      <span class="line"><span>Everything you mix with.</span></span>
+      <span class="line"><span class="accent">And a second pair of ears.</span></span>
     </h1>
     <p class="lead" data-hero-rise>
-      Live stems, an assistant that explains its suggestions and can take over the mix, a karaoke night built in, and a free edition that stays free. {skin().line}
+      Welcome to the booth. Your decks, sync, cues, loops and effects are where your hands expect them, and your rekordbox, Serato or Traktor crates come along with their cues and grids. Then the new things: any record taken apart into vocals, drums and bass while it plays; a whole karaoke night in the same download; and an assistant that suggests the next record and says why, waits for your yes, and lets go the moment you touch a control. Try it tonight. {skin().line}
     </p>
     <div class="ctas" data-hero-rise>
       <DownloadButton id="get" />

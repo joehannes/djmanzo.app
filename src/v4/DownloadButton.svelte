@@ -24,8 +24,9 @@
   /** A file's kind in a few words, for the button: ".deb", "Apple silicon". */
   const short = (f: File) => f.label.replace(/^(macOS|Linux|Windows)(,\s*)?/, "").replace(/\s*\(.*\)$/, "") || f.name;
 
+  /** A file: downloaded. None (the list not fetched, or nothing for this system): the menu, which says why. */
   function get(f: File | null) {
-    open = false;
+    open = !f;
     if (f) location.assign(f.href);
   }
 
@@ -70,7 +71,7 @@
 
 <div class="split" {id} bind:this={root} data-download-button data-os={choice.os}>
   <div class="face" bind:this={main}>
-    <button class="btn primary go" onclick={() => get(best)} disabled={!best} data-download-default={best?.key ?? ""}>
+    <button class="btn primary go" onclick={() => get(best)} data-download-default={best?.key ?? ""}>
       <OsIcon os={choice.os} size={18} />
       <span>Download for {SYSTEM_NAME[choice.os]}{#if best}<span class="kind">{short(best)}</span>{/if}</span>
     </button>
