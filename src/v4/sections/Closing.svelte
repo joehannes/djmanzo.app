@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { STATUS_LINE } from "../../../shared/facts";
+  import { statusLine } from "../i18n/facts.svelte";
   import { shared } from "../region.svelte";
   import { href } from "../router";
   import { SYSTEM_NAME, filesFor, latest, osOf, sizeOf, type Latest } from "../download";
@@ -59,7 +59,7 @@
       <a class="btn ghost" href={href("account")}>{t("closing.account")}</a>
       <a class="btn ghost" href={href("pricing")}>{t("closing.compare")}</a>
     </div>
-    <p class="status-line" data-reveal>{STATUS_LINE}</p>
+    <p class="status-line" data-reveal>{statusLine()}</p>
   </div>
 </section>
 

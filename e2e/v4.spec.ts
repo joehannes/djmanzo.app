@@ -346,6 +346,24 @@ test("the flag beside the look picks the language: the bar, the welcome written 
   expect(errs).toEqual([]);
 });
 
+test("every feature, the home page's sections and the status line follow the language, and English comes straight back", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/?lang=de");
+  await expect(page.locator("#hl-title")).toHaveText("Warum DJs und Karaoke-Gastgeber zweimal hinschauen");
+  await expect(page.locator("#stems-title")).not.toContainText("Take any record apart");
+  await expect(page.locator("footer")).toContainText("djmanzo ist in der Beta");
+  await page.goto("/features?lang=ja");
+  await expect(page.locator("#h-mixing")).toHaveText("ミックス");
+  await expect(page.locator("[data-fact=decks] h3")).toHaveText("2 台のデッキとミキサー");
+  await expect(page.locator("[data-fact=windows] .waits")).toHaveText("Windows マシンで実際に動かしてくれる人。");
+  await expect(page.locator("[data-fact=dvs] .caveat")).toHaveText("プレスしたレコードではまだ試していません。");
+  await page.locator("[data-lang-picker]").click();
+  await page.locator("[data-lang=en]").click();
+  await expect(page.locator("[data-fact=decks] h3")).toHaveText("Two decks and the mixer");
+  await expect(page.locator("#h-mixing")).toHaveText("Mixing");
+  expect(errs).toEqual([]);
+});
+
 test("release notes: every version in the visitor's language, a feature's built for every system, a patch carried by the next build", async ({ page }) => {
   const errs = errors(page);
   const lines = (s: string) => Object.fromEntries(["en", "es", "pt", "de", "fr", "it", "ja"].map((l) => [l, [`${s} (${l})`]]));

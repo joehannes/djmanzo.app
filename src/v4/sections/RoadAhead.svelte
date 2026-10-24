@@ -8,6 +8,7 @@
   import { onMount } from "svelte";
   import { FACTS, type Fact } from "../../../shared/facts";
   import { t } from "../i18n.svelte";
+  import { tf } from "../i18n/facts.svelte";
   import { gsap, reduced, ScrollTrigger } from "../motion";
   import { riser, scratch } from "../sfx.svelte";
 
@@ -56,7 +57,8 @@
         <h3 class="h3" data-reveal>{t(WORD[g.how])}</h3>
         <p class="dim small about" data-reveal>{t(ABOUT[g.how])}</p>
         <ul class="items">
-          {#each g.facts as f (f.id)}
+          {#each g.facts as raw (raw.id)}
+            {@const f = tf(raw) as typeof raw}
             <li class="item card" data-reveal data-soon={f.id}>
               <button class="disc" aria-label={`${f.name}: ${t(WORD[g.how])}`} onclick={scratch}>
                 <svg viewBox="0 0 72 72" aria-hidden="true">

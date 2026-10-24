@@ -6,6 +6,7 @@
  */
 
 import { ENGLISH, LANGS, LANG_INFO, STRINGS, type Key, type Lang } from "./i18n/strings";
+import { loadFacts } from "./i18n/facts.svelte";
 
 export { LANGS, LANG_INFO, type Lang };
 
@@ -51,6 +52,7 @@ function apply(lang: Lang, chosen: boolean) {
   i18n.lang = lang;
   i18n.chosen = chosen;
   document.documentElement.lang = LANG_INFO[lang].tag;
+  loadFacts(lang);
 }
 
 /** The phrase for a key made from data (`kind.<file kind>`), or `fallback` where the site has none. */

@@ -6,6 +6,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { animate } from "../motion";
+  import { i18n } from "../i18n.svelte";
+  import { HOME } from "../i18n/home";
   import { art, shared } from "../region.svelte";
   import Hero from "../sections/Hero.svelte";
   import Stems from "../sections/Stems.svelte";
@@ -23,21 +25,15 @@
   let root: HTMLElement;
   onMount(() => animate(root));
 
-  const PROOF = [
-    { k: "macOS · Linux", v: "Native on both" },
-    { k: "Windows", v: "Built, not yet run by a person" },
-    { k: "Hobbyist", v: "Free, for ever" },
-    { k: "Open", v: "OSC and JSON control, MIDI clock, CLAP" },
-    { k: "Beta", v: "Not yet through a real gig" },
-  ];
+  const w = $derived(HOME[i18n.lang]);
 </script>
 
 <div bind:this={root}>
   <Hero />
 
-  <div class="proof" aria-label="At a glance">
+  <div class="proof" aria-label={w.proofLabel}>
     <ul class="wrap">
-      {#each PROOF as p (p.k)}
+      {#each w.proof as p (p.k)}
         <li data-reveal><b class="mono">{p.k}</b><span>{p.v}</span></li>
       {/each}
     </ul>
@@ -52,12 +48,12 @@
 
   <Feature
     id="assistant"
-    eyebrow="The assistant"
-    title="Suggestions that say why. A mix that runs itself, until you touch it."
-    lead="djmanzo ranks what could come next by key, tempo, loudness and phrase, and tells you its reasons. Hand it the night and it mixes; move a fader and it steps back."
+    eyebrow={w.features.assistant.eyebrow}
+    title={w.features.assistant.title}
+    lead={w.features.assistant.lead}
     facts={["suggest", "asks", "automix", "autopilot-surface"]}
     image={shared("autopilot")}
-    alt="An empty DJ booth at sunrise after a beach party, the decks still lit"
+    alt={w.features.assistant.alt}
   />
 
   <div class="divider wrap" aria-hidden="true"></div>
@@ -66,22 +62,22 @@
 
   <Feature
     id="visuals"
-    eyebrow="Video and visuals"
-    title="Pictures — and lights — that move with the music."
-    lead="Video on a deck, crossfading as the sound does; layered looks and MilkDrop presets for the screen behind you; the room's lights on the beat and the phrase; what is playing, shown on your stream."
+    eyebrow={w.features.visuals.eyebrow}
+    title={w.features.visuals.title}
+    lead={w.features.visuals.lead}
     facts={["visuals", "lights", "live", "record"]}
     image={shared("visuals")}
-    alt="A DJ silhouetted in front of a huge LED wall of flowing liquid visuals"
+    alt={w.features.visuals.alt}
   />
 
   <Feature
     id="learn"
-    eyebrow="Learn"
-    title="A teacher in the software."
-    lead="A practice deck only your headphones hear, a coach that names what your hands just did, and a course from the first beatmatch to the first gig."
+    eyebrow={w.features.learn.eyebrow}
+    title={w.features.learn.title}
+    lead={w.features.learn.lead}
     facts={["teacher", "curriculum", "knowhow"]}
     image={shared("learn")}
-    alt="A DJ teaching a student at a controller in a small studio"
+    alt={w.features.learn.alt}
     flip
   />
 

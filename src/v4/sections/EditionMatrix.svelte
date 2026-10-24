@@ -10,6 +10,7 @@
 <script lang="ts">
   import { EDITION_INFO, MODULE_TITLE, type Edition } from "../../../shared/catalog";
   import { AREAS, FACTS, areaOf, carriedBy, type Area, type Fact } from "../../../shared/facts";
+  import { ta, tf } from "../i18n/facts.svelte";
 
   let { chosen = null, onpick }: { chosen?: Edition | null; onpick?: (e: Edition) => void } = $props();
 
@@ -23,10 +24,10 @@
   const everywhere = (f: Fact) => COLUMNS.every((e) => carried(f, e));
   const groups = $derived(
     AREAS.filter((a) => a.id !== "editions")
-      .map((a) => ({ ...a, facts: FACTS.filter((f) => f.status !== "planned" && areaOf(f) === a.id && (!differences || !everywhere(f))) }))
+      .map((a) => ({ ...ta(a), facts: FACTS.map(tf).filter((f) => f.status !== "planned" && areaOf(f) === a.id && (!differences || !everywhere(f))) }))
       .filter((g) => g.facts.length),
   );
-  const planned = FACTS.filter((f) => f.status === "planned" && f.module !== "foundation");
+  const planned = $derived(FACTS.filter((f) => f.status === "planned" && f.module !== "foundation").map(tf));
   const count = (e: Edition) => FACTS.filter((f) => f.status !== "planned" && areaOf(f) !== "editions" && carried(f, e)).length;
   const total = FACTS.filter((f) => f.status !== "planned" && areaOf(f) !== "editions").length;
 

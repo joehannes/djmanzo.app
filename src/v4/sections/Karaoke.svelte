@@ -9,6 +9,7 @@
 -->
 <script lang="ts">
   import { FACT_BY_ID } from "../../../shared/facts";
+  import { tf } from "../i18n/facts.svelte";
   import { skin } from "../region.svelte";
   import { pick } from "../shots";
   import Shot from "./Shot.svelte";
@@ -55,7 +56,7 @@
             <h3 class="h3">{part.when}</h3>
           </header>
           <ul>
-            {#each part.ids.map((id) => FACT_BY_ID[id]).filter(Boolean) as f (f.id)}
+            {#each part.ids.map((id) => FACT_BY_ID[id]).filter(Boolean).map(tf) as f (f.id)}
               <li data-fact={f.id}>
                 <b>{f.name}</b>
                 <p>{f.about}</p>

@@ -9,6 +9,7 @@
   import { onMount } from "svelte";
   import { EDITION_INFO, type Edition } from "../../../shared/catalog";
   import { AREAS, FACTS, areaOf, carriedBy, type Area, type Fact } from "../../../shared/facts";
+  import { ta, tf } from "../i18n/facts.svelte";
   import { animate } from "../motion";
   import { skin } from "../region.svelte";
   import { pick } from "../shots";
@@ -35,7 +36,7 @@
     if (edition && (f.status === "planned" || !carriedBy(f, EDITION_INFO[edition].modules))) return false;
     return status === "all" || f.status === status;
   };
-  const groups = $derived(AREAS.map((a) => ({ ...a, facts: FACTS.filter((f) => areaOf(f) === a.id && matches(f)) })).filter((g) => g.facts.length));
+  const groups = $derived(AREAS.map((a) => ({ ...ta(a), facts: FACTS.map(tf).filter((f) => areaOf(f) === a.id && matches(f)) })).filter((g) => g.facts.length));
   const counts = { shipped: FACTS.filter((f) => f.status === "shipped").length, part: FACTS.filter((f) => f.status === "part").length, planned: FACTS.filter((f) => f.status === "planned").length };
   const shown = $derived(groups.reduce((n, g) => n + g.facts.length, 0));
 

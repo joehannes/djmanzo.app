@@ -3,7 +3,7 @@
   other versions of the site, still there.
 -->
 <script lang="ts">
-  import { STATUS_LINE } from "../../shared/facts";
+  import { statusLine } from "./i18n/facts.svelte";
   import { region, skin } from "./region.svelte";
   import { href } from "./router";
   import { RELEASES } from "./download";
@@ -14,7 +14,7 @@
   <div class="wrap grid">
     <div class="about">
       <p class="brand">djmanzo</p>
-      <p class="dim small">{STATUS_LINE}</p>
+      <p class="dim small">{statusLine()}</p>
       <p class="dim small mono look" data-look>{t("foot.look")}: {skin().name} · {skin().region}{region.country ? ` · ${region.country}` : ""}</p>
     </div>
     <nav aria-label={t("foot.product")}>

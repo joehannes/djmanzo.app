@@ -10,26 +10,29 @@
   import { pick } from "../shots";
   import FactList from "./FactList.svelte";
   import Shot from "./Shot.svelte";
+  import { i18n } from "../i18n.svelte";
+  import { HOME } from "../i18n/home";
 
   const TABS = [
-    { id: "perform", name: "Perform", what: "Play with the record: pads, loops, slip and brake, the sampler and the stems.", facts: ["decks", "pads", "fx", "transport"] },
-    { id: "mix", name: "Mix", what: "Two decks and the mixer, nothing else in the way: blend into the next record.", facts: ["decks", "deckqueue", "safe"] },
-    { id: "dig", name: "Library", what: "Find the next record — and what the assistant thinks would follow, with its reasons.", facts: ["library", "camelot", "find", "sources"] },
-    { id: "prepare", name: "Prepare", what: "Set cues and grids and shape the night before it starts.", facts: ["waveforms", "phrases", "camelot"] },
-    { id: "autopilot", name: "Autopilot", what: "Let djmanzo play; watch it, steer it, take it back with a touch.", facts: ["automix", "autopilot-surface", "suggest", "room"] },
-    { id: "karaoke", name: "Karaoke", what: "Host the singers: who is up, what they sing, in which key, with their voice in or out.", facts: ["k-rotation", "k-voice", "k-phones", "k-breaks"] },
-    { id: "practice", name: "Practice", what: "Try a technique in your headphones while the night goes on.", facts: ["teacher", "curriculum", "knowhow"] },
-    { id: "event", name: "Events", what: "Prepare a night: the event, the plan, what to do if it goes wrong.", facts: ["events", "setplan"] },
-    { id: "keys", name: "Space", what: "Press Space: a guide to every key, sequences that read as words.", facts: ["leader", "keysets", "keyboard"] },
-    { id: "launcher", name: "Launcher", what: "Press 0: every view, guide, panel, preset, theme and workspace, one key away.", facts: ["launcher", "leader", "palette"] },
+    { id: "perform" as const, facts: ["decks", "pads", "fx", "transport"] },
+    { id: "mix" as const, facts: ["decks", "deckqueue", "safe"] },
+    { id: "dig" as const, facts: ["library", "camelot", "find", "sources"] },
+    { id: "prepare" as const, facts: ["waveforms", "phrases", "camelot"] },
+    { id: "autopilot" as const, facts: ["automix", "autopilot-surface", "suggest", "room"] },
+    { id: "karaoke" as const, facts: ["k-rotation", "k-voice", "k-phones", "k-breaks"] },
+    { id: "practice" as const, facts: ["teacher", "curriculum", "knowhow"] },
+    { id: "event" as const, facts: ["events", "setplan"] },
+    { id: "keys" as const, facts: ["leader", "keysets", "keyboard"] },
+    { id: "launcher" as const, facts: ["launcher", "leader", "palette"] },
   ];
 
-  let tab = $state(TABS[0].id);
+  const w = $derived(HOME[i18n.lang].tour);
+  let tab = $state<(typeof TABS)[number]["id"]>(TABS[0].id);
   let frame: HTMLElement | undefined = $state();
   const current = $derived(TABS.find((t) => t.id === tab)!);
   const shot = $derived(pick(tab, skin().themes));
 
-  function choose(id: string) {
+  function choose(id: (typeof TABS)[number]["id"]) {
     tab = id;
     if (!reduced() && frame) gsap.fromTo(frame, { opacity: 0.25, y: 10, scale: 0.99 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "power3.out" });
   }
@@ -46,21 +49,21 @@
 
 <section class="section tour" id="tour" aria-labelledby="tour-title">
   <div class="wrap">
-    <p class="eyebrow" data-reveal>The application</p>
-    <h2 class="h2" id="tour-title" data-split>Everything a night needs, on one screen at a time.</h2>
-    <p class="lead" data-reveal>Real screenshots of djmanzo, shown in {shot?.theme ?? "its"} theme — the one closest to your look. The numbers point out what is on each screen; press the picture to see it full size.</p>
+    <p class="eyebrow" data-reveal>{w.eyebrow}</p>
+    <h2 class="h2" id="tour-title" data-split>{w.title}</h2>
+    <p class="lead" data-reveal>{w.lead.replace("{theme}", shot?.theme ?? w.its)}</p>
 
-    <div class="tabs" role="tablist" aria-label="Screens" tabindex="-1" onkeydown={keys} data-reveal>
+    <div class="tabs" role="tablist" aria-label={w.screens} tabindex="-1" onkeydown={keys} data-reveal>
       {#each TABS as t (t.id)}
-        <button role="tab" id={`tab-${t.id}`} aria-selected={tab === t.id} aria-controls="tour-panel" tabindex={tab === t.id ? 0 : -1} onclick={() => choose(t.id)} data-tab={t.id}>{t.name}</button>
+        <button role="tab" id={`tab-${t.id}`} aria-selected={tab === t.id} aria-controls="tour-panel" tabindex={tab === t.id ? 0 : -1} onclick={() => choose(t.id)} data-tab={t.id}>{w.tabs[t.id].name}</button>
       {/each}
     </div>
 
     <div class="panel" id="tour-panel" role="tabpanel" aria-labelledby={`tab-${tab}`}>
-      <p class="what" data-what>{current.what}</p>
+      <p class="what" data-what>{w.tabs[current.id].what}</p>
       <div class="frame" bind:this={frame} data-reveal>
         {#if shot}
-          {#key shot.src}<Shot {shot} label={current.name} />{/key}
+          {#key shot.src}<Shot {shot} label={w.tabs[current.id].name} />{/key}
         {/if}
       </div>
       <div class="facts">

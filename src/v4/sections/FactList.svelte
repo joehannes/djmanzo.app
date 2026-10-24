@@ -5,10 +5,13 @@
 -->
 <script lang="ts">
   import { FACT_BY_ID } from "../../../shared/facts";
+  import { i18n } from "../i18n.svelte";
+  import { HOME } from "../i18n/home";
+  import { tf } from "../i18n/facts.svelte";
 
   let { ids, compact = false }: { ids: string[]; compact?: boolean } = $props();
-  const WORD = { shipped: "Ships", part: "Partly built", planned: "Planned" };
-  const facts = $derived(ids.map((id) => FACT_BY_ID[id]).filter(Boolean));
+  const WORD = $derived(HOME[i18n.lang].status);
+  const facts = $derived(ids.map((id) => FACT_BY_ID[id]).filter(Boolean).map(tf));
 </script>
 
 <ul class="facts" class:compact>

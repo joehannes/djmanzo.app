@@ -9,17 +9,19 @@
   import { STEMS, type Stem } from "../wave/model";
   import Wave from "../wave/Wave.svelte";
   import FactList from "./FactList.svelte";
+  import { i18n } from "../i18n.svelte";
+  import { HOME } from "../i18n/home";
 
-  const NAMES: Record<Stem, string> = { drums: "Drums", perc: "Percussion", bass: "Bass", keys: "Keys" };
+  const w = $derived(HOME[i18n.lang].stems);
 </script>
 
 <section class="section stems" id="stems" aria-labelledby="stems-title">
   <div class="bg" aria-hidden="true"><div class="img" data-parallax="0.25" style:background-image={`url(${shared("stems")})`}></div></div>
   <div class="wrap grid">
     <div>
-      <p class="eyebrow" data-reveal>Stems</p>
-      <h2 class="h2" id="stems-title" data-split>Take any record apart. While it plays.</h2>
-      <p class="lead" data-reveal>Switch a part off and on: the groove keeps time and key, because the parts were never apart in the first place. In djmanzo the same happens to your own records, separated ahead of the playhead.</p>
+      <p class="eyebrow" data-reveal>{w.eyebrow}</p>
+      <h2 class="h2" id="stems-title" data-split>{w.title}</h2>
+      <p class="lead" data-reveal>{w.lead}</p>
       <FactList ids={["stems", "outputs"]} />
     </div>
     <div class="panel card" data-reveal data-stems>
@@ -27,19 +29,19 @@
         <div class="labels">
           {#each STEMS as s, i (s)}
             <button class="lane-btn" aria-pressed={deck.on[s]} onclick={() => setStem(s, !deck.on[s])} style:--c={skin().stems[i]} data-stem={s}>
-              <span class="dot"></span>{NAMES[s]}
+              <span class="dot"></span>{w.names[s]}
             </button>
           {/each}
         </div>
         <div class="canvas">
-          <Wave mode="lanes" colours={skin().stems} span={4} playhead={0.35} label="The four stems of the deck's groove, each in its own lane" />
+          <Wave mode="lanes" colours={skin().stems} span={4} playhead={0.35} label={w.wave} />
         </div>
       </div>
       <div class="foot">
         {#if !deck.playing}
-          <button class="btn primary small" onclick={() => play()}>Play the deck</button>
+          <button class="btn primary small" onclick={() => play()}>{w.play}</button>
         {/if}
-        <span class="mono dim small">{STEMS.filter((s) => deck.on[s]).length} of 4 parts on</span>
+        <span class="mono dim small">{w.on.replace("{n}", String(STEMS.filter((s) => deck.on[s]).length))}</span>
       </div>
     </div>
   </div>
