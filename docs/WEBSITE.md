@@ -887,3 +887,37 @@ Code: `worker/activations.ts`; tests: the two activation cases in
 `test/flow.test.ts` (mutation-tested: lifting the limit fails the first;
 so does keeping a removed computer's token and skipping the activation
 check together).
+
+## Seven languages, and a welcome for every look (24 October)
+
+The site speaks English, Spanish, Brazilian Portuguese, German, French,
+Italian and Japanese: English, and the six languages most of the world's DJs
+and DJ-software buyers read. The flag beside the look picker
+(`SiteBar.svelte`, `Flag.svelte`) switches it. The site picks the language in
+this order: the address (`?lang=de`), the visitor's earlier choice (kept in
+this browser as `djmanzo:lang`), the first of the browser's languages the site
+speaks, and otherwise English. The page carries the matching `lang` tag
+(`pt-BR` for Portuguese). Switching rebuilds the page where it stands
+(`{#key}` in `App.svelte`), so the headings split into words for their
+entrance are whole again, in the new words.
+
+- **Phrases**: `src/v4/i18n/strings.ts`, read with `t(key)` from
+  `i18n.svelte.ts`. English is complete. A phrase missing in another
+  language shows in English, and the language menu says so. Translated so far:
+  the bar, the Download button and screen, the road ahead's frame, the footer
+  and the soon tags.
+- **The welcome**: `src/v4/i18n/welcome.ts` holds the first screen's two lines
+  and paragraph, written for each of the nine looks in each of the seven
+  languages (63 in all). They are written for that DJ, not translated word for
+  word: the club look ends at Sunday noon in German and at the first train in
+  Japanese; the tropical look starts at the colmado in Spanish and at a zouk
+  in French. Each says what a DJ expects, then what is new for that scene,
+  then invites them with a smile. Only features that ship are promised.
+- **Tests**: `test/i18n.test.ts` checks that no translation has a key English
+  lacks, that the `{blanks}` match, that every first-screen phrase is
+  translated, and that every welcome exists, fits, differs per look and is not
+  left in English. The browser test picks German from the flag and checks
+  that it is kept.
+- **Next**: the home sections' own texts, the other pages, the facts
+  (`shared/facts.ts`), the look names and the visitor's country line
+  (`shared/flavours.ts`), and the server-rendered pages for search engines.

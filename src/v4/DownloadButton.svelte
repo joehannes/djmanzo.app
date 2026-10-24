@@ -10,6 +10,7 @@
   import { DEFAULT_KIND, SYSTEMS, SYSTEM_NAME, filesFor, latest, sizeOf, type File, type Latest, type System } from "./download";
   import { choice, start } from "./dlchoice.svelte";
   import { gsap, reduced } from "./motion";
+  import { t, tOr } from "./i18n.svelte";
   import OsIcon from "./OsIcon.svelte";
 
   let { id = undefined }: { id?: string } = $props();
@@ -22,7 +23,9 @@
   const mine = $derived(release ? filesFor(release.files, choice.os) : []);
   const best = $derived(mine.find((f) => f.key === DEFAULT_KIND[choice.os]) ?? mine[0] ?? null);
   /** A file's kind in a few words, for the button: ".deb", "Apple silicon". */
-  const short = (f: File) => f.label.replace(/^(macOS|Linux|Windows)(,\s*)?/, "").replace(/\s*\(.*\)$/, "") || f.name;
+  const short = (f: File) => tOr(`short.${f.key}`, f.label.replace(/^(macOS|Linux|Windows)(,\s*)?/, "").replace(/\s*\(.*\)$/, "") || f.name);
+  /** A file's kind in full, for the menu: ".deb (Debian, Ubuntu)". */
+  const kind = (f: File) => tOr(`kind.${f.key}`, f.label);
 
   /** A file: downloaded. None (the list not fetched, or nothing for this system): the menu, which says why. */
   function get(f: File | null) {
@@ -73,15 +76,15 @@
   <div class="face" bind:this={main}>
     <button class="btn primary go" onclick={() => get(best)} data-download-default={best?.key ?? ""}>
       <OsIcon os={choice.os} size={18} />
-      <span>Download for {SYSTEM_NAME[choice.os]}{#if best}<span class="kind">{short(best)}</span>{/if}</span>
+      <span>{t("dl.for", { os: SYSTEM_NAME[choice.os] })}{#if best}<span class="kind">{short(best)}</span>{/if}</span>
     </button>
-    <button class="btn primary caret" aria-haspopup="menu" aria-expanded={open} aria-label="Every file, and other systems" onclick={() => (open = !open)} data-download-more>
+    <button class="btn primary caret" aria-haspopup="menu" aria-expanded={open} aria-label={t("dl.more")} onclick={() => (open = !open)} data-download-more>
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
     </button>
   </div>
   {#if open}
-    <div class="menu card" role="menu" aria-label="Downloads">
-      <div class="systems" role="group" aria-label="System">
+    <div class="menu card" role="menu" aria-label={t("dl.files")}>
+      <div class="systems" role="group" aria-label={t("dl.system")}>
         {#each SYSTEMS as os (os)}
           <button role="menuitemradio" aria-checked={choice.os === os} class:on={choice.os === os} onclick={() => setSystem(os)} data-system={os} data-sound="scratch">
             <OsIcon {os} size={15} /> {SYSTEM_NAME[os]}
@@ -93,19 +96,19 @@
           {#each mine as f (f.key)}
             <li>
               <button role="menuitem" class="file" onclick={() => get(f)} data-download-kind={f.key} data-sound>
-                <span>{short(f)}{#if f.key === DEFAULT_KIND[choice.os]}<span class="tag">default</span>{/if}</span>
+                <span>{kind(f)}{#if f.key === DEFAULT_KIND[choice.os]}<span class="tag">{t("dl.default")}</span>{/if}</span>
                 <span class="mono dim">{sizeOf(f.size)}</span>
               </button>
             </li>
           {/each}
         </ul>
-        {#if release?.version}<p class="ver mono dim">v{release.version}, the newest release</p>{/if}
+        {#if release?.version}<p class="ver mono dim">{t("dl.newest", { v: release.version })}</p>{/if}
       {:else if release?.error}
-        <p class="dim small">The download list could not be fetched just now. Try again in a minute.</p>
+        <p class="dim small">{t("dl.unfetched")}</p>
       {:else if release}
-        <p class="dim small">The newest release has nothing for {SYSTEM_NAME[choice.os]} yet.</p>
+        <p class="dim small">{t("dl.none", { os: SYSTEM_NAME[choice.os] })}</p>
       {:else}
-        <p class="dim small">Fetching…</p>
+        <p class="dim small">{t("dl.fetching")}</p>
       {/if}
     </div>
   {/if}

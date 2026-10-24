@@ -14,10 +14,12 @@
   import { SKINS, type SkinId } from "./skins";
   import { LOOKS, svgUri } from "./looks";
   import { href, navigate, type Route } from "./router";
-  import { SYSTEMS, SYSTEM_NAME, downloadLabel, osOf, type System } from "./download";
+  import { SYSTEMS, SYSTEM_NAME, type System } from "./download";
   import { choice, chooseSystem, start as startChoice } from "./dlchoice.svelte";
   import { restore, setSounds, sounds } from "./sfx.svelte";
+  import { LANGS, LANG_INFO, chooseLanguage, i18n, startLanguage, t, type Lang } from "./i18n.svelte";
   import OsIcon from "./OsIcon.svelte";
+  import Flag from "./Flag.svelte";
 
   let { route }: { route: Route } = $props();
 
@@ -25,6 +27,7 @@
   let menu = $state(false);
   let picker = $state(false);
   let systems = $state(false);
+  let langs = $state(false);
 
   /** The bar's system menu: switch the system, then the main Download button, glowing. */
   function forSystem(os: System) {
@@ -36,8 +39,6 @@
       requestAnimationFrame(() => requestAnimationFrame(there));
     } else there();
   }
-  const os = osOf(navigator.userAgent);
-  const dl = downloadLabel(os);
   /** The cheapest edition bought once, at the visitor's price. */
   const from = $derived.by(() => {
     const c = catalog.data;
@@ -48,13 +49,13 @@
     return money(Math.min(...paid), currencyFor(where));
   });
 
-  const BY: Record<string, string> = {
-    choice: "your choice",
-    connection: "from your connection",
-    language: "from your browser's language",
-    address: "from the address",
-    none: "",
-  };
+  /** Why the bar wears this look, in the visitor's language. */
+  const by = (how: string) => (how === "choice" || how === "connection" || how === "language" || how === "address" ? t(`look.${how}`) : "");
+
+  function speak(lang: Lang) {
+    langs = false;
+    chooseLanguage(lang);
+  }
 
   function pick(id: SkinId) {
     choose(id);
@@ -72,12 +73,14 @@
   onMount(() => {
     restore();
     startChoice();
+    startLanguage();
     const scroll = () => (solid = scrollY > 40);
     scroll();
     addEventListener("scroll", scroll, { passive: true });
     const close = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest(".skins")) picker = false;
       if (!(e.target as HTMLElement).closest(".dlmenu")) systems = false;
+      if (!(e.target as HTMLElement).closest(".langs")) langs = false;
     };
     document.addEventListener("click", close);
     return () => {
@@ -87,29 +90,31 @@
   });
 </script>
 
-<a class="skip" href="#main">Skip to the content</a>
+<a class="skip" href="#main">{t("nav.skip")}</a>
 <header class="bar" class:solid={solid || route.page !== "home" || menu}>
   <div class="inner wrap">
-    <a class="brand" href={href("home")} aria-label="djmanzo, home">
+    <a class="brand" href={href("home")} aria-label={t("nav.home")}>
       <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="16" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="2" /><circle cx="16" cy="16" r="2.5" fill="currentColor" /></svg>
       <b>djmanzo</b><span class="beta">beta</span>
     </a>
 
-    <nav class="links" class:open={menu} aria-label="Site">
-      <a class="nav" class:on={route.page === "features"} href={href("features")} onclick={() => (menu = false)}>Features</a>
-      <button class="nav" onclick={() => section("hardware")}>Hardware</button>
-      <a class="nav" class:on={route.page === "pricing"} href={href("pricing")} onclick={() => (menu = false)}>Pricing</a>
-      <a class="nav" class:on={route.page === "market"} href={href("market")} onclick={() => (menu = false)}>Marketplace</a>
-      <a class="nav" class:on={route.page === "community"} href={href("community")} onclick={() => (menu = false)}>Community</a>
-      <a class="nav" href="/blog">Journal</a>
+    <nav class="links" class:open={menu} aria-label={t("nav.site")}>
+      <a class="nav" class:on={route.page === "features"} href={href("features")} onclick={() => (menu = false)}>{t("nav.features")}</a>
+      <button class="nav" onclick={() => section("hardware")}>{t("nav.hardware")}</button>
+      <a class="nav" class:on={route.page === "pricing"} href={href("pricing")} onclick={() => (menu = false)}>{t("nav.pricing")}</a>
+      <a class="nav" class:on={route.page === "market"} href={href("market")} onclick={() => (menu = false)}>{t("nav.market")}</a>
+      <a class="nav" class:on={route.page === "community"} href={href("community")} onclick={() => (menu = false)}>{t("nav.community")}</a>
+      <a class="nav" href="/blog">{t("nav.journal")}</a>
+      <!-- On a narrow phone the sound switch lives here, so the bar fits. -->
+      <button class="nav sound-row" aria-pressed={sounds.on} onclick={() => setSounds(!sounds.on)} data-sounds-row>{sounds.on ? "🔊" : "🔈"} {sounds.on ? t("sound.onLabel") : t("sound.offLabel")}</button>
     </nav>
 
     <div class="right">
       <button
         class="sound-btn"
         aria-pressed={sounds.on}
-        title={sounds.on ? "Sounds on: the booth's small noises as you go. Press to switch them off." : "Sounds off. Press for the booth's small noises: a needle, a scratch, a cue."}
-        aria-label={sounds.on ? "Switch the site's sounds off" : "Switch the site's sounds on"}
+        title={sounds.on ? t("sound.on") : t("sound.off")}
+        aria-label={sounds.on ? t("sound.onLabel") : t("sound.offLabel")}
         onclick={() => setSounds(!sounds.on)}
         data-sounds>{sounds.on ? "🔊" : "🔈"}</button>
       <div class="skins">
@@ -118,8 +123,8 @@
           <span class="skin-name">{skin().name}</span>
         </button>
         {#if picker}
-          <div class="pop card" role="menu" aria-label="Looks">
-            <p class="why mono">{skin().name} · {skin().region}{BY[region.by] ? ` — ${BY[region.by]}` : ""}{region.country ? ` (${region.country})` : ""}</p>
+          <div class="pop card" role="menu" aria-label={t("look.menu")}>
+            <p class="why mono">{skin().name} · {skin().region}{by(region.by) ? ` — ${by(region.by)}` : ""}{region.country ? ` (${region.country})` : ""}</p>
             {#each SKINS as s (s.id)}
               {@const p = LOOKS[s.id].pattern}
               <button role="menuitemradio" aria-checked={region.skin === s.id} class="opt" onclick={() => pick(s.id)} data-skin={s.id} title={LOOKS[s.id].about}>
@@ -129,8 +134,24 @@
             {/each}
             <p class="about">{LOOKS[region.skin].about}</p>
             {#if region.chosen}
-              <button class="follow" onclick={() => (follow(), (picker = false))}>Follow my location again</button>
+              <button class="follow" onclick={() => (follow(), (picker = false))}>{t("look.follow")}</button>
             {/if}
+          </div>
+        {/if}
+      </div>
+      <!-- The language: a flag, and the seven the site speaks. -->
+      <div class="langs">
+        <button class="lang-btn" aria-haspopup="menu" aria-expanded={langs} aria-label={t("lang.choose", { name: LANG_INFO[i18n.lang].name })} title={LANG_INFO[i18n.lang].name} onclick={() => (langs = !langs)} data-lang-picker={i18n.lang}>
+          <Flag lang={i18n.lang} size={26} />
+        </button>
+        {#if langs}
+          <div class="pop card langmenu" role="menu" aria-label={t("lang.label")}>
+            {#each LANGS as l (l)}
+              <button role="menuitemradio" aria-checked={i18n.lang === l} class="opt" lang={LANG_INFO[l].tag} onclick={() => speak(l)} data-lang={l} data-sound="scratch">
+                <Flag lang={l} size={20} /> <span>{LANG_INFO[l].name}</span>
+              </button>
+            {/each}
+            {#if i18n.lang !== "en"}<p class="about">{t("lang.partial")}</p>{/if}
           </div>
         {/if}
       </div>
@@ -140,20 +161,20 @@
           {#if session.user.avatar}<img src={session.user.avatar} alt="" width="28" height="28" />{:else}<span class="initial" aria-hidden="true">{[...session.user.name.trim()][0]?.toUpperCase() ?? "?"}</span>{/if}
         </a>
       {:else}
-        <a class="nav account" class:on={route.page === "account"} href={href("account")} data-account-link>Sign in</a>
+        <a class="nav account" class:on={route.page === "account"} href={href("account")} data-account-link>{t("nav.signin")}</a>
       {/if}
       {#if solid && route.page !== "pricing" && from}
-        <a class="price mono" href={href("pricing")} data-from>Free · editions from {from}</a>
+        <a class="price mono" href={href("pricing")} data-from>{t("bar.from", { price: from })}</a>
       {/if}
       <!-- A download arrow and the chosen system: a menu of systems; choosing one goes to the main Download button. -->
       <div class="dlmenu">
-        <button class="btn primary small dl" aria-haspopup="menu" aria-expanded={systems} title={`${dl.label}. ${dl.note} Choose a system.`} aria-label={`Download for ${SYSTEM_NAME[choice.os]}: choose a system`} data-download data-sound="scratch" onclick={() => (systems = !systems)}>
+        <button class="btn primary small dl" aria-haspopup="menu" aria-expanded={systems} title={t("dl.choose", { os: SYSTEM_NAME[choice.os] })} aria-label={t("dl.choose", { os: SYSTEM_NAME[choice.os] })} data-download data-sound="scratch" onclick={() => (systems = !systems)}>
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6.5 10 12 15.5 17.5 10M4 20h16" /></svg>
           <OsIcon os={choice.os} />
           <svg class="caret" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
         </button>
         {#if systems}
-          <div class="pop card sysmenu" role="menu" aria-label="Download for">
+          <div class="pop card sysmenu" role="menu" aria-label={t("dl.menu")}>
             {#each SYSTEMS as os (os)}
               <button role="menuitemradio" aria-checked={choice.os === os} class="opt" onclick={() => forSystem(os)} data-bar-system={os}>
                 <OsIcon {os} /> <span>{SYSTEM_NAME[os]}</span>
@@ -162,7 +183,7 @@
           </div>
         {/if}
       </div>
-      <button class="burger" aria-label="Menu" aria-expanded={menu} onclick={() => (menu = !menu)}><span></span><span></span></button>
+      <button class="burger" aria-label={t("nav.menu")} aria-expanded={menu} onclick={() => (menu = !menu)}><span></span><span></span></button>
     </div>
   </div>
 </header>
@@ -323,8 +344,27 @@
       display: none;
     }
   }
-  .skins {
+  .skins,
+  .langs {
     position: relative;
+  }
+  .lang-btn {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+    background: color-mix(in srgb, var(--bg) 40%, transparent);
+    cursor: pointer;
+  }
+  .lang-btn[aria-expanded="true"] {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+  }
+  .langmenu {
+    width: 230px;
   }
   .skin-btn {
     display: inline-flex;
@@ -471,6 +511,9 @@
       display: none;
     }
   }
+  .sound-row {
+    display: none;
+  }
   @media (max-width: 640px) {
     .skin-name,
     .account:not(.signed),
@@ -478,10 +521,40 @@
       display: none;
     }
     .dl {
-      padding-inline: 10px;
+      gap: 4px;
+      padding-inline: 9px;
     }
     .inner {
       gap: 10px;
+    }
+    .right {
+      gap: 6px;
+    }
+    .sound-btn,
+    .lang-btn {
+      width: 32px;
+      height: 32px;
+    }
+    .skin-btn {
+      height: 32px;
+      padding: 0 6px;
+    }
+    .burger {
+      width: 34px;
+    }
+  }
+  /* A narrow phone: the sound switch moves into the folded menu, the avatar shrinks a little. */
+  @media (max-width: 420px) {
+    .sound-btn {
+      display: none;
+    }
+    .links .sound-row {
+      display: block;
+    }
+    .account img,
+    .account .initial {
+      width: 24px;
+      height: 24px;
     }
   }
 </style>

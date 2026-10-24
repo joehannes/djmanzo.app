@@ -9,7 +9,8 @@
   import { STATUS_LINE } from "../../../shared/facts";
   import { shared } from "../region.svelte";
   import { href } from "../router";
-  import { downloadLabel, filesFor, latest, osOf, sizeOf, type Latest } from "../download";
+  import { SYSTEM_NAME, filesFor, latest, osOf, sizeOf, type Latest } from "../download";
+  import { t, tOr } from "../i18n.svelte";
   import DownloadButton from "../DownloadButton.svelte";
 
   const OSES = ["mac", "linux", "windows"] as const;
@@ -27,37 +28,36 @@
   <div class="img" data-parallax="0.3" style:background-image={`url(${shared("download")})`} aria-hidden="true"></div>
   <div class="shade" aria-hidden="true"></div>
   <div class="wrap inner">
-    <p class="eyebrow" data-reveal>Download</p>
-    <h2 class="h1" id="dl-title" data-split>Your next night<br />starts free.</h2>
+    <p class="eyebrow" data-reveal>{t("closing.eyebrow")}</p>
+    <h2 class="h1" id="dl-title" data-split>{t("closing.t1")}<br />{t("closing.t2")}</h2>
     <p class="lead" data-reveal>
-      One download for every edition. It starts as the Hobbyist edition, free for ever; a licence or a 7-day trial unlocks the rest, in Settings → Licence.
-      {#if release?.version}<span class="mono">Newest: v{release.version}.</span>{/if}
+      {t("closing.lead")}
+      {#if release?.version}<span class="mono">{t("closing.newest", { v: release.version })}</span>{/if}
     </p>
     <div class="oses" data-reveal>
       {#each order as os (os)}
-        {@const d = downloadLabel(os)}
         {@const files = release ? filesFor(release.files, os) : []}
         <div class="os card" class:mine={os === mine} data-os={os}>
-          <b>{d.label.replace("Download for ", "")}{#if os === mine}<span class="you">your system</span>{/if}</b>
-          <small>{d.note}</small>
+          <b>{SYSTEM_NAME[os]}{#if os === mine}<span class="you">{t("closing.yours")}</span>{/if}</b>
+          <small>{t(`note.${os}`)}</small>
           {#if files.length}
             <ul class="files">
               {#each files as f (f.name)}
-                <li><a href={f.href} data-file={f.name}>{f.label} <span class="mono dim">{sizeOf(f.size)}</span></a></li>
+                <li><a href={f.href} data-file={f.name}>{tOr(`kind.${f.key}`, f.label)} <span class="mono dim">{sizeOf(f.size)}</span></a></li>
               {/each}
             </ul>
           {:else if release?.error}
-            <small class="dim" data-download-error>The download list could not be fetched just now. Try again in a minute.</small>
+            <small class="dim" data-download-error>{t("dl.unfetched")}</small>
           {:else if release}
-            <small class="dim">The installers appear here with the next release.</small>
+            <small class="dim">{t("closing.next")}</small>
           {/if}
         </div>
       {/each}
     </div>
     <div class="ctas" data-reveal>
       <DownloadButton />
-      <a class="btn ghost" href={href("account")}>Your account and licences</a>
-      <a class="btn ghost" href={href("pricing")}>Compare editions</a>
+      <a class="btn ghost" href={href("account")}>{t("closing.account")}</a>
+      <a class="btn ghost" href={href("pricing")}>{t("closing.compare")}</a>
     </div>
     <p class="status-line" data-reveal>{STATUS_LINE}</p>
   </div>

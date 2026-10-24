@@ -15,7 +15,7 @@
   import { href } from "../router";
   import Shot from "../sections/Shot.svelte";
   import RoadAhead from "../sections/RoadAhead.svelte";
-  import { SOON_WORDS } from "../../../shared/facts";
+  import { t } from "../i18n.svelte";
   import { tick } from "../sfx.svelte";
 
   const NAMED: Edition[] = ["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full"];
@@ -101,7 +101,7 @@
                 <div class="top">
                   <h3>{f.name}</h3>
                   {#if f.soon}
-                    <span class="status soon {f.soon.how}" title={f.soon.waits}>{SOON_WORDS[f.soon.how]}</span>
+                    <span class="status soon {f.soon.how}" title={f.soon.waits}>{t(`road.${f.soon.how}`)}</span>
                   {:else}
                     <span class="status {f.status}">{WORD[f.status]}</span>
                   {/if}

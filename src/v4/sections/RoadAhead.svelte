@@ -6,7 +6,8 @@
 -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { FACTS, SOON_WORDS, type Fact } from "../../../shared/facts";
+  import { FACTS, type Fact } from "../../../shared/facts";
+  import { t } from "../i18n.svelte";
   import { gsap, reduced, ScrollTrigger } from "../motion";
   import { riser, scratch } from "../sfx.svelte";
 
@@ -15,11 +16,8 @@
   const ORDER = ["almost", "progress", "planned"] as const;
   /** How far round the record the needle has come, for each kind of "soon". */
   const DONE = { almost: 0.86, progress: 0.55, planned: 0.18 } as const;
-  const ABOUT = {
-    almost: "Built and tested; each waits on one named thing.",
-    progress: "Being built now.",
-    planned: "Designed, and next in line.",
-  } as const;
+  const WORD = { almost: "road.almost", progress: "road.progress", planned: "road.planned" } as const;
+  const ABOUT = { almost: "road.almostAbout", progress: "road.progressAbout", planned: "road.plannedAbout" } as const;
   const groups = ORDER.map((how) => ({ how, facts: FACTS.filter((f): f is Fact & { soon: NonNullable<Fact["soon"]> } => f.soon?.how === how) })).filter((g) => g.facts.length);
 
   const R = 26;
@@ -50,17 +48,17 @@
 
 <section class="road" class:compact id="road-ahead" bind:this={root} aria-labelledby="road-title">
   <div class="wrap">
-    <p class="eyebrow" data-reveal>Soon</p>
-    <h2 class="h2" id="road-title" data-split>The road ahead</h2>
-    <p class="lead" data-reveal>What is not in djmanzo yet, and how close each piece is. The needle shows how far into the record it has come.</p>
+    <p class="eyebrow" data-reveal>{t("road.eyebrow")}</p>
+    <h2 class="h2" id="road-title" data-split>{t("road.title")}</h2>
+    <p class="lead" data-reveal>{t("road.lead")}</p>
     {#each groups as g (g.how)}
       <div class="group" data-group={g.how}>
-        <h3 class="h3" data-reveal>{SOON_WORDS[g.how]}</h3>
-        <p class="dim small about" data-reveal>{ABOUT[g.how]}</p>
+        <h3 class="h3" data-reveal>{t(WORD[g.how])}</h3>
+        <p class="dim small about" data-reveal>{t(ABOUT[g.how])}</p>
         <ul class="items">
           {#each g.facts as f (f.id)}
             <li class="item card" data-reveal data-soon={f.id}>
-              <button class="disc" aria-label={`${f.name}: ${SOON_WORDS[g.how]}`} onclick={scratch}>
+              <button class="disc" aria-label={`${f.name}: ${t(WORD[g.how])}`} onclick={scratch}>
                 <svg viewBox="0 0 72 72" aria-hidden="true">
                   <circle cx="36" cy="36" r="33" class="vinyl" />
                   <circle cx="36" cy="36" r="{R}" class="groove" />
@@ -73,7 +71,7 @@
               <div>
                 <b>{f.name}</b>
                 <p class="small">{f.about}</p>
-                <p class="waits small"><span class="tag {g.how}">{SOON_WORDS[g.how]}</span> {f.soon.waits}</p>
+                <p class="waits small"><span class="tag {g.how}">{t(WORD[g.how])}</span> {f.soon.waits}</p>
               </div>
             </li>
           {/each}

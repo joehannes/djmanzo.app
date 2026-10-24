@@ -29,6 +29,7 @@
   import Features from "./pages/Features.svelte";
   import Toast from "./Toast.svelte";
   import { flavourOf } from "../../shared/flavours";
+  import { i18n } from "./i18n.svelte";
 
   let route = $state<Route>(parse(location.pathname));
   let ready = $state(false);
@@ -112,6 +113,8 @@
 <SiteBar {route} />
 
 <main id="main" data-page={route.page} data-ready={ready ? "" : undefined}>
+  <!-- A new language builds the page again: headings split into words for their entrance are whole again, in the new words. -->
+  {#key i18n.lang}
   {#if route.page === "pricing"}
     <Pricing />
   {:else if route.page === "market"}
@@ -129,6 +132,7 @@
   {:else}
     <Home />
   {/if}
+  {/key}
 </main>
 
 <Footer />

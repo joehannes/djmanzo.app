@@ -14,7 +14,7 @@
   const flavour = $derived(flavourOf(region.country));
   const countryName = (code: string) => {
     try {
-      return new Intl.DisplayNames(["en"], { type: "region" }).of(code) ?? code;
+      return new Intl.DisplayNames([LANG_INFO[i18n.lang].tag], { type: "region" }).of(code) ?? code;
     } catch {
       return code;
     }
@@ -22,8 +22,9 @@
   import { deck, keyOf, setGenre, tempoOf, toggle } from "../sound.svelte";
   import { gsap, lean, reduced, ScrollTrigger } from "../motion";
   import { href } from "../router";
-  import { downloadLabel } from "../download";
   import { choice } from "../dlchoice.svelte";
+  import { LANG_INFO, i18n, t } from "../i18n.svelte";
+  import { WELCOME } from "../i18n/welcome";
   import DownloadButton from "../DownloadButton.svelte";
   import Wave from "../wave/Wave.svelte";
 
@@ -31,7 +32,8 @@
   let photo: HTMLElement;
   let glow: HTMLElement;
   let title: HTMLElement;
-  const dl = $derived(downloadLabel(choice.os));
+  /** The welcome for where the visitor plays, in the language they read. */
+  const welcome = $derived(WELCOME[region.skin][i18n.lang]);
   const genre = $derived(GENRE_BY_ID[deck.genre] ?? GENRE_BY_ID.house);
   const key = $derived(keyOf(genre));
 
@@ -78,25 +80,23 @@
         <b>{flavour.hello}</b> {countryName(region.country!)} · {flavour.scene}
       </p>
     {/if}
-    <p class="eyebrow" data-hero-rise>DJ and karaoke software · macOS and Linux</p>
+    <p class="eyebrow" data-hero-rise>{t("hero.eyebrow")}</p>
     <h1 class="h1" id="hero-title" bind:this={title}>
-      <span class="line"><span>Everything you mix with.</span></span>
-      <span class="line"><span class="accent">And a second pair of ears.</span></span>
+      <span class="line"><span>{welcome.l1}</span></span>
+      <span class="line"><span class="accent">{welcome.l2}</span></span>
     </h1>
-    <p class="lead" data-hero-rise>
-      Welcome to the booth. Your decks, sync, cues, loops and effects are where your hands expect them, and your rekordbox, Serato or Traktor crates come along with their cues and grids. Then the new things: any record taken apart into vocals, drums and bass while it plays; a whole karaoke night in the same download; and an assistant that suggests the next record and says why, waits for your yes, and lets go the moment you touch a control. Try it tonight. {skin().line}
-    </p>
+    <p class="lead" data-hero-rise data-welcome={`${region.skin}.${i18n.lang}`}>{welcome.lead}</p>
     <div class="ctas" data-hero-rise>
       <DownloadButton id="get" />
-      <a class="btn ghost" href={href("pricing")}>Editions and pricing</a>
+      <a class="btn ghost" href={href("pricing")}>{t("hero.pricing")}</a>
     </div>
-    <p class="note mono" data-hero-rise>{dl.note} The Hobbyist edition is free, for ever.</p>
+    <p class="note mono" data-hero-rise>{t(`note.${choice.os}`)} {t("hero.free")}</p>
   </div>
 
   <div class="wrap deckwrap" data-hero-rise>
     <div class="deck card" data-deck>
       <div class="transport">
-        <button class="play" class:on={deck.playing} onclick={toggle} aria-label={deck.playing ? "Stop the deck" : "Play the deck"} data-play>
+        <button class="play" class:on={deck.playing} onclick={toggle} aria-label={deck.playing ? t("hero.stop") : t("hero.play")} data-play>
           {#if deck.playing}
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
           {:else}
@@ -108,18 +108,18 @@
           <span><b>{key.camelot}</b> {key.name}</span>
           <span class="genre">{genre.name}</span>
         </div>
-        <div class="grooves" role="group" aria-label="What the deck plays">
+        <div class="grooves" role="group" aria-label={t("hero.grooves")}>
           {#each skin().genres as g (g)}
             <button class="chip" aria-pressed={deck.genre === g} onclick={() => setGenre(g)} data-groove={g}>{GENRE_BY_ID[g].name}</button>
           {/each}
         </div>
       </div>
       <div class="strip">
-        <Wave mode="bands" colours={skin().bands} span={7} playhead={0.42} label="The deck's waveform: low, mid and high, the part ahead of the playhead still to play" />
-        <span class="tag past mono" aria-hidden="true">played</span>
-        <span class="tag next mono" aria-hidden="true">coming</span>
+        <Wave mode="bands" colours={skin().bands} span={7} playhead={0.42} label={t("hero.wave")} />
+        <span class="tag past mono" aria-hidden="true">{t("hero.played")}</span>
+        <span class="tag next mono" aria-hidden="true">{t("hero.coming")}</span>
       </div>
-      <p class="caption">{deck.playing ? "Drawn from the music as it plays, and from what is coming, ahead of the playhead." : "Press play: a sketch of the groove, made on the spot. djmanzo plays your own records."}</p>
+      <p class="caption">{deck.playing ? t("hero.playing") : t("hero.idle")}</p>
     </div>
   </div>
 </section>

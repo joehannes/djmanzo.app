@@ -250,7 +250,7 @@ test("signed in with a very long name, the bar still fits the screen: the avatar
   // The server keeps a name to 48 characters; the label carries what it kept.
   await expect(link).toHaveAttribute("aria-label", new RegExp(name.slice(0, 40)));
   await expect(link).not.toContainText("Maximiliano");
-  for (const width of [1600, 1366, 1280, 1200, 1100, 1081, 900, 640, 390]) {
+  for (const width of [1600, 1366, 1280, 1200, 1100, 1081, 900, 640, 390, 360]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto("/pricing");
     await expect(link).toBeVisible();
@@ -296,5 +296,32 @@ test("the visitor's own country is welcomed in its words and colours, and a coun
   await expect(page.locator("[data-local]")).toContainText("Willkommen!");
   await page.goto("/?country=IS");
   await expect(page.locator("[data-local]")).toHaveCount(0);
+  expect(errs).toEqual([]);
+});
+
+test("the flag beside the look picks the language: the bar, the welcome written for the look, and the page's own tag follow, and it stays", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/?country=DE");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator("#hero-title")).toContainText("Made for the long blend.");
+  await page.locator("[data-lang-picker]").click();
+  await expect(page.locator("[data-lang]")).toHaveCount(7);
+  await page.locator("[data-lang=de]").click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "de");
+  await expect(page.locator("[data-lang-picker]")).toHaveAttribute("data-lang-picker", "de");
+  await expect(page.locator("#hero-title")).toContainText("Gebaut für lange Blends.");
+  await expect(page.locator("[data-welcome]")).toHaveAttribute("data-welcome", "club.de");
+  await expect(page.getByRole("navigation", { name: "Website", exact: true }).getByRole("link", { name: "Preise" })).toBeVisible();
+  await expect(page.locator("#get .go")).toContainText("Download für");
+  // Another look, the same language: the welcome is that scene's.
+  await page.locator("[data-skin-picker]").click();
+  await page.locator("[data-skin=tropical]").click();
+  await expect(page.locator("#hero-title")).toContainText("Salsa, Bachata, Reggaeton.");
+  // Kept in this browser; an address that names a language wins.
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "de");
+  await page.goto("/?lang=ja");
+  await expect(page.locator("html")).toHaveAttribute("lang", "ja");
+  await expect(page.locator("footer")).toContainText("利用規約");
   expect(errs).toEqual([]);
 });

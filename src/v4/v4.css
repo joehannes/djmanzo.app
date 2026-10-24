@@ -406,3 +406,9 @@ img {
   display: grid;
   gap: 4px;
 }
+
+/* Japanese breaks a heading between phrases, not inside a word (where the browser can tell them apart). */
+:lang(ja) :is(.h1, .h2, .h3, .lead) {
+  word-break: auto-phrase;
+  line-break: strict;
+}

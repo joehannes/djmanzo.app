@@ -7,6 +7,7 @@
   import { region, skin } from "./region.svelte";
   import { href } from "./router";
   import { RELEASES } from "./download";
+  import { t } from "./i18n.svelte";
 </script>
 
 <footer class="foot">
@@ -14,33 +15,34 @@
     <div class="about">
       <p class="brand">djmanzo</p>
       <p class="dim small">{STATUS_LINE}</p>
-      <p class="dim small mono look" data-look>Look: {skin().name} · {skin().region}{region.country ? ` · ${region.country}` : ""}</p>
+      <p class="dim small mono look" data-look>{t("foot.look")}: {skin().name} · {skin().region}{region.country ? ` · ${region.country}` : ""}</p>
     </div>
-    <nav aria-label="Product">
-      <h2>Product</h2>
-      <a href={href("features")}>Every feature</a>
-      <a href={href("pricing")}>Pricing and editions</a>
-      <a href={RELEASES}>Download and release notes</a>
-      <a href="/api/outboard/packs.json">Pack index for djmanzo</a>
+    <nav aria-label={t("foot.product")}>
+      <h2>{t("foot.product")}</h2>
+      <a href={href("features")}>{t("foot.features")}</a>
+      <a href={href("pricing")}>{t("foot.pricing")}</a>
+      <a href={RELEASES}>{t("foot.download")}</a>
+      <a href="/api/outboard/packs.json">{t("foot.packs")}</a>
     </nav>
-    <nav aria-label="Community">
-      <h2>Community</h2>
-      <a href={href("market")}>Marketplace</a>
-      <a href={href("community")}>Forum</a>
-      <a href={href("wishes")}>Feature requests</a>
-      <a href="/blog">Journal</a>
+    <nav aria-label={t("foot.community")}>
+      <h2>{t("foot.community")}</h2>
+      <a href={href("market")}>{t("foot.market")}</a>
+      <a href={href("community")}>{t("foot.forum")}</a>
+      <a href={href("wishes")}>{t("foot.wishes")}</a>
+      <a href="/blog">{t("foot.journal")}</a>
     </nav>
-    <nav aria-label="Account">
-      <h2>Account</h2>
-      <a href={href("account")}>Sign in and licences</a>
-      <a href="https://github.com/joehannes/djmanzo">Source on GitHub</a>
+    <nav aria-label={t("foot.account")}>
+      <h2>{t("foot.account")}</h2>
+      <a href={href("account")}>{t("foot.signin")}</a>
+      <!-- The app's own source is private; the website's is open. -->
+      <a href="https://github.com/joehannes/djmanzo.app">{t("foot.source")}</a>
     </nav>
-    <nav aria-label="Legal">
-      <h2>Legal</h2>
-      <a href="/imprint">Imprint</a>
-      <a href="/terms">Terms</a>
-      <a href="/privacy">Privacy</a>
-      <a href="/rules">Community rules</a>
+    <nav aria-label={t("foot.legal")}>
+      <h2>{t("foot.legal")}</h2>
+      <a href="/imprint">{t("foot.imprint")}</a>
+      <a href="/terms">{t("foot.terms")}</a>
+      <a href="/privacy">{t("foot.privacy")}</a>
+      <a href="/rules">{t("foot.rules")}</a>
     </nav>
   </div>
 </footer>
