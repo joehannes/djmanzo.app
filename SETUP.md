@@ -37,17 +37,30 @@ By hand: `npm run deploy`. Database changes: `npx wrangler d1 migrations apply d
 ## 2. Signing in
 
 Each provider is offered once its client id is set, and never before. The
-callback to register with every provider is
-`https://<site>/callback` (today `https://djmanzo.johannes-neugschwentner.workers.dev/callback`).
+easiest place to set them is **Backstage → 🙋 Sign-in**: each provider's
+fields, the exact address to register with it, its console and its steps,
+with no deploy; a value set there wins over a Worker secret of the same
+name, and a secret is shown back only by its last four characters. The
+same names also work as Worker secrets (`npx wrangler secret put …`).
+The address to register with every provider is
+`https://<site>/callback/<provider>` (today
+`https://djmanzo.johannes-neugschwentner.workers.dev/callback/google`, and
+so on); Backstage shows each one.
 
-| Provider | Secrets |
+| Provider | Names |
 |---|---|
-| GitHub | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (github.com → Settings → Developer settings → OAuth Apps) |
 | Google | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| Apple | `APPLE_CLIENT_ID` (the Services ID), `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` (the whole text of the .p8 file; needs the paid Apple Developer Program) |
+| Facebook | `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET` (the App ID and App secret) |
+| Instagram | `INSTAGRAM_CLIENT_ID`, `INSTAGRAM_CLIENT_SECRET` (professional accounts only) |
 | Microsoft | `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET` |
+| X | `X_CLIENT_ID`, `X_CLIENT_SECRET` (OAuth 2.0) |
+| TikTok | `TIKTOK_CLIENT_ID` (TikTok's client key), `TIKTOK_CLIENT_SECRET` |
+| LinkedIn | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET` |
+| Twitch | `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` |
 | Discord | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` |
-| Facebook | `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET` |
-| Apple | `APPLE_CLIENT_ID`, `APPLE_TEAM_ID`, `APPLE_KEY_ID`, `APPLE_PRIVATE_KEY` (needs the paid Apple Developer account) |
+| GitHub | `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (github.com → Settings → Developer settings → OAuth Apps) |
+| LINE | `LINE_CLIENT_ID` (the Channel ID), `LINE_CLIENT_SECRET` (the Channel secret) |
 | Patreon | `PATREON_CLIENT_ID`, `PATREON_CLIENT_SECRET`, `PATREON_CAMPAIGN_ID` |
 
 `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET` (Cloudflare dashboard → Turnstile)
@@ -55,12 +68,12 @@ put a bot check in front of new accounts.
 
 `ADMIN_EMAILS` (comma-separated) and `ADMIN_TOKEN` open the admin pages.
 
-**Backstage, the admin pages**, are at `https://<site>/backstage`, which
-leads to `/island/#/backstage`. The Account page also links there when you
-are signed in as crew. There are three ways in:
+**Backstage, the admin pages**, are at `https://<site>/backstage`
+(`/admin` leads there too). The Account page also links there when you
+are signed in as crew. There are four ways in:
 
 - **The crew password.** There is no default password. Once you are in,
-  set one under *🔒 The crew's password* (at least 12 characters), and
+  set one under *🔒 The crew's password* (at least 10 characters), and
   change it there whenever you like. It is kept only as a salted PBKDF2
   hash. One address gets ten wrong tries per quarter of an hour; right ones do not count.
 - **`ADMIN_TOKEN`**, a Worker secret you choose. It works in the same field
@@ -71,6 +84,9 @@ are signed in as crew. There are three ways in:
   `test` environment, never the live site's.
 - **Signing in** with an account whose verified e-mail address is in
   `ADMIN_EMAILS`.
+- **Signing in as the owner**: the GitHub account in `ADMIN_GITHUB_IDS`, or
+  an account whose e-mail address hashes to one in `ADMIN_EMAIL_HASHES`
+  (both in `wrangler.jsonc`).
 
 ## 3. Selling
 

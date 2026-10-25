@@ -28,6 +28,10 @@
   import Wishes from "./pages/Wishes.svelte";
   import Features from "./pages/Features.svelte";
   import Releases from "./pages/Releases.svelte";
+  import Backstage from "./pages/Backstage.svelte";
+  import Compare from "./pages/Compare.svelte";
+  import Nights from "./pages/Nights.svelte";
+  import People from "./pages/People.svelte";
   import Toast from "./Toast.svelte";
   import { flavourOf } from "../../shared/flavours";
   import { i18n } from "./i18n.svelte";
@@ -130,6 +134,14 @@
     <Wishes />
   {:else if route.page === "releases"}
     <Releases />
+  {:else if route.page === "compare"}
+    <Compare />
+  {:else if route.page === "nights"}
+    <Nights />
+  {:else if route.page === "people"}
+    <People />
+  {:else if route.page === "backstage"}
+    <Backstage />
   {:else if route.page === "read"}
     <Read />
   {:else}

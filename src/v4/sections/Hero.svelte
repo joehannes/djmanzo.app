@@ -19,6 +19,15 @@
       return code;
     }
   };
+  /** The country's music, a list of genre names, joined the visitor's language's way ("techno, house und Schlager"). */
+  const sceneIn = (scene: string) => {
+    if (i18n.lang === "en") return scene;
+    try {
+      return new Intl.ListFormat(LANG_INFO[i18n.lang].tag, { type: "conjunction" }).format(scene.split(/, | and /));
+    } catch {
+      return scene;
+    }
+  };
   import { deck, keyOf, setGenre, tempoOf, toggle } from "../sound.svelte";
   import { gsap, lean, reduced, ScrollTrigger } from "../motion";
   import { href } from "../router";
@@ -77,7 +86,7 @@
     {#if flavour}
       <p class="local" data-hero-rise data-local={region.country}>
         <span class="flag" aria-hidden="true">{#each flavour.colours as c (c)}<i style:background={c}></i>{/each}</span>
-        <b>{flavour.hello}</b> {countryName(region.country!)} · {flavour.scene}
+        <b>{flavour.hello}</b> {countryName(region.country!)} · {sceneIn(flavour.scene)}
       </p>
     {/if}
     <p class="eyebrow" data-hero-rise>{t("hero.eyebrow")}</p>
@@ -94,9 +103,9 @@
   </div>
 
   <div class="wrap deckwrap" data-hero-rise>
-    <div class="deck card" data-deck>
+    <div class="deck card" data-deck data-deck-source={deck.source}>
       <div class="transport">
-        <button class="play" class:on={deck.playing} onclick={toggle} aria-label={deck.playing ? t("hero.stop") : t("hero.play")} data-play>
+        <button class="play" class:on={deck.playing} class:busy={deck.loading} aria-busy={deck.loading} onclick={toggle} aria-label={deck.playing ? t("hero.stop") : t("hero.play")} data-play>
           {#if deck.playing}
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
           {:else}
@@ -125,6 +134,20 @@
 </section>
 
 <style>
+  .play.busy {
+    animation: busy 0.9s ease-in-out infinite alternate;
+  }
+  @keyframes busy {
+    to {
+      opacity: 0.55;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .play.busy {
+      animation: none;
+      opacity: 0.6;
+    }
+  }
   .local {
     display: inline-flex;
     align-items: center;

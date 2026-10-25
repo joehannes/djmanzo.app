@@ -1,7 +1,7 @@
-import type { FactWords } from "../facts.svelte";
+import type { FactWords } from "../factwords";
 
 const w: FactWords = {
-  status: "djmanzo est en bêta : une application DJ complète pour macOS et Linux, testée dans son propre dépôt — face à des substituts là où le matériel manquait — et qui n'a pas encore connu de vraie soirée.",
+  status: "djmanzo est en bêta : une application DJ complète pour Windows, macOS et Linux, testée dans son propre dépôt — face à des substituts là où le matériel manquait — et qui n'a pas encore connu de vraie soirée.",
   soon: { almost: "Presque prêt", progress: "En cours", planned: "Prévu" },
   areas: {
     mixing: { name: "Le mix", about: "Les platines, la table de mixage, les cues, les boucles, les effets et les stems." },
@@ -72,7 +72,7 @@ const w: FactWords = {
     share: { name: "Partager un set", about: "La tracklist de la soirée envoyée vers WhatsApp, X, Bluesky ou Threads avec le message déjà rédigé ; le DJ appuie sur envoyer." },
     linux: {
       name: "Linux et macOS",
-      about: "Sous Linux, le son passe par le périphérique par défaut d'ALSA, servi par PipeWire ; macOS et Linux sont les plateformes promises.",
+      about: "Sous Linux, le son passe par le périphérique par défaut d'ALSA, servi par PipeWire ; Windows, macOS et Linux sont les plateformes pour lesquelles il paraît.",
       caveat: "JACK ne peut pas encore être choisi comme hôte audio, et la CI tourne sous Ubuntu plutôt que Xubuntu.",
     },
     decks6: { name: "Quatre à six platines", about: "Les platines trois et quatre, et jusqu'à six." },
@@ -226,9 +226,8 @@ const w: FactWords = {
     },
     windows: {
       name: "Windows",
-      about: "Compilé, testé en CI et empaqueté à chaque version.",
-      caveat: "Jamais encore lancé par une personne sur une machine Windows.",
-      waits: "Une personne qui le lance sur une machine Windows.",
+      about: "Compilé, testé en CI, empaqueté à chaque version, et lancé sur une machine Windows par le propriétaire de djmanzo.",
+      caveat: "En bêta, comme tout ici : essayé par une personne sous Windows pour l'instant.",
     },
     gig: { name: "Une vraie soirée", about: "Tout ici a été testé dans le dépôt ; rien encore devant un public.", waits: "Une nuit avec un public, et ce qu'elle révèle, mis par écrit." },
     leader: {

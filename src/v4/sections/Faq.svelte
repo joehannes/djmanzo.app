@@ -69,7 +69,7 @@
       grid-template-columns: 1fr;
     }
   }
-  .lead a {
+  .lead :global(a) {
     color: var(--accent);
   }
   .group + .group {

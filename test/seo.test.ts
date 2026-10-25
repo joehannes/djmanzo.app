@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { FACTS } from "../shared/facts";
 import { jsonForScript, plain, render } from "../worker/seo";
 import { escapeHtml } from "../shared/legal";
+import SPANISH from "../src/v4/i18n/facts/es";
 import { testEnv } from "./kv";
 import { browser, crew, openSite, person } from "./people";
 
@@ -40,16 +41,55 @@ async function member(env: never, name: string) {
   return p;
 }
 
+describe("the home page and the features, in every language the site speaks", () => {
+  it("renders each language at its own address, in its own words, with the others beside it", async () => {
+    const env = site();
+    const es = await read(env, "/?lang=es");
+    expect(es.status).toBe(200);
+    expect(es.html).toContain('<html lang="es">');
+    expect(es.canonical).toBe("https://djmanzo.test/?lang=es");
+    expect(es.title).toBe("djmanzo — software de DJ y karaoke en distintos sabores");
+    expect(es.words).toContain("<h2>Lo que hace</h2>");
+    // The features in the facts' own Spanish, not in English.
+    expect(es.words).toContain(escapeHtml(SPANISH.facts.decks.name));
+    expect(es.words).not.toContain(escapeHtml(FACTS.find((f) => f.id === "decks")!.name));
+    for (const l of ["en", "es", "pt", "de", "fr", "it", "ja"]) {
+      expect(es.html).toContain(`<link rel="alternate" hreflang="${l}" href="https://djmanzo.test/${l === "en" ? "" : `?lang=${l}`}" />`);
+    }
+    expect(es.html).toContain('<link rel="alternate" hreflang="x-default" href="https://djmanzo.test/" />');
+
+    const ja = await read(env, "/features?lang=ja");
+    expect(ja.canonical).toBe("https://djmanzo.test/features?lang=ja");
+    expect(ja.words).toContain("<h1>すべての機能</h1>");
+    expect(ja.words).toContain("提供中");
+    // A language the site does not speak is English, at the plain address.
+    const xx = await read(env, "/features?lang=xx");
+    expect(xx.canonical).toBe("https://djmanzo.test/features");
+    expect(xx.html).toContain('<html lang="en">');
+  });
+
+  it("lists every language's address in the sitemap", async () => {
+    const env = site();
+    const { res } = await browser(env)("/sitemap.xml");
+    const map = await res.text();
+    for (const l of ["es", "pt", "de", "fr", "it", "ja"]) {
+      expect(map).toContain(`<loc>https://djmanzo.test/?lang=${l}</loc>`);
+      expect(map).toContain(`<loc>https://djmanzo.test/features?lang=${l}</loc>`);
+    }
+    expect(map).toContain('hreflang="x-default" href="https://djmanzo.test/features"');
+  });
+});
+
 describe("the home page, as a search engine reads it", () => {
   it("names djmanzo, what anyone can have of it, and everything that ships, in words", async () => {
     const env = site();
     const page = await read(env, "/");
     expect(page.status).toBe(200);
-    expect(page.title).toBe("djmanzo — DJ and karaoke software for macOS and Linux");
+    expect(page.title).toBe("djmanzo — DJ and karaoke software in different flavours");
     expect(page.canonical).toBe("https://djmanzo.test/");
     expect(page.og("image")).toBe("https://djmanzo.test/shots/share.jpg");
     const app = ofType(page.ld, "SoftwareApplication")!;
-    expect(app).toMatchObject({ "@context": "https://schema.org", name: "djmanzo", operatingSystem: "macOS, Linux", applicationCategory: "MultimediaApplication" });
+    expect(app).toMatchObject({ "@context": "https://schema.org", name: "djmanzo", operatingSystem: "Windows, macOS, Linux", applicationCategory: "MultimediaApplication" });
     // Only what can be had today: the free edition.
     expect(app.offers).toMatchObject({ price: "0", priceCurrency: "USD" });
     for (const f of FACTS) {

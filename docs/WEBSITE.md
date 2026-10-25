@@ -14,15 +14,17 @@ in this repository, and it is live at
 > legal pages' words into it for search engines. Its preview address
 > `/v4/` redirects to `/`, and an old `#/pricing` becomes `/pricing`.
 >
-> **The earlier versions stay:**
-> - **The Signal Path** (the second, DIRECTIVE §139) is at **`/signal/`**:
->   a painted map of the signal's journey whose stages morph into full-screen
->   scenes. [WEBSITE-ART.md](WEBSITE-ART.md) is how it is drawn. Old links
->   to its stages (`/#/amp`) are sent there, and its sends keep their place
->   in the hash there (`/signal/#/outboard/x`).
-> - **The island** (the first), described below, is at **`/island/`**, where
->   the pass, the wishlist, the comparisons and Backstage
->   (`/island/#/backstage`) still live.
+> **The earlier versions are retired (25 October, the owner's word: "get rid
+> of the deployments of the island, the needle, the shops versions").** The
+> island (`/island/`), the Signal Path (`/signal/`) and the record shop
+> (`/shop/`) are no longer built; the Worker sends their addresses here
+> (`/shop/` to `/pricing`), and their old hash links still land: the
+> island's `#/backstage`, `#/pase`, `#/muro`, `#/arena`, `#/gigs` and
+> `#/plaza` become `/backstage`, `/account`, `/wishes`, `/compare`,
+> `/nights` and `/people`, and a Signal Path stage (`#/amp`) the page and
+> section that show the same. Everything they held that this site lacked
+> came across first — see [One site](#one-site-25-october). The sections
+> below that describe them are their history.
 >
 > The code lives in its own repository, **`joehannes/djmanzo_website`**
 > (moved out of djmanzo's `website` branch on 21 October, history kept). The
@@ -32,11 +34,6 @@ in this repository, and it is live at
 > nowhere else. Clone with `--recurse-submodules`, or run
 > `git submodule update --init` after cloning.
 >
-> **The third version, the record shop, is previewed at `/shop/`** (the
-> owner's word, 19 October, after rating the second 2 of 5): see
-> [The record shop](#the-record-shop-version-3-previewed-at-shop). It is
-> `noindex` and linked from nowhere until the owner says it replaces `/`.
-
 ## The idea
 
 The site is an island, not a set of pages. It follows the application's own
@@ -918,9 +915,38 @@ entrance are whole again, in the new words.
   translated, and that every welcome exists, fits, differs per look and is not
   left in English. The browser test picks German from the flag and checks
   that it is kept.
-- **Next**: the home sections' own texts, the other pages, the facts
-  (`shared/facts.ts`), the look names and the visitor's country line
-  (`shared/flavours.ts`), and the server-rendered pages for search engines.
+- **Since then** (25 October), one typed dictionary per part, each
+  `Record<Lang, …>` checked by `test/sections-i18n.test.ts` for the same
+  keys, markup and `{blanks}` as English and nothing left in English:
+  the home sections (`sections.ts`, `home.ts`), the account and sign-in
+  (`account.ts`), the features page (`featurespage.ts`), the requests,
+  forum and marketplace frames (`pages.ts`), pricing, checkout and the
+  editions table (`pricing.ts`), and the support form, the sign-in toast
+  and a screenshot's buttons (`bits.ts`). The features themselves are
+  `facts/<lang>.ts`, fetched only when that language is chosen. The
+  screenshots' captions, descriptions and 54 numbered spots are
+  `screens.ts` (`test/screens-i18n.test.ts`: every screen and spot, the
+  numbers kept); the look picker's regions and ornaments are `looks.ts`,
+  and the visitor's country is named by the browser in their language.
+  French is set with a narrow no-break space before `? ! : ;`
+  (`test/french.test.ts`).
+- **What stays in English**: djmanzo's own labels (SAFE, Shuffle, the
+  activities, presets, workspaces, the keys under Space), because the
+  application shows them in English; and what people write in the forum and
+  the marketplace.
+- **For search engines**: `/` and `/features` render in every language at
+  `?lang=xx` (`src/v4/i18n/seo.ts`, `worker/seo.ts`): the page's title,
+  description and words in that language, the features in the facts' own
+  translation, `<html lang>`, and every language named to the others with
+  `hreflang` plus an `x-default`. `/sitemap.xml` lists all fourteen.
+- **Talkback and Outboard** (25 October): the forum's and the
+  marketplace's frames, the sign-in they ask for, the report form, the
+  communities, groups, flairs and trust levels by id, the kinds of pack
+  and those coming (`i18n/talkback.ts`, `i18n/outboard.ts`), and "3 h
+  ago" in the visitor's language (`Intl.RelativeTimeFormat`).
+- **Next**: the legal pages (imprint, terms, rules, privacy), which stay in
+  English until a translation can be checked by someone who reads the law
+  in that language.
 
 ## Release notes, every version, in the visitor's language (24 October)
 
@@ -1050,3 +1076,89 @@ countries becomes the burden.
 - **Not proven here:** no real payment has been taken. No Stripe or PayPal
   account was reachable from where this was built. The first live payment
   is the proof: buy something small with a real card and refund it.
+
+## Sign-in for the owner, and every provider's keys in Backstage (25 October)
+
+- **The owner's own accounts are the crew.** `ADMIN_GITHUB_IDS` (the
+  owner's GitHub account, by its numeric id) and `ADMIN_EMAIL_HASHES` (the
+  SHA-256 of the owner's address, so the address is not in this public
+  repository) are Worker variables in `wrangler.jsonc`: signing in with
+  either opens Backstage, with no token or password first. `/admin` leads
+  there as `/backstage` does, and the account page shows a Backstage button
+  beside Sign out to the crew.
+- **No default password is written down here.** The owner's chosen one is
+  set in Backstage → Crew password (ten characters at least): a short
+  password, or even its hash, published in a public repository could be
+  guessed offline.
+- **Sign-in keys set in Backstage** (`worker/signin.ts`), kept as the
+  payment keys are: each provider's fields, the exact address to register
+  at the provider, and its console and steps. Thirteen providers: Google,
+  Apple, Facebook, Instagram (professional accounts only — Meta ended
+  sign-in for personal ones in December 2024), Microsoft, X, TikTok,
+  LinkedIn, Twitch, Discord, GitHub, LINE and Patreon. Spotify is not
+  offered: since May 2025 its sign-in serves a few allow-listed people
+  unless the app belongs to a registered business with 250,000 monthly
+  users. djmanzo 0.51.0 knows all thirteen and offers the ones the site
+  has switched on.
+
+## The deck's music (25 October)
+
+The deck plays a loop for each of fifteen genres, made for this site with
+ACE-Step 1.5 and taken apart with Demucs into drums, bass and the rest
+(`tools/loops/README.md` says how, and under which licences). A genre with
+a loop plays its three stems as three looping buffers through the deck's
+EQ and fader, each stem's gain its switch; the waveforms draw the loop's
+measured shape (`src/v4/loops.ts`). A genre without one — a country's own,
+where a look names one — still plays the synthesiser's sketch. The stems
+section names the parts drums, bass and the rest, as djmanzo does (its
+vocals are a fourth; the site's music has none), and credits the tools.
+
+- **Two formats.** Each stem is AAC (`.m4a`) and Opus (`.webm`). Chromium
+  built without its proprietary codecs cannot decode AAC at all (the
+  Chromium the browser tests run in could not), nor can Firefox on a Linux
+  without them; such a browser is given the Opus files (`aacPlays()` and
+  `fileOf()` in `src/v4/loops.ts`), and a browser that claims AAC and then
+  fails to decode it is given them too. Both are encoded from the separated
+  stems, not one from the other.
+- **The seams** are measured, not assumed: every loop is a whole number of
+  bars at the tempo its onsets agree with (`tools/loops/README.md`).
+
+## One site (25 October)
+
+Every area of the earlier sites is now a page of this one, and the earlier
+sites are gone.
+
+- **Backstage** is `/backstage` (`src/v4/pages/Backstage.svelte`, moved
+  from the island whole): every crew panel — the shop's numbers, codes,
+  vouchers and grants, wishes to stamp, words to read before they go
+  public, transfers, the blog desk, the payment and sign-in keys, the
+  crew's password, the owner's videos. `/admin` leads there. The Worker
+  renders it as a page no search engine lists. It keeps the island's form
+  parts, in this site's colours. It stays in English, as the crew's corner.
+- **The owner's videos** show on the home page under *See it played*
+  (`sections/Videos.svelte`, `src/v4/videos.ts`), tagged in Backstage with
+  the part of the page each shows; a video tagged with a Signal Path stage
+  before today lands where that stage's subject now is. Nothing is fetched
+  from YouTube before play.
+- **Compared** (`/compare`, the island's arena), **Kinds of nights**
+  (`/nights`, the gig board) and **People** (`/people`, the plaza:
+  testimonials, mixes, the conversation, telling a friend) are pages, in
+  the footer, in all seven languages (`i18n/compare.ts`, `nights.ts`,
+  `people.ts`). The comparison now says Windows runs, in beta.
+- **Removed**: the island's, the Signal Path's and the shop's entry pages,
+  the code only they used (76 files) and the tests that drove only them.
+  What this site still uses from them stays where it was:
+  `src/signal/auxiliary/` (Outboard, Talkback, the report and sign-in
+  prompts), `src/signal/shots.ts` and the shop's checkout.
+
+## Windows, flavours and beta (25 October)
+
+The owner installed djmanzo on Windows and it works, so the site says so.
+The title is *DJ and karaoke software in different flavours* (the
+editions); the hero, the description, the download notes and the
+structured data name Windows, macOS and Linux, and say beta. The Windows
+feature is shipped, with the caveat that one person has tried it so far,
+and the wishlist's *Windows build* turns to shipped by itself
+(`SEED_VERSION` 3). No Windows version number is claimed: none was
+reported.
+

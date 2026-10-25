@@ -19,7 +19,12 @@
   import { RELEASES } from "../download";
   import { href } from "../router";
   import { shared } from "../region.svelte";
-  import { t } from "../i18n.svelte";
+  import { LANG_INFO, i18n, t } from "../i18n.svelte";
+  import { ACCOUNT } from "../i18n/account";
+  import { PRICING } from "../i18n/pricing";
+
+  const w = $derived(ACCOUNT[i18n.lang]);
+  const fill = (s: string, vars: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
   interface Lic {
     id: string;
@@ -93,11 +98,11 @@
   }
   let computers = $state<{ most: number; activations: Computer[] } | null>(null);
   let removing = $state<string | null>(null);
-  const day = (s: number) => new Date(s * 1000).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  const day = (s: number) => new Date(s * 1000).toLocaleDateString(LANG_INFO[i18n.lang].tag, { day: "numeric", month: "short", year: "numeric" });
   const OS_NAME: Record<string, string> = { linux: "Linux", macos: "macOS", windows: "Windows" };
 
   async function removeComputer(c: Computer) {
-    if (!confirm(`Remove "${c.name}"? djmanzo there goes back to the free Hobbyist edition the next time it is online and started again.`)) return;
+    if (!confirm(fill(w.computers.confirm, { name: c.name }))) return;
     removing = c.id;
     try {
       computers = await api<{ most: number; activations: Computer[] }>(`/api/me/activations/${encodeURIComponent(c.id)}`, { method: "DELETE" });
@@ -145,7 +150,7 @@
     voucherMsg = null;
     try {
       const r = await post("/api/redeem", { code: voucher.trim() });
-      voucherMsg = `Redeemed: djmanzo ${EDITION_INFO[r.licence.edition as Edition]?.name ?? r.licence.edition}. It is in your licences below.`;
+      voucherMsg = fill(w.trial.redeemed, { edition: EDITION_INFO[r.licence.edition as Edition]?.name ?? r.licence.edition });
       voucher = "";
       loadedFor = null;
       void load();
@@ -160,8 +165,8 @@
     loadedFor = null;
   }
 
-  const date = (t: number) => new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
-  const planWords = (p: string) => (p === "perpetual" ? "bought once" : p === "trial" ? "a free trial" : p === "monthly" ? "monthly" : p === "yearly" ? "yearly" : p);
+  const date = (t: number) => new Date(t).toLocaleDateString(LANG_INFO[i18n.lang].tag, { day: "numeric", month: "short", year: "numeric" });
+  const planWords = (p: string) => w.plan[p as keyof typeof w.plan] ?? p;
   /** Providers that can still be connected to this account. */
   const connectable = $derived(session.providers.filter((p) => !session.user?.providers.includes(p.id)));
 
@@ -174,57 +179,54 @@
   <header class="head">
     <div class="bg" aria-hidden="true" style:background-image={`url(${shared("download")})`}></div>
     <div class="wrap">
-      <p class="eyebrow">Your account</p>
+      <p class="eyebrow">{w.eyebrow}</p>
       {#if session.user}
         <div class="who">
           {#if session.user.avatar}<img src={session.user.avatar} alt="" width="72" height="72" />{:else}<span class="avatar" aria-hidden="true">{session.user.name.slice(0, 1)}</span>{/if}
           <div>
             <h1 class="h2" data-account-name>{session.user.name}</h1>
             <p class="dim">
-              {session.user.email ?? "No e-mail address shared"}
-              {#if session.user.demo}<span class="tag">demo account</span>{/if}
-              {#each session.user.supports ?? [] as p (p)}<span class="tag gold" data-supports={p}>Supports djmanzo on {SUPPORT_PLATFORM[p] ?? p}</span>{/each}
-              {#if session.user.githubSponsors}<a class="tag" href={session.user.githubSponsors} rel="noopener">Your GitHub Sponsors page, verified</a>{/if}
+              {session.user.email ?? w.noEmail}
+              {#if session.user.demo}<span class="tag">{w.demoTag}</span>{/if}
+              {#each session.user.supports ?? [] as p (p)}<span class="tag gold" data-supports={p}>{fill(w.supports, { p: SUPPORT_PLATFORM[p] ?? p })}</span>{/each}
+              {#if session.user.githubSponsors}<a class="tag" href={session.user.githubSponsors} rel="noopener">{w.sponsors}</a>{/if}
             </p>
           </div>
           <div class="out">
-            {#if session.admin}<a class="btn small" href="/island/#/backstage" data-backstage-link>Backstage (crew)</a>{/if}
-            <button class="btn ghost small" onclick={signOut} data-signout>Sign out</button>
+            {#if session.admin}<a class="btn small" href="/backstage" data-backstage-link>{w.backstage}</a>{/if}
+            <button class="btn ghost small" onclick={signOut} data-signout>{w.signOut}</button>
           </div>
         </div>
       {:else}
-        <h1 class="h1">Sign in.<br />Your licences follow.</h1>
-        <p class="lead">One account for the shop, the marketplace, the forum and djmanzo itself. Buy here, sign in to djmanzo with the same account, and it fetches your licence by itself — and keeps working offline.</p>
+        <h1 class="h1">{@html w.title}</h1>
+        <p class="lead">{w.lead}</p>
       {/if}
     </div>
   </header>
 
   <div class="wrap body">
     {#if !session.loaded}
-      <p class="dim">Looking you up…</p>
+      <p class="dim">{w.lookingUp}</p>
     {:else if !session.user}
       <section class="card pad">
         <SignIn back="/account" />
       </section>
       <ul class="why-sign">
-        <li><b>Licences</b><span>What you bought or are trying, kept with your account and fetched by djmanzo when you sign in there.</span></li>
-        <li><b>The marketplace</b><span>Upload packs, rate them, and keep the name of what you made.</span></li>
-        <li><b>The forum</b><span>Ask, answer, vote. New accounts start gently; the crew reads what is held.</span></li>
-        <li><b>Support</b><span>Show your Patreon, Ko-fi or other tip jar on your packs and your profile.</span></li>
+        {#each w.why as [b, text] (b)}<li><b>{b}</b><span>{text}</span></li>{/each}
       </ul>
     {:else}
       {#if session.returned && session.returned.kind !== "failed"}
-        <p class="ok" role="status" data-signin-ok>{session.returned.kind === "linked" ? `${session.returned.provider} is connected to your account.` : `Signed in with ${session.returned.provider}.`}</p>
+        <p class="ok" role="status" data-signin-ok>{fill(session.returned.kind === "linked" ? w.linked : w.signedIn, { p: session.returned.provider ?? "" })}</p>
       {/if}
       {#if session.returned?.kind === "failed"}
-        <p class="failed" role="alert" data-signin-failed><b>That did not finish.</b> {session.returned.why}</p>
+        <p class="failed" role="alert" data-signin-failed><b>{w.notFinished}</b> {session.returned.failure ? w.failures[session.returned.failure] : w.signin.fallback}</p>
       {/if}
 
       <div class="grid">
         <section class="card pad lic" aria-labelledby="lic-h">
-          <h2 class="h3" id="lic-h">Your licences</h2>
+          <h2 class="h3" id="lic-h">{w.lic.title}</h2>
           {#if licences === null}
-            <p class="dim">Fetching…</p>
+            <p class="dim">{w.lic.fetching}</p>
           {:else if licences.length}
             <ul class="lics" data-licences>
               {#each licences as l (l.id)}
@@ -232,51 +234,49 @@
                   <span class="dot" aria-hidden="true"></span>
                   <div>
                     <b>djmanzo {EDITION_INFO[l.edition as Edition]?.name ?? l.edition}</b>
-                    {#if l.modules?.length && l.edition === "custom"}<span class="dim"> — {l.modules.map((m) => MODULE_TITLE[m as Module] ?? m).join(", ")}</span>{/if}
-                    <p class="dim small">{planWords(l.plan)} · {l.inForce ? (l.expires ? `until ${date(l.expires)}` : "kept for ever") : `ended (${l.status})`}{l.demo ? " · demo, unlocks nothing" : ""}</p>
+                    {#if l.modules?.length && l.edition === "custom"}<span class="dim"> — {l.modules.map((m) => PRICING[i18n.lang].modules[m as Module] ?? MODULE_TITLE[m as Module] ?? m).join(", ")}</span>{/if}
+                    <p class="dim small">{planWords(l.plan)} · {l.inForce ? (l.expires ? fill(w.lic.until, { date: date(l.expires) }) : w.lic.forever) : fill(w.lic.ended, { status: l.status })}{l.demo ? w.lic.demo : ""}</p>
                   </div>
                 </li>
               {/each}
             </ul>
           {:else}
-            <p>None yet. The Hobbyist edition needs none: it is free, for ever.</p>
+            <p>{w.lic.none}</p>
             <div class="row">
-              <a class="btn primary small" href={href("pricing")}>See the editions</a>
-              <a class="btn ghost small" href={RELEASES}>Download djmanzo</a>
+              <a class="btn primary small" href={href("pricing")}>{w.lic.editions}</a>
+              <a class="btn ghost small" href={RELEASES}>{w.lic.download}</a>
             </div>
           {/if}
 
-          <h3 class="mono small-h">Your computers</h3>
+          <h3 class="mono small-h">{w.computers.title}</h3>
           {#if computers}
-            <p class="dim small" data-activations-count>
-              djmanzo is activated on {computers.activations.length} of the {computers.most} computers a licence can be on at once. Signing in again on one of them keeps its place. To activate another, remove one you no longer use: djmanzo there goes back to the free Hobbyist edition the next time it is online and started again. Offline, an activated djmanzo keeps working.
-            </p>
+            <p class="dim small" data-activations-count>{fill(w.computers.text, { n: computers.activations.length, most: computers.most })}</p>
             {#if computers.activations.length}
               <ul class="computers" data-activations>
                 {#each computers.activations as c (c.id)}
                   <li data-activation={c.id}>
                     <div>
                       <b>{c.name}</b>
-                      <p class="dim small">{OS_NAME[c.os] ?? c.os} · through {PROVIDER_NAME[c.account.split(":")[0]] ?? c.account.split(":")[0]} · since {day(c.created)} · last seen {day(c.seen)}</p>
+                      <p class="dim small">{OS_NAME[c.os] ?? c.os} · {fill(w.computers.through, { p: PROVIDER_NAME[c.account.split(":")[0]] ?? c.account.split(":")[0] })} · {fill(w.computers.since, { d: day(c.created) })} · {fill(w.computers.seen, { d: day(c.seen) })}</p>
                     </div>
-                    <button class="btn ghost small" disabled={removing === c.id} onclick={() => removeComputer(c)} data-remove-activation={c.id}>{removing === c.id ? "Removing…" : "Remove"}</button>
+                    <button class="btn ghost small" disabled={removing === c.id} onclick={() => removeComputer(c)} data-remove-activation={c.id}>{removing === c.id ? w.computers.removing : w.computers.remove}</button>
                   </li>
                 {/each}
               </ul>
             {/if}
           {/if}
 
-          <h3 class="mono small-h">In djmanzo</h3>
+          <h3 class="mono small-h">{w.inApp.title}</h3>
           <ol class="steps">
-            <li>Open <b>Settings → Licence</b> and sign in with {session.user.providers.filter((p) => p !== "demo" && p !== "owner").map((p) => PROVIDER_NAME[p] ?? p).join(" or ") || "the same account"}.</li>
-            <li>djmanzo fetches the licence by itself, checks its signature offline and renews it in the background.</li>
-            <li>A computer that cannot sign in takes the licence as one line of text, pasted in the same place.</li>
+            <li>{@html fill(w.inApp.step1, { providers: session.user.providers.filter((p) => p !== "demo" && p !== "owner").map((p) => PROVIDER_NAME[p] ?? p).join(w.inApp.or) || w.inApp.same })}</li>
+            <li>{w.inApp.step2}</li>
+            <li>{w.inApp.step3}</li>
           </ol>
-          <button class="btn ghost small" onclick={showLine} data-licence-line>Show my licence line</button>
+          <button class="btn ghost small" onclick={showLine} data-licence-line>{w.inApp.show}</button>
           {#if line?.licence}
-            <textarea class="line mono" readonly rows="3" aria-label="Your licence line">{line.licence}</textarea>
-            <div class="row"><button class="btn primary small" onclick={copyLine}>{copied ? "Copied" : "Copy it"}</button></div>
-            <p class="dim small">It names your {PROVIDER_NAME[line.account?.split(":")[0] ?? ""] ?? ""} account and is checked by djmanzo offline. Anyone you give it to gets your licence.</p>
+            <textarea class="line mono" readonly rows="3" aria-label={w.inApp.label}>{line.licence}</textarea>
+            <div class="row"><button class="btn primary small" onclick={copyLine}>{copied ? w.inApp.copied : w.inApp.copy}</button></div>
+            <p class="dim small">{fill(w.inApp.note, { p: PROVIDER_NAME[line.account?.split(":")[0] ?? ""] ?? "" })}</p>
           {:else if line?.refused}
             <p class="note">{line.refused}</p>
           {/if}
@@ -301,61 +301,61 @@
         {/if}
 
         <section class="card pad" aria-labelledby="try-h">
-          <h2 class="h3" id="try-h">Try, or redeem</h2>
+          <h2 class="h3" id="try-h">{w.trial.title}</h2>
           {#if trialHad}
-            <p class="dim">You have had your free week. Anything you buy now starts at once.</p>
+            <p class="dim">{w.trial.had}</p>
           {:else}
-            <p>Seven days of any edition, Full included, free, once per account. Then djmanzo becomes the Hobbyist edition and nothing you made is lost.</p>
-            <a class="btn ghost small" href={`${href("pricing")}#checkout`}>Choose an edition to try</a>
+            <p>{w.trial.offer}</p>
+            <a class="btn ghost small" href={`${href("pricing")}#checkout`}>{w.trial.choose}</a>
           {/if}
           <form class="voucher" onsubmit={redeem}>
-            <label for="voucher" class="mono small-h">A voucher or a gift code</label>
+            <label for="voucher" class="mono small-h">{w.trial.voucher}</label>
             <div class="row">
               <input id="voucher" type="text" bind:value={voucher} placeholder="GIFT-… or djmanzo-voucher-1.…" autocomplete="off" spellcheck="false" />
-              <button class="btn primary small" disabled={!voucher.trim()}>Redeem</button>
+              <button class="btn primary small" disabled={!voucher.trim()}>{w.trial.redeem}</button>
             </div>
             {#if voucherMsg}<p class="note" role="status">{voucherMsg}</p>{/if}
           </form>
         </section>
 
         <section class="card pad" aria-labelledby="con-h">
-          <h2 class="h3" id="con-h">Connected accounts</h2>
-          <p class="dim small">Sign in with any of these and it is the same djmanzo account, with the same licences.</p>
+          <h2 class="h3" id="con-h">{w.connected.title}</h2>
+          <p class="dim small">{w.connected.same}</p>
           <ul class="chips">
             {#each session.user.providers as p (p)}
               {@const b = BRANDS[p]}
-              <li class="chip on">{#if b}<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d={b.path} fill="currentColor" /></svg>{/if}{p === "demo" ? "Demo" : p === "owner" ? "Crew token" : (PROVIDER_NAME[p] ?? p)}</li>
+              <li class="chip on">{#if b}<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d={b.path} fill="currentColor" /></svg>{/if}{p === "demo" ? w.connected.demo : p === "owner" ? w.connected.crew : (PROVIDER_NAME[p] ?? p)}</li>
             {/each}
           </ul>
           {#if connectable.length && !session.user.demo}
-            <p class="small-h mono">Connect another</p>
+            <p class="small-h mono">{w.connected.another}</p>
             <div class="row wrap-row">
               {#each connectable as p (p.id)}
                 <a class="btn ghost small" href={session.signInUrl(p.id, "/account", true)} data-connect={p.id}>{p.name}</a>
               {/each}
             </div>
             {#if connectable.some((p) => p.id === "patreon")}
-              <p class="dim small">Connecting Patreon shows your own Patreon page as verified on your profile and your packs{session.user.supporter ? "" : ", and marks you as a supporter if you support djmanzo there"}.</p>
+              <p class="dim small">{w.connected.patreon}{session.user.supporter ? "" : w.connected.patreonSupporter}.</p>
             {/if}
             {#if connectable.some((p) => p.id === "github")}
-              <p class="dim small">Connecting GitHub does the same for GitHub Sponsors: your own Sponsors page, verified, and a supporter's mark if you sponsor djmanzo.</p>
+              <p class="dim small">{w.connected.github}</p>
             {/if}
           {/if}
           {#if !session.user.demo && !(session.user.supports ?? []).some((p) => p === "kofi" || p === "buymeacoffee")}
-            <p class="dim small" data-support-email>Support djmanzo on Ko-fi or Buy Me a Coffee with the address this account has{session.user.email ? ` (${session.user.email})` : ""}, and this page marks you a supporter by itself.</p>
+            <p class="dim small" data-support-email>{fill(w.connected.kofi, { email: session.user.email ? ` (${session.user.email})` : "" })}</p>
           {/if}
         </section>
 
         <section class="card pad support" aria-labelledby="sup-h">
-          <h2 class="h3" id="sup-h">Where people can support you</h2>
+          <h2 class="h3" id="sup-h">{w.supportTitle}</h2>
           <SupportLinks />
         </section>
 
         {#if orders.length}
           <section class="card pad wide" aria-labelledby="ord-h">
-            <h2 class="h3" id="ord-h">Orders</h2>
+            <h2 class="h3" id="ord-h">{w.orders.title}</h2>
             <table class="orders">
-              <thead><tr><th scope="col">Date</th><th scope="col">Edition</th><th scope="col">Plan</th><th scope="col">Paid with</th><th scope="col">Total</th><th scope="col">Status</th></tr></thead>
+              <thead><tr><th scope="col">{w.orders.date}</th><th scope="col">{w.orders.edition}</th><th scope="col">{w.orders.plan}</th><th scope="col">{w.orders.paid}</th><th scope="col">{w.orders.total}</th><th scope="col">{w.orders.status}</th></tr></thead>
               <tbody>
                 {#each orders as o (o.id)}
                   <tr><td>{date(o.createdAt)}</td><td>{EDITION_INFO[o.edition as Edition]?.name ?? o.edition}</td><td>{planWords(o.plan)}</td><td>{o.provider}</td><td class="mono">{money(o.total, o.currency as never)}</td><td>{o.status}</td></tr>
@@ -367,20 +367,20 @@
 
         {#if notices.length}
           <section class="card pad wide" aria-labelledby="not-h">
-            <h2 class="h3" id="not-h">From the crew</h2>
+            <h2 class="h3" id="not-h">{w.crew.title}</h2>
             <ul class="notices">
               {#each notices as n (n.id)}
-                <li><b>{n.action === "removed" ? "Removed" : n.action === "kept" ? "Kept" : n.action}</b> — your {n.kind}, {date(n.created)}: {n.reason}{#if n.appeal}<span class="dim"> · you replied</span>{/if}</li>
+                <li><b>{n.action === "removed" ? w.crew.removed : n.action === "kept" ? w.crew.kept : n.action}</b> — {fill(w.crew.line, { kind: n.kind, date: date(n.created), reason: n.reason })}{#if n.appeal}<span class="dim">{w.crew.replied}</span>{/if}</li>
               {/each}
             </ul>
           </section>
         {/if}
 
-        <section class="card pad wide links" aria-label="Yours elsewhere on the site">
-          <a href={`/outboard/maker/${session.user.id}`}>Your profile and packs →</a>
-          <a href={href("community")}>The forum →</a>
-          <a href={href("wishes")}>Feature requests →</a>
-          {#if session.admin}<a href="/island/#/backstage">Backstage (crew) →</a>{/if}
+        <section class="card pad wide links" aria-label={w.links.aria}>
+          <a href={`/outboard/maker/${session.user.id}`}>{w.links.profile}</a>
+          <a href={href("community")}>{w.links.forum}</a>
+          <a href={href("wishes")}>{w.links.wishes}</a>
+          {#if session.admin}<a href="/backstage">{w.links.backstage}</a>{/if}
         </section>
 
         {#if check}
@@ -563,7 +563,7 @@
     padding-left: 20px;
     color: var(--dim);
   }
-  .steps b {
+  .steps :global(b) {
     color: var(--text);
   }
   .line {

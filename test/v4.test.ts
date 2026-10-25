@@ -90,11 +90,11 @@ describe("the waveforms are drawn from what the deck plays", () => {
 
   it("silences a stem that is switched off, and only that one", () => {
     const columns = 200;
-    const off = stems(render(house, clock, 10, 12, columns, { drums: false, perc: true, bass: true, keys: true }), columns);
+    const off = stems(render(house, clock, 10, 12, columns, { drums: false, bass: true, rest: true }), columns);
     const on = stems(render(house, clock, 10, 12, columns), columns);
     expect(Math.max(...off.subarray(0, columns))).toBe(0);
     expect(Math.max(...on.subarray(0, columns))).toBeGreaterThan(0.5);
-    expect(off.subarray(2 * columns, 3 * columns)).toEqual(on.subarray(2 * columns, 3 * columns));
+    expect(off.subarray(columns, 3 * columns)).toEqual(on.subarray(columns, 3 * columns));
   });
 
   it("keeps every level a shape, never above one", () => {
@@ -108,7 +108,7 @@ describe("the waveforms are drawn from what the deck plays", () => {
   });
 });
 
-import { fromHash, href, isOwn, parse, signalStage, stageOf, SIGNAL_STAGES, STAGE_TO } from "../src/v4/router";
+import { fromHash, href, isOwn, parse, signalStage, stageOf, STAGE_TO } from "../src/v4/router";
 import { STAGES } from "../src/stages/script";
 
 describe("the site's addresses", () => {
@@ -138,9 +138,13 @@ describe("the site's addresses", () => {
     expect(fromHash("#/talkback/c/mixing")).toBe("/talkback/c/mixing");
     expect(fromHash("#/")).toBeNull();
     expect(fromHash("#main")).toBeNull();
-    expect(signalStage("#/amp")).toBe("/signal/#/amp");
+    // The Signal Path is gone: its stages' old links land on the page and section that show the same.
+    expect(signalStage("#/amp")).toBe("/pricing");
+    expect(signalStage("#/voice")).toBe("/#karaoke");
+    expect(signalStage("#/silence")).toBe("/");
     expect(signalStage("#/pricing")).toBeNull();
-    expect(SIGNAL_STAGES).toEqual(STAGES.map((s) => s.id));
+    // The island's Backstage address leads to this site's.
+    expect(fromHash("#/backstage")).toBe("/backstage");
   });
 
   it("knows every stage the guide can name", () => {

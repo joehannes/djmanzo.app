@@ -14,6 +14,11 @@
   import { session } from "../lib/session.svelte";
   import { countries, flag } from "../lib/countries";
   import type { Edition, Module, Plan } from "../../shared/catalog";
+  import { i18n } from "../v4/i18n.svelte";
+  import { PRICING } from "../v4/i18n/pricing";
+
+  const w = $derived(PRICING[i18n.lang].checkout);
+  const fill = (s: string, vars: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
   interface Props {
     edition: Edition;
@@ -107,7 +112,7 @@
       const s = document.createElement("script");
       s.src = src;
       s.onload = () => resolve();
-      s.onerror = () => reject(new Error("The payment form could not load. Check an ad blocker, then try again."));
+      s.onerror = () => reject(new Error(w.noForm));
       document.head.appendChild(s);
     });
   }
@@ -204,21 +209,21 @@
       .catch((e) => (error = (e as Error).message));
   });
 
-  const LABEL: Record<Method, string> = { card: "💳 Card, Apple Pay, Google Pay", paypal: "🅿️ PayPal", transfer: "🏦 Bank transfer", demo: "🎭 Demo (no money)" };
+  const LABEL = $derived(w.method as Record<Method, string>);
 </script>
 
 {#if !session.user}
   <!-- The parent shows sign-in; nothing to pay with yet. -->
 {:else if total === 0}
-  <button class="btn primary" onclick={free} disabled={busy}>Get it — nothing to pay</button>
+  <button class="btn primary" onclick={free} disabled={busy}>{w.nothing}</button>
 {:else if transfer}
   <div class="notice ok">
-    <p><b>Order {transfer.reference} is waiting for your transfer of {transfer.display}.</b></p>
+    <p><b>{fill(w.waiting, { reference: transfer.reference, amount: transfer.display })}</b></p>
     <pre>{transfer.instructions}</pre>
-    <p class="small">Put <b>{transfer.reference}</b> in the transfer's reference. When it arrives your licence appears under Tu Pase, and djmanzo picks it up.</p>
+    <p class="small">{@html fill(w.reference, { reference: transfer.reference })}</p>
   </div>
 {:else}
-  <div class="methods" role="radiogroup" aria-label="How to pay">
+  <div class="methods" role="radiogroup" aria-label={w.methodsAria}>
     {#each methods as m (m)}
       <button class="chip" role="radio" aria-checked={method === m} onclick={() => (method = m)}>{LABEL[m]}</button>
     {/each}
@@ -226,42 +231,39 @@
 
   {#if method === "demo"}
     <div class="demo">
-      <p class="small">
-        A real payment carries two countries: where the card was issued and the billing address. Set them here to see the regional rule work — try a card from
-        another country.
-      </p>
+      <p class="small">{w.demoAbout}</p>
       <div class="two">
-        <label class="field"><span>Card issued in</span>
+        <label class="field"><span>{w.cardIn}</span>
           <select bind:value={demoCard}>{#each list as c (c.code)}<option value={c.code}>{flag(c.code)} {c.name}</option>{/each}</select>
         </label>
-        <label class="field"><span>Billing address in</span>
+        <label class="field"><span>{w.billingIn}</span>
           <select bind:value={demoBilling}>{#each list as c (c.code)}<option value={c.code}>{flag(c.code)} {c.name}</option>{/each}</select>
         </label>
       </div>
-      <button class="btn primary" onclick={() => demo()} disabled={busy}>{busy ? "…" : `Rehearse paying ${display}`}</button>
+      <button class="btn primary" onclick={() => demo()} disabled={busy}>{busy ? "…" : fill(w.rehearse, { amount: display })}</button>
     </div>
   {:else if method === "card"}
     <div bind:this={cardHost} class="stripe"></div>
     <div bind:this={addressHost} class="stripe"></div>
-    <button class="btn primary" onclick={() => card()} disabled={busy}>{busy ? "…" : `Pay ${display}`}</button>
-    <p class="small muted">The card's country and the billing address prove the regional price. Card details go to Stripe, never to this site.</p>
+    <button class="btn primary" onclick={() => card()} disabled={busy}>{busy ? "…" : fill(w.payAmount, { amount: display })}</button>
+    <p class="small muted">{w.cardNote}</p>
   {:else if method === "paypal"}
-    <p class="small muted">PayPal sells every plan as a prepaid term that does not renew by itself. The payment is only taken once your PayPal account's country backs the price.</p>
+    <p class="small muted">{w.paypalNote}</p>
     <div bind:this={paypalHost}></div>
   {:else if method === "transfer"}
-    <label class="field"><span>Billing address in</span>
+    <label class="field"><span>{w.billingIn}</span>
       <select bind:value={demoBilling}>{#each list as c (c.code)}<option value={c.code}>{flag(c.code)} {c.name}</option>{/each}</select>
     </label>
-    <button class="btn primary" onclick={bank} disabled={busy}>Get the bank details</button>
+    <button class="btn primary" onclick={bank} disabled={busy}>{w.bank}</button>
   {:else}
-    <p class="notice">No way to pay is set up on this site yet.</p>
+    <p class="notice">{w.noWay}</p>
   {/if}
 
   {#if confirmHigher}
     <div class="notice" role="alert">
       <p>{confirmHigher.reason}</p>
-      <button class="btn primary" onclick={() => (method === "card" ? card(true) : demo(true))} disabled={busy}>Pay {confirmHigher.display} instead</button>
-      <button class="btn quiet" onclick={() => (confirmHigher = null)}>Not now</button>
+      <button class="btn primary" onclick={() => (method === "card" ? card(true) : demo(true))} disabled={busy}>{fill(w.payInstead, { amount: confirmHigher.display })}</button>
+      <button class="btn quiet" onclick={() => (confirmHigher = null)}>{w.notNow}</button>
     </div>
   {/if}
 {/if}

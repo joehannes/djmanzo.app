@@ -188,32 +188,6 @@ async function framesIn2s(page: Page): Promise<number> {
   });
 }
 
-test("the sends are on the map, and the site's own pages say who runs it", async ({ page }) => {
-  await page.addInitScript(() => {
-    localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "house", role: "dj", visited: ["silence"] }));
-    const w = window as unknown as { __frames: number };
-    w.__frames = 0;
-    const raf = window.requestAnimationFrame.bind(window);
-    window.requestAnimationFrame = (cb) => {
-      w.__frames++;
-      return raf(cb);
-    };
-  });
-  await page.goto("/signal/");
-  await page.locator('[data-send="talkback"]').click();
-  await expect(page.locator('[data-aux="talkback"]')).toBeVisible({ timeout: 15_000 });
-  // The page hides the painting, so the painting rests under it.
-  await expect(page.locator("canvas[data-resting]")).toHaveCount(1);
-  expect(await framesIn2s(page)).toBe(0);
-  await page.getByRole("link", { name: "Imprint" }).click();
-  await expect(page.locator("[data-imprint]")).toContainText("Test Owner");
-  await page.getByRole("button", { name: "← The map" }).click();
-  await expect(page.getByRole("navigation", { name: "The stages" })).toBeVisible();
-  // And paints again once the map is back (the software renderer here manages a few frames a second).
-  await expect(page.locator("canvas[data-resting]")).toHaveCount(0);
-  expect(await framesIn2s(page)).toBeGreaterThan(1);
-});
-
 test("a phone reads Talkback and Outboard without scrolling sideways", async ({ browser }) => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   for (const where of ["/#/talkback", "/#/outboard"]) {
@@ -224,22 +198,3 @@ test("a phone reads Talkback and Outboard without scrolling sideways", async ({ 
   }
 });
 
-test("the sends cover neither a stage on the map nor its hint, on a wide screen or a phone", async ({ browser }) => {
-  for (const [w, h, mobile] of [[1400, 900, false], [1024, 640, false], [390, 844, true], [375, 667, true]] as const) {
-    const page = await browser.newPage({ viewport: { width: w, height: h }, isMobile: mobile, hasTouch: mobile });
-    await page.addInitScript(() => localStorage.setItem("djmanzo.signal", JSON.stringify({ style: "house", role: "dj", visited: ["silence"] })));
-    await page.goto("/signal/");
-    await expect(page.locator('[data-send="talkback"]')).toBeVisible({ timeout: 15_000 });
-    // The labels follow the painting; let it settle.
-    await page.waitForTimeout(1500);
-    const overlaps = await page.evaluate(() => {
-      const box = (el: Element) => el.getBoundingClientRect();
-      const meet = (a: DOMRect, b: DOMRect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
-      const onScreen = (r: DOMRect) => r.width > 0 && r.right > 0 && r.left < innerWidth && r.bottom > 0 && r.top < innerHeight;
-      const others = [...document.querySelectorAll(".label, .hint")].filter((el) => getComputedStyle(el).opacity !== "0" && onScreen(box(el)));
-      return [...document.querySelectorAll("[data-send]")].flatMap((s) => others.filter((o) => meet(box(s), box(o))).map((o) => `${s.getAttribute("data-send")} covers ${o.textContent!.trim().slice(0, 30)}`));
-    });
-    expect(overlaps, `${w}×${h}`).toEqual([]);
-    await page.close();
-  }
-});

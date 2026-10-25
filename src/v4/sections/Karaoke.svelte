@@ -223,7 +223,7 @@
     height: auto;
     margin: 18px 0 10px;
   }
-  .decks .dim b {
+  .decks .dim :global(b) {
     color: var(--text);
   }
   .flow {

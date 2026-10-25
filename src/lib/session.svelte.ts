@@ -8,8 +8,9 @@ import { FAILURES, PROVIDER_NAME, type Failure } from "../../shared/signin";
 export interface Returned {
   kind: "signedin" | "linked" | "failed";
   provider: string | null;
-  /** The sentence to show, for a failure. */
+  /** The sentence to show, for a failure (in English; `failure` names it, for a page in another language). */
   why: string | null;
+  failure?: Failure | null;
 }
 
 export interface SessionUser {
@@ -51,7 +52,7 @@ class Session {
     if (!provider && !failed) return;
     const why = q.get("why") as Failure | null;
     this.returned = failed
-      ? { kind: "failed", provider: null, why: (why && FAILURES[why]) || "The sign-in did not finish. Try again, or another way of signing in." }
+      ? { kind: "failed", provider: null, why: (why && FAILURES[why]) || "The sign-in did not finish. Try again, or another way of signing in.", failure: why && why in FAILURES ? why : null }
       : { kind: q.has("linked") ? "linked" : "signedin", provider: PROVIDER_NAME[provider!] ?? provider, why: null };
     for (const k of ["signedin", "linked", "signin", "why"]) q.delete(k);
     const rest = q.toString();

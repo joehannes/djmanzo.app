@@ -7,11 +7,17 @@
 <script lang="ts">
   import { session } from "../lib/session.svelte";
   import { href, type Route } from "./router";
+  import { i18n } from "./i18n.svelte";
+  import { ACCOUNT } from "./i18n/account";
+  import { BITS } from "./i18n/bits";
+  import { fill } from "./i18n/sections";
 
   let { route }: { route: Route } = $props();
   let gone = $state(false);
 
   const said = $derived(session.returned);
+  const a = $derived(ACCOUNT[i18n.lang]);
+  const w = $derived(BITS[i18n.lang]);
   /** The pages that show it in place: the account always, the shop while signed out (its sign-in is on the page). */
   const inPlace = $derived(route.page === "account" || (route.page === "pricing" && said?.kind === "failed"));
   const show = $derived(!!said && !gone && !inPlace);
@@ -26,13 +32,13 @@
 {#if show && said}
   <div class="toast" class:bad={said.kind === "failed"} role={said.kind === "failed" ? "alert" : "status"} data-toast>
     {#if said.kind === "failed"}
-      <p><b>That sign-in did not finish.</b> {said.why} <a href={href("account")}>Try again</a></p>
+      <p><b>{a.signin.notFinished}</b> {said.failure ? a.failures[said.failure] : a.signin.fallback} <a href={href("account")}>{w.toast.again}</a></p>
     {:else if said.kind === "linked"}
-      <p>{said.provider} is connected to your account.</p>
+      <p>{fill(a.linked, { p: said.provider ?? "" })}</p>
     {:else}
-      <p>Signed in with {said.provider}{session.user ? ` as ${session.user.name}` : ""}. <a href={href("account")}>Your account</a></p>
+      <p>{session.user ? fill(w.toast.signedInAs, { p: said.provider ?? "", name: session.user.name }) : fill(a.signedIn, { p: said.provider ?? "" })} <a href={href("account")}>{w.toast.account}</a></p>
     {/if}
-    <button aria-label="Close" onclick={() => (gone = true)}>×</button>
+    <button aria-label={w.shot.close} onclick={() => (gone = true)}>×</button>
   </div>
 {/if}
 

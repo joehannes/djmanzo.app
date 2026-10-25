@@ -1,11 +1,12 @@
 <!--
-  Live stems, played: the deck's four parts drawn as four lanes on the GPU,
+  Live stems, played: the deck's three parts drawn as three lanes on the GPU,
   each one switchable — the music and the picture both follow. The words
   are the facts'.
 -->
 <script lang="ts">
   import { shared, skin } from "../region.svelte";
   import { deck, play, setStem } from "../sound.svelte";
+  import { hasLoop } from "../loops";
   import { STEMS, type Stem } from "../wave/model";
   import Wave from "../wave/Wave.svelte";
   import FactList from "./FactList.svelte";
@@ -43,11 +44,16 @@
         {/if}
         <span class="mono dim small">{w.on.replace("{n}", String(STEMS.filter((s) => deck.on[s]).length))}</span>
       </div>
+      {#if hasLoop(deck.genre)}<p class="credit dim small" data-credit>{w.credit}</p>{/if}
     </div>
   </div>
 </section>
 
 <style>
+  .credit {
+    margin: 10px 0 0;
+    font-size: 12px;
+  }
   .stems {
     overflow: hidden;
     isolation: isolate;

@@ -1,0 +1,377 @@
+{
+ "techno": {
+  "bpm": 130.01,
+  "key": "F minor",
+  "camelot": "4A",
+  "bars": 16,
+  "seconds": 29.535714285714285,
+  "pre": 0.25,
+  "frames": 1324575,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "house": {
+  "bpm": 125.01,
+  "key": "A minor",
+  "camelot": "8A",
+  "bars": 16,
+  "seconds": 30.717414965986393,
+  "pre": 0.25,
+  "frames": 1376688,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "dnb": {
+  "bpm": 174.01,
+  "key": "D minor",
+  "camelot": "7A",
+  "bars": 16,
+  "seconds": 22.06784580498866,
+  "pre": 0.25,
+  "frames": 995242,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "lounge": {
+  "bpm": 97.0,
+  "key": "D major",
+  "camelot": "10B",
+  "bars": 8,
+  "seconds": 19.794399092970522,
+  "pre": 0.25,
+  "frames": 894983,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "merengue": {
+  "bpm": 150.03,
+  "key": "C major",
+  "camelot": "8B",
+  "bars": 16,
+  "seconds": 25.59419501133787,
+  "pre": 0.25,
+  "frames": 1150754,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "bachata": {
+  "bpm": 130.0,
+  "key": "E minor",
+  "camelot": "9A",
+  "bars": 16,
+  "seconds": 29.539274376417232,
+  "pre": 0.25,
+  "frames": 1324732,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "reggaeton": {
+  "bpm": 94.01,
+  "key": "G minor",
+  "camelot": "6A",
+  "bars": 8,
+  "seconds": 20.42421768707483,
+  "pre": 0.25,
+  "frames": 922758,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "salsa": {
+  "bpm": 177.99,
+  "key": "A minor",
+  "camelot": "8A",
+  "bars": 16,
+  "seconds": 21.574353741496598,
+  "pre": 0.25,
+  "frames": 973479,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "cumbia": {
+  "bpm": 97.53,
+  "key": "A minor",
+  "camelot": "8A",
+  "bars": 8,
+  "seconds": 19.687165532879817,
+  "pre": 0.25,
+  "frames": 890254,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "dembow": {
+  "bpm": 125.0,
+  "key": "C minor",
+  "camelot": "5A",
+  "bars": 16,
+  "seconds": 30.72047619047619,
+  "pre": 0.25,
+  "frames": 1376823,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "hiphop": {
+  "bpm": 90.0,
+  "key": "E minor",
+  "camelot": "9A",
+  "bars": 8,
+  "seconds": 21.33433106575964,
+  "pre": 0.25,
+  "frames": 962894,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "disco": {
+  "bpm": 118.02,
+  "key": "A minor",
+  "camelot": "8A",
+  "bars": 16,
+  "seconds": 32.53700680272109,
+  "pre": 0.25,
+  "frames": 1456932,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "pop": {
+  "bpm": 119.97,
+  "key": "G major",
+  "camelot": "9B",
+  "bars": 16,
+  "seconds": 32.006734693877554,
+  "pre": 0.25,
+  "frames": 1433547,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "afrobeats": {
+  "bpm": 112.97,
+  "key": "F minor",
+  "camelot": "4A",
+  "bars": 8,
+  "seconds": 16.99546485260771,
+  "pre": 0.25,
+  "frames": 771550,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "dancehall": {
+  "bpm": 94.99,
+  "key": "D minor",
+  "camelot": "7A",
+  "bars": 8,
+  "seconds": 20.21265306122449,
+  "pre": 0.25,
+  "frames": 913428,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ }
+}

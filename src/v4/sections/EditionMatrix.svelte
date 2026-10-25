@@ -11,6 +11,10 @@
   import { EDITION_INFO, MODULE_TITLE, type Edition } from "../../../shared/catalog";
   import { AREAS, FACTS, areaOf, carriedBy, type Area, type Fact } from "../../../shared/facts";
   import { ta, tf } from "../i18n/facts.svelte";
+  import { i18n } from "../i18n.svelte";
+  import { PRICING } from "../i18n/pricing";
+
+  const m = $derived(PRICING[i18n.lang].matrix);
 
   let { chosen = null, onpick }: { chosen?: Edition | null; onpick?: (e: Edition) => void } = $props();
 
@@ -47,15 +51,15 @@
 </script>
 
 <div class="matrix-tools">
-  <label class="switch"><input type="checkbox" bind:checked={differences} data-differences /> Only the differences</label>
-  <span class="dim small">Press a feature to read what it does. <span class="yes"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="currentColor" /></svg></span> carried · <span class="part"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor" /></svg></span> part-built · <span class="no">—</span> not in this edition</span>
+  <label class="switch"><input type="checkbox" bind:checked={differences} data-differences /> {m.differences}</label>
+  <span class="dim small">{m.press} <span class="yes"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="currentColor" /></svg></span> {m.carried} · <span class="part"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor" /></svg></span> {m.partBuilt} · <span class="no">—</span> {m.notIn}</span>
 </div>
 
 <div class="matrix card" data-matrix>
   <table>
     <thead>
       <tr>
-        <th scope="col" class="feat"><span class="sr-only">Feature</span></th>
+        <th scope="col" class="feat"><span class="sr-only">{m.feature}</span></th>
         {#each COLUMNS as e (e)}
           <th scope="col" class:on={chosen === e} style:--c={EDITION_INFO[e].colour}>
             <button onclick={() => onpick?.(e)} data-column={e}><span class="dot"></span>{EDITION_INFO[e].name}</button>
@@ -80,8 +84,8 @@
               {#each COLUMNS as e (e)}
                 <td class:on={chosen === e}>
                   {#if carried(f, e)}
-                    {#if f.status === "part"}<span class="part" title="Part-built" role="img" aria-label="part-built"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor" /></svg></span>{:else}<span class="yes" role="img" aria-label="included"><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="currentColor" /></svg></span>{/if}
-                  {:else}<span class="no" aria-label="not included">—</span>{/if}
+                    {#if f.status === "part"}<span class="part" title={m.partBuilt} role="img" aria-label={m.partBuilt}><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" stroke-width="1.5" /><path d="M6 1a5 5 0 0 1 0 10z" fill="currentColor" /></svg></span>{:else}<span class="yes" role="img" aria-label={m.included}><svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="5" fill="currentColor" /></svg></span>{/if}
+                  {:else}<span class="no" aria-label={m.notIn}>—</span>{/if}
                 </td>
               {/each}
             </tr>
@@ -90,7 +94,7 @@
                 <td colspan={COLUMNS.length + 1}>
                   <p>{f.about}</p>
                   {#if f.caveat}<p class="caveat">{f.caveat}</p>{/if}
-                  <p class="mono dim tiny">{by(f)} · {f.status === "shipped" ? "ships" : "part-built"} · {f.source}</p>
+                  <p class="mono dim tiny">{by(f)} · {f.status === "shipped" ? m.ships : m.partBuilt} · {f.source}</p>
                 </td>
               </tr>
             {/if}
@@ -101,8 +105,8 @@
   </table>
 </div>
 <p class="dim small after">
-  <b>Custom</b> is the Hobbyist edition with the modules you pick, each priced on its own. A feature marked with two modules needs either one.
-  {#if planned.length}Planned, and in no edition yet: {planned.map((f) => f.name).join("; ")}.{/if}
+  {@html m.custom}
+  {#if planned.length}{m.planned.replace("{list}", planned.map((f) => f.name).join("; "))}{/if}
 </p>
 
 <style>

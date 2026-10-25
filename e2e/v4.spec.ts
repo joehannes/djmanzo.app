@@ -7,8 +7,12 @@
  * say whether it sounds right — only that what should play is told to.
  */
 import { expect as plainExpect, test, type Page } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 const expect = plainExpect.configure({ timeout: 15_000 });
+
+/** The deck's recorded loops, as the site ships them. */
+const LOOP_INDEX = JSON.parse(readFileSync("src/v4/loops/index.json", "utf8")) as Record<string, { bpm: number; camelot: string }>;
 
 function errors(page: Page): string[] {
   const out: string[] = [];
@@ -33,7 +37,7 @@ test("the look follows where the visitor is, and the deck plays that place's mus
   await expect(page.locator("html")).toHaveAttribute("data-skin", "club");
   await expect(page.locator("[data-hero-photo]")).toHaveAttribute("style", /club-hero\.webp/);
   await expect(page.locator("[data-groove=techno]")).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator("[data-look]")).toContainText("Club · Europe · DE");
+  await expect(page.locator("[data-look]")).toContainText("Club · Europe · Germany");
 
   await page.goto("/?country=DO");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "tropical");
@@ -76,15 +80,16 @@ test("the deck plays, changes groove in time, and its stems switch one by one", 
   await expect(page.locator("[data-play]")).toHaveAttribute("aria-label", "Stop the deck");
   await expect(page.locator("[data-bpm]")).toHaveText("90.0");
   await page.click("[data-groove=house]");
-  await expect(page.locator("[data-bpm]")).toHaveText("123.0");
+  // The recorded loop's own tempo, as it was made, not the middle of house's range.
+  await expect(page.locator("[data-bpm]")).toHaveText(LOOP_INDEX.house.bpm.toFixed(1));
   await expect(page.locator("[data-play]")).toHaveAttribute("aria-label", "Stop the deck");
 
   await page.locator("#stems").scrollIntoViewIfNeeded();
   await page.click("[data-stem=drums]");
   await expect(page.locator("[data-stem=drums]")).toHaveAttribute("aria-pressed", "false");
-  await expect(page.locator("[data-stems]")).toContainText("3 of 4 parts on");
+  await expect(page.locator("[data-stems]")).toContainText("2 of 3 parts on");
   await page.click("[data-stem=drums]");
-  await expect(page.locator("[data-stems]")).toContainText("4 of 4 parts on");
+  await expect(page.locator("[data-stems]")).toContainText("3 of 3 parts on");
   await page.locator("#top").scrollIntoViewIfNeeded();
   await page.click("[data-play]");
   await expect(page.locator("[data-play]")).toHaveAttribute("aria-label", "Play the deck");
@@ -205,7 +210,7 @@ test("with less motion asked for, nothing is left hidden", async ({ page }) => {
   expect(await skinOf(page)).toBe("club");
 });
 
-test("older addresses land: the preview's, its hash pages, and the Signal Path's stages", async ({ page }) => {
+test("older addresses land: the preview's, its hash pages, the retired sites and the Signal Path's stages", async ({ page }) => {
   const errs = errors(page);
   await page.goto("/v4/?country=DO#/pricing");
   await expect(page).toHaveURL(/^http:\/\/[^/]+\/pricing\?country=DO$/);
@@ -213,8 +218,13 @@ test("older addresses land: the preview's, its hash pages, and the Signal Path's
   await page.goto("/#/market");
   await expect(page).toHaveURL(/\/outboard$/);
   await expect(page.locator("[data-market]")).toBeVisible();
+  // The Signal Path is retired: its stages land on the page and section that show the same.
   await page.goto("/#/voice");
-  await expect(page).toHaveURL(/\/signal\/#\/voice$/);
+  await expect(page).toHaveURL(/\/#karaoke$/);
+  await page.goto("/signal/#/amp");
+  await expect(page).toHaveURL(/\/pricing$/);
+  await page.goto("/shop/");
+  await expect(page).toHaveURL(/\/pricing$/);
   expect(errs).toEqual([]);
 });
 
@@ -363,7 +373,7 @@ test("every feature, the home page's sections and the status line follow the lan
   await page.goto("/features?lang=ja");
   await expect(page.locator("#h-mixing")).toHaveText("ミックス");
   await expect(page.locator("[data-fact=decks] h3")).toHaveText("2 台のデッキとミキサー");
-  await expect(page.locator("[data-fact=windows] .waits")).toHaveText("Windows マシンで実際に動かしてくれる人。");
+  await expect(page.locator("[data-fact=gig] .waits")).toHaveText("観客のいる一夜と、そこで見つかったことの記録。");
   await expect(page.locator("[data-fact=dvs] .caveat")).toHaveText("プレスしたレコードではまだ試していません。");
   await page.locator("[data-lang-picker]").click();
   await page.locator("[data-lang=en]").click();
@@ -403,8 +413,9 @@ test("release notes: every version in the visitor's language, a feature's built 
 test("a gift bought at the shop: the voucher line and its link, kept in the account; the demo's is a rehearsal", async ({ page }) => {
   const errs = errors(page);
   await page.goto("/pricing?lang=de");
-  await page.getByPlaceholder("Your DJ name").fill("Gift DJ");
-  await page.getByRole("button", { name: "Sign in for the demo" }).click();
+  // The demo sign-in speaks German now, as the rest of the page does.
+  await page.getByPlaceholder("Dein DJ-Name").fill("Gift DJ");
+  await page.getByRole("button", { name: "Für die Demo anmelden" }).click();
   await page.locator("[data-plan=perpetual]").click();
   // Only bought once: a subscription cannot be a gift.
   await page.locator("[data-plan=monthly]").click();
@@ -413,7 +424,7 @@ test("a gift bought at the shop: the voucher line and its link, kept in the acco
   await page.locator("[data-gift-toggle]").check();
   await page.locator("[data-gift-for]").fill("lena@example.test");
   await page.locator("[data-gift-note]").fill("Alles Gute");
-  await page.getByRole("button", { name: /Rehearse paying/ }).click();
+  await page.getByRole("button", { name: /Zahlung von .* proben/ }).click();
   await expect(page.locator("[data-gift-done]")).toContainText("Dein Geschenk ist fertig.");
   await expect(page.locator("[data-gift-rehearsal]")).toBeVisible();
   await expect(page.locator("[data-gift-line]")).toHaveValue(/^djmanzo-voucher-1\./);
@@ -435,7 +446,8 @@ test("Backstage: the crew sets a password, comes in with it, and grants a licenc
   await page.context().clearCookies();
   // The address to remember leads to Backstage; a guess does not open it.
   await page.goto("/backstage");
-  await expect(page).toHaveURL(/\/island\/#\/backstage$/);
+  await expect(page).toHaveURL(/\/backstage$/);
+  await expect(page.locator("[data-backstage]")).toBeVisible();
   await page.locator("[data-crew-password]").fill("not the password");
   await page.getByRole("button", { name: "Come in" }).click();
   await expect(page.getByText("That is not the crew's token or password.")).toBeVisible();
@@ -453,7 +465,9 @@ test("Backstage: the crew sets a password, comes in with it, and grants a licenc
   await page.context().clearCookies();
   // A fresh load: the same address with only a hash would keep the page, and who it thinks is signed in.
   await page.goto("/");
+  // The island's old address still leads here.
   await page.goto("/island/#/backstage");
+  await expect(page).toHaveURL(/\/backstage$/);
   await page.locator("[data-crew-password]").fill("a long crew password");
   await page.getByRole("button", { name: "Come in" }).click();
   await page.locator("[data-grant] summary").click();
@@ -468,7 +482,7 @@ test("Backstage: payments are set without a deploy, shown back only by their end
   const errs = errors(page);
   const clear = { values: { STRIPE_PUBLISHABLE_KEY: "", STRIPE_SECRET_KEY: "" } };
   try {
-    await page.goto("/island/#/backstage");
+    await page.goto("/backstage");
     await page.locator("[data-crew-password]").fill("crew-secret");
     await page.getByRole("button", { name: "Come in" }).click();
     await page.locator("[data-payments] summary").click();
@@ -496,7 +510,7 @@ test("Backstage: a sign-in provider is switched on with its keys, and the sign-i
   const clear = { values: { GOOGLE_CLIENT_ID: "", GOOGLE_CLIENT_SECRET: "" } };
   try {
     await page.goto("/admin");
-    await expect(page).toHaveURL(/\/island\/#\/backstage$/);
+    await expect(page).toHaveURL(/\/backstage$/);
     await page.locator("[data-crew-password]").fill("crew-secret");
     await page.getByRole("button", { name: "Come in" }).click();
     await page.locator("[data-signin-keys] summary").click();
@@ -519,5 +533,60 @@ test("Backstage: a sign-in provider is switched on with its keys, and the sign-i
   } finally {
     await request.put("/api/admin/signin", { data: clear, headers: { authorization: "Bearer crew-secret" } });
   }
+  expect(errs).toEqual([]);
+});
+
+test("the deck plays the genre's recorded loop: three parts that switch off and on, its own tempo and key, and the music's making credited", async ({ page }) => {
+  const errs = errors(page);
+  const index = JSON.parse(readFileSync("src/v4/loops/index.json", "utf8")) as Record<string, { bpm: number; camelot: string }>;
+  const fetched: string[] = [];
+  page.on("response", (r) => {
+    if (r.url().includes("/v4/loops/")) fetched.push(`${r.status()} ${new URL(r.url()).pathname}`);
+  });
+  await page.goto("/?country=DE");
+  await page.locator("[data-groove=house]").click();
+  await expect(page.locator("[data-bpm]")).toHaveText(index.house.bpm.toFixed(1));
+  await expect(page.locator("[data-deck]")).toContainText(index.house.camelot);
+  await page.locator("[data-play]").click();
+  await expect(page.locator("[data-deck]")).toHaveAttribute("data-deck-source", "loop", { timeout: 20_000 });
+  await expect(page.locator("[data-play]")).toHaveAttribute("aria-busy", "false");
+  // AAC where the browser plays it; this test's Chromium has no AAC, so Opus.
+  for (const stem of ["drums", "bass", "rest"]) expect(fetched.some((f) => new RegExp(`^200 /v4/loops/house/${stem}\\.(m4a|webm)$`).test(f)), stem).toBe(true);
+  // Another genre: its own loop.
+  await page.locator("[data-groove=techno]").click();
+  await expect(page.locator("[data-bpm]")).toHaveText(index.techno.bpm.toFixed(1));
+  await expect.poll(() => fetched.filter((f) => f.startsWith("200 /v4/loops/techno/")).length, { timeout: 20_000 }).toBeGreaterThanOrEqual(3);
+  await expect(page.locator("[data-deck]")).toHaveAttribute("data-deck-source", "loop", { timeout: 20_000 });
+  // The stems: three, each switchable, and the music's making said beside them.
+  await page.locator("#stems").scrollIntoViewIfNeeded();
+  await expect(page.locator("[data-stem]")).toHaveCount(3);
+  await page.locator("[data-stem=drums]").click();
+  await expect(page.locator("[data-stem=drums]")).toHaveAttribute("aria-pressed", "false");
+  await expect(page.locator("#stems")).toContainText("2 of 3 parts on");
+  await expect(page.locator("[data-credit]")).toContainText("ACE-Step");
+  await page.locator("[data-stem=drums]").click();
+  await page.locator("[data-play]").click();
+  await expect(page.locator("[data-deck]")).not.toHaveAttribute("data-deck-source", /./);
+  expect(errs).toEqual([]);
+});
+
+test("the comparison, the kinds of nights and the people's page are pages of this site, in the visitor's language", async ({ page }) => {
+  const errs = errors(page);
+  await page.goto("/compare?lang=es");
+  await expect(page.locator("[data-compare] h1")).toContainText("djmanzo junto");
+  await expect(page.locator("[data-compare]")).toContainText("djmanzo frente a VirtualDJ");
+  await expect(page.locator("[data-compare] table")).toContainText("Funciona en Windows");
+  await page.goto("/nights?lang=en");
+  await page.locator("[data-night=karaoke]").click();
+  await expect(page.locator("[data-night-open=karaoke]")).toContainText("Between singers");
+  await expect(page.locator("[data-night-open=karaoke]")).toContainText("The edition: Karaoke");
+  await page.goto("/people");
+  await expect(page.locator("[data-people]")).toContainText("What people say");
+  await expect(page.locator("[data-say]")).toBeVisible();
+  // The island's addresses for them land here.
+  await page.goto("/island/#/arena");
+  await expect(page).toHaveURL(/\/compare$/);
+  // Each is a link in the footer.
+  for (const path of ["/compare", "/nights", "/people"]) await expect(page.locator(`footer a[href="${path}"]`)).toHaveCount(1);
   expect(errs).toEqual([]);
 });

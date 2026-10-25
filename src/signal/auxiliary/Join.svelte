@@ -5,7 +5,11 @@
 <script lang="ts">
   import { session } from "../../lib/session.svelte";
   import type { Standing } from "./routes";
-  let { standing, doing = "take part" }: { standing: Standing | null; doing?: string } = $props();
+  import { i18n } from "../../v4/i18n.svelte";
+  import { TALKBACK, type Doing } from "../../v4/i18n/talkback";
+  import { fill } from "../../v4/i18n/sections";
+  let { standing, doing = "take" }: { standing: Standing | null; doing?: Doing } = $props();
+  const w = $derived(TALKBACK[i18n.lang].join);
   const providers = $derived(session.providers.filter((p) => p.id !== "demo"));
 </script>
 
@@ -15,11 +19,11 @@
   <p class="note" data-closed>{standing.closed}</p>
 {:else if !standing.signedIn || !standing.vouched}
   <div class="join" data-join>
-    <p>{standing.signedIn ? "The demo sign-in cannot" : "Sign in to"} {doing}{standing.signedIn ? ": sign in with an account a provider vouches for." : "."}</p>
+    <p>{standing.signedIn ? w.demo[doing] : w.signIn[doing]}</p>
     {#each providers as p (p.id)}
-      <a class="go" href={session.signInUrl(p.id)}>Continue with {p.name}</a>
+      <a class="go" href={session.signInUrl(p.id)}>{fill(w.continueWith, { p: p.name })}</a>
     {:else}
-      <p class="note">No sign-in provider is connected to this site yet.</p>
+      <p class="note">{w.noProvider}</p>
     {/each}
   </div>
 {/if}

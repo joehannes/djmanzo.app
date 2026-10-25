@@ -314,13 +314,18 @@ describe("the site's addresses", () => {
     }
   });
 
-  it("serves the Signal Path at its own address again, and the preview's pictures where they were", async () => {
+  it("sends the retired sites' addresses here, and still serves the preview's pictures where they were", async () => {
     // The static files stand in as one answer: what matters is that the Worker passes these to them.
     const env = { ...testEnv(), ASSETS: { fetch: async () => new Response("a static file") } } as unknown as ReturnType<typeof testEnv>;
-    for (const path of ["/signal/", "/v4/art/club-hero.webp"]) {
+    const art = await handle(new Request("https://djmanzo.test/v4/art/club-hero.webp"), env, exec);
+    expect(art.status).toBe(200);
+    expect(await art.text()).toBe("a static file");
+    for (const [path, to] of [["/signal/", "/"], ["/island/", "/"], ["/island", "/"], ["/shop/", "/pricing"], ["/signal/index.html?sky=snow", "/?sky=snow"]]) {
       const res = await handle(new Request(`https://djmanzo.test${path}`), env, exec);
-      expect(res.status, path).toBe(200);
-      expect(await res.text(), path).toBe("a static file");
+      expect(res.status, path).toBe(301);
+      expect(res.headers.get("location"), path).toBe(`https://djmanzo.test${to}`);
     }
+    // A path that only starts like one is not one of them.
+    expect((await handle(new Request("https://djmanzo.test/shopping"), env, exec)).status).toBe(200);
   });
 });

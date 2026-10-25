@@ -87,10 +87,10 @@ export function downloadLabel(os: Os): { label: string; note: string } {
     case "linux":
       return { label: "Download for Linux", note: "Native, on PipeWire or ALSA." };
     case "windows":
-      return { label: "Download for Windows", note: "Built and packaged with every release, but not yet run by a person on Windows." };
+      return { label: "Download for Windows", note: "Built with every release and run on Windows by its owner; in beta, like all of djmanzo." };
     case "phone":
-      return { label: "Get it on your computer", note: "djmanzo runs on macOS and Linux." };
+      return { label: "Get it on your computer", note: "djmanzo runs on Windows, macOS and Linux." };
     default:
-      return { label: "Download free", note: "For macOS and Linux." };
+      return { label: "Download free", note: "For Windows, macOS and Linux." };
   }
 }

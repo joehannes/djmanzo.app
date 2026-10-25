@@ -1,7 +1,7 @@
-import type { FactWords } from "../facts.svelte";
+import type { FactWords } from "../factwords";
 
 const w: FactWords = {
-  status: "O djmanzo está em beta: um aplicativo de DJ completo para macOS e Linux, testado no próprio repositório — com substitutos onde faltava o hardware — e que ainda não passou por uma festa de verdade.",
+  status: "O djmanzo está em beta: um aplicativo de DJ completo para Windows, macOS e Linux, testado no próprio repositório — com substitutos onde faltava o hardware — e que ainda não passou por uma festa de verdade.",
   soon: { almost: "Quase pronto", progress: "Em andamento", planned: "Planejado" },
   areas: {
     mixing: { name: "Mixagem", about: "Os decks, o mixer, cues, loops, efeitos e stems." },
@@ -72,7 +72,7 @@ const w: FactWords = {
     share: { name: "Compartilhar um set", about: "A tracklist da noite enviada para WhatsApp, X, Bluesky ou Threads com a mensagem pronta; o DJ aperta enviar." },
     linux: {
       name: "Linux e macOS",
-      about: "No Linux, o áudio passa pelo dispositivo padrão do ALSA, servido pelo PipeWire; macOS e Linux são as plataformas prometidas.",
+      about: "No Linux, o áudio passa pelo dispositivo padrão do ALSA, servido pelo PipeWire; Windows, macOS e Linux são as plataformas para as quais ele é publicado.",
       caveat: "Ainda não dá para escolher o JACK como host de áudio, e a CI roda Ubuntu em vez de Xubuntu.",
     },
     decks6: { name: "De quatro a seis decks", about: "Decks três e quatro, e até seis." },
@@ -216,7 +216,7 @@ const w: FactWords = {
       caveat: "Nada disso está provado até encontrar o aparelho de verdade.",
       waits: "Um player de verdade para testar, e uma licença do Ableton Link que o djmanzo possa usar.",
     },
-    windows: { name: "Windows", about: "Compilado, testado na CI e empacotado em cada versão.", caveat: "Ninguém o rodou ainda num computador com Windows.", waits: "Uma pessoa rodando num computador com Windows." },
+    windows: { name: "Windows", about: "Compilado, testado na CI e empacotado em cada versão, e rodado num computador com Windows pelo dono do djmanzo.", caveat: "Em beta, como tudo aqui: por enquanto, testado por uma pessoa no Windows." },
     gig: { name: "Uma festa de verdade", about: "Tudo aqui foi testado no repositório; nada ainda na frente de um público.", waits: "Uma noite com público, e o que ela revelar, por escrito." },
     leader: {
       name: "Teclas mnemônicas no Espaço",

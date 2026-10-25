@@ -1,12 +1,13 @@
 /**
  * The djmanzo website's Worker: the API under `/api`, sign-in under
  * `/auth`, djmanzo's licence protocol, and the pages (static assets) for
- * everything else — the Signal Path at `/`, the island at `/island/`.
+ * everything else — one site at `/`, since the island, the Signal Path and
+ * the record shop were retired on 25 October.
  */
 
 import { CHEAPEST_WITH, EDITION_INFO, FOUNDATION, MARKET, MODULES, MODULE_PRICE, MODULE_TITLE, NAMED, PLANS, PLAN_INFO, PRO_MONTH, REASON, TRIAL_DAYS, listPrice } from "../shared/catalog";
 import { FACTS, STATUS_LINE } from "../shared/facts";
-import { STAGE_BY_ID } from "../src/stages/script";
+import { VIDEO_PLACES } from "../src/v4/videos";
 import { COMING_KINDS, LISTED_KINDS } from "../shared/outboard";
 import { COMMUNITIES, FLAIRS, RULES, TRUST } from "../shared/talkback";
 import { BAND_NAME, BAND_SHARE, STUDENT_SHARE, band, currencyFor } from "../shared/regions";
@@ -55,6 +56,13 @@ const routes: { method: string; pattern: RegExp; keys: string[]; handler: Handle
  * that may arrive from another origin (`worker/applicence.ts`).
  */
 const APP_CALLS = ["/licence", "/renew", "/signout"];
+
+/** The retired sites' paths, and where each now lands. */
+const RETIRED: [string, string][] = [
+  ["/island", "/"],
+  ["/signal", "/"],
+  ["/shop", "/pricing"],
+];
 
 function route(method: string, path: string, handler: Handler) {
   const keys: string[] = [];
@@ -122,9 +130,8 @@ route("GET", "/api/me/orders", async (c) => {
   return (await Promise.all(mine.map((k) => get<Order>(c.env.KV, k)))).filter(Boolean);
 });
 route("GET", "/api/me/gifts", async (c) => checkout.giftsOf(c.env, (await needUser(c)).id));
-// Backstage lives in the island; this is the address to remember.
-route("GET", "/backstage", async (c) => Response.redirect(new URL("/island/#/backstage", c.url).toString(), 302));
-route("GET", "/admin", async (c) => Response.redirect(new URL("/island/#/backstage", c.url).toString(), 302));
+// The address to remember for Backstage.
+route("GET", "/admin", async (c) => Response.redirect(new URL("/backstage", c.url).toString(), 302));
 route("GET", "/api/me/profile", async (c) => get(c.env.KV, `profile:${(await needUser(c)).id}`));
 route("PUT", "/api/me/profile", async (c) => community.saveProfile(c.env, await needUser(c), await body(c.req, 9000)));
 
@@ -577,7 +584,7 @@ route("PUT", "/api/admin/videos", async (c) => {
   const clean = (Array.isArray(b) ? b : [])
     .filter((v) => /^[A-Za-z0-9_-]{6,20}$/.test(String(v.id)))
     .slice(0, 60)
-    .map((v) => ({ id: v.id, title: text(v.title, 120), edition: v.edition ?? null, genre: v.genre ? text(v.genre, 30) : null, stage: v.stage && v.stage in STAGE_BY_ID ? v.stage : null }));
+    .map((v) => ({ id: v.id, title: text(v.title, 120), edition: v.edition ?? null, genre: v.genre ? text(v.genre, 30) : null, stage: v.stage && VIDEO_PLACES.some((p) => p.id === v.stage) ? v.stage : null }));
   await put(c.env.KV, "config:videos", clean);
   return clean;
 });
@@ -621,6 +628,10 @@ export async function handle(req: Request, rawEnv: AppEnv, exec: ExecutionContex
   // The professional site was previewed at /v4/ before it became the site; old links still land
   // (the browser keeps an old #/pricing, and the page turns it into /pricing). Its pictures stay at /v4/art/.
   if (url.pathname === "/v4" || url.pathname === "/v4/" || url.pathname === "/v4/index.html") return Response.redirect(`${url.origin}/${url.search}`, 301);
+  // The earlier sites, retired on 25 October: their addresses land on this one. A browser keeps the
+  // address's #fragment across the redirect, so `/island/#/backstage` reaches Backstage here.
+  const retired = RETIRED.find(([p]) => url.pathname === p || url.pathname.startsWith(`${p}/`));
+  if (retired) return Response.redirect(`${url.origin}${retired[1]}${url.search}`, 301);
   // Mutating requests from a browser must come from this site.
   if (req.method !== "GET" && req.method !== "HEAD" && !url.pathname.startsWith("/api/webhooks/")) {
     const origin = req.headers.get("origin");

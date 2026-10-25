@@ -1,7 +1,7 @@
-import type { FactWords } from "../facts.svelte";
+import type { FactWords } from "../factwords";
 
 const w: FactWords = {
-  status: "djmanzo è in beta: un'applicazione DJ completa per macOS e Linux, testata nel suo repository — con sostituti dove mancava l'hardware — e non ancora passata per una vera serata.",
+  status: "djmanzo è in beta: un'applicazione DJ completa per Windows, macOS e Linux, testata nel suo repository — con sostituti dove mancava l'hardware — e non ancora passata per una vera serata.",
   soon: { almost: "Quasi pronto", progress: "In corso", planned: "Previsto" },
   areas: {
     mixing: { name: "Il mix", about: "I deck, il mixer, cue, loop, effetti e stem." },
@@ -72,7 +72,7 @@ const w: FactWords = {
     share: { name: "Condividere un set", about: "La tracklist della serata passata a WhatsApp, X, Bluesky o Threads con il messaggio già scritto; il DJ preme invia." },
     linux: {
       name: "Linux e macOS",
-      about: "Su Linux l'audio passa dal dispositivo predefinito di ALSA, servito da PipeWire; macOS e Linux sono le piattaforme promesse.",
+      about: "Su Linux l'audio passa dal dispositivo predefinito di ALSA, servito da PipeWire; Windows, macOS e Linux sono le piattaforme per cui esce.",
       caveat: "JACK non si può ancora scegliere come host audio, e la CI gira su Ubuntu anziché Xubuntu.",
     },
     decks6: { name: "Da quattro a sei deck", about: "Il terzo e il quarto deck, e fino a sei." },
@@ -226,9 +226,8 @@ const w: FactWords = {
     },
     windows: {
       name: "Windows",
-      about: "Compilato, testato in CI e pacchettizzato con ogni release.",
-      caveat: "Mai ancora avviato da una persona su un computer Windows.",
-      waits: "Una persona che lo avvii su un computer Windows.",
+      about: "Compilato, testato in CI, pacchettizzato con ogni release e avviato su un computer Windows dal proprietario di djmanzo.",
+      caveat: "In beta, come tutto qui: finora provato da una persona su Windows.",
     },
     gig: { name: "Una vera serata", about: "Tutto qui è stato testato nel repository; niente ancora davanti a un pubblico.", waits: "Una serata con il pubblico, e ciò che fa emergere, messo per iscritto." },
     leader: {

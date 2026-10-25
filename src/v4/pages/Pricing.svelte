@@ -20,18 +20,15 @@
   import { animate, gsap, reduced } from "../motion";
   import { region, shared } from "../region.svelte";
   import { RELEASES } from "../download";
-  import { t } from "../i18n.svelte";
+  import { i18n, t } from "../i18n.svelte";
+  import { PRICING } from "../i18n/pricing";
+
+  const w = $derived(PRICING[i18n.lang]);
+  const fill = (s: string, vars: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 
   type Bought = Exclude<Plan, "trial">;
   const ORDER: Edition[] = ["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full", "custom"];
-  const FINDER: { label: string; edition: Edition }[] = [
-    { label: "I play for fun", edition: "hobbyist" },
-    { label: "I DJ for a living", edition: "pro" },
-    { label: "I host karaoke", edition: "karaoke" },
-    { label: "I'm learning", edition: "apprentice" },
-    { label: "The music should run itself", edition: "autopilot" },
-    { label: "I want everything", edition: "full" },
-  ];
+  const FINDER = ["hobbyist", "pro", "karaoke", "apprentice", "autopilot", "full"] as const;
   const GROUPS: { name: string; modules: Module[] }[] = [
     { name: "Mixing", modules: ["four_decks", "stems", "dvs", "controllers", "plugins"] },
     { name: "Assistance and learning", modules: ["assistant", "autopilot", "teacher"] },
@@ -73,10 +70,10 @@
   const currency = $derived(currencyFor(country));
   const b = $derived(bandOf(country) as Band);
   const chosenModules = $derived(edition === "custom" ? modules : []);
-  const PER: Record<Bought, string> = { perpetual: "once", monthly: "a month", yearly: "a year" };
+  const PER = $derived(w.per);
 
   function price(e: Edition, p: Bought = plan): string {
-    if (e === "hobbyist") return "Free";
+    if (e === "hobbyist") return w.free;
     if (e === "custom") return money(regional(e, p, b, modules.length ? modules : ["four_decks"]), currency);
     return money(regional(e, p, b), currency);
   }
@@ -153,7 +150,7 @@
           (r) => (done = r),
           (e) => (returnError = (e as Error).message),
         );
-      else returnError = "The payment was not completed. Nothing was taken; you can try again.";
+      else returnError = w.returnError;
     }
     return animate(root);
   });
@@ -163,55 +160,55 @@
   <header class="head">
     <div class="bg" aria-hidden="true" style:background-image={`url(${shared("download")})`}></div>
     <div class="wrap">
-      <p class="eyebrow">Pricing</p>
-      <h1 class="h1">One download.<br />Seven editions.</h1>
-      <p class="lead">Every edition is the same application, unlocked by signing in. Start free with the Hobbyist edition, try any other for {c?.trialDays ?? 7} days, and pay only for what you use.</p>
-      <div class="plans" role="radiogroup" aria-label="How to pay">
+      <p class="eyebrow">{w.eyebrow}</p>
+      <h1 class="h1">{@html w.title}</h1>
+      <p class="lead">{fill(w.lead, { days: c?.trialDays ?? 7 })}</p>
+      <div class="plans" role="radiogroup" aria-label={w.plansAria}>
         {#each ["perpetual", "monthly", "yearly"] as const as p (p)}
           <button role="radio" aria-checked={plan === p} onclick={() => (plan = p)} data-plan={p}>
-            {c?.plans[p].name ?? p}{#if p === "yearly" && saving > 0}<span class="save mono">−{saving} %</span>{/if}
+            {w.plan[p]}{#if p === "yearly" && saving > 0}<span class="save mono">−{saving} %</span>{/if}
           </button>
         {/each}
       </div>
       <p class="where mono" data-region-price>
-        {flag(country)} Prices for {list.find((x) => x.code === country)?.name ?? country}{b > 1 ? ` — ${BAND_NAME[b]}, by the World Bank's income groups` : ""} · {currency}
+        {flag(country)} {fill(w.pricesFor, { country: list.find((x) => x.code === country)?.name ?? country })}{b > 1 ? fill(w.band, { band: BAND_NAME[b] }) : ""} · {currency}
       </p>
     </div>
   </header>
 
   <section class="wrap finder" aria-labelledby="finder-title">
-    <h2 class="h3" id="finder-title">Which one is yours?</h2>
-    <div class="chips" role="group" aria-label="What you will use it for">
-      {#each FINDER as f (f.label)}
-        <button class="chip" aria-pressed={edition === f.edition} onclick={() => pick(f.edition, false)} data-finder={f.edition}>{f.label}</button>
+    <h2 class="h3" id="finder-title">{w.finderTitle}</h2>
+    <div class="chips" role="group" aria-label={w.finderAria}>
+      {#each FINDER as f (f)}
+        <button class="chip" aria-pressed={edition === f} onclick={() => pick(f, false)} data-finder={f}>{w.finder[f]}</button>
       {/each}
     </div>
   </section>
 
-  <section class="wrap cards" aria-label="Editions">
+  <section class="wrap cards" aria-label={w.cardsAria}>
     {#each ORDER as e (e)}
       {@const info = c?.editions[e]}
       <article class="ed card" class:chosen={edition === e} class:free={e === "hobbyist"} style:--c={info?.colour ?? "var(--accent)"} data-edition={e} data-reveal>
         <div class="top">
           <span class="dot"></span>
           <h3 class="h3">{info?.name ?? e}</h3>
-          {#if edition === e}<span class="badge mono">Your pick</span>{/if}
+          {#if edition === e}<span class="badge mono">{w.yourPick}</span>{/if}
         </div>
-        <p class="tag">{info?.tagline ?? ""}</p>
-        <p class="price"><b class="mono" data-price>{price(e)}</b>{#if e !== "hobbyist"}<span>{e === "custom" ? `from, ${PER[plan]}` : PER[plan]}</span>{:else}<span>for ever</span>{/if}</p>
-        <p class="for">{info?.forWho ?? ""}</p>
+        <p class="tag">{w.editions[e].tagline}</p>
+        <p class="price"><b class="mono" data-price>{price(e)}</b>{#if e !== "hobbyist"}<span>{e === "custom" ? fill(w.from, { per: PER[plan] }) : PER[plan]}</span>{:else}<span>{w.forever}</span>{/if}</p>
+        <p class="for">{w.editions[e].forWho}</p>
         {#if e === "hobbyist"}
-          <a class="btn ghost" href={RELEASES}>Download free</a>
+          <a class="btn ghost" href={RELEASES}>{w.downloadFree}</a>
         {:else}
-          <button class="btn {edition === e ? 'primary' : 'ghost'}" onclick={() => pick(e)} data-choose={e}>{edition === e ? "Chosen — continue" : `Choose ${info?.name ?? e}`}</button>
+          <button class="btn {edition === e ? 'primary' : 'ghost'}" onclick={() => pick(e)} data-choose={e}>{edition === e ? w.chosen : fill(w.choose, { name: info?.name ?? e })}</button>
         {/if}
       </article>
     {/each}
   </section>
 
   <section class="wrap matrix-wrap" aria-labelledby="matrix-title">
-    <h2 class="h2" id="matrix-title" data-split>What each edition carries</h2>
-    <p class="lead" data-reveal>Feature by feature, so you can see what you get — the free Hobbyist edition included. Every edition has the foundation: two decks, the mixer, the library, cues, loops and pads, the effects, the sampler, recording, the keyboard and a controller, the launcher and the mnemonic keys. What an edition lacks shows in djmanzo as a quiet card naming the edition that has it.</p>
+    <h2 class="h2" id="matrix-title" data-split>{w.matrixTitle}</h2>
+    <p class="lead" data-reveal>{w.matrixLead}</p>
     <div data-reveal><EditionMatrix chosen={edition} onpick={(e) => pick(e)} /></div>
   </section>
 
@@ -229,51 +226,49 @@
         <label class="field"><span class="mono">{t("gift.line")}</span>
           <span class="copyrow"><textarea readonly rows="3" data-gift-line>{done.gift.line}</textarea><button class="btn ghost small" onclick={() => copy("line", done.gift.line)}>{copied === "line" ? t("gift.copied") : t("gift.copy")}</button></span>
         </label>
-        <button class="btn ghost" onclick={() => (done = null)}>Back to the shop</button>
+        <button class="btn ghost" onclick={() => (done = null)}>{w.back}</button>
       </div>
     {:else if done}
       <div class="done card" data-done>
-        <p class="eyebrow">Done</p>
-        <h2 class="h2">It's yours.</h2>
-        <p class="lead">
-          djmanzo {c?.editions[done.licence.edition as Edition]?.name ?? done.licence.edition}{done.licence.plan === "trial" ? ", free for seven days" : ""}{done.licence.demo ? " (a demo licence)" : ""}.
-        </p>
+        <p class="eyebrow">{w.doneEyebrow}</p>
+        <h2 class="h2">{w.doneTitle}</h2>
+        <p class="lead">djmanzo {c?.editions[done.licence.edition as Edition]?.name ?? done.licence.edition}{done.licence.plan === "trial" ? w.doneTrial : ""}{done.licence.demo ? w.doneDemo : ""}.</p>
         <ol class="steps">
-          <li><a href={RELEASES}>Download djmanzo</a> for your computer.</li>
-          <li>In djmanzo, open <b>Settings → Licence</b> and sign in with the same account. It fetches the licence by itself and keeps working offline.</li>
-          <li>On a computer that cannot sign in, paste the licence line from <a href="/account">your account</a>.</li>
+          <li>{@html fill(w.step1, { releases: RELEASES })}</li>
+          <li>{@html w.step2}</li>
+          <li>{@html w.step3}</li>
         </ol>
-        <button class="btn ghost" onclick={() => (done = null)}>Back to the shop</button>
+        <button class="btn ghost" onclick={() => (done = null)}>{w.back}</button>
       </div>
     {:else}
       <div class="co-grid">
         <div class="summary card">
-          <p class="eyebrow">Your edition</p>
+          <p class="eyebrow">{w.yourEdition}</p>
           <h2 class="h2" id="co-title">djmanzo {c?.editions[edition]?.name ?? edition}</h2>
-          <p class="dim">{c?.editions[edition]?.tagline}</p>
+          <p class="dim">{w.editions[edition].tagline}</p>
 
           {#if edition === "custom" && c}
-            <h3 class="mono small-h">Modules</h3>
+            <h3 class="mono small-h">{w.modulesTitle}</h3>
             <div class="mods">
               {#each c.modules as m (m.id)}
-                <label class="mod"><input type="checkbox" checked={modules.includes(m.id)} onchange={() => toggle(m.id)} /> {m.title} <span class="mono dim">+{money(regional("custom", plan, b, [m.id]), currency)}</span></label>
+                <label class="mod"><input type="checkbox" checked={modules.includes(m.id)} onchange={() => toggle(m.id)} /> {w.modules[m.id as Module] ?? m.title} <span class="mono dim">+{money(regional("custom", plan, b, [m.id]), currency)}</span></label>
               {/each}
             </div>
             {#if quote?.better}
-              <p class="hint">{c.editions[quote.better as Edition].name} carries all of that for no more — <button class="linkish" onclick={() => (edition = quote.better)}>choose it instead</button>.</p>
+              <p class="hint">{fill(w.better, { name: c.editions[quote.better as Edition].name })}<button class="linkish" onclick={() => (edition = quote.better)}>{w.chooseInstead}</button>.</p>
             {/if}
           {/if}
 
           {#if edition === "hobbyist"}
-            <p>The Hobbyist edition needs no purchase. <a href={RELEASES}>Download djmanzo</a> and it is yours.</p>
+            <p>{@html fill(w.hobbyistFree, { releases: RELEASES })}</p>
           {:else}
             <div class="row">
-              <label class="field"><span class="mono">Country</span>
+              <label class="field"><span class="mono">{w.country}</span>
                 <select bind:value={country} data-country>
                   {#each list as x (x.code)}<option value={x.code}>{flag(x.code)} {x.name}</option>{/each}
                 </select>
               </label>
-              <label class="field"><span class="mono">Promo code</span><input type="text" bind:value={promo} placeholder="Optional" autocomplete="off" spellcheck="false" /></label>
+              <label class="field"><span class="mono">{w.promo}</span><input type="text" bind:value={promo} placeholder={w.optional} autocomplete="off" spellcheck="false" /></label>
             </div>
             {#if quote?.promo}<p class="hint" role="status">{quote.promo.ok ? "✓ " : ""}{quote.promo.reason}</p>{/if}
             <div class="gift" data-gift>
@@ -289,18 +284,18 @@
                 <p class="fine">{t("gift.forHint")}</p>
               {/if}
             </div>
-            <p class="fine">A regional price needs a card issued in, and a billing address in, a country priced the same or lower; otherwise the checkout tells you the price you can show, and asks first. Students and teachers pay half with a school e-mail address — whichever is larger; discounts never stack.</p>
+            <p class="fine">{w.fine}</p>
 
             <div class="ticket mono" aria-live="polite" data-ticket>
               {#if quote}
-                <div><span>{c?.editions[edition]?.name}, {c?.plans[plan].name.toLowerCase()}</span><span>{#if quote.regional !== quote.base}<s>{money(quote.base, quote.currency)}</s> {/if}{money(quote.regional, quote.currency)}</span></div>
-                {#if quote.upgrade}<div><span>Upgrade credit</span><span>− {money(quote.upgrade.credit, quote.currency)}</span></div>{/if}
-                {#if quote.discount}<div><span>Promo {quote.promo.code}</span><span>− {money(quote.discount, quote.currency)}</span></div>{/if}
-                <div class="total"><span>Total</span><span data-total>{money(quote.total, quote.currency)}</span></div>
+                <div><span>{c?.editions[edition]?.name}, {w.plan[plan].toLowerCase()}</span><span>{#if quote.regional !== quote.base}<s>{money(quote.base, quote.currency)}</s> {/if}{money(quote.regional, quote.currency)}</span></div>
+                {#if quote.upgrade}<div><span>{w.upgrade}</span><span>− {money(quote.upgrade.credit, quote.currency)}</span></div>{/if}
+                {#if quote.discount}<div><span>{fill(w.promoLine, { code: quote.promo.code })}</span><span>− {money(quote.discount, quote.currency)}</span></div>{/if}
+                <div class="total"><span>{w.total}</span><span data-total>{money(quote.total, quote.currency)}</span></div>
               {:else if quoteError}
                 <p>{quoteError}</p>
               {:else}
-                <p>Working out the price…</p>
+                <p>{w.working}</p>
               {/if}
             </div>
           {/if}
@@ -308,33 +303,33 @@
 
         <div class="pay card content">
           {#if edition !== "hobbyist"}
-            <h3 class="h3">Pay</h3>
+            <h3 class="h3">{w.pay}</h3>
             {#if !session.user}
-              <SignIn compact back={`/pricing${location.search}#checkout`} why="Sign in to buy or to try — the licence is tied to your account, and djmanzo picks it up from there." />
+              <SignIn compact back={`/pricing${location.search}#checkout`} why={w.signInWhy} />
             {:else}
-              <p class="dim">Signed in as <b>{session.user.name}</b>. The licence goes to this account.</p>
+              <p class="dim">{@html fill(w.signedAs, { name: session.user.name.replace(/[<>&]/g, "") })}</p>
               {#if quote}
                 <Checkout {edition} modules={chosenModules} {plan} {country} {promo} {gift} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
               {/if}
             {/if}
           {/if}
           <div class="try">
-            <h3 class="h3">Or try it first</h3>
-            <p class="dim">{c?.trialDays ?? 7} days of {edition === "hobbyist" || edition === "custom" ? "the Full edition" : `the ${c?.editions[edition]?.name ?? edition} edition`}, free, once per account. Then djmanzo becomes the Hobbyist edition, and nothing you made is lost.</p>
+            <h3 class="h3">{w.tryTitle}</h3>
+            <p class="dim">{fill(w.tryText, { days: c?.trialDays ?? 7, what: edition === "hobbyist" || edition === "custom" ? w.theFull : fill(w.theEdition, { name: c?.editions[edition]?.name ?? edition }) })}</p>
             {#if session.user}
-              <button class="btn ghost" onclick={trial} data-trial>Start the free trial</button>
+              <button class="btn ghost" onclick={trial} data-trial>{w.startTrial}</button>
               {#if trialMsg}<p class="notice">{trialMsg}</p>{/if}
             {:else}
-              <p class="dim small">Sign in first, so the trial has somewhere to go.</p>
+              <p class="dim small">{w.signFirst}</p>
             {/if}
           </div>
           <details class="voucher">
-            <summary>Have a voucher?</summary>
+            <summary>{w.haveVoucher}</summary>
             {#if session.user}
-              <div class="row"><input type="text" bind:value={voucher} placeholder="Voucher code" aria-label="Voucher code" /><button class="btn ghost" onclick={redeem}>Redeem</button></div>
+              <div class="row"><input type="text" bind:value={voucher} placeholder={w.voucherCode} aria-label={w.voucherCode} /><button class="btn ghost" onclick={redeem}>{w.redeem}</button></div>
               {#if voucherMsg}<p class="notice">{voucherMsg}</p>{/if}
             {:else}
-              <p class="dim small">Sign in to redeem it.</p>
+              <p class="dim small">{w.signToRedeem}</p>
             {/if}
           </details>
         </div>
@@ -343,11 +338,11 @@
   </section>
 
   <section class="wrap market" aria-labelledby="mk-title">
-    <h2 class="h2" id="mk-title" data-split>What the others charge</h2>
-    <p class="lead" data-reveal>Published prices, in US dollars, each linked to where it came from, so you can compare for yourself.</p>
+    <h2 class="h2" id="mk-title" data-split>{w.marketTitle}</h2>
+    <p class="lead" data-reveal>{w.marketLead}</p>
     <div class="card table" data-reveal>
       <table>
-        <thead><tr><th scope="col">Product</th><th scope="col">Once</th><th scope="col">A month</th><th scope="col">A year</th><th scope="col">Note</th></tr></thead>
+        <thead><tr>{#each w.marketCols as col (col)}<th scope="col">{col}</th>{/each}</tr></thead>
         <tbody>
           {#each c?.market ?? [] as r (r.product)}
             <tr><th scope="row"><a href={r.source} rel="noopener noreferrer" target="_blank">{r.product}</a></th><td class="mono">{usd(r.perpetual)}</td><td class="mono">{usd(r.monthly)}</td><td class="mono">{usd(r.yearly)}</td><td class="dim">{r.note ?? ""}</td></tr>
@@ -674,7 +669,7 @@
     padding-left: 20px;
     color: var(--dim);
   }
-  .steps a {
+  .steps :global(a) {
     color: var(--accent);
   }
 </style>

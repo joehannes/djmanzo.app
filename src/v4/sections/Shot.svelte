@@ -10,10 +10,19 @@
 <script lang="ts">
   import type { Shot } from "../../signal/shots";
   import { FOCUS, SPOTS, type Spot } from "../hotspots";
+  import { i18n } from "../i18n.svelte";
+  import { BITS } from "../i18n/bits";
+  import { altOf, showsOf, spotOf } from "../i18n/screens";
+  import { fill } from "../i18n/sections";
 
   let { shot, legend = true, label = "" }: { shot: Shot; legend?: boolean; label?: string } = $props();
 
   const spots = $derived<Spot[]>(SPOTS[shot.screen] ?? []);
+  /** The spots' words, in the visitor's language. */
+  const said = $derived(spots.map((s) => spotOf(s, i18n.lang)));
+  const w = $derived(BITS[i18n.lang].shot);
+  const alt = $derived(altOf(shot, i18n.lang));
+  const shows = $derived(showsOf(shot, i18n.lang));
   let whole = $state(false);
   const region = $derived(FOCUS[shot.screen] ?? null);
   const focus = $derived(whole ? null : region);
@@ -37,10 +46,10 @@
 <figure class="shot" data-shot-frame={shot.screen}>
   <div class="chrome" aria-hidden="true"><i></i><i></i><i></i><span class="mono">djmanzo{label ? ` — ${label}` : ""}</span></div>
   <div class="pic" class:focused={!!focus} style:aspect-ratio={focus ? String(ratio) : null} style:width={focus ? `min(100%, calc(78vh * ${ratio}))` : null} data-focus={focus ? "close" : "whole"}>
-    <button class="zoom" onclick={zoom} aria-label="See it full screen: {shot.alt}">
+    <button class="zoom" onclick={zoom} aria-label={fill(w.full, { alt })}>
       <img
         src={shot.src}
-        alt={shot.alt}
+        {alt}
         width={shot.width}
         height={shot.height}
         loading="lazy"
@@ -64,40 +73,40 @@
         onfocus={() => (lit = i)}
         onblur={() => (lit = null)}
         onclick={() => (lit = lit === i ? null : i)}
-        aria-label="{i + 1}: {s.title}"
+        aria-label="{i + 1}: {said[i].title}"
         data-spot>{i + 1}</button
       >
       {#if lit === i}
-        <span class="tip" role="tooltip" style:left={`${Math.min(Math.max(p.x, 14), 86)}%`} style:top={`${p.y}%`} class:below={p.y < 30}><b>{s.title}</b>{s.text}</span>
+        <span class="tip" role="tooltip" style:left={`${Math.min(Math.max(p.x, 14), 86)}%`} style:top={`${p.y}%`} class:below={p.y < 30}><b>{said[i].title}</b>{said[i].text}</span>
       {/if}
       {/if}
     {/each}
   </div>
   <figcaption class="mono">
-    {shot.shows} · {shot.theme} theme{shot.skin ? `, ${shot.skin} skin` : ""} ·
-    {#if region}<button class="linkish" onclick={() => (whole = !whole)} aria-pressed={whole} data-whole>{whole ? "close-up" : "whole window"}</button> ·{/if}
-    <button class="linkish" onclick={zoom}>full size</button>
+    {shows} · {fill(w.theme, { theme: shot.theme })}{shot.skin ? `, ${fill(w.skin, { skin: shot.skin })}` : ""} ·
+    {#if region}<button class="linkish" onclick={() => (whole = !whole)} aria-pressed={whole} data-whole>{whole ? w.closeUp : w.whole}</button> ·{/if}
+    <button class="linkish" onclick={zoom}>{w.fullSize}</button>
   </figcaption>
 </figure>
 
 {#if legend && spots.length}
   <ol class="legend">
     {#each spots as s, i (i)}
-      <li class:lit={lit === i} onmouseenter={() => (lit = i)} onmouseleave={() => (lit = null)}><span class="n mono">{i + 1}</span><span><b>{s.title}</b> {s.text}</span></li>
+      <li class:lit={lit === i} onmouseenter={() => (lit = i)} onmouseleave={() => (lit = null)}><span class="n mono">{i + 1}</span><span><b>{said[i].title}</b> {said[i].text}</span></li>
     {/each}
   </ol>
 {/if}
 
-<dialog bind:this={dialog} class="lightbox" aria-label={shot.alt} onclick={(e) => e.target === dialog && dialog?.close()}>
+<dialog bind:this={dialog} class="lightbox" aria-label={alt} onclick={(e) => e.target === dialog && dialog?.close()}>
   <div class="big">
-    <img src={shot.src} alt={shot.alt} width={shot.width} height={shot.height} />
+    <img src={shot.src} {alt} width={shot.width} height={shot.height} />
     {#each spots as s, i (i)}
-      <span class="spot static" style:left={`${s.x}%`} style:top={`${s.y}%`} title={s.title}>{i + 1}</span>
+      <span class="spot static" style:left={`${s.x}%`} style:top={`${s.y}%`} title={said[i].title}>{i + 1}</span>
     {/each}
   </div>
   <div class="bar">
-    <p class="mono">{shot.shows} — {shot.theme}</p>
-    <button class="btn ghost small" onclick={() => dialog?.close()}>Close</button>
+    <p class="mono">{shows} — {shot.theme}</p>
+    <button class="btn ghost small" onclick={() => dialog?.close()}>{w.close}</button>
   </div>
 </dialog>
 

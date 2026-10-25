@@ -21,6 +21,7 @@
   import Highlights from "../sections/Highlights.svelte";
   import Keys from "../sections/Keys.svelte";
   import Karaoke from "../sections/Karaoke.svelte";
+  import Videos from "../sections/Videos.svelte";
 
   let root: HTMLElement;
   onMount(() => animate(root));
@@ -88,6 +89,7 @@
   </section>
 
   <Live />
+  <Videos />
   <Faq />
   <RoadAhead compact />
   <Closing />

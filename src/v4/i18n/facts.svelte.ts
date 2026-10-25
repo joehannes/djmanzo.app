@@ -13,22 +13,10 @@
 import type { Area, Fact } from "../../../shared/facts";
 import { AREAS, SOON_WORDS, STATUS_LINE } from "../../../shared/facts";
 import { i18n } from "../i18n.svelte";
+import type { FactWords } from "./factwords";
 import type { Lang } from "./strings";
 
-export interface FactText {
-  name: string;
-  about: string;
-  caveat?: string;
-  waits?: string;
-  scene?: string;
-}
-
-export interface FactWords {
-  status: string;
-  soon: Record<keyof typeof SOON_WORDS, string>;
-  areas: Record<Area, { name: string; about: string }>;
-  facts: Record<string, FactText>;
-}
+export type { FactText, FactWords } from "./factwords";
 
 const LOAD: Record<Exclude<Lang, "en">, () => Promise<{ default: FactWords }>> = {
   es: () => import("./facts/es"),

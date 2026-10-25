@@ -100,7 +100,7 @@ export const SEED: Omit<Wish, "id" | "createdAt" | "votes" | "author">[] = [
   { title: "Video mixing for VJs", body: "Mix video clips like decks, with transitions.", status: "shipped", tag: "visual", note: "Shipped: video on a deck, its picture crossfading as the sound does, in a window of its own for a projector.", seeded: true },
   { title: "Duet parts for karaoke", body: "Split a duet into two singers' parts.", status: "planned", tag: "karaoke", note: "Planned (the karaoke plan's K9); two-microphone duets, each singer in their own colour, ship today.", seeded: true },
   { title: "Phones as microphones", body: "Guests sing into their own phone.", status: "planned", tag: "karaoke", note: "Planned (the karaoke plan's K9). Phones already put singers in the queue and send emoji to the singers' screen.", seeded: true },
-  { title: "Windows build", body: "djmanzo on Windows, not only macOS and Linux.", status: "building", tag: "platform", note: "Built, tested in CI and packaged with every release; not yet run by a person on Windows.", seeded: true },
+  { title: "Windows build", body: "djmanzo on Windows, not only macOS and Linux.", status: "shipped", tag: "platform", note: "Shipped: built, tested in CI and packaged with every release, and run on Windows by djmanzo's owner on 25 October. In beta, like all of djmanzo.", seeded: true },
   { title: "Choose JACK as the audio host on Linux", body: "Not only ALSA's default device.", status: "planned", tag: "platform", note: "Planned: PipeWire is served through ALSA's default host today.", seeded: true },
   { title: "A WebSocket control API", body: "For browser-based remotes and overlays.", status: "planned", tag: "hardware", note: "Planned: OSC and line-delimited JSON over TCP ship today, in the same actions the interface uses.", seeded: true },
   { title: "Lyrics on the waveform", body: "See the words scroll with the record while you mix.", status: "considering", tag: "karaoke", note: "Timed words exist for karaoke; a waveform layer for them is not built.", seeded: true },
@@ -118,7 +118,7 @@ export const SEED: Omit<Wish, "id" | "createdAt" | "votes" | "author">[] = [
 ];
 
 /** Raised when SEED changes, so a board already seeded is brought up to date: seeded wishes found by title, new ones added. */
-export const SEED_VERSION = 2;
+export const SEED_VERSION = 3;
 
 export async function seedWishes(env: AppEnv): Promise<number> {
   const had = Number((await env.KV.get("config:seeded-wishes-version")) || ((await env.KV.get("config:seeded-wishes")) ? 1 : 0));

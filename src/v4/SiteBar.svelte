@@ -18,6 +18,7 @@
   import { choice, chooseSystem, start as startChoice } from "./dlchoice.svelte";
   import { restore, setSounds, sounds } from "./sfx.svelte";
   import { LANGS, LANG_INFO, chooseLanguage, i18n, startLanguage, t, type Lang } from "./i18n.svelte";
+  import { aboutOf, countryName, regionOf } from "./i18n/looks";
   import OsIcon from "./OsIcon.svelte";
   import Flag from "./Flag.svelte";
 
@@ -124,15 +125,15 @@
         </button>
         {#if picker}
           <div class="pop card" role="menu" aria-label={t("look.menu")}>
-            <p class="why mono">{skin().name} · {skin().region}{by(region.by) ? ` — ${by(region.by)}` : ""}{region.country ? ` (${region.country})` : ""}</p>
+            <p class="why mono">{skin().name} · {regionOf(skin().id, i18n.lang)}{by(region.by) ? ` — ${by(region.by)}` : ""}{region.country ? ` (${countryName(region.country, i18n.lang)})` : ""}</p>
             {#each SKINS as s (s.id)}
               {@const p = LOOKS[s.id].pattern}
-              <button role="menuitemradio" aria-checked={region.skin === s.id} class="opt" onclick={() => pick(s.id)} data-skin={s.id} title={LOOKS[s.id].about}>
+              <button role="menuitemradio" aria-checked={region.skin === s.id} class="opt" onclick={() => pick(s.id)} data-skin={s.id} title={aboutOf(s.id, i18n.lang)}>
                 <span class="swatch tile" style:background-color={s.tokens.bg} style:background-image={svgUri(p.svg, `0 0 ${p.size} ${p.size}`, s.tokens.accent, s.tokens.accent2)} style:background-size={`${p.size / 2}px`}></span>
-                <span><b style:font-family={LOOKS[s.id].font.stack}>{s.name}</b><small>{s.region}</small></span>
+                <span><b style:font-family={LOOKS[s.id].font.stack}>{s.name}</b><small>{regionOf(s.id, i18n.lang)}</small></span>
               </button>
             {/each}
-            <p class="about">{LOOKS[region.skin].about}</p>
+            <p class="about">{aboutOf(region.skin, i18n.lang)}</p>
             {#if region.chosen}
               <button class="follow" onclick={() => (follow(), (picker = false))}>{t("look.follow")}</button>
             {/if}

@@ -165,10 +165,11 @@
       grid-template-columns: 1fr;
     }
   }
-  .copy a {
+  .copy :global(a) {
     color: var(--accent);
   }
-  kbd {
+  kbd,
+  .copy :global(kbd) {
     display: inline-grid;
     place-items: center;
     min-width: 1.7em;

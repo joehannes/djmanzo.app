@@ -9,6 +9,10 @@
   import { LISTED_KINDS } from "../../../shared/outboard";
   import { animate } from "../motion";
   import { shared } from "../region.svelte";
+  import { i18n } from "../i18n.svelte";
+  import { PAGES } from "../i18n/pages";
+
+  const w = $derived(PAGES[i18n.lang].market);
 
   let { rest }: { rest: string[] } = $props();
   let root: HTMLElement;
@@ -19,12 +23,12 @@
   <header class="head">
     <div class="bg" aria-hidden="true" style:background-image={`url(${shared("market")})`}></div>
     <div class="wrap">
-      <p class="eyebrow">Marketplace</p>
-      <h1 class="h1">Made by DJs.<br />Free for everyone.</h1>
-      <p class="lead">Themes, skins, visuals and keyboard sets for djmanzo, made and shared by the people who play it. Every pack is signed by its maker and checked before it is listed. No payments, no commission — a maker may link their own tip jar.</p>
+      <p class="eyebrow">{w.eyebrow}</p>
+      <h1 class="h1">{@html w.title}</h1>
+      <p class="lead">{w.lead}</p>
       <ul class="kinds">
         {#each LISTED_KINDS as k (k.kind)}
-          <li data-reveal><b>{k.name}</b><span>{k.what}</span></li>
+          <li data-reveal><b>{w.kinds[k.kind].name}</b><span>{w.kinds[k.kind].what}</span></li>
         {/each}
       </ul>
     </div>

@@ -40,12 +40,14 @@ describe("the owner's own address", () => {
     expect((await browser(env, "djm_sid=sid-m1")("/api/me")).data.admin).toBe(false);
   });
 
-  it("/admin and /backstage both lead to Backstage", async () => {
-    const env = openSite();
-    for (const path of ["/admin", "/backstage"]) {
-      const r = await browser(env)(path);
-      expect(r.status, path).toBe(302);
-      expect(r.res.headers.get("location"), path).toBe("https://djmanzo.test/island/#/backstage");
-    }
+  it("/admin leads to /backstage, which is a page of this site that no search engine lists", async () => {
+    const env = openSite({ ASSETS: { fetch: async () => new Response('<html lang="en"><head><!--seo--><!--/seo--></head><body><div id="app"></div></body></html>') } });
+    const admin = await browser(env)("/admin");
+    expect(admin.status).toBe(302);
+    expect(admin.res.headers.get("location")).toBe("https://djmanzo.test/backstage");
+    const page = await browser(env)("/backstage");
+    expect(page.status).toBe(200);
+    expect(page.res.headers.get("x-robots-tag")).toBe("noindex");
+    expect(await page.res.text()).toContain("<h1>Backstage</h1>");
   });
 });

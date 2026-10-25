@@ -19,10 +19,11 @@ import { COMING_KINDS, LISTED_KINDS } from "../shared/outboard";
 import { COMMUNITIES, COMMUNITY_BY_ID, RULES, TRUST } from "../shared/talkback";
 import { IMPRINT_MISSING, IMPRINT_WHAT, NO_CONTACT, PRIVACY, PRIVACY_INTRO, PRIVACY_OUTRO, SCREENING, TERMS, TERMS_INTRO, escapeHtml as esc, legalHtml } from "../shared/legal";
 import { markdown as talkMarkdown } from "../shared/markdown";
-import { AREAS, FACTS, STATUS_LINE, areaOf, carriedBy } from "../shared/facts";
+import { areaOf, carriedBy } from "../shared/facts";
 import { EDITION_INFO } from "../shared/catalog";
 import { markdown as blogMarkdown } from "../src/lib/markdown";
 import { SUBTITLE, TITLE } from "../src/signal/auxiliary/routes";
+import { LANGS, SEO, factsIn, isLang, type Lang } from "../src/v4/i18n/seo";
 import type { AppEnv } from "./env";
 import { HttpError, SECURITY_HEADERS } from "./http";
 import * as blog from "./blog";
@@ -34,7 +35,6 @@ import * as talkback from "./talkback";
 
 const SITE = "djmanzo";
 const SHARE_IMAGE = "/shots/share.jpg";
-const DEFAULT_DESCRIPTION = "djmanzo, a DJ and karaoke application for macOS and Linux — followed from the groove of a record to the bodies on the floor.";
 
 /** What one page says about itself. */
 export interface Page {
@@ -113,17 +113,24 @@ export function render(template: string, page: Page, origin: string): string {
   const lang = page.lang ?? "en";
   return withHead
     .replace(/<html lang="[^"]*">/, `<html lang="${esc(lang)}">`)
-    .replace(/<div id="(app|signal)"><\/div>/, (mount) => `<main id="static">\n${frame(page.body)}\n</main>\n    ${mount}`);
+    .replace(/<div id="(app|signal)"><\/div>/, (mount) => `<main id="static">\n${frame(page.body, isLang(lang) ? lang : "en")}\n</main>\n    ${mount}`);
 }
 
 /** Every page's way about: home, the sends, the blog; and the site's own pages. */
-function frame(body: string): string {
+function frame(body: string, lang: Lang): string {
+  const w = SEO[lang].frame;
   return [
-    `<nav aria-label="The site"><a href="/">djmanzo</a> · <a href="/outboard">Outboard</a> · <a href="/talkback">Talkback</a> · <a href="/blog">Blog</a></nav>`,
+    `<nav aria-label="${esc(w.site)}"><a href="${inLang("/", lang)}">djmanzo</a> · <a href="/outboard">Outboard</a> · <a href="/talkback">Talkback</a> · <a href="/blog">Blog</a></nav>`,
     body,
-    `<footer><a href="/imprint">Imprint</a> · <a href="/terms">Terms</a> · <a href="/rules">Community rules</a> · <a href="/privacy">Privacy</a></footer>`,
+    `<footer><a href="/imprint">${esc(w.imprint)}</a> · <a href="/terms">${esc(w.terms)}</a> · <a href="/rules">${esc(w.rules)}</a> · <a href="/privacy">${esc(w.privacy)}</a></footer>`,
   ].join("\n");
 }
+
+/** A page's address in a language: the plain path for English, `?lang=` for the others. */
+const inLang = (path: string, lang: Lang) => (lang === "en" ? path : `${path}?lang=${lang}`);
+
+/** The same page in every language the site speaks, and the one a search engine offers anyone else. */
+const everyLanguage = (path: string) => [...LANGS.map((l) => ({ lang: l as string, path: inLang(path, l) })), { lang: "x-default", path }];
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
@@ -158,21 +165,26 @@ async function orMissing(path: string, build: () => Promise<Page>): Promise<Page
 
 // --- The pages ------------------------------------------------------------------------
 
-function home(env: AppEnv, origin: string): Page {
+function home(env: AppEnv, origin: string, lang: Lang): Page {
   const free = EDITION_INFO.hobbyist;
+  const w = SEO[lang];
+  const said = factsIn(lang);
+  const link = (path: string, [name, about]: [string, string]) => `<li><a href="${inLang(path, lang)}">${esc(name)}</a> — ${esc(about)}</li>`;
   return {
     status: 200,
-    title: `${SITE} — DJ and karaoke software for macOS and Linux`,
-    description: DEFAULT_DESCRIPTION,
-    path: "/",
+    title: w.title,
+    description: w.description,
+    path: inLang("/", lang),
+    lang,
+    alternates: everyLanguage("/"),
     jsonld: [
-      { "@type": "WebSite", name: SITE, url: `${origin}/` },
+      { "@type": "WebSite", name: SITE, url: `${origin}/`, inLanguage: lang },
       {
         "@type": "SoftwareApplication",
         name: SITE,
         applicationCategory: "MultimediaApplication",
-        operatingSystem: "macOS, Linux",
-        description: STATUS_LINE,
+        operatingSystem: "Windows, macOS, Linux",
+        description: said.status,
         url: `${origin}/`,
         image: origin + SHARE_IMAGE,
         downloadUrl: env.DOWNLOAD_BASE ? new URL(env.DOWNLOAD_BASE, origin).href : undefined,
@@ -182,21 +194,22 @@ function home(env: AppEnv, origin: string): Page {
     ],
     body: [
       `<h1>djmanzo</h1>`,
-      `<p>DJ and karaoke software for macOS and Linux: live stems, an assistant that explains its suggestions and can take over the mix, a karaoke night built in, and a Hobbyist edition that is free, for ever.</p>`,
-      `<p>${esc(STATUS_LINE)}</p>`,
-      `<h2>What it does</h2>`,
+      `<p>${esc(w.lead)}</p>`,
+      `<p>${esc(said.status)}</p>`,
+      `<h2>${esc(w.does)}</h2>`,
       // Only what ships, in the facts' own words: what is planned is not offered to a search engine as done.
-      `<ul>${FACTS.filter((f) => f.status === "shipped").map((f) => `<li><b>${esc(f.name)}.</b> ${esc(f.about)}</li>`).join("")}</ul>`,
-      `<h2>Beside it</h2>`,
+      `<ul>${said.facts.filter((f) => f.status === "shipped").map((f) => `<li><b>${esc(f.name)}.</b> ${esc(f.about)}</li>`).join("")}</ul>`,
+      `<h2>${esc(w.beside)}</h2>`,
       `<ul>`,
-      `<li><a href="/pricing">Editions and pricing</a> — seven editions of one download, priced for where you are.</li>`,
-      `<li><a href="/outboard">Outboard</a> — ${esc(SUBTITLE.outboard)}</li>`,
-      `<li><a href="/talkback">Talkback</a> — ${esc(SUBTITLE.talkback)}</li>`,
-      `<li><a href="/blog">The blog</a> — articles about DJing and djmanzo.</li>`,
-      `<li><a href="/features">Every feature</a> — what djmanzo does, edition by edition, with what is not yet proven.</li>`,
-      `<li><a href="/wishes">Feature requests</a> — ask for what djmanzo should do next, and vote.</li>`,
-      `<li><a href="/account">Your account</a> — sign in, your licences, and the line that carries them into djmanzo.</li>`,
-      env.DOWNLOAD_BASE ? `<li><a href="${esc(new URL(env.DOWNLOAD_BASE, origin).href)}">Download djmanzo</a></li>` : "",
+      link("/pricing", w.links.pricing),
+      // The marketplace and the forum are in the language their people write in.
+      `<li><a href="/outboard">Outboard</a> — ${esc(w.links.outboard[1])}</li>`,
+      `<li><a href="/talkback">Talkback</a> — ${esc(w.links.talkback[1])}</li>`,
+      `<li><a href="/blog">${esc(w.links.blog[0])}</a> — ${esc(w.links.blog[1])}</li>`,
+      link("/features", w.links.features),
+      link("/wishes", w.links.wishes),
+      link("/account", w.links.account),
+      env.DOWNLOAD_BASE ? `<li><a href="${esc(new URL(env.DOWNLOAD_BASE, origin).href)}">${esc(w.download)}</a></li>` : "",
       `</ul>`,
     ].join("\n"),
   };
@@ -417,24 +430,29 @@ function legal(env: AppEnv, origin: string, id: "imprint" | "terms" | "rules" | 
 }
 
 /** Every feature, grouped as the page groups them, each with its status, its caveat and the editions that carry it. */
-function features(origin: string): Page {
+function features(origin: string, lang: Lang): Page {
   const named = (["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full"] as const).map((e) => EDITION_INFO[e]);
-  const word = { shipped: "ships", part: "part-built", planned: "planned" };
-  const groups = AREAS.map((a) => ({ a, facts: FACTS.filter((f) => areaOf(f) === a.id) })).filter((g) => g.facts.length);
+  const w = SEO[lang];
+  const word = w.word;
+  const said = factsIn(lang);
+  const groups = said.areas.map((a) => ({ a, facts: said.facts.filter((f) => areaOf(f) === a.id) })).filter((g) => g.facts.length);
+  const path = inLang("/features", lang);
   return {
     status: 200,
-    title: `Every feature — ${SITE}`,
-    description: "Everything djmanzo does, edition by edition: what ships, what is part-built and what is planned, with what has not yet been proven.",
-    path: "/features",
-    jsonld: [{ "@type": "WebPage", name: "Every feature", url: `${origin}/features` }, crumbs(origin, [["Every feature", "/features"]])],
+    title: `${w.featuresTitle} — ${SITE}`,
+    description: w.featuresDescription,
+    path,
+    lang,
+    alternates: everyLanguage("/features"),
+    jsonld: [{ "@type": "WebPage", name: w.featuresTitle, url: `${origin}${path}`, inLanguage: lang }, crumbs(origin, [[w.featuresTitle, path]])],
     body: [
-      `<h1>Every feature</h1>`,
-      `<p>${esc(STATUS_LINE)}</p>`,
+      `<h1>${esc(w.featuresTitle)}</h1>`,
+      `<p>${esc(said.status)}</p>`,
       ...groups.map(
         (g) =>
           `<h2 id="${g.a.id}">${esc(g.a.name)}</h2>\n<p>${esc(g.a.about)}</p>\n<ul>${g.facts
             .map((f) => {
-              const eds = f.status === "planned" ? "in no edition yet" : named.filter((e) => carriedBy(f, e.modules)).map((e) => e.name).join(", ");
+              const eds = f.status === "planned" ? w.noEdition : named.filter((e) => carriedBy(f, e.modules)).map((e) => e.name).join(", ");
               return `<li><b>${esc(f.name)}</b> (${word[f.status]}; ${esc(eds)}). ${esc(f.about)}${f.caveat ? ` <i>${esc(f.caveat)}</i>` : ""}</li>`;
             })
             .join("")}</ul>`,
@@ -491,6 +509,19 @@ function account(origin: string): Page {
     noindex: true,
     jsonld: [{ "@type": "WebPage", name: "Your account", url: `${origin}/account` }],
     body: `<h1>Your account</h1>\n<p>Sign in with an account you already have; djmanzo keeps no password. Your licences follow you into djmanzo.</p>`,
+  };
+}
+
+/** The crew's corner: a page with an address, never indexed. */
+function backstage(origin: string): Page {
+  return {
+    status: 200,
+    title: `Backstage — ${SITE}`,
+    description: "For djmanzo's crew.",
+    path: "/backstage",
+    noindex: true,
+    jsonld: [{ "@type": "WebPage", name: "Backstage", url: `${origin}/backstage` }],
+    body: `<h1>Backstage</h1>\n<p>For djmanzo's crew.</p>`,
   };
 }
 
@@ -553,7 +584,9 @@ export async function pageFor(env: AppEnv, url: URL): Promise<Page | null> {
   const origin = url.origin;
   const parts = url.pathname.split("/").filter(Boolean).map(decodeURIComponent);
   const [first, second, third] = parts;
-  if (!parts.length) return home(env, origin);
+  const asked = url.searchParams.get("lang");
+  const lang: Lang = isLang(asked) ? asked : "en";
+  if (!parts.length) return home(env, origin, lang);
   if (first === "outboard") {
     if (parts.length === 1) return outboard(env, origin);
     if (second === "maker" && third && parts.length === 3) return outboardMaker(env, origin, third);
@@ -567,10 +600,11 @@ export async function pageFor(env: AppEnv, url: URL): Promise<Page | null> {
     return notFound(url.pathname);
   }
   if ((first === "imprint" || first === "terms" || first === "rules" || first === "privacy") && parts.length === 1) return legal(env, origin, first);
-  if (first === "features" && parts.length === 1) return features(origin);
+  if (first === "features" && parts.length === 1) return features(origin, lang);
   if (first === "wishes" && parts.length === 1) return wishesPage(env, origin);
   if (first === "releases" && parts.length === 1) return releasesPage(env, origin);
   if (first === "account" && parts.length === 1) return account(origin);
+  if (first === "backstage" && parts.length === 1) return backstage(origin);
   if (first === "blog") {
     const lang = url.searchParams.get("lang") || "en";
     if (parts.length === 1) return blogHome(env, origin, lang);
@@ -610,7 +644,9 @@ const xml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 /** Everything anyone may read, with when it last changed where that is known. */
 export async function sitemap(env: AppEnv, origin: string): Promise<Response> {
   type Entry = { path: string; lastmod?: number; alternates?: { lang: string; path: string }[] };
-  const entries: Entry[] = ["/", "/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/features", "/wishes", "/releases"].map((path) => ({ path }));
+  const entries: Entry[] = ["/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/wishes", "/releases"].map((path) => ({ path }));
+  // The pages a search engine is given in every language, each with the others beside it.
+  for (const path of ["/", "/features"]) entries.unshift(...LANGS.map((l) => ({ path: inLang(path, l), alternates: everyLanguage(path) })));
   entries.push(...COMMUNITIES.map((c) => ({ path: `/talkback/c/${c.id}` })));
   if (env.DB) {
     const items = await market.listing(env);

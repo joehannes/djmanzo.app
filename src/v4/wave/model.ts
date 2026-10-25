@@ -14,11 +14,14 @@ import type { Pattern } from "../../lib/genres";
 export const PARTS = ["kick", "snare", "hat", "perc", "bass", "keys"] as const;
 export type Part = (typeof PARTS)[number];
 
-/** The stems a DJ separates, as the engine names them. */
-export const STEMS = ["drums", "perc", "bass", "keys"] as const;
+/**
+ * The stems the deck plays apart: drums, bass and the rest, as djmanzo
+ * separates a record (its vocals are a fourth; the site's music has none).
+ */
+export const STEMS = ["drums", "bass", "rest"] as const;
 export type Stem = (typeof STEMS)[number];
 
-const STEM_OF: Record<Part, Stem> = { kick: "drums", snare: "drums", hat: "drums", perc: "perc", bass: "bass", keys: "keys" };
+const STEM_OF: Record<Part, Stem> = { kick: "drums", snare: "drums", hat: "drums", perc: "rest", bass: "bass", keys: "rest" };
 
 /** How loud each part's hit is, and how long it rings, in seconds. */
 const WEIGHT: Record<Part, number> = { kick: 1, snare: 0.75, hat: 0.32, perc: 0.55, bass: 0.85, keys: 0.45 };
@@ -91,20 +94,19 @@ export function render(p: Pattern, clock: Clock, from: number, to: number, colum
   return out;
 }
 
-export const ALL_ON: Record<Stem, boolean> = { drums: true, perc: true, bass: true, keys: true };
+export const ALL_ON: Record<Stem, boolean> = { drums: true, bass: true, rest: true };
 
 /** A level that can only approach 1, so stacked hits stay a shape and never a slab. */
 const soft = (x: number) => 1 - Math.exp(-1.6 * x);
 
-/** The four stems (drums, percussion, bass, keys), each `columns` long, from the parts. */
+/** The three stems (drums, bass, the rest), each `columns` long, from the parts. */
 export function stems(parts: Float32Array, columns: number): Float32Array {
-  const out = new Float32Array(4 * columns);
+  const out = new Float32Array(STEMS.length * columns);
   const at = (part: Part, c: number) => parts[PARTS.indexOf(part) * columns + c];
   for (let c = 0; c < columns; c++) {
     out[c] = soft(at("kick", c) + at("snare", c) + at("hat", c));
-    out[columns + c] = soft(at("perc", c));
-    out[2 * columns + c] = soft(at("bass", c));
-    out[3 * columns + c] = soft(at("keys", c));
+    out[columns + c] = soft(at("bass", c));
+    out[2 * columns + c] = soft(at("perc", c) + at("keys", c));
   }
   return out;
 }

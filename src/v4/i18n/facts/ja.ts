@@ -1,7 +1,7 @@
-import type { FactWords } from "../facts.svelte";
+import type { FactWords } from "../factwords";
 
 const w: FactWords = {
-  status: "djmanzo はベータ版です。macOS と Linux 向けの本格的な DJ アプリで、自身のリポジトリでテスト済み（ハードウェアが無いところは代替で）ですが、まだ本番のギグは経験していません。",
+  status: "djmanzo はベータ版です。Windows、macOS、Linux 向けの本格的な DJ アプリで、自身のリポジトリでテスト済み（ハードウェアが無いところは代替で）ですが、まだ本番のギグは経験していません。",
   soon: { almost: "もうすぐ", progress: "開発中", planned: "予定" },
   areas: {
     mixing: { name: "ミックス", about: "デッキ、ミキサー、キュー、ループ、エフェクト、ステム。" },
@@ -72,7 +72,7 @@ const w: FactWords = {
     share: { name: "セットをシェア", about: "今夜のトラックリストを WhatsApp、X、Bluesky、Threads へ、メッセージを書いた状態で渡します。送信ボタンを押すのは DJ です。" },
     linux: {
       name: "Linux と macOS",
-      about: "Linux では音声は ALSA の既定デバイスを通り、それを PipeWire が受け持ちます。約束している対応環境は macOS と Linux です。",
+      about: "Linux では音声は ALSA の既定デバイスを通り、それを PipeWire が受け持ちます。対応環境は Windows、macOS、Linux です。",
       caveat: "JACK はまだオーディオホストとして選べません。また CI は Xubuntu ではなく Ubuntu で動いています。",
     },
     decks6: { name: "4〜6 デッキ", about: "3 台目と 4 台目のデッキ、そして最大 6 台まで。" },
@@ -226,9 +226,8 @@ const w: FactWords = {
     },
     windows: {
       name: "Windows",
-      about: "ビルドし、CI でテストし、リリースごとにパッケージ化。",
-      caveat: "Windows マシンで人が実際に動かしたことはまだありません。",
-      waits: "Windows マシンで実際に動かしてくれる人。",
+      about: "ビルドし、CI でテストし、リリースごとにパッケージ化。djmanzo のオーナーが Windows マシンで実際に動かしています。",
+      caveat: "ここにあるすべてと同じくベータ版：Windows で試したのは今のところひとりです。",
     },
     gig: { name: "本番のギグ", about: "ここにあるものはすべてリポジトリでテスト済みですが、まだ観客の前では一度もありません。", waits: "観客のいる一夜と、そこで見つかったことの記録。" },
     leader: {

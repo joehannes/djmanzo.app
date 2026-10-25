@@ -7,7 +7,8 @@
   import { region, skin } from "./region.svelte";
   import { href } from "./router";
   import { RELEASES } from "./download";
-  import { t } from "./i18n.svelte";
+  import { i18n, t } from "./i18n.svelte";
+  import { countryName, regionOf } from "./i18n/looks";
 </script>
 
 <footer class="foot">
@@ -15,12 +16,14 @@
     <div class="about">
       <p class="brand">djmanzo</p>
       <p class="dim small">{statusLine()}</p>
-      <p class="dim small mono look" data-look>{t("foot.look")}: {skin().name} · {skin().region}{region.country ? ` · ${region.country}` : ""}</p>
+      <p class="dim small mono look" data-look>{t("foot.look")}: {skin().name} · {regionOf(skin().id, i18n.lang)}{region.country ? ` · ${countryName(region.country, i18n.lang)}` : ""}</p>
     </div>
     <nav aria-label={t("foot.product")}>
       <h2>{t("foot.product")}</h2>
       <a href={href("features")}>{t("foot.features")}</a>
       <a href={href("pricing")}>{t("foot.pricing")}</a>
+      <a href={href("compare")}>{t("foot.compare")}</a>
+      <a href={href("nights")}>{t("foot.nights")}</a>
       <a href={RELEASES}>{t("foot.download")}</a>
       <a href={href("releases")}>{t("foot.notes")}</a>
       <a href="/api/outboard/packs.json">{t("foot.packs")}</a>
@@ -30,6 +33,7 @@
       <a href={href("market")}>{t("foot.market")}</a>
       <a href={href("community")}>{t("foot.forum")}</a>
       <a href={href("wishes")}>{t("foot.wishes")}</a>
+      <a href={href("people")}>{t("foot.people")}</a>
       <a href="/blog">{t("foot.journal")}</a>
     </nav>
     <nav aria-label={t("foot.account")}>

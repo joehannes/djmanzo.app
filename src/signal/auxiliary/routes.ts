@@ -46,16 +46,21 @@ export const SUBTITLE: Record<AuxId, string> = {
   privacy: "What this site keeps about you, and why.",
 };
 
-/** When something happened, in words. */
-export function ago(ms: number, now = Date.now()): string {
+/** When something happened, in words; in `tag`'s language (a BCP 47 tag) where one is given. */
+export function ago(ms: number, now = Date.now(), tag = "en"): string {
   const s = Math.max(0, Math.round((now - ms) / 1000));
-  if (s < 60) return "just now";
   const m = Math.round(s / 60);
-  if (m < 60) return `${m} min ago`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h} h ago`;
   const d = Math.round(h / 24);
-  return d < 30 ? `${d} d ago` : new Date(ms).toLocaleDateString();
+  if (d >= 30) return new Date(ms).toLocaleDateString(tag === "en" ? undefined : tag);
+  if (tag !== "en") {
+    const rtf = new Intl.RelativeTimeFormat(tag, { numeric: "auto", style: "short" });
+    return s < 60 ? rtf.format(0, "second") : m < 60 ? rtf.format(-m, "minute") : h < 24 ? rtf.format(-h, "hour") : rtf.format(-d, "day");
+  }
+  if (s < 60) return "just now";
+  if (m < 60) return `${m} min ago`;
+  if (h < 24) return `${h} h ago`;
+  return `${d} d ago`;
 }
 
 /** What the Worker says about taking part (`people.standing`). */

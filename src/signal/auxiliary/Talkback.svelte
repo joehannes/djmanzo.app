@@ -17,6 +17,13 @@
   import Report from "./Report.svelte";
   import { ago, type Standing } from "./routes";
   import { navigate } from "./navigate";
+  import { i18n } from "../../v4/i18n.svelte";
+  import { LANG_INFO } from "../../v4/i18n/strings";
+  import { TALKBACK, count } from "../../v4/i18n/talkback";
+  import { fill } from "../../v4/i18n/sections";
+
+  const w = $derived(TALKBACK[i18n.lang]);
+  const when = (ms: number) => ago(ms, Date.now(), LANG_INFO[i18n.lang].tag);
 
   let { rest }: { rest: string[] } = $props();
 
@@ -74,8 +81,10 @@
   const community = $derived(rest[0] === "c" ? (info?.communities.find((c) => c.id === rest[1]) ?? null) : null);
   const postId = $derived(rest[0] && rest[0] !== "c" ? rest[0] : null);
   const groups = $derived([...new Set((info?.communities ?? []).map((c) => c.group))]);
-  const name = (id: string) => info?.communities.find((c) => c.id === id)?.name ?? id;
-  const flairName = (id: string | null) => info?.flairs.find((f) => f.id === id)?.name;
+  /** A community's name and what it is about, in the visitor's language. */
+  const said = (c: Community) => w.communities[c.id] ?? [c.name, c.about];
+  const name = (id: string) => w.communities[id]?.[0] ?? info?.communities.find((c) => c.id === id)?.name ?? id;
+  const flairName = (id: string | null) => (id ? (w.flairs[id] ?? info?.flairs.find((f) => f.id === id)?.name) : undefined);
   const canWrite = $derived(!!info && !info.standing.closed && info.standing.vouched);
 
   async function load() {
@@ -144,7 +153,7 @@
         method: "POST",
         json: { community: draft.community || community?.id || "help", title: draft.title, body: draft.body, flair: draft.flair || null, turnstile: token },
       });
-      posted = r.status === "held" ? `Posted. It waits for the crew before others see it${r.note ? `: ${r.note}` : "."}` : null;
+      posted = r.status === "held" ? (r.note ? fill(w.heldNote, { note: r.note }) : w.held) : null;
       writing = false;
       draft = { community: "", title: "", body: "", flair: "" };
       navigate(`/talkback/${r.id}`);
@@ -245,9 +254,9 @@
 
 {#snippet votes(kind: "post" | "comment", id: string, score: number, mine: number, own: boolean)}
   <span class="votes" data-votes={id}>
-    <button aria-label="Up" aria-pressed={mine === 1} class:on={mine === 1} disabled={!canWrite || own} onclick={() => vote(kind, id, mine === 1 ? 0 : 1)}>▲</button>
+    <button aria-label={w.up} aria-pressed={mine === 1} class:on={mine === 1} disabled={!canWrite || own} onclick={() => vote(kind, id, mine === 1 ? 0 : 1)}>▲</button>
     <b data-score>{score}</b>
-    <button aria-label="Down" aria-pressed={mine === -1} class:on={mine === -1} disabled={!canWrite || own} onclick={() => vote(kind, id, mine === -1 ? 0 : -1)}>▼</button>
+    <button aria-label={w.down} aria-pressed={mine === -1} class:on={mine === -1} disabled={!canWrite || own} onclick={() => vote(kind, id, mine === -1 ? 0 : -1)}>▼</button>
   </span>
 {/snippet}
 
@@ -255,22 +264,22 @@
   <ul class="comments">
     {#each under(parent) as c (c.id)}
       <li data-comment={c.id} class:answer={thread?.post.answer === c.id}>
-        {#if thread?.post.answer === c.id}<p class="answered" data-answer>✓ The answer, as whoever asked marked it</p>{/if}
+        {#if thread?.post.answer === c.id}<p class="answered" data-answer>{w.answerMarked}</p>{/if}
         <div class="line">
           {@render votes("comment", c.id, c.score, thread?.votes[`comment:${c.id}`] ?? 0, c.uid === info?.standing.uid)}
-          <span class="by">{c.author} · {ago(c.created)}{c.status === "held" ? " · waiting for the crew" : ""}</span>
+          <span class="by">{c.author} · {when(c.created)}{c.status === "held" ? w.waiting : ""}</span>
         </div>
         {#if c.removed}
-          <p class="note">Removed by the crew.</p>
+          <p class="note">{w.removed}</p>
         {:else}
           <div class="md">{@html markdown(c.body)}</div>
           <p class="acts">
-            {#if canWrite}<button class="link" onclick={() => { replyTo = c.id; reply = ""; }}>Reply</button>{/if}
+            {#if canWrite}<button class="link" onclick={() => { replyTo = c.id; reply = ""; }}>{w.reply}</button>{/if}
             {#if canMark && c.depth === 0 && c.status === "live"}
               {#if thread?.post.answer === c.id}
-                <button class="link" onclick={() => markAnswer(null)} data-unmark>Not the answer after all</button>
+                <button class="link" onclick={() => markAnswer(null)} data-unmark>{w.notAnswer}</button>
               {:else}
-                <button class="link" onclick={() => markAnswer(c.id)} data-mark>This answered it</button>
+                <button class="link" onclick={() => markAnswer(c.id)} data-mark>{w.answered}</button>
               {/if}
             {/if}
             <Report kind="comment" target={c.id} standing={info?.standing ?? null} />
@@ -278,8 +287,8 @@
         {/if}
         {#if replyTo === c.id}
           <form class="reply" onsubmit={(e) => { e.preventDefault(); void comment(c.id); }}>
-            <textarea bind:value={reply} maxlength="4000" aria-label="Your reply"></textarea>
-            <button class="go" disabled={reply.trim().length < 2}>Reply</button>
+            <textarea bind:value={reply} maxlength="4000" aria-label={w.yourReply}></textarea>
+            <button class="go" disabled={reply.trim().length < 2}>{w.reply}</button>
           </form>
         {/if}
         {@render comments(c.id)}
@@ -293,20 +302,20 @@
 
 {#if info?.me?.notices.length}
   <details class="notices" data-notices>
-    <summary>What the crew has told you ({info.me.notices.length})</summary>
+    <summary>{fill(w.notices, { n: info.me.notices.length })}</summary>
     <ul>
       {#each info.me.notices as n (n.id)}
         <li>
-          <b>{n.action}.</b> {n.reason} <span class="note">{ago(n.created)}</span>
+          <b>{n.action}.</b> {n.reason} <span class="note">{when(n.created)}</span>
           {#if n.appeal}
-            <br /><span class="note">You replied: {n.appeal}</span>
+            <br /><span class="note">{fill(w.youReplied, { text: n.appeal })}</span>
           {:else if appealing === n.id}
             <form class="reply" onsubmit={(e) => { e.preventDefault(); void appeal(n.id); }}>
-              <textarea bind:value={appealText} maxlength="1200" aria-label="Your reply to the crew"></textarea>
-              <button class="go" disabled={appealText.trim().length < 10}>Send to the crew</button>
+              <textarea bind:value={appealText} maxlength="1200" aria-label={w.yourReplyCrew}></textarea>
+              <button class="go" disabled={appealText.trim().length < 10}>{w.sendCrew}</button>
             </form>
           {:else}
-            <button class="link" onclick={() => (appealing = n.id)}>Reply to the crew</button>
+            <button class="link" onclick={() => (appealing = n.id)}>{w.replyCrew}</button>
           {/if}
         </li>
       {/each}
@@ -323,27 +332,27 @@
         <h2>{thread.post.title}</h2>
       </div>
       <p class="by">
-        {#if thread.post.pinned}<span class="pin" title="Pinned to the top of its community">Pinned</span>{/if}
-        {#if thread.post.answer}<span class="solved">Answered</span>{/if}
+        {#if thread.post.pinned}<span class="pin" title={w.pinnedTitle}>{w.pinned}</span>{/if}
+        {#if thread.post.answer}<span class="solved">{w.answeredTag}</span>{/if}
         {#if flairName(thread.post.flair)}<span class="flair">{flairName(thread.post.flair)}</span>{/if}
-        {thread.post.author} · {ago(thread.post.created)}{thread.post.status === "held" ? " · waiting for the crew: only you see it" : ""}
-        {#if thread.post.wish}· <a class="link" href="/wishes">on the wishlist</a>{/if}
+        {thread.post.author} · {when(thread.post.created)}{thread.post.status === "held" ? w.waitingOnlyYou : ""}
+        {#if thread.post.wish}· <a class="link" href="/wishes">{w.onWishlist}</a>{/if}
       </p>
       {#if thread.post.removed}
-        <p class="note">Removed by the crew.</p>
+        <p class="note">{w.removed}</p>
       {:else}
         <div class="md">{@html markdown(thread.post.body)}</div>
         <p class="acts">
           <Report kind="post" target={thread.post.id} standing={info?.standing ?? null} />
-          {#if session.admin && thread.post.flair === "proposal" && !thread.post.wish}<button class="link" onclick={promote} data-promote>Carry it to the wishlist</button>{/if}
+          {#if session.admin && thread.post.flair === "proposal" && !thread.post.wish}<button class="link" onclick={promote} data-promote>{w.carry}</button>{/if}
         </p>
       {/if}
     </article>
-    <h3>{thread.comments.length} comment{thread.comments.length === 1 ? "" : "s"}</h3>
+    <h3>{count(w.comments, thread.comments.length)}</h3>
     {#if canWrite && thread.post.status === "live"}
       <form class="reply" onsubmit={(e) => { e.preventDefault(); void comment(null); }} data-comment-form>
-        <textarea bind:value={reply} maxlength="4000" placeholder="Add a comment" aria-label="Your comment" onfocus={() => (replyTo = null)}></textarea>
-        <button class="go" disabled={reply.trim().length < 2 || replyTo !== null}>Comment</button>
+        <textarea bind:value={reply} maxlength="4000" placeholder={w.addComment} aria-label={w.yourComment} onfocus={() => (replyTo = null)}></textarea>
+        <button class="go" disabled={reply.trim().length < 2 || replyTo !== null}>{w.comment}</button>
       </form>
     {:else if info}
       <Join standing={info.standing} doing="comment" />
@@ -352,56 +361,59 @@
   {/if}
 {:else}
   <div class="layout">
-    <nav class="communities" aria-label="Communities">
-      <a href="/talkback" class:on={!community}>Everything</a>
+    <nav class="communities" aria-label={w.communitiesAria}>
+      <a href="/talkback" class:on={!community}>{w.everything}</a>
       {#each groups as g (g)}
-        <h3>{g}</h3>
+        <h3>{w.groups[g] ?? g}</h3>
         {#each info?.communities.filter((c) => c.group === g) ?? [] as c (c.id)}
-          <a href={`/talkback/c/${c.id}`} class:on={community?.id === c.id} data-community={c.id}>{c.name}{c.posts ? ` · ${c.posts}` : ""}</a>
+          <a href={`/talkback/c/${c.id}`} class:on={community?.id === c.id} data-community={c.id}>{said(c)[0]}{c.posts ? ` · ${c.posts}` : ""}</a>
         {/each}
       {/each}
     </nav>
     <div class="main">
-      {#if community}<p class="about">{community.about}</p>{/if}
+      {#if community}<p class="about">{said(community)[1]}</p>{/if}
       <div class="bar">
-        <div class="chips" role="radiogroup" aria-label="Sort">
+        <div class="chips" role="radiogroup" aria-label={w.sortAria}>
           {#each ["hot", "new", "top"] as const as s (s)}
-            <button role="radio" aria-checked={sort === s} class:on={sort === s} onclick={() => { sort = s; void loadList(); }}>{s}</button>
+            <button role="radio" aria-checked={sort === s} class:on={sort === s} onclick={() => { sort = s; void loadList(); }}>{w.sorts[s]}</button>
           {/each}
         </div>
         <form onsubmit={(e) => { e.preventDefault(); void loadList(); }}>
-          <input type="search" bind:value={q} placeholder="Search Talkback" aria-label="Search Talkback" />
+          <input type="search" bind:value={q} placeholder={w.search} aria-label={w.search} />
         </form>
-        {#if canWrite}<button class="go" onclick={() => (writing = !writing)} aria-expanded={writing} data-write>Write a post</button>{/if}
+        {#if canWrite}<button class="go" onclick={() => (writing = !writing)} aria-expanded={writing} data-write>{w.write}</button>{/if}
       </div>
-      {#if info && !canWrite}<Join standing={info.standing} doing="post, comment and vote" />{/if}
-      {#if info?.me}<p class="note">You are a {info.me.trust.name.toLowerCase()} here (karma {info.me.karma}). {info.me.trust.about}</p>{/if}
+      {#if info && !canWrite}<Join standing={info.standing} doing="all" />{/if}
+      {#if info?.me}
+        {@const level = w.trust[info.me.level] ?? [info.me.trust.name, info.me.trust.about]}
+        <p class="note">{fill(w.youAre, { trust: i18n.lang === "en" ? level[0].toLowerCase() : level[0], karma: info.me.karma, about: level[1] })}</p>
+      {/if}
 
       {#if writing}
         <form class="compose" onsubmit={(e) => { e.preventDefault(); void send(); }} data-compose>
-          <select bind:value={draft.community} aria-label="Community">
-            <option value="">{community ? community.name : "Choose a community"}</option>
-            {#each info?.communities ?? [] as c (c.id)}<option value={c.id}>{c.group}: {c.name}</option>{/each}
+          <select bind:value={draft.community} aria-label={w.community}>
+            <option value="">{community ? said(community)[0] : w.choose}</option>
+            {#each info?.communities ?? [] as c (c.id)}<option value={c.id}>{w.groups[c.group] ?? c.group}: {said(c)[0]}</option>{/each}
           </select>
-          <input type="text" bind:value={draft.title} maxlength="140" placeholder="Title" aria-label="Title" />
+          <input type="text" bind:value={draft.title} maxlength="140" placeholder={w.title} aria-label={w.title} />
           {#if similar.length}
             <div class="similar" data-similar>
-              <p class="note">Already asked? These may answer it:</p>
+              <p class="note">{w.already}</p>
               <ul>
                 {#each similar as p (p.id)}
-                  <li><a class="link" href={`/talkback/${p.id}`}>{p.title}</a>{p.answer ? " ✓" : ""} <span class="note">in {name(p.community)}</span></li>
+                  <li><a class="link" href={`/talkback/${p.id}`}>{p.title}</a>{p.answer ? " ✓" : ""} <span class="note">{fill(w.inCommunity, { name: name(p.community) })}</span></li>
                 {/each}
               </ul>
             </div>
           {/if}
-          <textarea bind:value={draft.body} maxlength="10000" rows="7" placeholder="**bold**, *italic*, `code`, > quote, - lists, [a link](https://…)" aria-label="What you want to say"></textarea>
-          <select bind:value={draft.flair} aria-label="Flair">
-            <option value="">No flair</option>
-            {#each info?.flairs ?? [] as f (f.id)}<option value={f.id}>{f.name}</option>{/each}
+          <textarea bind:value={draft.body} maxlength="10000" rows="7" placeholder={w.bodyPlaceholder} aria-label={w.bodyAria}></textarea>
+          <select bind:value={draft.flair} aria-label={w.flairAria}>
+            <option value="">{w.noFlair}</option>
+            {#each info?.flairs ?? [] as f (f.id)}<option value={f.id}>{w.flairs[f.id] ?? f.name}</option>{/each}
           </select>
           {#if info?.turnstile && (info.me?.level ?? 0) === 0}<div class="cf-turnstile" data-sitekey={info.turnstile}></div>{/if}
-          <button class="go" disabled={draft.title.trim().length < 4 || (!draft.community && !community)}>Post</button>
-          <p class="note">Keep to the <a class="link" href="/rules">community rules</a>.</p>
+          <button class="go" disabled={draft.title.trim().length < 4 || (!draft.community && !community)}>{w.post}</button>
+          <p class="note">{@html w.rules}</p>
         </form>
       {/if}
 
@@ -412,15 +424,15 @@
             <div>
               <a class="title" href={`/talkback/${p.id}`}>{p.title}</a>
               <p class="by">
-                {#if p.pinned && community}<span class="pin" title="Pinned to the top of its community">Pinned</span>{/if}
-                {#if p.answer}<span class="solved">Answered</span>{/if}
+                {#if p.pinned && community}<span class="pin" title={w.pinnedTitle}>{w.pinned}</span>{/if}
+                {#if p.answer}<span class="solved">{w.answeredTag}</span>{/if}
                 {#if flairName(p.flair)}<span class="flair">{flairName(p.flair)}</span>{/if}
-                <a class="link" href={`/talkback/c/${p.community}`}>{name(p.community)}</a> · {p.author} · {ago(p.created)} · {p.comments} comment{p.comments === 1 ? "" : "s"}{p.status === "held" ? " · waiting for the crew" : ""}
+                <a class="link" href={`/talkback/c/${p.community}`}>{name(p.community)}</a> · {p.author} · {when(p.created)} · {count(w.comments, p.comments)}{p.status === "held" ? w.waiting : ""}
               </p>
             </div>
           </li>
         {:else}
-          <li class="note">{list ? (q ? "Nothing found." : "Nothing here yet: the first post is yours to write.") : "…"}</li>
+          <li class="note">{list ? (q ? w.nothingFound : w.nothingYet) : "…"}</li>
         {/each}
       </ol>
     </div>

@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { SECTIONS } from "../src/v4/i18n/sections";
+import { ACCOUNT } from "../src/v4/i18n/account";
+import { FEATURES_PAGE } from "../src/v4/i18n/featurespage";
+import { PAGES } from "../src/v4/i18n/pages";
+import { PRICING } from "../src/v4/i18n/pricing";
+import { BITS } from "../src/v4/i18n/bits";
+import { TALKBACK } from "../src/v4/i18n/talkback";
+import { OUTBOARD } from "../src/v4/i18n/outboard";
+import { COMPARE } from "../src/v4/i18n/compare";
+import { NIGHTS } from "../src/v4/i18n/nights";
+import { PEOPLE } from "../src/v4/i18n/people";
 import { LANGS } from "../src/v4/i18n/strings";
 
 /** Every leaf of a value, by its path. */
@@ -11,11 +21,13 @@ function leaves(v: unknown, path = ""): [string, string][] {
 const tags = (s: string) => (s.match(/<\/?[a-z]+/g) ?? []).sort();
 const holes = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
 
-describe("the home page's sections, in every language", () => {
-  const en = new Map(leaves(SECTIONS.en));
+const DICTIONARIES = { sections: SECTIONS, account: ACCOUNT, featuresPage: FEATURES_PAGE, pages: PAGES, pricing: PRICING, bits: BITS, talkback: TALKBACK, outboard: OUTBOARD, compare: COMPARE, nights: NIGHTS, people: PEOPLE };
+
+describe.each(Object.entries(DICTIONARIES))("%s, in every language", (_name, dict) => {
+  const en = new Map(leaves(dict.en));
   for (const lang of LANGS.filter((l) => l !== "en")) {
     it(`${lang}: every phrase English has, with its markup and its blanks, and none empty`, () => {
-      const here = new Map(leaves(SECTIONS[lang]));
+      const here = new Map(leaves(dict[lang]));
       expect([...here.keys()].sort()).toEqual([...en.keys()].sort());
       for (const [path, english] of en) {
         const t = here.get(path)!;

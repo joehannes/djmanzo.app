@@ -16,6 +16,11 @@
   import { animate } from "../motion";
   import { shared } from "../region.svelte";
   import { href } from "../router";
+  import { LANG_INFO, i18n } from "../i18n.svelte";
+  import { PAGES } from "../i18n/pages";
+
+  /** The page's words (`pw`: each request is `w` below). */
+  const pw = $derived(PAGES[i18n.lang].wishes);
 
   interface WishRow {
     id: string;
@@ -28,14 +33,8 @@
     note: string | null;
   }
 
-  const STATUS: Record<string, { label: string; tone: string; about: string }> = {
-    shipped: { label: "Shipped", tone: "var(--accent-2)", about: "In djmanzo now." },
-    building: { label: "Being built", tone: "#b48cff", about: "Somebody is on it." },
-    planned: { label: "Planned", tone: "#62a8ff", about: "On the roadmap." },
-    considering: { label: "Considering", tone: "var(--accent)", about: "Weighed, not decided." },
-    idea: { label: "Idea", tone: "var(--dim)", about: "Asked for; not read yet." },
-    "not-planned": { label: "Not planned", tone: "#ff7a7a", about: "Not for now, and why." },
-  };
+  const TONE: Record<string, string> = { shipped: "var(--accent-2)", building: "#b48cff", planned: "#62a8ff", considering: "var(--accent)", idea: "var(--dim)", "not-planned": "#ff7a7a" };
+  const STATUS = $derived(Object.fromEntries(Object.entries(TONE).map(([id, tone]) => [id, { tone, ...pw.status[id as keyof typeof pw.status] }])) as Record<string, { label: string; tone: string; about: string }>);
   const ORDER = ["all", "shipped", "building", "planned", "considering", "idea", "not-planned"];
 
   let root: HTMLElement;
@@ -110,7 +109,7 @@
       voted = new Set([...voted, w.id]);
       title = "";
       body = "";
-      posted = "Posted, with your vote on it. The crew reads every request and stamps it.";
+      posted = pw.posted;
       sort = "new";
       filter = "all";
     } catch (err) {
@@ -118,7 +117,7 @@
     }
   }
 
-  const date = (t: number) => new Date(t).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  const date = (t: number) => new Date(t).toLocaleDateString(LANG_INFO[i18n.lang].tag, { day: "numeric", month: "short", year: "numeric" });
 
   onMount(() => {
     void load();
@@ -130,9 +129,9 @@
   <header class="head">
     <div class="bg" aria-hidden="true" style:background-image={`url(${shared("community")})`}></div>
     <div class="wrap">
-      <p class="eyebrow">Feature requests</p>
-      <h1 class="h1">Tell us what<br />the next gig needs.</h1>
-      <p class="lead">Ask for what djmanzo should do, vote for what others asked, and see what became of each — shipped, being built, planned, or not planned and why. Questions about using djmanzo go to <a href={href("community")}>the forum</a>.</p>
+      <p class="eyebrow">{pw.eyebrow}</p>
+      <h1 class="h1">{@html pw.title}</h1>
+      <p class="lead">{@html pw.lead.replace("{forum}", href("community"))}</p>
       <ul class="legend">
         {#each Object.entries(STATUS) as [id, s] (id)}
           <li style:--tone={s.tone}><span class="pip"></span><b>{s.label}</b><span class="dim">{s.about}</span></li>
@@ -142,24 +141,24 @@
   </header>
 
   <div class="wrap layout">
-    <section aria-label="Requests">
+    <section aria-label={pw.listAria}>
       <div class="tools">
-        <input type="search" bind:value={query} placeholder="Search the requests" aria-label="Search the requests" />
-        <div class="seg" role="radiogroup" aria-label="Order">
-          <button role="radio" aria-checked={sort === "top"} onclick={() => (sort = "top")}>Most wanted</button>
-          <button role="radio" aria-checked={sort === "new"} onclick={() => (sort = "new")}>Newest</button>
+        <input type="search" bind:value={query} placeholder={pw.search} aria-label={pw.search} />
+        <div class="seg" role="radiogroup" aria-label={pw.orderAria}>
+          <button role="radio" aria-checked={sort === "top"} onclick={() => (sort = "top")}>{pw.top}</button>
+          <button role="radio" aria-checked={sort === "new"} onclick={() => (sort = "new")}>{pw.newest}</button>
         </div>
       </div>
-      <div class="filters" role="radiogroup" aria-label="Status">
+      <div class="filters" role="radiogroup" aria-label={pw.statusAria}>
         {#each ORDER as f (f)}
           <button class="chip" role="radio" aria-checked={filter === f} class:on={filter === f} onclick={() => (filter = f)} data-status={f}>
-            {f === "all" ? "All" : STATUS[f].label}<span class="n mono">{count(f)}</span>
+            {f === "all" ? pw.all : STATUS[f].label}<span class="n mono">{count(f)}</span>
           </button>
         {/each}
       </div>
 
       {#if loading}
-        <p class="dim">Reading the board…</p>
+        <p class="dim">{pw.reading}</p>
       {:else if error}
         <p class="note" role="alert">{error}</p>
       {/if}
@@ -168,35 +167,35 @@
         {#each shown as w (w.id)}
           {@const s = STATUS[w.status] ?? STATUS.idea}
           <li class="wish card" style:--tone={s.tone} data-wish>
-            <button class="vote" class:on={voted.has(w.id)} aria-pressed={voted.has(w.id)} onclick={() => vote(w)} aria-label="Vote for {w.title}, {w.votes} votes">
+            <button class="vote" class:on={voted.has(w.id)} aria-pressed={voted.has(w.id)} onclick={() => vote(w)} aria-label={pw.vote.replace("{title}", w.title).replace("{votes}", String(w.votes))}>
               <svg viewBox="0 0 12 8" width="12" height="8" aria-hidden="true"><path d="M6 0l6 8H0z" fill="currentColor" /></svg>
               <b class="mono">{w.votes}</b>
             </button>
             <div class="main">
               <button class="title" onclick={() => expand(w)} aria-expanded={open === w.id}>{w.title}</button>
-              {#if w.note}<p class="crew"><span class="mono">The crew:</span> {w.note}</p>{/if}
+              {#if w.note}<p class="crew"><span class="mono">{pw.crew}</span> {w.note}</p>{/if}
               {#if open === w.id && detail[w.id]}<p class="body">{detail[w.id]}</p>{/if}
               <p class="meta dim">{w.author} · {date(w.createdAt)}{w.tag ? ` · ${w.tag}` : ""}</p>
             </div>
             <span class="stamp mono">{s.label}</span>
           </li>
         {:else}
-          {#if !loading}<li class="dim">Nothing matches. Ask for it below.</li>{/if}
+          {#if !loading}<li class="dim">{pw.none}</li>{/if}
         {/each}
       </ol>
     </section>
 
     <aside class="card ask" aria-labelledby="ask-h">
-      <h2 class="h3" id="ask-h">Ask for something</h2>
-      <p class="dim small">One thing per request, in a few words: what it would let you do at your gigs. Look through the list first — a vote on an existing request counts for more than a second copy.</p>
+      <h2 class="h3" id="ask-h">{pw.askTitle}</h2>
+      <p class="dim small">{pw.askAbout}</p>
       <form onsubmit={ask}>
-        <label class="field"><span>What should djmanzo do?</span><input type="text" bind:value={title} maxlength="100" required placeholder="A Traktor Kontrol S4 mapping" /></label>
-        <label class="field"><span>Tell us more <span class="dim">(optional)</span></span><textarea bind:value={body} maxlength="1200" rows="4" placeholder="What would it let you do?"></textarea></label>
-        {#if !session.user}<label class="field"><span>Your name <span class="dim">(optional)</span></span><input type="text" bind:value={author} maxlength="40" /></label>{/if}
-        <button class="btn primary small">Post the request</button>
+        <label class="field"><span>{pw.what}</span><input type="text" bind:value={title} maxlength="100" required placeholder={pw.whatPlaceholder} /></label>
+        <label class="field"><span>{pw.more} <span class="dim">{pw.optional}</span></span><textarea bind:value={body} maxlength="1200" rows="4" placeholder={pw.morePlaceholder}></textarea></label>
+        {#if !session.user}<label class="field"><span>{pw.name} <span class="dim">{pw.optional}</span></span><input type="text" bind:value={author} maxlength="40" /></label>{/if}
+        <button class="btn primary small">{pw.post}</button>
         {#if posted}<p class="note small" role="status">{posted}</p>{/if}
       </form>
-      <p class="dim small">Requests are public. Keep them about djmanzo; the crew removes anything else.</p>
+      <p class="dim small">{pw.public}</p>
     </aside>
   </div>
 </div>
@@ -217,7 +216,7 @@
     opacity: 0.32;
     mask-image: linear-gradient(180deg, black 10%, transparent 95%);
   }
-  .lead a {
+  .lead :global(a) {
     color: var(--accent);
   }
   .legend {

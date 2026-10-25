@@ -1,0 +1,137 @@
+[
+ {
+  "genre": "techno",
+  "id": "techno",
+  "caption": "peak-time Berlin techno, driving rumbling kick drum, hypnotic analog synth stab sequence, tight 16th hi-hats, metallic percussion, dark warehouse atmosphere, polished professional club mastering, instrumental",
+  "bpm": 132,
+  "key": "F minor",
+  "duration": 40,
+  "seed": 21
+ },
+ {
+  "genre": "house",
+  "id": "lm-house",
+  "caption": "deep house, club mix, punchy four-on-the-floor kick, crisp offbeat open hi-hats, shuffled shakers, warm rolling bassline, lush Rhodes chords, polished professional mastering, instrumental",
+  "bpm": 124,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 7
+ },
+ {
+  "genre": "dnb",
+  "id": "dnb",
+  "caption": "liquid drum and bass, fast crisp breakbeat drums, deep rolling reese sub bass, atmospheric pads, soulful electric piano chords, polished professional mix, instrumental",
+  "bpm": 174,
+  "key": "D minor",
+  "duration": 40,
+  "seed": 22
+ },
+ {
+  "genre": "lounge",
+  "id": "lounge",
+  "caption": "chill lounge downtempo, Balearic sunset, soft brushed drums, warm upright bass, nylon guitar and Rhodes, airy pads, relaxed and elegant, polished professional studio mix, instrumental",
+  "bpm": 96,
+  "key": "D major",
+  "duration": 40,
+  "seed": 23
+ },
+ {
+  "genre": "merengue",
+  "id": "merengue",
+  "caption": "classic Dominican merengue, fast tambora and güira groove, energetic horn section riffs, piano montuno, punchy bass, festive big band, polished professional studio mix, instrumental",
+  "bpm": 150,
+  "key": "C major",
+  "duration": 40,
+  "seed": 24
+ },
+ {
+  "genre": "bachata",
+  "id": "lm-bachata",
+  "caption": "modern bachata, romantic Dominican guitar requinto melody, arpeggiated second guitar, bongos and guira, syncopated electric bass, polished professional studio mix, instrumental",
+  "bpm": 130,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 11
+ },
+ {
+  "genre": "reggaeton",
+  "id": "reggaeton",
+  "caption": "modern reggaeton, dembow drum pattern, deep 808 bass, punchy snare, dark latin synth melody, perreo club energy, polished professional mix and master, instrumental",
+  "bpm": 94,
+  "key": "G minor",
+  "duration": 40,
+  "seed": 25
+ },
+ {
+  "genre": "salsa",
+  "id": "salsa",
+  "caption": "salsa dura, New York 1970s style, piano montuno, brass section mambo, congas, timbales and cowbell on the clave, tumbao bass, live band energy, polished professional studio mix, instrumental",
+  "bpm": 180,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 26
+ },
+ {
+  "genre": "cumbia",
+  "id": "cumbia",
+  "caption": "Colombian cumbia, guacharaca and caja drums, tambora, accordion melody, walking bass, festive tropical groove, polished professional studio mix, instrumental",
+  "bpm": 96,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 27
+ },
+ {
+  "genre": "dembow",
+  "id": "dembow",
+  "caption": "Dominican dembow, fast teteo club rhythm, hard kick and snare dembow pattern, sub bass, siren synth stabs, street party energy, polished professional mix, instrumental",
+  "bpm": 125,
+  "key": "C minor",
+  "duration": 40,
+  "seed": 28
+ },
+ {
+  "genre": "hiphop",
+  "id": "hiphop",
+  "caption": "boom bap hip-hop beat, dusty punchy drums, vinyl crackle, deep bassline, jazzy sampled piano chords, head-nodding groove, polished professional mix, instrumental",
+  "bpm": 90,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 29
+ },
+ {
+  "genre": "disco",
+  "id": "disco",
+  "caption": "classic disco and funk, four-on-the-floor kick, open hi-hats, slap funk bassline, wah guitar, lush string section, horn stabs, Studio 54 energy, polished professional mix, instrumental",
+  "bpm": 118,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 30
+ },
+ {
+  "genre": "pop",
+  "id": "pop",
+  "caption": "upbeat feel-good pop, sing-along chorus energy, bright piano chords, punchy drums with claps, warm bass, shimmering synths and guitars, radio-ready polished professional mix, instrumental",
+  "bpm": 120,
+  "key": "G major",
+  "duration": 40,
+  "seed": 31
+ },
+ {
+  "genre": "afrobeats",
+  "id": "afrobeats",
+  "caption": "afrobeats and amapiano blend, log drum bass, shaker and percussion groove, warm piano chords, laid-back bounce, Lagos and Johannesburg club vibe, polished professional mix, instrumental",
+  "bpm": 110,
+  "key": "F minor",
+  "duration": 40,
+  "seed": 32
+ },
+ {
+  "genre": "dancehall",
+  "id": "dancehall",
+  "caption": "Jamaican dancehall riddim, one drop and bashment drums, deep sound system bass, skank organ and guitar, digital riddim synths, polished professional mix, instrumental",
+  "bpm": 96,
+  "key": "D minor",
+  "duration": 40,
+  "seed": 33
+ }
+]

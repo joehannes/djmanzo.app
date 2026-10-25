@@ -9,9 +9,14 @@
   import { session } from "../lib/session.svelte";
   import { profile } from "../lib/profile.svelte";
   import { BRANDS } from "./brands";
+  import { i18n } from "./i18n.svelte";
+  import { ACCOUNT } from "./i18n/account";
+
+  const w = $derived(ACCOUNT[i18n.lang].signin);
+  const failures = $derived(ACCOUNT[i18n.lang].failures);
 
   let {
-    why = "Sign in with an account you already have. djmanzo keeps no password: the provider says who you are, and your licences are tied to that account.",
+    why,
     back,
     compact = false,
   }: { why?: string; back?: string; compact?: boolean } = $props();
@@ -36,16 +41,16 @@
 
 <div class="signin" class:compact data-signin>
   {#if session.returned?.kind === "failed"}
-    <p class="failed" role="alert" data-signin-failed><b>That sign-in did not finish.</b> {session.returned.why}</p>
+    <p class="failed" role="alert" data-signin-failed><b>{w.notFinished}</b> {session.returned.failure ? failures[session.returned.failure] : w.fallback}</p>
   {/if}
-  {#if why}<p class="why">{why}</p>{/if}
+  <p class="why">{why ?? w.intro}</p>
   {#if session.providers.length}
     <div class="providers">
       {#each session.providers as p (p.id)}
         {@const b = BRANDS[p.id]}
         <a class="provider" href={session.signInUrl(p.id, back)} style:--brand={b ? `#${b.hex}` : "var(--accent)"} data-provider={p.id}>
           {#if b}<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d={b.path} fill="currentColor" /></svg>{/if}
-          <span>Continue with {p.name}</span>
+          <span>{w.continueWith.replace("{p}", p.name)}</span>
         </a>
       {/each}
     </div>
@@ -53,12 +58,12 @@
   {#if !session.providers.length || session.demo}
     <div class="demo">
       <p>
-        <b>Demo sign-in.</b>
-        {session.providers.length ? "The shop is in demo mode" : "No sign-in provider is connected to this site yet"}: walk through everything with a name, no password, and nothing is charged. A demo account's licences are marked as demo and unlock nothing in djmanzo.
+        <b>{w.demoTitle}</b>
+        {session.providers.length ? w.demoMode : w.noProvider}{w.demoText}
       </p>
       <form onsubmit={demo}>
-        <input type="text" bind:value={name} placeholder="Your DJ name" aria-label="Your DJ name" maxlength="40" />
-        <button class="btn primary small" disabled={busy}>{busy ? "…" : "Sign in for the demo"}</button>
+        <input type="text" bind:value={name} placeholder={w.name} aria-label={w.name} maxlength="40" />
+        <button class="btn primary small" disabled={busy}>{busy ? "…" : w.demoButton}</button>
       </form>
     </div>
   {/if}

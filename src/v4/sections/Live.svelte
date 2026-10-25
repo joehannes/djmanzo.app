@@ -225,8 +225,8 @@
     padding: 14px 18px 0;
     margin: 0;
   }
-  .empty a,
-  .small a {
+  .empty :global(a),
+  .small :global(a) {
     color: var(--accent);
   }
   .small {

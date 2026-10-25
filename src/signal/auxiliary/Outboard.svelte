@@ -12,6 +12,18 @@
   import Preview from "./Preview.svelte";
   import Report from "./Report.svelte";
   import { ago, type Standing } from "./routes";
+  import { i18n } from "../../v4/i18n.svelte";
+  import { LANG_INFO } from "../../v4/i18n/strings";
+  import { OUTBOARD } from "../../v4/i18n/outboard";
+  import { count } from "../../v4/i18n/talkback";
+  import { fill } from "../../v4/i18n/sections";
+
+  const w = $derived(OUTBOARD[i18n.lang]);
+  /** The byline either side of the maker's name. */
+  const by = $derived(w.by.split("{author}"));
+  const when = (ms: number) => ago(ms, Date.now(), LANG_INFO[i18n.lang].tag);
+  /** Text for an html phrase's blank. */
+  const esc = (t: string) => t.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 
   let { rest }: { rest: string[] } = $props();
 
@@ -87,7 +99,7 @@
     if (!item || !stars) return;
     try {
       item = await api(`/api/outboard/items/${item.id}/rating`, { method: "POST", json: { stars, review } });
-      rated = "Thank you: your rating is in.";
+      rated = w.rated;
     } catch (e) {
       rated = (e as Error).message;
     }
@@ -108,11 +120,11 @@
         body: await file.arrayBuffer(),
         headers: { "content-type": "application/zip" },
       });
-      uploaded = `Uploaded: version ${r.version} waits for the crew, who list it or tell you why not.`;
+      uploaded = fill(w.uploaded, { v: r.version });
       file = null;
       changelog = "";
     } catch (e) {
-      uploaded = e instanceof ApiError ? e.message : "The upload did not arrive.";
+      uploaded = e instanceof ApiError ? e.message : w.notArrived;
     } finally {
       uploading = false;
     }
@@ -128,7 +140,7 @@
         method: "PUT",
         json: { about, links: links.split(/\s+/).filter(Boolean) },
       });
-      saved = `Saved, with ${p.links.length} donation link${p.links.length === 1 ? "" : "s"}.`;
+      saved = count(w.savedLinks, p.links.length);
     } catch (e) {
       saved = (e as Error).message;
     }
@@ -136,34 +148,35 @@
 
   /** The support links signed into a pack's manifest (§137), as its listing keeps them. */
   const signedSupport = (preview: Record<string, unknown>) => (Array.isArray(preview.support) ? preview.support : []) as { kind: string; url: string }[];
-  const SUPPORT_NAME: Record<string, string> = { patreon: "Patreon", kofi: "Ko-fi", buymeacoffee: "Buy Me a Coffee", github: "GitHub Sponsors", paypal: "PayPal", liberapay: "Liberapay", other: "Elsewhere" };
-  const KIND_NAME: Record<string, string> = { theme: "Theme", skin: "Skin", visuals: "Visuals", keys: "Keyboard set" };
+  const SUPPORT_NAME: Record<string, string> = { patreon: "Patreon", kofi: "Ko-fi", buymeacoffee: "Buy Me a Coffee", github: "GitHub Sponsors", paypal: "PayPal", liberapay: "Liberapay", other: "" };
+  const kindName = (k: string) => (w.kind as Record<string, string>)[k] ?? k;
+  const supportName = (k: string) => SUPPORT_NAME[k] || w.elsewhere;
   const kb = (n: number) => `${Math.max(1, Math.round(n / 1024))} KB`;
-  const meanText = (r: Card["rating"]) => (r.count ? `${r.mean!.toFixed(1)} ★ (${r.count})` : "Not rated yet");
+  const meanText = (r: Card["rating"]) => (r.count ? `${r.mean!.toFixed(1)} ★ (${r.count})` : w.notRated);
 </script>
 
 {#if error}<p class="note" role="alert">{error}</p>{/if}
 
 {#if rest[0] === "maker"}
-  <p><a class="link" href="/outboard">← Everything in Outboard</a></p>
+  <p><a class="link" href="/outboard">{w.backAll}</a></p>
   {#if maker}
     <section data-maker>
-      <h2>{maker.name ?? "A maker"}</h2>
+      <h2>{maker.name ?? w.aMaker}</h2>
       {#if maker.about}<p>{maker.about}</p>{/if}
       {#if maker.links.length}
-        <p class="support">Support them: {#each maker.links as l (l.url)}<a class="link" href={l.url} rel="noopener noreferrer" target="_blank">{l.platform}</a>{" "}{/each}</p>
+        <p class="support">{w.supportThem} {#each maker.links as l (l.url)}<a class="link" href={l.url} rel="noopener noreferrer" target="_blank">{l.platform}</a>{" "}{/each}</p>
       {/if}
       <div class="grid">
         {#each maker.items as c (c.id)}
           <a class="card" href={`/outboard/${c.id}`}><Preview kind={c.kind} preview={c.preview} /><b>{c.name}</b><span class="note">{meanText(c.rating)}</span></a>
         {:else}
-          <p class="note">Nothing listed yet.</p>
+          <p class="note">{w.nothingListed}</p>
         {/each}
       </div>
     </section>
   {/if}
 {:else if rest[0]}
-  <p><a class="link" href="/outboard">← Everything in Outboard</a></p>
+  <p><a class="link" href="/outboard">{w.backAll}</a></p>
   {#if !item}
     <p class="note">…</p>
   {:else}
@@ -171,90 +184,86 @@
       <div class="cols">
         <Preview kind={item.kind} preview={item.preview} big />
         <div>
-          <p class="kind">{KIND_NAME[item.kind]}{item.version ? ` · version ${item.version}` : ""}</p>
+          <p class="kind">{kindName(item.kind)}{item.version ? fill(w.version, { v: item.version }) : ""}</p>
           <h2>{item.name}</h2>
-          <p>by <a class="link" href={`/outboard/maker/${item.owner}`}>{item.author}</a> · {item.licence}</p>
+          <p>{by[0]}<a class="link" href={`/outboard/maker/${item.owner}`}>{item.author}</a>{by[1] ?? ""} · {item.licence}</p>
           {#if item.description}<p>{item.description}</p>{/if}
           {#if item.status !== "listed"}
-            <p class="note" data-status>{item.status === "pending" ? "Waiting for the crew: only you see it." : `Removed: ${item.reason}`}</p>
+            <p class="note" data-status>{item.status === "pending" ? w.pending : fill(w.removedReason, { reason: item.reason ?? "" })}</p>
           {/if}
-          <p class="rating">{meanText(item.rating)} · {item.downloads} downloaded</p>
-          <p class="note">Installs in every edition of djmanzo. Signed with the key <code>{item.fingerprint}</code>: djmanzo shows the same before it installs.</p>
+          <p class="rating">{meanText(item.rating)} · {fill(w.downloaded, { n: item.downloads })}</p>
+          <p class="note">{@html fill(w.installs, { key: `<code>${esc(item.fingerprint)}</code>` })}</p>
           {#if item.kind === "keys"}
-            <p class="note" data-wear>
-              Once installed it is among the keyboard sets in the Keys panel (<kbd>Space</kbd> <kbd>o</kbd> <kbd>?</kbd>): wear it there. It sits under your own keys and beside
-              djmanzo's, and takes none of them over{item.preview.edition ? `; made for the ${item.preview.edition} edition, and any edition can wear it` : ""}. A key that
-              needs something your edition does not carry is left out of the guide, not broken.
-            </p>
+            <p class="note" data-wear>{@html fill(w.wear, { made: item.preview.edition ? fill(w.madeFor, { edition: esc(String(item.preview.edition)) }) : "" })}</p>
           {/if}
           {#if signedSupport(item.preview).length}
-            <p class="support" data-signed-support>Thank the maker (signed into the pack):
-              {#each signedSupport(item.preview) as l (l.url)}<a class="link" href={l.url} rel="noopener noreferrer" target="_blank">{SUPPORT_NAME[l.kind] ?? l.kind}</a>{" "}{/each}
+            <p class="support" data-signed-support>{w.thank}
+              {#each signedSupport(item.preview) as l (l.url)}<a class="link" href={l.url} rel="noopener noreferrer" target="_blank">{supportName(l.kind)}</a>{" "}{/each}
             </p>
           {/if}
           {#each item.versions.filter((v) => v.status === "listed").slice(0, 1) as v (v.version)}
-            <a class="go" href={`/api/outboard/items/${item.id}/v/${encodeURIComponent(v.version)}.djpack`} download data-download>Download {item.name} {v.version} ({kb(v.size)})</a>
+            <a class="go" href={`/api/outboard/items/${item.id}/v/${encodeURIComponent(v.version)}.djpack`} download data-download>{fill(w.download, { name: item.name, version: v.version, size: kb(v.size) })}</a>
           {/each}
           {#if item.maker?.links.length}
-            <p class="support">Support {item.maker.name}:
+            <p class="support">{fill(w.supportName, { name: item.maker.name ?? w.aMaker })}
               {#each item.maker.links as l (l.url)}<a class="link" href={l.url} rel="noopener noreferrer" target="_blank">{l.platform}</a>{" "}{/each}
             </p>
           {/if}
         </div>
       </div>
 
-      <h3>Versions</h3>
+      <h3>{w.versions}</h3>
       <ul class="versions">
         {#each item.versions as v (v.version)}
           <li>
-            <b>{v.version}</b> · {ago(v.created)}{v.status !== "listed" ? ` · ${v.status}` : ""}
+            <b>{v.version}</b> · {when(v.created)}{v.status !== "listed" ? ` · ${v.status}` : ""}
             {#if v.changelog}<br /><span>{v.changelog}</span>{/if}
             {#if v.reason}<br /><span class="note">{v.reason}</span>{/if}
           </li>
         {/each}
       </ul>
 
-      <h3>Ratings</h3>
+      <h3>{w.ratings}</h3>
       {#if item.status === "listed" && info?.standing.vouched && info.standing.uid !== item.owner && !info.standing.closed}
         <form class="rate" onsubmit={(e) => { e.preventDefault(); void rate(); }} data-rate>
-          <div class="stars" role="radiogroup" aria-label="Your rating">
+          <div class="stars" role="radiogroup" aria-label={w.yourRating}>
             {#each [1, 2, 3, 4, 5] as n (n)}
-              <button type="button" role="radio" aria-checked={stars === n} aria-label={`${n} star${n > 1 ? "s" : ""}`} class:on={stars >= n} onclick={() => (stars = n)}>★</button>
+              <button type="button" role="radio" aria-checked={stars === n} aria-label={count(w.stars, n)} class:on={stars >= n} onclick={() => (stars = n)}>★</button>
             {/each}
           </div>
-          <textarea bind:value={review} maxlength="1000" placeholder="What is it like in a real room? (optional)" aria-label="Your review"></textarea>
-          <button class="go" disabled={!stars}>Rate it</button>
+          <textarea bind:value={review} maxlength="1000" placeholder={w.reviewPlaceholder} aria-label={w.reviewAria}></textarea>
+          <button class="go" disabled={!stars}>{w.rate}</button>
           {#if rated}<p class="note" role="status">{rated}</p>{/if}
         </form>
       {:else if info && info.standing.uid !== item.owner}
-        <Join standing={info.standing} doing="rate it" />
+        <Join standing={info.standing} doing="rate" />
       {/if}
       <ul class="reviews">
         {#each item.reviews as r (r.uid)}
-          <li><b>{"★".repeat(r.stars)}{"☆".repeat(5 - r.stars)}</b>{r.downloaded ? " · downloaded" : ""} · {ago(r.created)}{#if r.review}<br />{r.review}{/if}</li>
+          <li><b>{"★".repeat(r.stars)}{"☆".repeat(5 - r.stars)}</b>{r.downloaded ? w.reviewDownloaded : ""} · {when(r.created)}{#if r.review}<br />{r.review}{/if}</li>
         {:else}
-          <li class="note">No ratings yet.</li>
+          <li class="note">{w.noRatings}</li>
         {/each}
       </ul>
-      <p class="acts-row"><a class="link" href="/talkback/c/outboard">Talk about it in Talkback</a> <Report kind="item" target={item.id} standing={info?.standing ?? null} /></p>
+      <p class="acts-row"><a class="link" href="/talkback/c/outboard">{w.talk}</a> <Report kind="item" target={item.id} standing={info?.standing ?? null} /></p>
     </article>
   {/if}
 {:else}
   <section class="install">
-    <h2>In djmanzo</h2>
-    <p>Settings → From packs → <b>Browse packs…</b> → paste this address and press <b>Add an index</b>. djmanzo checks every pack again before it installs one, and shows you its maker's key.</p>
+    <h2>{w.inDjmanzo}</h2>
+    <p>{@html w.howTo}</p>
     <code class="address" data-index>{indexUrl}</code>
   </section>
 
   <div class="filters">
-    <div class="chips" role="radiogroup" aria-label="Kind">
-      <button role="radio" aria-checked={kind === ""} class:on={kind === ""} onclick={() => { kind = ""; void load(); }}>Everything</button>
+    <div class="chips" role="radiogroup" aria-label={w.kindAria}>
+      <button role="radio" aria-checked={kind === ""} class:on={kind === ""} onclick={() => { kind = ""; void load(); }}>{w.everything}</button>
       {#each info?.kinds ?? [] as k (k.kind)}
-        <button role="radio" aria-checked={kind === k.kind} class:on={kind === k.kind} onclick={() => { kind = k.kind; void load(); }}>{k.name}</button>
+        <button role="radio" aria-checked={kind === k.kind} class:on={kind === k.kind} onclick={() => { kind = k.kind; void load(); }}>{(w.kinds as Record<string, string>)[k.kind] ?? k.name}</button>
       {/each}
     </div>
     <form onsubmit={(e) => { e.preventDefault(); void load(); }}>
-      <input type="search" bind:value={q} placeholder="Find by name or maker" aria-label="Find in Outboard" />
+      <input type="search" bind:value={q} placeholder={w.find} aria-label={w.findAria} />
     </form>
   </div>
 
@@ -263,52 +272,52 @@
       <a class="card" href={`/outboard/${c.id}`} data-card={c.id}>
         <Preview kind={c.kind} preview={c.preview} />
         <b>{c.name}</b>
-        <span>{KIND_NAME[c.kind]} · by {c.author}</span>
-        <span class="note">{meanText(c.rating)} · {c.downloads} downloaded</span>
+        <span>{fill(w.byAuthor, { kind: kindName(c.kind), author: c.author })}</span>
+        <span class="note">{meanText(c.rating)} · {fill(w.downloaded, { n: c.downloads })}</span>
       </a>
     {:else}
-      <p class="note">{items ? "Nothing listed here yet. The first packs arrive with the first makers." : "…"}</p>
+      <p class="note">{items ? w.empty : "…"}</p>
     {/each}
   </div>
 
   <section class="share">
-    <h2>Share yours</h2>
-    <p>Make a pack in djmanzo — the look studio for themes and skins, Settings → From packs for visuals, the Keys panel for your own keys saved as a set — and upload the <code>.djpack</code> it saves. It is checked as djmanzo checks one, then the crew lists it or tells you why not. Packs are free; your page may link to your own donation page.</p>
+    <h2>{w.share}</h2>
+    <p>{@html w.shareText}</p>
     {#if info}
       {#if info.standing.closed}
         <Join standing={info.standing} />
       {:else if !info.standing.uploads}
-        <p class="note" data-uploads-closed>Uploads open once R2 storage is enabled on this site.</p>
+        <p class="note" data-uploads-closed>{w.uploadsClosed}</p>
       {:else if !info.standing.vouched}
         <Join standing={info.standing} doing="upload" />
       {:else}
         <form class="upload" onsubmit={(e) => { e.preventDefault(); void upload(); }} data-upload>
-          <input type="file" accept=".djpack,application/zip" aria-label="Your .djpack" onchange={(e) => (file = (e.currentTarget as HTMLInputElement).files?.[0] ?? null)} />
-          <input type="text" bind:value={changelog} maxlength="1200" placeholder="What is new in this version (optional)" aria-label="What is new" />
-          <button class="go" disabled={!file || uploading}>{uploading ? "Checking…" : "Upload"}</button>
+          <input type="file" accept=".djpack,application/zip" aria-label={w.fileAria} onchange={(e) => (file = (e.currentTarget as HTMLInputElement).files?.[0] ?? null)} />
+          <input type="text" bind:value={changelog} maxlength="1200" placeholder={w.changelog} aria-label={w.changelogAria} />
+          <button class="go" disabled={!file || uploading}>{uploading ? w.checking : w.upload}</button>
         </form>
         {#if uploaded}<p class="note" role="status">{uploaded}</p>{/if}
       {/if}
       {#if info.standing.vouched && !info.standing.closed}
         <details class="mine">
-          <summary>Your maker's page</summary>
+          <summary>{w.makerPage}</summary>
           <form onsubmit={(e) => { e.preventDefault(); void saveProfile(); }}>
-            <textarea bind:value={about} maxlength="400" placeholder="A line about you and what you make" aria-label="About you"></textarea>
-            <input type="text" bind:value={links} placeholder="Your donation pages, space between: Ko-fi, Liberapay, GitHub Sponsors, Buy Me a Coffee, Open Collective, Patreon, PayPal.me" aria-label="Your donation pages" />
-            <button class="go">Save</button>
+            <textarea bind:value={about} maxlength="400" placeholder={w.aboutPlaceholder} aria-label={w.aboutAria}></textarea>
+            <input type="text" bind:value={links} placeholder={w.linksPlaceholder} aria-label={w.linksAria} />
+            <button class="go">{w.save}</button>
             {#if saved}<p class="note" role="status">{saved}</p>{/if}
           </form>
-          <p class="note">Only those official platforms: djmanzo handles no money and takes nothing.</p>
+          <p class="note">{w.official}</p>
         </details>
       {/if}
     {/if}
   </section>
 
   <section class="coming">
-    <h2>Coming</h2>
-    <p class="note">Asked for, and not yet something djmanzo can install — so not offered yet.</p>
+    <h2>{w.coming}</h2>
+    <p class="note">{w.comingNote}</p>
     <ul>
-      {#each info?.coming ?? [] as k (k.name)}<li><b>{k.name}</b> — {k.what}</li>{/each}
+      {#each info?.coming ?? [] as k (k.name)}{@const t = w.comingKinds[k.name] ?? [k.name, k.what]}<li><b>{t[0]}</b> — {t[1]}</li>{/each}
     </ul>
   </section>
 {/if}

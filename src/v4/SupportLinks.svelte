@@ -11,6 +11,11 @@
   import { session } from "../lib/session.svelte";
   import { DONATION_PLATFORMS, MOST_LINKS, donationLink } from "../../shared/outboard";
   import { BRANDS, brandOf } from "./brands";
+  import { i18n } from "./i18n.svelte";
+  import { BITS } from "./i18n/bits";
+  import { fill } from "./i18n/sections";
+
+  const w = $derived(BITS[i18n.lang].support);
 
   let about = $state("");
   let links = $state<string[]>([""]);
@@ -36,7 +41,7 @@
     saved = null;
     try {
       await api("/api/outboard/profile", { method: "PUT", json: { about, links: links.map((l) => l.trim()).filter(Boolean) } });
-      saved = "Saved. It shows on your profile, your packs and beside your name in the forum.";
+      saved = w.saved;
     } catch (err) {
       saved = (err as Error).message;
     } finally {
@@ -47,10 +52,10 @@
 
 {#if session.user?.patreon}
   {@const b = BRANDS.patreon}
-  <p class="verified"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d={b.path} fill="currentColor" /></svg> <a href={session.user.patreon} rel="noopener noreferrer" target="_blank">{session.user.patreon.replace("https://www.", "")}</a> <span class="tag">verified by Patreon</span></p>
+  <p class="verified"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d={b.path} fill="currentColor" /></svg> <a href={session.user.patreon} rel="noopener noreferrer" target="_blank">{session.user.patreon.replace("https://www.", "")}</a> <span class="tag">{w.verified}</span></p>
 {/if}
 <form onsubmit={save} data-support>
-  <label class="field"><span>A few words about you</span><textarea bind:value={about} maxlength="400" rows="3" placeholder="Where you play, what you make, what the support pays for."></textarea></label>
+  <label class="field"><span>{w.about}</span><textarea bind:value={about} maxlength="400" rows="3" placeholder={w.aboutPlaceholder}></textarea></label>
   {#each links as _, i (i)}
     {@const found = links[i].trim() ? donationLink(links[i]) : null}
     {@const b = found ? brandOf(found.platform) : undefined}
@@ -58,17 +63,17 @@
       <span class="mark" class:ok={!!found} style:--brand={b ? `#${b.hex}` : "var(--line)"} aria-hidden="true">
         {#if b}<svg viewBox="0 0 24 24" width="16" height="16"><path d={b.path} fill="currentColor" /></svg>{:else}+{/if}
       </span>
-      <input type="url" bind:value={links[i]} placeholder="https://ko-fi.com/yourname" aria-label="Support page {i + 1}" />
-      {#if links.length > 1}<button type="button" class="x" aria-label="Remove" onclick={() => (links = links.filter((_, j) => j !== i))}>×</button>{/if}
+      <input type="url" bind:value={links[i]} placeholder="https://ko-fi.com/yourname" aria-label={fill(w.page, { n: i + 1 })} />
+      {#if links.length > 1}<button type="button" class="x" aria-label={w.remove} onclick={() => (links = links.filter((_, j) => j !== i))}>×</button>{/if}
     </div>
-    {#if links[i].trim() && !found}<p class="bad small">Not a page on one of the platforms below.</p>{/if}
+    {#if links[i].trim() && !found}<p class="bad small">{w.notPlatform}</p>{/if}
   {/each}
-  {#if links.length < MOST_LINKS}<button type="button" class="more" onclick={() => (links = [...links, ""])}>+ Another page</button>{/if}
+  {#if links.length < MOST_LINKS}<button type="button" class="more" onclick={() => (links = [...links, ""])}>{w.another}</button>{/if}
   <p class="dim small">
     {#each DONATION_PLATFORMS as p, i (p.name)}{@const b = brandOf(p.name)}{#if b}<svg class="inline" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path d={b.path} fill="currentColor" /></svg>{/if}{p.name}{i < DONATION_PLATFORMS.length - 1 ? " · " : ""}{/each}
   </p>
-  <button class="btn primary small" disabled={busy || session.user?.demo}>{busy ? "…" : "Save"}</button>
-  {#if session.user?.demo}<p class="dim small">A demo account cannot publish a profile.</p>{/if}
+  <button class="btn primary small" disabled={busy || session.user?.demo}>{busy ? "…" : w.save}</button>
+  {#if session.user?.demo}<p class="dim small">{w.demo}</p>{/if}
   {#if saved}<p class="note small" role="status">{saved}</p>{/if}
 </form>
 

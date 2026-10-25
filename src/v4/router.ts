@@ -4,11 +4,11 @@
  * shared and found; the Worker renders the marketplace's, the forum's, the
  * blog's and the legal pages' words for whoever reads them without running
  * anything. Older addresses still land: the preview's hash routes
- * (`/v4/#/pricing`) and the Signal Path's stages (`/#/amp`, now at
- * `/signal/`).
+ * (`/v4/#/pricing`), the island's (`/island/#/pase`) and the Signal
+ * Path's stages (`/#/amp`), now the page and section that show the same.
  */
 
-export const PAGES = ["home", "features", "pricing", "market", "community", "account", "wishes", "releases", "read"] as const;
+export const PAGES = ["home", "features", "pricing", "market", "community", "account", "wishes", "releases", "compare", "nights", "people", "backstage", "read"] as const;
 export type PageId = (typeof PAGES)[number];
 
 export interface Route {
@@ -25,10 +25,14 @@ const PATH_OF: Record<Exclude<PageId, "home" | "read">, string> = {
   account: "account",
   wishes: "wishes",
   releases: "releases",
+  compare: "compare",
+  nights: "nights",
+  people: "people",
+  backstage: "backstage",
 };
 const PAGE_OF: Record<string, PageId> = Object.fromEntries(Object.entries(PATH_OF).map(([page, path]) => [path, page as PageId]));
 /** Pages that take nothing after their name. */
-const BARE: PageId[] = ["pricing", "account", "wishes", "releases"];
+const BARE: PageId[] = ["pricing", "account", "wishes", "releases", "compare", "nights", "people", "backstage"];
 /** Pages the Worker writes: shown as they came, inside the site. */
 const READ = ["blog", "imprint", "terms", "rules", "privacy"];
 
@@ -64,6 +68,11 @@ const LEGACY: Record<string, string> = {
   // The island's pass and wall, from older links: they live on this site now.
   pase: "account",
   muro: "wishes",
+  arena: "compare",
+  gigs: "nights",
+  plaza: "people",
+  // The crew's corner, from the island's address (`/island/#/backstage`).
+  backstage: "backstage",
 };
 
 /**
@@ -76,12 +85,15 @@ export function fromHash(hash: string): string | null {
   return to ? `/${[to, ...rest].map(encodeURIComponent).join("/")}` : null;
 }
 
-/** The Signal Path's stages, whose old links (`/#/amp`) now belong at `/signal/`. */
-export const SIGNAL_STAGES = ["silence", "groove", "needle", "cue", "confluence", "voice", "amp", "cone", "floor", "afterglow"];
-
+/**
+ * Where an old link to one of the Signal Path's stages (`/#/amp`,
+ * `/signal/#/voice`) lands now that the Signal Path is gone: the page and
+ * section here that show the same thing (`STAGE_TO`).
+ */
 export function signalStage(hash: string): string | null {
   const [first] = parts(hash.replace(/^#/, ""));
-  return first && SIGNAL_STAGES.includes(first) ? `/signal/${hash}` : null;
+  const to = first ? STAGE_TO[first] : undefined;
+  return to ? `${href(to.page)}${to.section ? `#${to.section}` : ""}` : null;
 }
 
 /** Follow one of this page's own addresses without loading the page again. */

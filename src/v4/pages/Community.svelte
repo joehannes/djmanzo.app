@@ -8,6 +8,10 @@
   import Talkback from "../../signal/auxiliary/Talkback.svelte";
   import { animate } from "../motion";
   import { shared } from "../region.svelte";
+  import { i18n } from "../i18n.svelte";
+  import { PAGES } from "../i18n/pages";
+
+  const w = $derived(PAGES[i18n.lang].community);
 
   let { rest }: { rest: string[] } = $props();
   let root: HTMLElement;
@@ -18,10 +22,10 @@
   <header class="head">
     <div class="bg" aria-hidden="true" style:background-image={`url(${shared("community")})`}></div>
     <div class="wrap">
-      <p class="eyebrow">Community</p>
-      <h1 class="h1">Ask the question<br />everyone at the gig was thinking.</h1>
-      <p class="lead">The craft, the music, the gear, the life around the gigs, and djmanzo itself. Good, related subjects only — kind words, real help, nobody's music but your own.</p>
-      <p class="side" data-reveal>Want djmanzo to do something it doesn't? <a href="/wishes">Feature requests</a> are voted on, and the board says what became of each.</p>
+      <p class="eyebrow">{w.eyebrow}</p>
+      <h1 class="h1">{@html w.title}</h1>
+      <p class="lead">{w.lead}</p>
+      <p class="side" data-reveal>{@html w.side.replace("{wishes}", "/wishes")}</p>
     </div>
   </header>
   <div class="wrap content body" data-forum>
@@ -49,7 +53,7 @@
     margin: 22px 0 0;
     color: var(--dim);
   }
-  .side a {
+  .side :global(a) {
     color: var(--accent);
   }
   .body {

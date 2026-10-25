@@ -10,19 +10,22 @@
   import { EDITION_INFO, type Edition } from "../../../shared/catalog";
   import { AREAS, FACTS, areaOf, carriedBy, type Area, type Fact } from "../../../shared/facts";
   import { ta, tf } from "../i18n/facts.svelte";
+  import { FEATURES_PAGE } from "../i18n/featurespage";
+  import { HOME } from "../i18n/home";
   import { animate } from "../motion";
   import { skin } from "../region.svelte";
   import { pick } from "../shots";
   import { href } from "../router";
   import Shot from "../sections/Shot.svelte";
   import RoadAhead from "../sections/RoadAhead.svelte";
-  import { t } from "../i18n.svelte";
+  import { i18n, t } from "../i18n.svelte";
   import { tick } from "../sfx.svelte";
 
   const NAMED: Edition[] = ["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full"];
   /** The screen that shows an area best. */
   const SCREEN: Partial<Record<Area, string>> = { mixing: "perform", library: "dig", hands: "launcher", karaoke: "karaoke", assist: "autopilot", learn: "practice", show: "lighting" };
-  const WORD = { shipped: "Ships", part: "Part-built", planned: "Planned" };
+  const w = $derived(FEATURES_PAGE[i18n.lang]);
+  const WORD = $derived(HOME[i18n.lang].status);
 
   let root: HTMLElement;
   let query = $state("");
@@ -52,21 +55,19 @@
 <div class="features" bind:this={root} data-features>
   <header class="head">
     <div class="wrap">
-      <p class="eyebrow">Every feature</p>
-      <h1 class="h1" data-split>All of it,<br />and how far it is.</h1>
-      <p class="lead">
-        {counts.shipped} features ship, {counts.part} are part-built and {counts.planned} are planned — each with what it does, which editions carry it, and what has not yet been proven. djmanzo is in beta: tested in its own repository, against stand-ins where the hardware was missing, and not yet through a real gig.
-      </p>
+      <p class="eyebrow">{w.eyebrow}</p>
+      <h1 class="h1" data-split>{@html w.title}</h1>
+      <p class="lead">{w.lead.replace("{shipped}", String(counts.shipped)).replace("{part}", String(counts.part)).replace("{planned}", String(counts.planned))}</p>
       <div class="tools">
-        <input type="search" bind:value={query} placeholder="Search: stems, karaoke, MilkDrop, vinyl…" aria-label="Search the features" data-feature-search />
-        <div class="seg" role="radiogroup" aria-label="Status">
+        <input type="search" bind:value={query} placeholder={w.search} aria-label={w.searchAria} data-feature-search />
+        <div class="seg" role="radiogroup" aria-label={w.statusAria}>
           {#each ["all", "shipped", "part", "planned"] as const as s (s)}
-            <button role="radio" aria-checked={status === s} onclick={() => (status = s)}>{s === "all" ? "All" : WORD[s]}</button>
+            <button role="radio" aria-checked={status === s} onclick={() => (status = s)}>{s === "all" ? w.all : WORD[s]}</button>
           {/each}
         </div>
       </div>
-      <div class="eds" role="group" aria-label="In which edition">
-        <span class="dim small">In the edition:</span>
+      <div class="eds" role="group" aria-label={w.edAria}>
+        <span class="dim small">{w.inEdition}</span>
         {#each NAMED as e (e)}
           <button class="chip" class:on={edition === e} aria-pressed={edition === e} style:--c={EDITION_INFO[e].colour} onclick={() => (edition = edition === e ? null : e)} data-edition-filter={e}><span class="dot"></span>{EDITION_INFO[e].name}</button>
         {/each}
@@ -75,16 +76,16 @@
   </header>
 
   <div class="wrap layout">
-    <nav class="toc" aria-label="Areas">
+    <nav class="toc" aria-label={w.areasAria}>
       {#each groups as g (g.id)}
         <a href={`#${g.id}`}>{g.name} <span class="mono dim">{g.facts.length}</span></a>
       {/each}
-      <a class="price" href={href("pricing")}>Compare the editions →</a>
+      <a class="price" href={href("pricing")}>{w.compare}</a>
     </nav>
 
     <div class="areas">
       {#if !shown}
-        <p class="dim">Nothing matches. Try another word, or another edition.</p>
+        <p class="dim">{w.nothing}</p>
       {/if}
       {#each groups as g (g.id)}
         {@const screen = SCREEN[g.id]}
@@ -113,12 +114,12 @@
                 {#if f.caveat}<p class="caveat">{f.caveat}</p>{/if}
                 <div class="in">
                   {#if f.status === "planned"}
-                    <span class="dim small">In no edition yet.</span>
+                    <span class="dim small">{w.noEdition}</span>
                   {:else if eds.length === NAMED.length}
-                    <span class="every small">Every edition, the free Hobbyist one included</span>
+                    <span class="every small">{w.every}</span>
                   {:else}
                     {#each eds as e (e)}<span class="ed" style:--c={EDITION_INFO[e].colour}>{EDITION_INFO[e].name}</span>{/each}
-                    <span class="dim small">· or Custom</span>
+                    <span class="dim small">{w.orCustom}</span>
                   {/if}
                 </div>
               </li>

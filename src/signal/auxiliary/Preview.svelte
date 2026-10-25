@@ -7,6 +7,11 @@
   stored, and an <img> runs nothing in an SVG anyway.
 -->
 <script lang="ts">
+  import { i18n } from "../../v4/i18n.svelte";
+  import { OUTBOARD } from "../../v4/i18n/outboard";
+  import { fill } from "../../v4/i18n/sections";
+
+  const w = $derived(OUTBOARD[i18n.lang].preview);
   let { kind, preview, big = false }: { kind: string; preview: Record<string, any>; big?: boolean } = $props();
   const dark = $derived((preview.dark ?? {}) as Record<string, string>);
   const tileSrc = $derived(preview.tile ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(preview.tile)}` : null);
@@ -44,19 +49,19 @@
       {#if big}
         <div class="lists">
           <section>
-            <h4>Its own keys{leaders.length ? ` on Space ${leaders.join(", ")}` : ""}</h4>
+            <h4>{w.ownKeys}{leaders.length ? fill(w.onSpace, { keys: leaders.join(", ") }) : ""}</h4>
             <ul>{#each own as k (k.chain)}{@render row(k)}{/each}</ul>
           </section>
           {#if added.length}
             <section>
-              <h4>Added inside djmanzo's groups</h4>
+              <h4>{w.added}</h4>
               <ul>{#each added as k (k.chain)}{@render row(k)}{/each}</ul>
             </section>
           {/if}
         </div>
       {:else}
         <ul>{#each keys.slice(0, 5) as k (k.chain)}{@render row(k)}{/each}</ul>
-        {#if keys.length > 5}<p class="more">and {keys.length - 5} more</p>{/if}
+        {#if keys.length > 5}<p class="more">{fill(w.more, { n: keys.length - 5 })}</p>{/if}
       {/if}
     </div>
   {:else}

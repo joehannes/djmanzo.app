@@ -1,7 +1,7 @@
-import type { FactWords } from "../facts.svelte";
+import type { FactWords } from "../factwords";
 
 const w: FactWords = {
-  status: "djmanzo ist in der Beta: eine vollständige DJ-Anwendung für macOS und Linux, getestet im eigenen Repository — gegen Stellvertreter, wo die Hardware fehlte — und noch durch keinen echten Gig gegangen.",
+  status: "djmanzo ist in der Beta: eine vollständige DJ-Anwendung für Windows, macOS und Linux, getestet im eigenen Repository — gegen Stellvertreter, wo die Hardware fehlte — und noch durch keinen echten Gig gegangen.",
   soon: { almost: "Fast fertig", progress: "In Arbeit", planned: "Geplant" },
   areas: {
     mixing: { name: "Mixen", about: "Die Decks, das Mischpult, Cues, Loops, Effekte und Stems." },
@@ -72,7 +72,7 @@ const w: FactWords = {
     share: { name: "Ein Set teilen", about: "Die Tracklist des Abends an WhatsApp, X, Bluesky oder Threads übergeben, die Nachricht schon geschrieben; der DJ drückt auf Senden." },
     linux: {
       name: "Linux und macOS",
-      about: "Unter Linux läuft der Ton über das Standardgerät von ALSA, das PipeWire bedient; macOS und Linux sind die zugesagten Plattformen.",
+      about: "Unter Linux läuft der Ton über das Standardgerät von ALSA, das PipeWire bedient; Windows, macOS und Linux sind die Plattformen, für die es erscheint.",
       caveat: "JACK kann noch nicht als Audio-Host gewählt werden, und die CI läuft auf Ubuntu statt Xubuntu.",
     },
     decks6: { name: "Vier bis sechs Decks", about: "Deck drei und vier, und bis zu sechs." },
@@ -226,9 +226,8 @@ const w: FactWords = {
     },
     windows: {
       name: "Windows",
-      about: "Gebaut, in der CI getestet und mit jedem Release paketiert.",
-      caveat: "Noch nie von einem Menschen auf einem Windows-Rechner gestartet.",
-      waits: "Ein Mensch, der es auf einem Windows-Rechner startet.",
+      about: "Gebaut, in der CI getestet, mit jedem Release paketiert und vom Inhaber von djmanzo auf einem Windows-Rechner gestartet.",
+      caveat: "In der Beta, wie alles hier: bisher von einem Menschen unter Windows ausprobiert.",
     },
     gig: { name: "Ein echter Gig", about: "Alles hier ist im Repository getestet; nichts davon bisher vor Publikum.", waits: "Eine Nacht mit Publikum, und was sie zutage bringt, aufgeschrieben." },
     leader: {
