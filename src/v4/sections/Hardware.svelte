@@ -7,6 +7,14 @@
   import { DEVICES, STATUS_WORDS, search } from "../hardware";
   import { art } from "../region.svelte";
   import FactList from "./FactList.svelte";
+  import { i18n } from "../i18n.svelte";
+  import { SECTIONS, fill } from "../i18n/sections";
+  import { tf } from "../i18n/facts.svelte";
+  import { FACT_BY_ID } from "../../../shared/facts";
+
+  const w = $derived(SECTIONS[i18n.lang].hardware);
+  /** What a shipped mapping has not yet been through, in the visitor's words. */
+  const mappedCaveat = $derived(FACT_BY_ID.mapped ? (tf(FACT_BY_ID.mapped).caveat ?? STATUS_WORDS.mapped.caveat) : STATUS_WORDS.mapped.caveat);
 
   let q = $state("");
   let only = $state<"all" | "mapped" | "planned">("all");
@@ -17,9 +25,9 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <p class="eyebrow" data-reveal>Hardware</p>
-        <h2 class="h2" id="hw-title" data-split>Plug in what you own.</h2>
-        <p class="lead" data-reveal>Mappings written from each maker's own MIDI table ship with djmanzo. Anything else, map yourself: press a control, choose what it does, save. Your laptop's keyboard is a controller too.</p>
+        <p class="eyebrow" data-reveal>{w.eyebrow}</p>
+        <h2 class="h2" id="hw-title" data-split>{w.title}</h2>
+        <p class="lead" data-reveal>{w.lead}</p>
       </div>
       <div class="pic" data-reveal aria-hidden="true"><div class="img" data-parallax="0.2" style:background-image={`url(${art("gear")})`}></div></div>
     </div>
@@ -27,12 +35,12 @@
     <div class="tool card" data-reveal>
       <div class="controls">
         <label class="search">
-          <span class="sr-only">Search controllers</span>
+          <span class="sr-only">{w.search}</span>
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2" /><path d="m20 20-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
-          <input type="search" placeholder="Search a maker or model — “pioneer 400”, “launchpad”" bind:value={q} data-hw-search />
+          <input type="search" placeholder={w.placeholder} bind:value={q} data-hw-search />
         </label>
-        <div class="filters" role="group" aria-label="Show">
-          {#each [["all", "All"], ["mapped", "Mapping ships"], ["planned", "Planned"]] as [v, l] (v)}
+        <div class="filters" role="group" aria-label={w.show}>
+          {#each [["all", w.all], ["mapped", w.mapped], ["planned", w.planned]] as [v, l] (v)}
             <button class="chip" aria-pressed={only === v} onclick={() => (only = v as typeof only)}>{l}</button>
           {/each}
         </div>
@@ -40,16 +48,16 @@
       <ul class="devices" aria-live="polite">
         {#each found as d (d.maker + d.model)}
           <li class:planned={d.status === "planned"} data-device={d.model}>
-            <span class="kind mono">{d.kind}</span>
+            <span class="kind mono">{w.kinds[d.kind]}</span>
             <b>{d.model}</b>
             <span class="maker">{d.maker}</span>
-            <span class="status {d.status === 'mapped' ? 'shipped' : 'planned'}">{STATUS_WORDS[d.status].label}</span>
+            <span class="status {d.status === 'mapped' ? 'shipped' : 'planned'}">{d.status === 'mapped' ? w.mapped : w.planned}</span>
           </li>
         {:else}
-          <li class="none">Not in the list. Map it yourself in djmanzo — or ask for it on the <a href="/wishes">feature requests</a>.</li>
+          <li class="none">{@html fill(w.none, { wishes: "/wishes" })}</li>
         {/each}
       </ul>
-      <p class="caveat">{STATUS_WORDS.mapped.caveat}</p>
+      <p class="caveat">{mappedCaveat}</p>
     </div>
     <div class="more">
       <FactList ids={["mapping", "keyboard", "dvs", "platters", "club"]} compact />

@@ -352,6 +352,14 @@ test("every feature, the home page's sections and the status line follow the lan
   await expect(page.locator("#hl-title")).toHaveText("Warum DJs und Karaoke-Gastgeber zweimal hinschauen");
   await expect(page.locator("#stems-title")).not.toContainText("Take any record apart");
   await expect(page.locator("footer")).toContainText("djmanzo ist in der Beta");
+  await expect(page.locator("#keys-title")).toHaveText("Tasten, die sich wie Wörter lesen.");
+  await expect(page.locator("#karaoke-title")).toContainText("Ein ganzer Karaoke-Abend");
+  await expect(page.locator("#hw-title")).toHaveText("Schließ an, was du hast.");
+  await expect(page.locator("#faq-title")).toHaveText("Klare Antworten.");
+  await expect(page.locator("#faq")).toContainText("Läuft es wirklich unter Linux?");
+  await page.goto("/?lang=ja");
+  await expect(page.locator("#live-title")).toHaveText("お金のかからないマーケットプレイス。脱線しないフォーラム。");
+  await expect(page.locator("#keys [data-whichkey]")).toHaveAttribute("aria-label", "キーを試す：Space を押してから文字を");
   await page.goto("/features?lang=ja");
   await expect(page.locator("#h-mixing")).toHaveText("ミックス");
   await expect(page.locator("[data-fact=decks] h3")).toHaveText("2 台のデッキとミキサー");

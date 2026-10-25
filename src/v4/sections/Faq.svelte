@@ -4,48 +4,43 @@
 -->
 <script lang="ts">
   import { FACT_BY_ID } from "../../../shared/facts";
-  import { PLAN_INFO, TRIAL_DAYS } from "../../../shared/catalog";
+  import { TRIAL_DAYS } from "../../../shared/catalog";
   import { href } from "../router";
+  import { i18n } from "../i18n.svelte";
+  import { tf } from "../i18n/facts.svelte";
+  import { SECTIONS, fill } from "../i18n/sections";
 
-  const f = (id: string) => `${FACT_BY_ID[id].about}${FACT_BY_ID[id].caveat ? ` ${FACT_BY_ID[id].caveat}` : ""}`;
+  const w = $derived(SECTIONS[i18n.lang].faq);
+  /** A feature's own words and its caveat, in the visitor's language (`shared/facts.ts`). */
+  const f = (id: string) => {
+    const x = tf(FACT_BY_ID[id]);
+    return `${x.about}${x.caveat ? ` ${x.caveat}` : ""}`;
+  };
+  /** All but a text's first sentence. */
+  const rest = (text: string) => text.split(/(?<=[.。])\s*/).slice(1).join(i18n.lang === "ja" ? "" : " ");
 
-  const GROUPS: { name: string; qa: [string, string][] }[] = [
+  const GROUPS = $derived<{ name: string; qa: [string, string][] }[]>([
     {
-      name: "Price and licence",
-      qa: [
-        ["Is it really free?", `Yes: the Hobbyist edition. ${f("hobbyist-free")}`],
-        ["Buy once, or subscribe?", `Either. ${PLAN_INFO.perpetual.name}: ${PLAN_INFO.perpetual.about} ${PLAN_INFO.monthly.name}: ${PLAN_INFO.monthly.about} ${PLAN_INFO.yearly.name}: ${PLAN_INFO.yearly.about}`],
-        ["Why is it cheaper where I live?", "Prices follow what living costs: 40, 60 or 70 % off, by the World Bank's income groups, for a card and a billing address from there. Students and teachers pay half. Discounts never stack — you get the larger."],
-        ["Can I try a paid edition first?", `${TRIAL_DAYS} days of any edition, Full included, once per account. ${FACT_BY_ID.trial.about.split(". ").slice(1).join(". ")}`],
-        ["What if I outgrow my edition?", "Upgrade and pay only the difference: what you paid counts in full."],
-      ],
+      name: w.price,
+      qa: [[w.free[0], `${w.free[1]} ${f("hobbyist-free")}`], w.plans, w.cheaper, [w.trial[0], `${fill(w.trial[1], { days: TRIAL_DAYS })} ${rest(tf(FACT_BY_ID.trial).about)}`], w.upgrade],
     },
     {
-      name: "Platforms and hardware",
-      qa: [
-        ["Does it really run on Linux?", f("linux")],
-        ["And Windows?", f("windows")],
-        ["My Mac is old.", f("oldmac")],
-        ["Will my controller work?", "Search the hardware list above. With no shipped mapping, map it yourself in djmanzo: press a control, choose what it does."],
-      ],
+      name: w.platforms,
+      qa: [[w.linux, f("linux")], [w.windows, f("windows")], [w.oldmac, f("oldmac")], w.controller],
     },
     {
-      name: "Privacy and the room",
-      qa: [
-        ["What does this page know about me?", "Only the country your connection comes from, to choose its look and its prices. The look you pick stays in your browser. The shop and the forum keep what you buy and post, as the privacy notice says."],
-        ["Does djmanzo watch the crowd?", f("room")],
-        ["Is the marketplace really free?", "Everything in it is free, for everyone: no payments, no commission. A maker may link their own tip jar. Packs are signed by their maker and checked before they are listed; other people's music is never allowed."],
-      ],
+      name: w.privacy,
+      qa: [w.knows, [w.watch, f("room")], w.market],
     },
-  ];
+  ]);
 </script>
 
 <section class="section faq" id="faq" aria-labelledby="faq-title">
   <div class="wrap grid">
     <div>
-      <p class="eyebrow" data-reveal>Questions</p>
-      <h2 class="h2" id="faq-title" data-split>Straight answers.</h2>
-      <p class="lead" data-reveal>Something missing? <a href={href("community")}>Ask in the forum</a>, or ask the assistant at the bottom of the page.</p>
+      <p class="eyebrow" data-reveal>{w.eyebrow}</p>
+      <h2 class="h2" id="faq-title" data-split>{w.title}</h2>
+      <p class="lead" data-reveal>{@html fill(w.lead, { community: href("community") })}</p>
     </div>
     <div class="groups">
       {#each GROUPS as g (g.name)}

@@ -11,6 +11,10 @@
   import Shot from "./Shot.svelte";
   import { skin } from "../region.svelte";
   import { pick } from "../shots";
+  import { i18n } from "../i18n.svelte";
+  import { SECTIONS, fill } from "../i18n/sections";
+
+  const w = $derived(SECTIONS[i18n.lang].keys);
 
   const panel = $derived(pick("mykeys", skin().themes));
 
@@ -82,26 +86,22 @@
 <section class="section keys" id="keys" aria-labelledby="keys-title">
   <div class="wrap grid">
     <div class="copy">
-      <p class="eyebrow" data-reveal>Your hands</p>
-      <h2 class="h2" id="keys-title" data-split>Keys that read as words.</h2>
-      <p class="lead" data-reveal>
-        Press <kbd>Space</kbd> and djmanzo shows every key. <kbd>d</kbd> <kbd>1</kbd> <kbd>p</kbd> is <b>d</b>eck <b>1</b> <b>p</b>lay; <kbd>o</kbd> <kbd>i</kbd> opens the s<b>i</b>ngers. Nothing to memorise first: the guide is there until your fingers know the way.
-      </p>
-      <p class="dim" data-reveal>
-        A <b>keyboard set</b> adds keys for one way of working — a karaoke host's rotation, a scratch DJ's crossfader — on letters djmanzo leaves free, under any keys you made yourself. It complements the keys you have; it never takes one away. Nine come with djmanzo, one for each way of working; more are in the <a href="/outboard">marketplace</a>, where a set can carry one of djmanzo's whole and add to it, even inside djmanzo's own groups; and your own can be saved as a set, or published with your name.
-      </p>
-      <p class="eyebrow small">Wear one: they come with djmanzo</p>
-      <div class="sets" role="group" aria-label="Wear a keyboard set djmanzo ships">
+      <p class="eyebrow" data-reveal>{w.eyebrow}</p>
+      <h2 class="h2" id="keys-title" data-split>{w.title}</h2>
+      <p class="lead" data-reveal>{@html w.lead}</p>
+      <p class="dim" data-reveal>{@html fill(w.sets, { market: "/outboard" })}</p>
+      <p class="eyebrow small">{w.wearOne}</p>
+      <div class="sets" role="group" aria-label={w.wearAria}>
         {#each sets as s (s.id)}
           <button class="chip" class:on={worn?.id === s.id} aria-pressed={worn?.id === s.id} onclick={() => choose(s)} data-set={s.id}>{s.name}</button>
         {/each}
       </div>
       {#if market.length}
-        <p class="eyebrow small">Or one from <a href="/outboard">Outboard</a>, free</p>
-        <div class="sets" role="group" aria-label="Wear a keyboard set from the marketplace">
+        <p class="eyebrow small">{@html fill(w.orOne, { market: "/outboard" })}</p>
+        <div class="sets" role="group" aria-label={w.marketAria}>
           {#each market as s (s.id)}
             <button class="chip" class:on={worn?.id === s.id} aria-pressed={worn?.id === s.id} onclick={() => choose(s)} data-set={s.id}>
-              {s.name}<span class="from mono">pack</span>
+              {s.name}<span class="from mono">{w.pack}</span>
             </button>
           {/each}
         </div>
@@ -113,12 +113,12 @@
     <div class="demo">
       <!-- A keyboard surface: role="application" hands the keys to the sketch while it has focus. -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex, a11y_no_noninteractive_element_interactions -->
-      <div class="whichkey card" tabindex="0" role="application" aria-label="Try the keys: press Space, then the letters" bind:this={pad} onkeydown={key} data-whichkey>
+      <div class="whichkey card" tabindex="0" role="application" aria-label={w.tryAria} bind:this={pad} onkeydown={key} data-whichkey>
         <div class="top mono">
           <span class="crumbs">
             <kbd class:hot={open}>Space</kbd>{#each path as k (k)}<span class="arrow">›</span><kbd>{k}</kbd>{/each}
           </span>
-          <span class="dim small">{open ? "Backspace: back · Esc: close" : "a sketch of the guide"}</span>
+          <span class="dim small">{open ? w.hint : w.sketch}</span>
         </div>
         {#if open}
           <ul class="level" aria-live="polite">
@@ -137,17 +137,17 @@
             {#if last}
               <p class="done" data-done>{last}</p>
             {/if}
-            <button class="btn primary small" onclick={start}>Press Space</button>
-            <p class="dim small">or click here and use your keyboard</p>
+            <button class="btn primary small" onclick={start}>{w.pressSpace}</button>
+            <p class="dim small">{w.orClick}</p>
           </div>
         {/if}
       </div>
-      <p class="dim small note">The real guide lists every panel, theme, workspace and preset on your machine; this sketch shows the shape of it.</p>
+      <p class="dim small note">{w.note}</p>
     </div>
   </div>
   {#if panel}
     <div class="wrap panel-shot" data-reveal>
-      <p class="eyebrow">In djmanzo: the Keys panel</p>
+      <p class="eyebrow">{w.inApp}</p>
       {#key panel.src}<Shot shot={panel} label="Keys" />{/key}
     </div>
   {/if}

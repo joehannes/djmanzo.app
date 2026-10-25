@@ -12,6 +12,9 @@
   import { href } from "../router";
   import { shared } from "../region.svelte";
   import { LANG_INFO, i18n, t } from "../i18n.svelte";
+  import { SECTIONS, fill } from "../i18n/sections";
+
+  const w = $derived(SECTIONS[i18n.lang].live);
 
   interface Card {
     id: string;
@@ -69,14 +72,14 @@
 
 <section class="section live" id="community" aria-labelledby="live-title">
   <div class="wrap">
-    <p class="eyebrow" data-reveal>Made by DJs</p>
-    <h2 class="h2" id="live-title" data-split>A marketplace that costs nothing. A forum that stays on topic.</h2>
-    <p class="lead" data-reveal>Themes, skins and visuals made by DJs for djmanzo, free, signed by their makers and checked before they are listed. And a place to ask the question everyone at the gig was thinking.</p>
+    <p class="eyebrow" data-reveal>{w.eyebrow}</p>
+    <h2 class="h2" id="live-title" data-split>{w.title}</h2>
+    <p class="lead" data-reveal>{w.lead}</p>
 
     <div class="cols">
       <article class="card col" data-reveal>
         <div class="banner" style:background-image={`url(${shared("market")})`} aria-hidden="true"></div>
-        <header><h3 class="h3">Marketplace</h3><a href={href("market")} class="more">Browse all →</a></header>
+        <header><h3 class="h3">{w.market}</h3><a href={href("market")} class="more">{w.browse}</a></header>
         {#if items && items.length}
           <div class="items">
             {#each items as it (it.id)}
@@ -88,30 +91,30 @@
             {/each}
           </div>
         {:else if items}
-          <p class="empty">New shelves: nothing listed yet. Made a theme, a skin or a look in djmanzo? <a href={href("market")}>Put it up</a> — free for everyone.</p>
+          <p class="empty">{@html fill(w.marketEmpty, { market: href("market") })}</p>
         {:else}
-          <p class="empty">Loading…</p>
+          <p class="empty">{w.loading}</p>
         {/if}
       </article>
 
       <article class="card col" data-reveal>
         <div class="banner" style:background-image={`url(${shared("community")})`} aria-hidden="true"></div>
-        <header><h3 class="h3">Forum</h3><a href={href("community")} class="more">Join in →</a></header>
+        <header><h3 class="h3">{w.forum}</h3><a href={href("community")} class="more">{w.join}</a></header>
         {#if posts && posts.length}
           <ul class="threads">
             {#each posts as p (p.id)}
               <li data-post>
                 <a href={href("community", [p.id])}>{p.title}</a>
-                <small class="mono">{communityName(p.community)} · {p.author} · ▲ {p.score} · {p.comments} {p.comments === 1 ? "reply" : "replies"}</small>
+                <small class="mono">{communityName(p.community)} · {p.author} · ▲ {p.score} · {p.comments} {p.comments === 1 ? w.reply : w.replies}</small>
               </li>
             {/each}
           </ul>
         {:else if posts}
-          <p class="empty">Quiet so far. Ask the first question — mixing, harmonic keys, karaoke hosting, gear — <a href={href("community")}>in the forum</a>.</p>
+          <p class="empty">{@html fill(w.forumEmpty, { community: href("community") })}</p>
         {:else}
-          <p class="empty">Loading…</p>
+          <p class="empty">{w.loading}</p>
         {/if}
-        <p class="small"><a href="/wishes">Feature requests</a>: ask for what djmanzo should do next, and vote.</p>
+        <p class="small">{@html fill(w.wishes, { wishes: "/wishes" })}</p>
       </article>
     </div>
 

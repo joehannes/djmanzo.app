@@ -49,7 +49,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Taillé pour les longues transitions.",
       l2: "Et pour l'after.",
-      lead: "Bienvenue en cabine. Sync, cues, boucles et effets calés sur le tempo sont là où vos mains les cherchent, et vos crates rekordbox, Serato ou Traktor arrivent avec leurs cues et leurs grilles. Puis les nouveautés : retirez la voix de n'importe quel morceau pendant qu'il joue, voyez venir la prochaine phrase sur la forme d'onde, et demandez à l'assistant un morceau dans la bonne tonalité — il vous dit pourquoi, et attend votre feu vert. À essayer gratuitement ce soir. Pour la queue au vestiaire, on ne peut rien faire.",
+      lead: "Bienvenue en cabine. Sync, cues, boucles et effets calés sur le tempo sont là où vos mains les cherchent, et vos crates rekordbox, Serato ou Traktor arrivent avec leurs cues et leurs grilles. Puis les nouveautés : retirez la voix de n'importe quel morceau pendant qu'il joue, voyez venir la prochaine phrase sur la forme d'onde, et demandez à l'assistant un morceau dans la bonne tonalité — il vous dit pourquoi, et attend votre feu vert. À essayer gratuitement ce soir. Pour la queue au vestiaire, on ne peut rien faire.",
     },
     it: {
       l1: "Fatto per i mix lunghi.",
@@ -87,7 +87,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Du zouk au reggaeton.",
       l2: "Sans un seul blanc.",
-      lead: "Bonsoir ! Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les cherchent, et vos crates Serato ou rekordbox arrivent avec leurs cues. Puis les nouveautés : retirez la voix de n'importe quel morceau pour un edit en direct, lisez la tonalité et le BPM de chaque titre, du kompa à la bachata, et recevez les demandes du public par QR code, sans application. À essayer gratuitement ce soir. Quand tonton réclame « encore un zouk », c'est déjà dans la liste.",
+      lead: "Bonsoir ! Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les cherchent, et vos crates Serato ou rekordbox arrivent avec leurs cues. Puis les nouveautés : retirez la voix de n'importe quel morceau pour un edit en direct, lisez la tonalité et le BPM de chaque titre, du kompa à la bachata, et recevez les demandes du public par QR code, sans application. À essayer gratuitement ce soir. Quand tonton réclame « encore un zouk », c'est déjà dans la liste.",
     },
     it: {
       l1: "Dalla serata latina al matrimonio.",
@@ -125,7 +125,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Sortez l'a cappella.",
       l2: "Et relancez le beat.",
-      lead: "Bienvenue en cabine. Platines, cues, boucles, slip et backspin sont là où vos mains les attendent, et vos crates Serato arrivent avec leurs hot cues et leurs boucles. Puis les nouveautés : séparez n'importe quel morceau en voix, batterie et basse pendant qu'il joue, l'a cappella et l'instru toujours à une touche ; un layout scratch ; et les demandes du public par QR code, la plus demandée en premier. À essayer gratuitement ce soir. « Mets celle qui fait… » ? Tapez le bout de phrase dont ils se souviennent, djmanzo trouve le morceau.",
+      lead: "Bienvenue en cabine. Platines, cues, boucles, slip et backspin sont là où vos mains les attendent, et vos crates Serato arrivent avec leurs hot cues et leurs boucles. Puis les nouveautés : séparez n'importe quel morceau en voix, batterie et basse pendant qu'il joue, l'a cappella et l'instru toujours à une touche ; un layout scratch ; et les demandes du public par QR code, la plus demandée en premier. À essayer gratuitement ce soir. « Mets celle qui fait… » ? Tapez le bout de phrase dont ils se souviennent, djmanzo trouve le morceau.",
     },
     it: {
       l1: "Tira fuori l'acappella.",
@@ -163,7 +163,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Du coupé-décalé à l'afrobeats.",
       l2: "Une seule cabine.",
-      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : séparez la batterie, la basse ou la voix de n'importe quel morceau pendant qu'il joue, pour un drop rien qu'avec le groove ; la tonalité et le tempo de chaque titre ; et un assistant qui propose la suite, dit pourquoi, et attend votre accord. À essayer gratuitement ce soir. Et quand le cousin réclame « son son », un bout de refrain suffit pour le retrouver.",
+      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : séparez la batterie, la basse ou la voix de n'importe quel morceau pendant qu'il joue, pour un drop rien qu'avec le groove ; la tonalité et le tempo de chaque titre ; et un assistant qui propose la suite, dit pourquoi, et attend votre accord. À essayer gratuitement ce soir. Et quand le cousin réclame « son son », un bout de refrain suffit pour le retrouver.",
     },
     it: {
       l1: "Amapiano, afrobeats, afro house.",
@@ -201,7 +201,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Petit club, gros son.",
       l2: "Salle de karaoké comprise.",
-      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox arrivent avec leurs cues. Puis les nouveautés : n'importe quel morceau séparé en voix et musique pendant qu'il joue — toute votre collection devient karaoké, avec les paroles à l'écran, le chant noté et un quiz tiré de vos propres morceaux ; et un assistant qui propose le suivant dans la bonne tonalité, en disant pourquoi. À essayer gratuitement ce soir. Le savoir-vivre au micro n'est pas fourni.",
+      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox arrivent avec leurs cues. Puis les nouveautés : n'importe quel morceau séparé en voix et musique pendant qu'il joue — toute votre collection devient karaoké, avec les paroles à l'écran, le chant noté et un quiz tiré de vos propres morceaux ; et un assistant qui propose le suivant dans la bonne tonalité, en disant pourquoi. À essayer gratuitement ce soir. Le savoir-vivre au micro n'est pas fourni.",
     },
     it: {
       l1: "Club piccolo, suono enorme.",
@@ -239,7 +239,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Du raï au rooftop.",
       l2: "Une cabine pour toute la nuit.",
-      lead: "Ahlan ! Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : retirez la voix de n'importe quel morceau pendant qu'il joue, ou gardez seulement les percussions pour un break de derbouka ; la tonalité et le tempo de chaque titre, pour que le chaâbi rejoigne la deep house dans le ton ; et les demandes des invités par QR code, sans application. À essayer gratuitement ce soir. Le mariage finira toujours à 4 h du matin — vous, moins fatigué.",
+      lead: "Ahlan ! Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : retirez la voix de n'importe quel morceau pendant qu'il joue, ou gardez seulement les percussions pour un break de derbouka ; la tonalité et le tempo de chaque titre, pour que le chaâbi rejoigne la deep house dans le ton ; et les demandes des invités par QR code, sans application. À essayer gratuitement ce soir. Le mariage finira toujours à 4 h du matin — vous, moins fatigué.",
     },
     it: {
       l1: "Dalla zaffa alla terrazza.",
@@ -277,7 +277,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Sangeet, baraat, after.",
       l2: "Une cabine pour les trois.",
-      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : retirez la voix de n'importe quel titre de Bollywood pour un mashup en direct sur un beat house, gardez seulement les percussions pour que le dhol porte la baraat, voyez la tonalité de chaque titre pour des mashups justes, et recevez les demandes des invités par QR code. À essayer gratuitement ce soir. L'oncle qui veut « encore un punjabi » l'aura — depuis la liste des demandes.",
+      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : retirez la voix de n'importe quel titre de Bollywood pour un mashup en direct sur un beat house, gardez seulement les percussions pour que le dhol porte la baraat, voyez la tonalité de chaque titre pour des mashups justes, et recevez les demandes des invités par QR code. À essayer gratuitement ce soir. L'oncle qui veut « encore un punjabi » l'aura — depuis la liste des demandes.",
     },
     it: {
       l1: "Sangeet, baraat, after party.",
@@ -315,7 +315,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Paillote au coucher du soleil.",
       l2: "Free party jusqu'à l'aube.",
-      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : séparez n'importe quel morceau en voix, batterie et basse pendant qu'il joue ; confiez le set du coucher de soleil au pilote automatique le temps d'aller chercher un verre — il vous rend les platines dès que vous touchez un fader ; et envoyez la tracklist de la soirée à la bande en fin de nuit. À essayer gratuitement ce soir. Crème solaire non fournie.",
+      lead: "Bienvenue en cabine. Platines, sync, cues et boucles sont là où vos mains les attendent, et vos crates rekordbox ou Serato arrivent avec leurs cues. Puis les nouveautés : séparez n'importe quel morceau en voix, batterie et basse pendant qu'il joue ; confiez le set du coucher de soleil au pilote automatique le temps d'aller chercher un verre — il vous rend les platines dès que vous touchez un fader ; et envoyez la tracklist de la soirée à la bande en fin de nuit. À essayer gratuitement ce soir. Crème solaire non fournie.",
     },
     it: {
       l1: "Lido al tramonto.",
@@ -353,7 +353,7 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
     fr: {
       l1: "Tout ce avec quoi vous mixez.",
       l2: "Et une deuxième paire d'oreilles.",
-      lead: "Bienvenue en cabine. Vos platines, le sync, les cues, les boucles et les effets sont là où vos mains les attendent, et vos crates rekordbox, Serato ou Traktor arrivent avec leurs cues et leurs grilles. Puis les nouveautés : n'importe quel morceau séparé en voix, batterie et basse pendant qu'il joue ; une soirée karaoké complète dans le même téléchargement ; et un assistant qui propose le prochain morceau en disant pourquoi, attend votre feu vert et lâche les commandes dès que vous touchez un bouton. À essayer gratuitement ce soir. Les voisins s'en remettront.",
+      lead: "Bienvenue en cabine. Vos platines, le sync, les cues, les boucles et les effets sont là où vos mains les attendent, et vos crates rekordbox, Serato ou Traktor arrivent avec leurs cues et leurs grilles. Puis les nouveautés : n'importe quel morceau séparé en voix, batterie et basse pendant qu'il joue ; une soirée karaoké complète dans le même téléchargement ; et un assistant qui propose le prochain morceau en disant pourquoi, attend votre feu vert et lâche les commandes dès que vous touchez un bouton. À essayer gratuitement ce soir. Les voisins s'en remettront.",
     },
     it: {
       l1: "Tutto quello con cui mixi.",
