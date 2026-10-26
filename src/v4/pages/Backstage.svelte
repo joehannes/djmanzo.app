@@ -421,13 +421,17 @@
   <h1 class="h1">Backstage</h1>
 </header>
 {#if !session.admin}
-  <p>Backstage is for the crew. Sign in with an address on the crew list, or with the crew's password or token.</p>
+  {#if session.crew}
+    <p data-crew-locked>Signed in as {session.user?.name ?? "the crew"}. The crew's password is set, so Backstage asks for it too: once in this browser, for 12 hours.</p>
+  {:else}
+    <p>Backstage is for the crew. Sign in with an address on the crew list, or with the crew's password or token.</p>
+  {/if}
   <form class="inline" onsubmit={ownerLogin}>
     <input type="password" bind:value={token} placeholder="Crew password or token" aria-label="Crew password or token" autocomplete="current-password" data-crew-password />
     <button class="btn primary">Come in</button>
   </form>
   {#if error}<p class="notice">{error}</p>{/if}
-  <p class="small"><a class="link" href={href("account")}>Or sign in with your account.</a></p>
+  {#if !session.user}<p class="small"><a class="link" href={href("account")}>Or sign in with your account.</a></p>{/if}
 {:else}
   {#if error}<p class="notice" role="alert">{error} <button class="link" onclick={() => (error = null)}>dismiss</button></p>{/if}
 
@@ -666,11 +670,11 @@
 
   <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPassword()} data-password>
     <summary>🔒 The crew's password</summary>
-    <p class="small muted">There is no default password. {pwState?.set ? `One is set (since ${new Date(pwState.at ?? 0).toISOString().slice(0, 10)}); setting another replaces it.` : "None is set yet: until one is, Backstage opens with the ADMIN_TOKEN secret or an address on ADMIN_EMAILS."} It is kept only as a salted hash. The ADMIN_TOKEN secret always opens Backstage too, should the password be forgotten.</p>
+    <p class="small muted">There is no default password. {pwState?.set ? `One is set (since ${new Date(pwState.at ?? 0).toISOString().slice(0, 10)}); setting another replaces it.` : "None is set yet: until one is, signing in with a crew account (the owner's GitHub account or address, or one on ADMIN_EMAILS) opens Backstage on its own."} Once one is set, a crew account asks for it too, once in each browser, for 12 hours; nobody else gets in with it but the crew. It is kept only as a salted hash. The ADMIN_TOKEN secret always opens Backstage too, should the password be forgotten.</p>
     <form onsubmit={setPassword} class="grid">
       <div class="two">
         <label class="field"><span>New password (at least 10 characters)</span><input type="password" minlength="10" bind:value={pw1} autocomplete="new-password" required data-pw-new /></label>
-        <label class="field"><span>Again</span><input type="password" minlength="12" bind:value={pw2} autocomplete="new-password" required data-pw-again /></label>
+        <label class="field"><span>Again</span><input type="password" minlength="10" bind:value={pw2} autocomplete="new-password" required data-pw-again /></label>
       </div>
       <button class="btn primary">{pwState?.set ? "Change the password" : "Set the password"}</button>
     </form>

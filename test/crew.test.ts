@@ -26,6 +26,37 @@ describe("the way into Backstage", () => {
   });
 });
 
+describe("once the crew's password is set", () => {
+  it("the owner's account sees the way to Backstage but must give the password too, once in each browser; nobody else gets in", async () => {
+    const env = openSite({ ADMIN_TOKEN: "" });
+    const owner = await person(env, "Johannes");
+    const other = await person(env, "Lena");
+    (env as unknown as { ADMIN_GITHUB_IDS: string }).ADMIN_GITHUB_IDS = owner.user.identities[0].sub;
+    // Before a password: the owner's account alone opens Backstage.
+    expect((await owner.call("/api/me")).data).toMatchObject({ admin: true, crew: true });
+    expect((await owner.call("/api/admin/password", { method: "PUT", json: { password: "a long crew password" } })).status).toBe(200);
+    // The browser that set it has just given it, and stays in.
+    expect((await owner.call("/api/me")).data).toMatchObject({ admin: true, crew: true });
+    // The same account in another browser is shown the way, but Backstage stays shut until the password is given there.
+    await put((env as unknown as { KV: KVNamespace }).KV, "session:sid-phone", { uid: owner.user.id, createdAt: Date.now() });
+    const phone = browser(env, "djm_sid=sid-phone");
+    expect((await phone("/api/me")).data).toMatchObject({ admin: false, crew: true });
+    expect((await phone("/api/admin/overview")).status).toBe(403);
+    expect((await phone("/api/auth/owner", { method: "POST", json: { token: "not it at all" } })).status).toBe(403);
+    expect((await phone("/api/admin/overview")).status).toBe(403);
+    const given = await phone("/api/auth/owner", { method: "POST", json: { token: "a long crew password" } });
+    expect(given.status).toBe(200);
+    // Still the owner's own account, now with Backstage open.
+    expect((await phone("/api/me")).data).toMatchObject({ admin: true, crew: true, user: { id: owner.user.id } });
+    expect((await phone("/api/admin/overview")).status).toBe(200);
+    // Anyone else, signed in, is neither crew nor admin, and Backstage's every door is shut to them.
+    expect((await other.call("/api/me")).data).toMatchObject({ admin: false, crew: false });
+    for (const path of ["/api/admin/overview", "/api/admin/password", "/api/admin/signin", "/api/admin/payments"]) expect((await other.call(path)).status, path).toBe(403);
+    // And no one signed in at all.
+    expect((await browser(env)("/api/admin/overview")).status).toBe(403);
+  });
+});
+
 describe("the owner's own address", () => {
   it("opens Backstage by its SHA-256, when a provider vouched for it", async () => {
     const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("owner@example.test")))].map((b) => b.toString(16).padStart(2, "0")).join("");

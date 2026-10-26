@@ -34,6 +34,8 @@ export interface SessionUser {
 class Session {
   user = $state<SessionUser | null>(null);
   admin = $state(false);
+  /** One of the crew's own accounts, whether or not it has given the crew's password in this browser yet. */
+  crew = $state(false);
   providers = $state<{ id: string; name: string }[]>([]);
   demo = $state(true);
   loaded = $state(false);
@@ -61,9 +63,10 @@ class Session {
 
   async refresh() {
     try {
-      const me = await api<{ user: SessionUser | null; admin: boolean; providers: { id: string; name: string }[]; demo: boolean }>("/api/me");
+      const me = await api<{ user: SessionUser | null; admin: boolean; crew?: boolean; providers: { id: string; name: string }[]; demo: boolean }>("/api/me");
       this.user = me.user;
       this.admin = me.admin;
+      this.crew = !!me.crew;
       this.providers = me.providers;
       this.demo = me.demo;
       if (me.user) void this.syncProfile();
@@ -101,6 +104,7 @@ class Session {
     this.returned = null;
     this.user = null;
     this.admin = false;
+    this.crew = false;
   }
 }
 

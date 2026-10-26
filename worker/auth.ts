@@ -608,6 +608,14 @@ export async function required(req: Request, env: AppEnv): Promise<User> {
   return user;
 }
 
+/**
+ * Whether a request may use Backstage. The ADMIN_TOKEN (as a bearer token),
+ * or an account signed in with the crew's password or the token (`owner`),
+ * always may. A crew account — the owner's GitHub account, the owner's
+ * address, an address on ADMIN_EMAILS — may on its own only until a crew
+ * password is set; from then on the password is its second key, given once
+ * in that browser and good for `CREW_HOURS`.
+ */
 export async function isAdmin(req: Request, env: AppEnv, user: User | null): Promise<boolean> {
   const auth = req.headers.get("authorization") || "";
   if (env.ADMIN_TOKEN && auth.startsWith("Bearer ")) {
@@ -615,8 +623,40 @@ export async function isAdmin(req: Request, env: AppEnv, user: User | null): Pro
   }
   if (!user) return false;
   if (user.owner) return true;
+  if (!(await isCrew(env, user))) return false;
+  if (!(await adminPasswordSet(env)).set) return true;
+  const session = await sessionOf(req, env);
+  return !!session?.crewUntil && session.crewUntil > Date.now();
+}
+
+/** How long a browser keeps Backstage open after its crew account gives the password. */
+export const CREW_HOURS = 12;
+
+async function sessionOf(req: Request, env: AppEnv): Promise<(Session & { sid: string }) | null> {
+  const sid = cookies(req).djm_sid;
+  if (!sid) return null;
+  const s = await get<Session>(env.KV, `session:${sid}`);
+  return s ? { ...s, sid } : null;
+}
+
+/**
+ * Open Backstage for `CREW_HOURS` in this browser, when it is signed in with
+ * a crew account that has just given the crew's password (or set it).
+ * Whether it was one.
+ */
+export async function openForCrew(req: Request, env: AppEnv): Promise<boolean> {
+  const session = await sessionOf(req, env);
+  if (!session || !(await isCrew(env, await get<User>(env.KV, `user:${session.uid}`)))) return false;
+  const { sid, ...kept } = session;
+  await put(env.KV, `session:${sid}`, { ...kept, crewUntil: Date.now() + CREW_HOURS * 3_600_000 } satisfies Session, SESSION_DAYS * 86400);
+  return true;
+}
+
+/** Whether an account is one of the crew's own: the owner's GitHub account or address, or an address on ADMIN_EMAILS. */
+export async function isCrew(env: AppEnv, user: User | null): Promise<boolean> {
+  if (!user) return false;
   // The owner's own GitHub account (by its numeric id, which a rename does
-  // not change): signing in with it is enough, no secret needed first.
+  // not change).
   const github = String(env.ADMIN_GITHUB_IDS || "")
     .split(",")
     .map((s) => s.trim())
@@ -652,7 +692,9 @@ export async function adminRequired(req: Request, env: AppEnv): Promise<User | {
 // an account with the owner's address (ADMIN_EMAIL_HASHES), the ADMIN_TOKEN
 // secret, or an account in ADMIN_EMAILS. The owner's chosen password is set
 // there, in Backstage, never in this public repository: a short password's
-// hash published here could be guessed offline. A set
+// hash published here could be guessed offline. Once it is set, a crew
+// account is no longer a key on its own: it gives the password too, once in
+// each browser, for `CREW_HOURS` (`isAdmin`). A set
 // password is kept only as a PBKDF2 hash with its own salt (`admin:password`
 // in KV); ADMIN_TOKEN always works too, as the key under the doormat that
 // opens Backstage when the password is forgotten.
@@ -711,6 +753,8 @@ export async function ownerSignIn(req: Request, env: AppEnv, token: string): Pro
     await env.KV.put(misses, String(missed + 1), { expirationTtl: 1800 });
     fail(403, "That is not the crew's token or password.");
   }
+  // A crew account signed in here gives the password as its second key, and stays who it is.
+  if (await openForCrew(req, env)) return new Response(JSON.stringify({ ok: true }), { headers: { "content-type": "application/json" } });
   const user = await findOrCreate(env, "owner", { sub: "owner", email: null, verified: false, name: "Owner", avatar: null }, { owner: true });
   const res = await signedIn(env, user, new URL(req.url).origin + "/#backstage");
   return new Response(JSON.stringify({ ok: true }), { headers: { "content-type": "application/json", "set-cookie": res.headers.get("set-cookie")! } });

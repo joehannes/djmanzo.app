@@ -106,6 +106,8 @@ route("GET", "/api/me", async (c) => {
   return {
     user: u ? { ...auth.publicUser(u, c.env), supports, supporter: supports.length > 0 } : null,
     admin: await auth.isAdmin(c.req, c.env, u),
+    // A crew account, whether or not it has given the crew's password in this browser yet: it is shown the way to Backstage.
+    crew: await auth.isCrew(c.env, u),
     providers: auth.enabledProviders(c.env),
     demo: auth.demoMode(c.env),
   };
@@ -553,7 +555,10 @@ route("GET", "/api/admin/password", async (c) => {
 });
 route("PUT", "/api/admin/password", async (c) => {
   const admin = await needAdmin(c);
-  return json(await auth.setAdminPassword(c.env, String((await body<{ password?: string }>(c.req)).password ?? ""), admin.name));
+  const set = await auth.setAdminPassword(c.env, String((await body<{ password?: string }>(c.req)).password ?? ""), admin.name);
+  // The crew account that set it has just given it: Backstage stays open in this browser.
+  await auth.openForCrew(c.req, c.env);
+  return json(set);
 });
 route("POST", "/api/admin/licences/:id/revoke", async (c) => {
   await needAdmin(c);

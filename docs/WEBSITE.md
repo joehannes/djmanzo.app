@@ -1083,7 +1083,8 @@ countries becomes the burden.
   owner's GitHub account, by its numeric id) and `ADMIN_EMAIL_HASHES` (the
   SHA-256 of the owner's address, so the address is not in this public
   repository) are Worker variables in `wrangler.jsonc`: signing in with
-  either opens Backstage, with no token or password first. `/admin` leads
+  either opens Backstage, with no token or password first (until a crew
+  password is set: then it is a second key, see 26 October). `/admin` leads
   there as `/backstage` does, and the account page shows a Backstage button
   beside Sign out to the crew.
 - **No default password is written down here.** The owner's chosen one is
@@ -1162,3 +1163,33 @@ and the wishlist's *Windows build* turns to shipped by itself
 (`SEED_VERSION` 3). No Windows version number is claimed: none was
 reported.
 
+## The crew's password as a second key (26 October)
+
+- **What the owner found.** Signed in with their own GitHub account, they
+  set a crew password in Backstage, and Backstage still opened at once: a
+  crew account (`ADMIN_GITHUB_IDS`, `ADMIN_EMAIL_HASHES`, `ADMIN_EMAILS`)
+  was a key on its own, and the password only one more door beside it.
+- **Now, once a password is set, a crew account needs it too.** `isAdmin`
+  (`worker/auth.ts`) lets a crew account in on its own only while no
+  password is set; after that, only a session whose `crewUntil` has not
+  passed. Giving the password at `/api/auth/owner` while signed in with a
+  crew account sets `crewUntil` on that browser's session for
+  `CREW_HOURS` (12) and keeps the account as it is, instead of switching to
+  the "Owner" account. Setting the password (`PUT /api/admin/password`) does
+  the same for the browser that set it, which has just typed it.
+- **Unchanged:** `ADMIN_TOKEN` as a bearer, and the password or the token
+  given without a crew account (which signs in as "Owner"), still open
+  Backstage; nobody else does. `/api/me` now also says `crew`, so the
+  account page keeps showing the way to Backstage and Backstage says why it
+  is asking for the password.
+- **Fixed on the way:** the password form's "Again" field asked for 12
+  characters while the password needs 10, so a 10- or 11-character
+  password could not be confirmed.
+- **Tests:** `test/crew.test.ts`, "once the crew's password is set": the
+  setter's browser stays in; the same account in another browser is
+  `crew` but not `admin`, refused overview, refused a wrong password, then
+  let in by the right one as the same account; another signed-in person and
+  an anonymous browser are refused every Backstage call. Breaking each of
+  the three pieces (`isAdmin` ignoring the password, the setter's browser
+  not kept open, the password not opening a crew account's browser) fails
+  the test.

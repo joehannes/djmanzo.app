@@ -84,6 +84,8 @@ export interface User {
 export interface Session {
   uid: string;
   createdAt: number;
+  /** Until when this browser has given the crew's password: a crew account's second key (`worker/auth.ts`). */
+  crewUntil?: number;
 }
 
 export interface Order {

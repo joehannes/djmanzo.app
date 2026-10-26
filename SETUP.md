@@ -88,6 +88,14 @@ are signed in as crew. There are four ways in:
   an account whose e-mail address hashes to one in `ADMIN_EMAIL_HASHES`
   (both in `wrangler.jsonc`).
 
+Anyone else, signed in or not, is turned away from Backstage and from every
+`/api/admin/…` call. **Once a crew password is set, the crew's own accounts
+are no longer a key on their own**: signed in with one of them, Backstage
+asks for the password too, once in each browser, and stays open there for
+12 hours. The browser that sets the password has just given it, so it stays
+in. The password or `ADMIN_TOKEN` on their own still open Backstage (as an
+"Owner" account) for when no crew account is to hand.
+
 ## 3. Selling
 
 | What | Secrets |

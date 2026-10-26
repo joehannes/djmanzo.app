@@ -193,7 +193,7 @@
             </p>
           </div>
           <div class="out">
-            {#if session.admin}<a class="btn small" href="/backstage" data-backstage-link>{w.backstage}</a>{/if}
+            {#if session.admin || session.crew}<a class="btn small" href="/backstage" data-backstage-link>{w.backstage}</a>{/if}
             <button class="btn ghost small" onclick={signOut} data-signout>{w.signOut}</button>
           </div>
         </div>
@@ -380,7 +380,7 @@
           <a href={`/outboard/maker/${session.user.id}`}>{w.links.profile}</a>
           <a href={href("community")}>{w.links.forum}</a>
           <a href={href("wishes")}>{w.links.wishes}</a>
-          {#if session.admin}<a href="/backstage">{w.links.backstage}</a>{/if}
+          {#if session.admin || session.crew}<a href="/backstage">{w.links.backstage}</a>{/if}
         </section>
 
         {#if check}
