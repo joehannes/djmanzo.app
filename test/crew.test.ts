@@ -57,6 +57,28 @@ describe("once the crew's password is set", () => {
   });
 });
 
+describe("Backstage's people", () => {
+  it("are every account, with how each signs in, which is crew, and the account the password makes", async () => {
+    const env = openSite();
+    const owner = await person(env, "Johannes");
+    await person(env, "Lena");
+    (env as unknown as { ADMIN_GITHUB_IDS: string }).ADMIN_GITHUB_IDS = owner.user.identities[0].sub;
+    // The crew's token typed with no crew account signed in: the "Owner" account.
+    expect((await browser(env)("/api/auth/owner", { method: "POST", json: { token: "crew-secret" } })).status).toBe(200);
+    const listed = await owner.call("/api/admin/people");
+    expect(listed.status).toBe(200);
+    const byName = Object.fromEntries((listed.data as { name: string }[]).map((p) => [p.name, p]));
+    expect(Object.keys(byName).sort()).toEqual(["Johannes", "Lena", "Owner"]);
+    expect(byName.Johannes).toMatchObject({ crew: true, owner: false, providers: ["github"], email: "johannes@example.test" });
+    expect(byName.Lena).toMatchObject({ crew: false, owner: false, providers: ["github"] });
+    expect(byName.Owner).toMatchObject({ crew: false, owner: true, providers: ["owner"] });
+    expect((await owner.call("/api/admin/overview")).data.users).toBe(3);
+    // Nobody else reads the list.
+    const other = await person(env, "Mallory");
+    expect((await other.call("/api/admin/people")).status).toBe(403);
+  });
+});
+
 describe("the owner's own address", () => {
   it("opens Backstage by its SHA-256, when a provider vouched for it", async () => {
     const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("owner@example.test")))].map((b) => b.toString(16).padStart(2, "0")).join("");

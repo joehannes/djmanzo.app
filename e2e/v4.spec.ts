@@ -453,6 +453,10 @@ test("Backstage: the crew sets a password, comes in with it, and grants a licenc
   await expect(page.getByText("That is not the crew's token or password.")).toBeVisible();
   await page.locator("[data-crew-password]").fill("crew-secret");
   await page.getByRole("button", { name: "Come in" }).click();
+  // Who the overview's people are: the token signed in as the "Owner" account.
+  await page.locator("[data-people] summary").click();
+  await expect(page.locator("[data-people] [data-person]").first()).toBeVisible();
+  await expect(page.locator("[data-people]")).toContainText("Owner: the crew's password or token");
   await page.locator("[data-password] summary").click();
   // The local store outlives a run, so a password may be set already; the unit tests hold a fresh site to having none.
   await expect(page.locator("[data-password]")).toContainText("There is no default password.");

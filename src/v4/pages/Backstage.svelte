@@ -273,6 +273,27 @@
   // --- Wishes ---------------------------------------------------------------------
   let wishes = $state<any[]>([]);
   const STATUSES = ["idea", "considering", "planned", "building", "shipped", "not-planned"];
+  // --- People: who the overview's count is -----------------------------------------
+  interface Person {
+    id: string;
+    name: string;
+    email: string | null;
+    providers: string[];
+    createdAt: number;
+    owner: boolean;
+    demo: boolean;
+    crew: boolean;
+    licences: number;
+  }
+  let people = $state<Person[] | null>(null);
+  async function loadPeople() {
+    try {
+      people = await api("/api/admin/people");
+    } catch (e) {
+      error = (e as Error).message;
+    }
+  }
+
   async function loadWishes() {
     wishes = await api("/api/wishes");
   }
@@ -451,6 +472,23 @@
       Licences signed with: {overview.signing} · Blog drafts by: {overview.ai}
     </p>
   {/if}
+
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPeople()} data-people>
+    <summary>👥 People ({overview?.users ?? "…"})</summary>
+    <p class="small muted">Every account on this site, newest first. One person signed in with GitHub and Google under the same confirmed address is one account. "Owner" is the account the crew's password or token signs in as when no crew account is signed in.</p>
+    {#if people && !people.length}<p class="muted">No one yet.</p>{/if}
+    {#each people ?? [] as p (p.id)}
+      <div class="wish" data-person={p.id}>
+        <b>{p.name}</b>
+        {#if p.crew}<span class="tag">crew</span>{/if}
+        {#if p.owner}<span class="tag">Owner: the crew's password or token</span>{/if}
+        {#if p.demo}<span class="tag">demo</span>{/if}
+        <span class="muted small">
+          · {p.providers.length ? p.providers.join(", ") : "no sign-in provider"}{p.email ? ` · ${p.email}` : ""} · since {new Date(p.createdAt).toISOString().slice(0, 10)}{p.licences ? ` · ${p.licences} licence${p.licences === 1 ? "" : "s"}` : ""}
+        </span>
+      </div>
+    {/each}
+  </details>
 
   <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPromos()}>
     <summary>🎟️ Promo codes & vouchers</summary>
@@ -996,6 +1034,14 @@
   }
   tr.off {
     opacity: 0.5;
+  }
+  .tag {
+    font: 600 11px/1.6 var(--mono);
+    padding: 1px 8px;
+    margin-left: 6px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--text);
   }
   .wish {
     padding: 8px 0;

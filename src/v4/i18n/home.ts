@@ -11,9 +11,11 @@ import type { Lang } from "./strings";
 
 const en = {
   proof: [
-    { k: "macOS · Linux", v: "Native on both" },
-    { k: "Windows", v: "Built, not yet run by a person" },
+    { k: "Windows · macOS · Linux", v: "Native on all three" },
     { k: "Hobbyist", v: "Free, for ever" },
+    { k: "Apprentice", v: "An assistant and a teacher to learn with" },
+    { k: "Karaoke", v: "The queue, the singers' screen, scores" },
+    { k: "Auto-Pilot · AI", v: "Mixes till you take over, with the AI you pick" },
     { k: "Open", v: "OSC and JSON control, MIDI clock, CLAP" },
     { k: "Beta", v: "Not yet through a real gig" },
   ],
@@ -94,9 +96,11 @@ export type HomeWords = typeof en;
 
 const es: HomeWords = {
   proof: [
-    { k: "macOS · Linux", v: "Nativo en ambos" },
-    { k: "Windows", v: "Compilado, aún sin probar por una persona" },
+    { k: "Windows · macOS · Linux", v: "Nativo en los tres" },
     { k: "Hobbyist", v: "Gratis, para siempre" },
+    { k: "Apprentice", v: "Un asistente y un profesor para aprender" },
+    { k: "Karaoke", v: "La cola, la pantalla de los cantantes, puntuaciones" },
+    { k: "Auto-Pilot · IA", v: "Mezcla hasta que tomas el control, con la IA que elijas" },
     { k: "Abierto", v: "Control por OSC y JSON, reloj MIDI, CLAP" },
     { k: "Beta", v: "Aún sin pasar por un bolo real" },
   ],
@@ -175,9 +179,11 @@ const es: HomeWords = {
 
 const pt: HomeWords = {
   proof: [
-    { k: "macOS · Linux", v: "Nativo nos dois" },
-    { k: "Windows", v: "Compilado, ainda não testado por uma pessoa" },
+    { k: "Windows · macOS · Linux", v: "Nativo nos três" },
     { k: "Hobbyist", v: "Grátis, para sempre" },
+    { k: "Apprentice", v: "Um assistente e um professor para aprender" },
+    { k: "Karaoke", v: "A fila, a tela dos cantores, pontuações" },
+    { k: "Auto-Pilot · IA", v: "Mixa até você assumir, com a IA que você escolher" },
     { k: "Aberto", v: "Controle por OSC e JSON, clock MIDI, CLAP" },
     { k: "Beta", v: "Ainda sem uma festa de verdade" },
   ],
@@ -256,9 +262,11 @@ const pt: HomeWords = {
 
 const de: HomeWords = {
   proof: [
-    { k: "macOS · Linux", v: "Auf beiden nativ" },
-    { k: "Windows", v: "Gebaut, noch von niemandem gestartet" },
+    { k: "Windows · macOS · Linux", v: "Auf allen dreien nativ" },
     { k: "Hobbyist", v: "Kostenlos, für immer" },
+    { k: "Apprentice", v: "Ein Assistent und ein Lehrer zum Lernen" },
+    { k: "Karaoke", v: "Warteschlange, Bildschirm der Singenden, Punkte" },
+    { k: "Auto-Pilot · KI", v: "Mischt, bis du übernimmst, mit der KI deiner Wahl" },
     { k: "Offen", v: "Steuerung per OSC und JSON, MIDI-Clock, CLAP" },
     { k: "Beta", v: "Noch keinen echten Gig hinter sich" },
   ],
@@ -337,9 +345,11 @@ const de: HomeWords = {
 
 const fr: HomeWords = {
   proof: [
-    { k: "macOS · Linux", v: "Natif sur les deux" },
-    { k: "Windows", v: "Compilé, pas encore lancé par quelqu'un" },
+    { k: "Windows · macOS · Linux", v: "Natif sur les trois" },
     { k: "Hobbyist", v: "Gratuit, pour toujours" },
+    { k: "Apprentice", v: "Un assistant et un professeur pour apprendre" },
+    { k: "Karaoke", v: "La file, l'écran des chanteurs, les scores" },
+    { k: "Auto-Pilot · IA", v: "Mixe jusqu'à ce que vous preniez la main, avec l'IA de votre choix" },
     { k: "Ouvert", v: "Contrôle par OSC et JSON, horloge MIDI, CLAP" },
     { k: "Bêta", v: "Pas encore passé par une vraie date" },
   ],
@@ -418,9 +428,11 @@ const fr: HomeWords = {
 
 const it: HomeWords = {
   proof: [
-    { k: "macOS · Linux", v: "Nativo su entrambi" },
-    { k: "Windows", v: "Compilato, ancora mai avviato da una persona" },
+    { k: "Windows · macOS · Linux", v: "Nativo su tutti e tre" },
     { k: "Hobbyist", v: "Gratis, per sempre" },
+    { k: "Apprentice", v: "Un assistente e un insegnante per imparare" },
+    { k: "Karaoke", v: "La coda, lo schermo dei cantanti, i punteggi" },
+    { k: "Auto-Pilot · IA", v: "Mixa finché non prendi il comando, con l'IA che scegli" },
     { k: "Aperto", v: "Controllo via OSC e JSON, clock MIDI, CLAP" },
     { k: "Beta", v: "Non ancora alla prova di una serata vera" },
   ],
@@ -499,9 +511,11 @@ const it: HomeWords = {
 
 const ja: HomeWords = {
   proof: [
-    { k: "macOS · Linux", v: "どちらもネイティブ" },
-    { k: "Windows", v: "ビルド済み・実機での起動はまだ" },
+    { k: "Windows · macOS · Linux", v: "3つともネイティブ" },
     { k: "Hobbyist", v: "ずっと無料" },
+    { k: "Apprentice", v: "学ぶためのアシスタントと先生" },
+    { k: "Karaoke", v: "予約の列、歌い手の画面、採点" },
+    { k: "Auto-Pilot · AI", v: "引き継ぐまで自動でミックス、好きなAIで" },
     { k: "オープン", v: "OSC・JSONでの操作、MIDIクロック、CLAP" },
     { k: "ベータ", v: "本番のギグはまだ" },
   ],

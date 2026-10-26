@@ -1193,3 +1193,22 @@ reported.
   the three pieces (`isAdmin` ignoring the password, the setter's browser
   not kept open, the password not opening a crew account's browser) fails
   the test.
+
+## Who the people are, and Windows beside macOS and Linux (26 October)
+
+- **Backstage → 👥 People** (`GET /api/admin/people`, crew only) lists every
+  account the overview's "people" counts, newest first: its name, how it
+  signs in, its confirmed address, since when, its licences, and whether it
+  is crew or the "Owner" account. The owner asked who the "2 people" were
+  when they thought it was only them: an account is made by each first
+  sign-in (one person with GitHub and Google under the same confirmed
+  address is one account), and the crew's password or token typed with no
+  crew account signed in signs in as "Owner", a second account.
+  `test/crew.test.ts` holds the list to the three accounts a site with the
+  owner, another person and the token has, each marked as it is, and shut
+  to anyone else (both broken on purpose: the test fails).
+- **The home page's row** under the welcome now has Windows beside macOS
+  and Linux, native on all three (the owner runs it on Windows), and adds
+  the Apprentice, Karaoke and Auto-Pilot · AI editions, in all seven
+  languages: seven cells in a row, the platforms across two columns when
+  the row wraps so every row is full.

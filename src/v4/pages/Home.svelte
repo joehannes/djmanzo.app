@@ -104,12 +104,13 @@
     list-style: none;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(7, 1fr);
   }
   .proof li {
     padding: 22px 16px;
     display: grid;
-    gap: 4px;
+    gap: 6px;
+    align-content: start;
     border-left: 1px solid var(--line);
   }
   .proof li:first-child {
@@ -127,6 +128,23 @@
     font-size: 14px;
     color: var(--dim);
   }
+  /* Narrower: the platforms take two columns, so each row is full — 2 + 1 + 1, then four. */
+  @media (max-width: 1180px) {
+    .proof ul {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .proof li:first-child {
+      grid-column: span 2;
+    }
+    .proof li:nth-child(n + 4) {
+      border-top: 1px solid var(--line);
+    }
+    .proof li:nth-child(4) {
+      border-left: 0;
+      padding-left: 0;
+    }
+  }
+  /* A phone: the platforms across, then two by two. */
   @media (max-width: 900px) {
     .proof ul {
       grid-template-columns: 1fr 1fr;
@@ -134,6 +152,8 @@
     .proof li {
       border-left: 0;
       padding-left: 0;
+    }
+    .proof li:nth-child(n + 2) {
       border-top: 1px solid var(--line);
     }
   }

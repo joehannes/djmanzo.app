@@ -419,6 +419,31 @@ route("GET", "/api/admin/overview", async (c) => {
   };
 });
 
+// Who the "people" on the overview are: every account, newest first, with how it signs in.
+route("GET", "/api/admin/people", async (c) => {
+  await needAdmin(c);
+  const keys = await list(c.env.KV, "user:", 500);
+  const people = await Promise.all(
+    keys.map(async (k) => {
+      const u = await get<User>(c.env.KV, k.name);
+      if (!u) return null;
+      const licences = (await get<string[]>(c.env.KV, `licences:${u.id}`)) ?? [];
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        providers: u.identities.map((i) => i.provider),
+        createdAt: u.createdAt,
+        owner: !!u.owner,
+        demo: !!u.demo,
+        crew: await auth.isCrew(c.env, u),
+        licences: licences.length,
+      };
+    }),
+  );
+  return people.filter((p) => p !== null).sort((a, b) => b.createdAt - a.createdAt);
+});
+
 route("GET", "/api/admin/promos", async (c) => {
   await needAdmin(c);
   const keys = await list<ReturnType<typeof promo.meta>>(c.env.KV, "promo:", 10000);
