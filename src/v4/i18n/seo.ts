@@ -301,6 +301,28 @@ export const SEO: Record<BuiltInLang, SeoWords> & Partial<Record<PackLang, SeoWo
     noEdition: "아직 어떤 에디션에도 없음",
     frame: { site: "사이트", imprint: "사이트 정보", terms: "이용약관", rules: "커뮤니티 규칙", privacy: "개인정보" },
   },
+  id: {
+    title: "djmanzo — software DJ dan karaoke dalam berbagai rasa",
+    description: "djmanzo, software DJ dan karaoke dalam berbagai rasa untuk Windows, macOS, dan Linux, versi beta — dari alur piringan hitam sampai orang-orang di lantai dansa.",
+    lead: "Software DJ dan karaoke dalam berbagai rasa, untuk Windows, macOS, dan Linux, versi beta: stem live, asisten yang menjelaskan sarannya dan bisa mengambil alih mix, malam karaoke yang sudah di dalam, dan edisi Hobbyist yang gratis, selamanya.",
+    does: "Apa yang dilakukannya",
+    beside: "Selain itu",
+    links: {
+      pricing: ["Edisi dan harga", "tujuh edisi dari satu unduhan, harganya disesuaikan dengan tempatmu."],
+      outboard: ["Outboard", "Marketplace: tema, skin, dan visual buatan DJ untuk djmanzo. Semua isinya gratis."],
+      talkback: ["Talkback", "Ruang diskusi: keahlian, musik, gear, kehidupan di sekitar gig, dan djmanzo."],
+      blog: ["Blog", "artikel tentang nge-DJ dan djmanzo."],
+      features: ["Semua fitur", "apa yang dilakukan djmanzo, edisi demi edisi, dengan yang belum terbukti."],
+      wishes: ["Permintaan fitur", "minta apa yang harus dilakukan djmanzo berikutnya, dan beri suara."],
+      account: ["Akunmu", "masuk, lisensimu, dan baris yang membawanya ke djmanzo."],
+    },
+    download: "Unduh djmanzo",
+    featuresTitle: "Semua fitur",
+    featuresDescription: "Semua yang dilakukan djmanzo, edisi demi edisi: yang tersedia, yang sebagian jadi, dan yang direncanakan, dengan yang belum terbukti.",
+    word: { shipped: "tersedia", part: "sebagian jadi", planned: "direncanakan" },
+    noEdition: "belum ada di edisi mana pun",
+    frame: { site: "Situs", imprint: "Info situs", terms: "Ketentuan", rules: "Aturan komunitas", privacy: "Privasi" },
+  },
 };
 
 const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja };
