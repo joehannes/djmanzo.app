@@ -26,7 +26,10 @@ describe("the language follows where the visitor is", () => {
     expect(languageFor("KE", ["en-KE"], all)).toBe("en");
     expect(languageFor("KE", ["de"], all)).toBe("sw");
     expect(languageFor("IN", ["en-IN"], all)).toBe("en");
-    expect(languageFor("IN", ["ta-IN"], all)).toBe("hi");
+    expect(languageFor("IN", ["hi-IN"], all)).toBe("hi");
+    expect(languageFor("IN", ["de"], all)).toBe("hi");
+    // In India's south, English before Hindi.
+    expect(languageFor("IN", ["ta-IN"], all)).toBe("en");
     expect(languageFor("IL", ["ar"], all)).toBe("ar");
     expect(languageFor("US", ["es-US"], all)).toBe("es");
   });

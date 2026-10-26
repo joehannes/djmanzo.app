@@ -5,7 +5,8 @@
  * the most probable first. Where the country's own language is one the site
  * does not speak, the closest that it does stands in when a reader of the
  * one reads the other: Indonesian for Malay, Thai for Lao, Hindi for
- * Nepali, Turkish for Azerbaijani, French for Haitian Creole. A country not
+ * Nepali, Turkish for Azerbaijani, French for Haitian Creole; English for
+ * a browser in Tamil, Telugu, Kannada or Malayalam. A country not
  * listed is English: that is also the default when nothing is known.
  *
  * The browser breaks a tie: a Swiss browser in French gets French, a
@@ -98,6 +99,11 @@ const CLOSEST: Record<string, Lang> = {
   gl: "es",
   eu: "es",
   yue: "zh",
+  // In India's south, English is read before Hindi.
+  ta: "en",
+  te: "en",
+  kn: "en",
+  ml: "en",
 };
 
 /** A browser language tag as one the site speaks, or null. */
