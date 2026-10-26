@@ -16,7 +16,7 @@
   import { BOOTH } from "../i18n/booth";
   import { HOME } from "../i18n/home";
   import { bankOf, VOICE, type BankId } from "./sounds";
-  import { booth, turn, centre, press, hush, buildAndDrop, record, play, type Knob as KnobId } from "./booth.svelte";
+  import { booth, turn, centre, press, hush, buildAndDrop, record, play, fold, type Knob as KnobId } from "./booth.svelte";
   import Knob from "./Knob.svelte";
 
   const w = $derived(BOOTH[i18n.lang]);
@@ -57,7 +57,11 @@
       frame = requestAnimationFrame(loop);
     };
     frame = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(frame);
+    // Put away (closed, or the page left), the booth leaves nothing playing.
+    return () => {
+      cancelAnimationFrame(frame);
+      fold();
+    };
   });
 
   // The record: drag it to scratch.

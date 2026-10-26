@@ -11,7 +11,7 @@
  */
 
 import { getEngine, hasEngine } from "../../lib/audio/engine";
-import { beatClock, deck, setRate, tempoOf } from "../sound.svelte";
+import { beatClock, deck, roll, setRate, stop as stopDeck, tempoOf } from "../sound.svelte";
 import { SOUNDS, VOICE, type BankId } from "./sounds";
 
 export type Knob = "low" | "mid" | "high" | "filter" | "echo" | "space" | "pitch";
@@ -53,9 +53,13 @@ export function centre() {
 
 // --- Build & drop ------------------------------------------------------------------------------
 
+/** Counts the builds, so one already rising when the booth is put away does not land. */
+let builds = 0;
+
 /** The filter opens upwards over two bars with a riser, then the drop lands on the one. */
 export function buildAndDrop() {
   const e = getEngine();
+  const mine = ++builds;
   void e.wake();
   const clock = beatClock();
   const bar = clock?.bar ?? (60 / tempoOf(deck.genre)) * 4;
@@ -66,6 +70,7 @@ export function buildAndDrop() {
   const start = performance.now();
   const span = (drop - now) * 1000;
   const sweep = () => {
+    if (mine !== builds) return;
     const k = Math.min(1, (performance.now() - start) / span);
     e.setFilter(booth.knobs.filter + (0.85 - booth.knobs.filter) * k * k);
     if (k < 1) requestAnimationFrame(sweep);
@@ -144,6 +149,26 @@ export function press(id: string) {
 export function hush() {
   booth.going = {};
   queued.clear();
+}
+
+/**
+ * The booth put away, or the page out of sight: nothing goes on playing. The
+ * deck stops, the pads stop going round, a sound already scheduled is cut,
+ * a build does not land, the knobs go back to the middle, and the echo's and
+ * the reverb's tails are not heard.
+ */
+export function fold() {
+  hush();
+  builds++;
+  if (recorder?.state === "recording") recorder.stop();
+  // What the sampler has scheduled goes nowhere; the next pad makes a new way out.
+  out?.disconnect();
+  out = null;
+  roll(false);
+  stopDeck();
+  if (!hasEngine()) return;
+  centre();
+  getEngine().silence();
 }
 
 const queued = new Map<string, number>();

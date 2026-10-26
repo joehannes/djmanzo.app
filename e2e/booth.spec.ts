@@ -86,3 +86,75 @@ test("the booth: the loop plays through the knobs and faders, the moves and the 
   await page.waitForTimeout(300);
   expect(errs).toEqual([]);
 });
+
+test("put away, the booth leaves nothing playing: not the loop, a pad going round, nor the echo's and the reverb's tails; nor when the page is out of sight", async ({ page }) => {
+  // Every way out to the speakers is listened to, from outside the page's code.
+  await page.addInitScript(() => {
+    const taps: AnalyserNode[] = [];
+    (window as unknown as { taps: AnalyserNode[] }).taps = taps;
+    const connect = AudioNode.prototype.connect as (this: AudioNode, d: AudioNode | AudioParam, ...r: number[]) => AudioNode | void;
+    AudioNode.prototype.connect = function (this: AudioNode, d: AudioNode | AudioParam, ...r: number[]) {
+      if (d instanceof AudioDestinationNode) {
+        const a = this.context.createAnalyser();
+        a.fftSize = 2048;
+        connect.call(this, a);
+        taps.push(a);
+      }
+      return connect.call(this, d, ...r);
+    } as typeof AudioNode.prototype.connect;
+  });
+  /** The loudest sample heard over `ms`. */
+  const loudest = (ms: number) =>
+    page.evaluate(async (ms) => {
+      const taps = (window as unknown as { taps: AnalyserNode[] }).taps;
+      const buf = new Float32Array(2048);
+      let peak = 0;
+      const until = performance.now() + ms;
+      while (performance.now() < until) {
+        for (const a of taps) {
+          if (a.context.state !== "running") continue;
+          a.getFloatTimeDomainData(buf);
+          for (const v of buf) peak = Math.max(peak, Math.abs(v));
+        }
+        await new Promise((r) => setTimeout(r, 30));
+      }
+      return peak;
+    }, ms);
+
+  const loud = async () => {
+    await page.locator("[data-booth-toggle]").click();
+    const booth = page.locator("[data-booth]");
+    await expect(booth).toBeVisible();
+    await page.locator("[data-play]").click();
+    await expect(page.locator("[data-deck-source=loop]")).toBeVisible();
+    // Echo and space all the way up, and a pad going round with them.
+    for (const k of ["Echo", "Space"]) {
+      await booth.locator(`[role=slider][data-knob="${k}"]`).focus();
+      for (let i = 0; i < 20; i++) await page.keyboard.press("ArrowUp");
+    }
+    await booth.locator("[data-bank=wedding]").click();
+    await booth.locator("[data-mode=repeat]").click();
+    await booth.locator("[data-pad=clink]").dispatchEvent("pointerdown");
+    await expect(booth.locator("[data-pad=clink].going")).toBeVisible();
+    expect(await loudest(800), "it plays").toBeGreaterThan(0.05);
+  };
+
+  await page.goto("/");
+  await loud();
+  await page.locator("[data-booth-toggle]").click();
+  await expect(page.locator("[data-booth]")).toHaveCount(0);
+  await expect(page.locator("[data-play].on")).toHaveCount(0);
+  await page.waitForTimeout(150);
+  expect(await loudest(1500), "closed, nothing is heard").toBeLessThan(0.002);
+
+  // Opened again, it plays again; then the page goes out of sight.
+  await loud();
+  await page.evaluate(() => {
+    Object.defineProperty(document, "visibilityState", { value: "hidden", configurable: true });
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  await expect(page.locator("[data-play].on")).toHaveCount(0);
+  await expect(page.locator("[data-booth] .pad.going")).toHaveCount(0);
+  await page.waitForTimeout(150);
+  expect(await loudest(1500), "out of sight, nothing is heard").toBeLessThan(0.002);
+});

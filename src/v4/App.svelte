@@ -14,6 +14,7 @@
   import { cssVars } from "./skins";
   import { LOOKS, fontHref, lookVars } from "./looks";
   import { setGenre } from "./sound.svelte";
+  import { fold } from "./booth/booth.svelte";
   import { isOwn, parse, type Route } from "./router";
   import { ScrollTrigger } from "./motion";
   import SiteBar from "./SiteBar.svelte";
@@ -141,7 +142,13 @@
     const popped = () => go(parse(location.pathname));
     addEventListener("popstate", popped);
     document.addEventListener("click", intercept);
+    // The window minimised or another tab in front: the deck, the pads and the effects stop, not play on unseen.
+    const hidden = () => document.visibilityState === "hidden" && fold();
+    document.addEventListener("visibilitychange", hidden);
+    addEventListener("pagehide", fold);
     return () => {
+      document.removeEventListener("visibilitychange", hidden);
+      removeEventListener("pagehide", fold);
       removeEventListener("popstate", popped);
       document.removeEventListener("click", intercept);
       document.removeEventListener("click", noted, { capture: true });

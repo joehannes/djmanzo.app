@@ -402,6 +402,11 @@ export class Engine {
   private flangeDelay: DelayNode;
   private gateNode: GainNode;
   private gateOn = false;
+  private echoFb: GainNode;
+  /** After the master, before the limiter: closed by `silence`, opened again by `wake`. */
+  private hush: GainNode;
+  /** While the effects' tails are let run out unheard after `silence`. */
+  private quieting: number | null = null;
   private timer: number | null = null;
   private listeners = new Set<StepListener>();
   private freq = new Uint8Array(256);
@@ -431,7 +436,7 @@ export class Engine {
 
     // Echo: a dotted-eighth delay with feedback.
     this.echoDelay = c.createDelay(2);
-    const echoFb = c.createGain();
+    const echoFb = (this.echoFb = c.createGain());
     echoFb.gain.value = 0.45;
     const echoWet = c.createGain();
     echoWet.gain.value = 0;
@@ -480,7 +485,8 @@ export class Engine {
     this.gateNode.connect(crWet).connect(shaper).connect(this.master);
 
     this.fx = { echo: echoWet, reverb: revWet, flanger: flWet, crush: crWet };
-    this.master.connect(limiter).connect(this.analyser).connect(c.destination);
+    this.hush = c.createGain();
+    this.master.connect(this.hush).connect(limiter).connect(this.analyser).connect(c.destination);
 
     this.decks = [new Deck(this, "house"), new Deck(this, "bachata")];
     this.setCrossfader(0.5);
@@ -488,6 +494,15 @@ export class Engine {
 
   /** Start the clock if it is not running. Must follow a user gesture. */
   async wake() {
+    if (this.quieting !== null || this.hush.gain.value < 1) {
+      if (this.quieting !== null) clearTimeout(this.quieting);
+      this.quieting = null;
+      const t = this.ctx.currentTime;
+      this.echoFb.gain.cancelScheduledValues(t);
+      this.echoFb.gain.setValueAtTime(0.45, t);
+      this.hush.gain.cancelScheduledValues(t);
+      this.hush.gain.setValueAtTime(1, t);
+    }
     if (this.ctx.state !== "running") await this.ctx.resume();
     if (this.timer === null) {
       this.timer = window.setInterval(() => {
@@ -496,6 +511,28 @@ export class Engine {
         if (this.gateOn) this.scheduleGate(until);
       }, 25);
     }
+  }
+
+  /**
+   * Everything quiet at once, the effects' tails with it: the echo stops
+   * feeding itself and what is left in it, and in the reverb, runs out
+   * unheard; then the clock is let sleep. The next `wake` opens it again.
+   */
+  silence() {
+    const t = this.ctx.currentTime;
+    this.hush.gain.cancelScheduledValues(t);
+    this.hush.gain.setValueAtTime(this.hush.gain.value, t);
+    this.hush.gain.linearRampToValueAtTime(0, t + 0.03);
+    this.echoFb.gain.cancelScheduledValues(t);
+    this.echoFb.gain.setValueAtTime(0, t + 0.03);
+    for (const g of Object.values(this.fx)) g.gain.setTargetAtTime(0, t, 0.01);
+    this.setFx("gate", 0);
+    if (this.quieting !== null) clearTimeout(this.quieting);
+    this.quieting = window.setTimeout(() => {
+      this.quieting = null;
+      this.echoFb.gain.setValueAtTime(0.45, this.ctx.currentTime);
+      if (!this.anyPlaying && this.ctx.state === "running") void this.ctx.suspend();
+    }, 3000);
   }
 
   /** The next beat boundary, so a deck started mid-bar lands in phase with the other. */
