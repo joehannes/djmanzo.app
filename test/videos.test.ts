@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ordered, placeOf, playerSrc, type Video } from "../src/v4/videos";
+import { handle } from "../worker/index";
+import { testEnv } from "./kv";
 
 const list: Video[] = [
   { id: "anywhere001", title: "Anywhere" },
@@ -22,8 +24,6 @@ describe("the owner's videos on the home page", () => {
 
 describe("the owner's video list", () => {
   it("keeps the part of the home page a video is tagged with, and drops a tag that names none", async () => {
-    const { handle } = await import("../worker/index");
-    const { testEnv } = await import("./kv");
     const exec = { waitUntil: () => {}, passThroughOnException: () => {} } as unknown as ExecutionContext;
     const env = testEnv({ ADMIN_TOKEN: "crew-secret" });
     const put = new Request("https://djmanzo.test/api/admin/videos", {
