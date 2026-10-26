@@ -76,6 +76,7 @@ const LOAD: Partial<Record<PackLang, () => Promise<{ default: Pack }>>> = {
   hi: () => import("./packs/hi"),
   ko: () => import("./packs/ko"),
   id: () => import("./packs/id"),
+  vi: () => import("./packs/vi"),
 };
 
 /** The packed languages that have a pack. */

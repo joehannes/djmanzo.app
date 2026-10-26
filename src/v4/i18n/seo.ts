@@ -323,6 +323,28 @@ export const SEO: Record<BuiltInLang, SeoWords> & Partial<Record<PackLang, SeoWo
     noEdition: "belum ada di edisi mana pun",
     frame: { site: "Situs", imprint: "Info situs", terms: "Ketentuan", rules: "Aturan komunitas", privacy: "Privasi" },
   },
+  vi: {
+    title: "djmanzo — phần mềm DJ và karaoke nhiều hương vị",
+    description: "djmanzo, phần mềm DJ và karaoke nhiều hương vị cho Windows, macOS và Linux, bản beta — từ rãnh đĩa nhạc tới những người trên sàn nhảy.",
+    lead: "Phần mềm DJ và karaoke nhiều hương vị, cho Windows, macOS và Linux, bản beta: stem trực tiếp, một trợ lý giải thích các gợi ý của mình và có thể nhận lấy bản mix, một đêm karaoke có sẵn bên trong, và bản Hobbyist miễn phí, mãi mãi.",
+    does: "Nó làm gì",
+    beside: "Bên cạnh đó",
+    links: {
+      pricing: ["Phiên bản và giá", "bảy phiên bản của cùng một bản tải, định giá theo nơi bạn ở."],
+      outboard: ["Outboard", "Khu chợ: theme, skin và hình ảnh do DJ làm cho djmanzo. Mọi thứ trong đó đều miễn phí."],
+      talkback: ["Talkback", "Nơi thảo luận: tay nghề, âm nhạc, thiết bị, cuộc sống quanh các buổi diễn, và djmanzo."],
+      blog: ["Blog", "bài viết về nghề DJ và djmanzo."],
+      features: ["Mọi tính năng", "những gì djmanzo làm, theo từng phiên bản, kèm những gì chưa được chứng minh."],
+      wishes: ["Đề xuất tính năng", "đề xuất điều djmanzo nên làm tiếp, và bình chọn."],
+      account: ["Tài khoản của bạn", "đăng nhập, giấy phép của bạn, và dòng chữ mang chúng vào djmanzo."],
+    },
+    download: "Tải djmanzo",
+    featuresTitle: "Mọi tính năng",
+    featuresDescription: "Mọi thứ djmanzo làm, theo từng phiên bản: những gì đã có, làm được một phần và đã lên kế hoạch, kèm những gì chưa được chứng minh.",
+    word: { shipped: "đã có", part: "làm được một phần", planned: "đã lên kế hoạch" },
+    noEdition: "chưa có trong phiên bản nào",
+    frame: { site: "Trang", imprint: "Thông tin trang", terms: "Điều khoản", rules: "Quy tắc cộng đồng", privacy: "Quyền riêng tư" },
+  },
 };
 
 const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja };
