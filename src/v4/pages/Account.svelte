@@ -6,6 +6,8 @@
   you posted. Everything the island's pass did, without leaving the site.
 -->
 <script lang="ts">
+  import Contact from "../../shop/Contact.svelte";
+  import { STATUS } from "../i18n/status";
   /** Where someone can support djmanzo, as /api/me names them (worker/support.ts). */
   const SUPPORT_PLATFORM: Record<string, string> = { patreon: "Patreon", github: "GitHub Sponsors", kofi: "Ko-fi", buymeacoffee: "Buy Me a Coffee" };
   import { onMount } from "svelte";
@@ -345,6 +347,14 @@
             <p class="dim small" data-support-email>{fill(w.connected.kofi, { email: session.user.email ? ` (${session.user.email})` : "" })}</p>
           {/if}
         </section>
+
+        {#if !session.user.demo}
+          <!-- Where receipts, licence keys and word of a payment go (src/shop/Contact.svelte). -->
+          <section class="card pad" aria-labelledby="mail-h" data-account-contact>
+            <h2 class="h3" id="mail-h">{STATUS[i18n.lang].contact.title}</h2>
+            <Contact titled={false} />
+          </section>
+        {/if}
 
         <section class="card pad support" aria-labelledby="sup-h">
           <h2 class="h3" id="sup-h">{w.supportTitle}</h2>

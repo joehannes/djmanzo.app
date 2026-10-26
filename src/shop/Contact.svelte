@@ -11,7 +11,8 @@
   import { i18n } from "../v4/i18n.svelte";
   import { STATUS } from "../v4/i18n/status";
 
-  let { ready = $bindable(false) }: { ready?: boolean } = $props();
+  /** `titled`: the step names itself (in the checkout); the account page gives it its own heading. */
+  let { ready = $bindable(false), titled = true }: { ready?: boolean; titled?: boolean } = $props();
 
   const w = $derived(STATUS[i18n.lang].contact);
   const fill = (s: string, vars: Record<string, string>) => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? vars[k] : m));
@@ -76,7 +77,7 @@
     {#if !contact!.confirmed}<p class="small dim">{w.unconfirmed}</p>{/if}
   {:else if pending}
     <form class="step" onsubmit={confirm}>
-      <h4>{w.title}</h4>
+      {#if titled}<h4>{w.title}</h4>{/if}
       <p class="small">{fill(w.sentTo, { email: pending })}</p>
       <div class="row">
         <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" bind:value={code} placeholder="000000" aria-label={w.code} data-contact-code required />
@@ -86,7 +87,7 @@
     </form>
   {:else}
     <div class="step">
-      <h4>{w.title}</h4>
+      {#if titled}<h4>{w.title}</h4>{/if}
       <p class="small dim">{w.lead}</p>
       <div class="row">
         <input type="email" bind:value={email} placeholder="you@example.org" aria-label={w.address} autocomplete="email" data-contact-email />
