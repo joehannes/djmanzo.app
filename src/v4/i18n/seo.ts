@@ -345,6 +345,28 @@ export const SEO: Record<BuiltInLang, SeoWords> & Partial<Record<PackLang, SeoWo
     noEdition: "chưa có trong phiên bản nào",
     frame: { site: "Trang", imprint: "Thông tin trang", terms: "Điều khoản", rules: "Quy tắc cộng đồng", privacy: "Quyền riêng tư" },
   },
+  th: {
+    title: "djmanzo — ซอฟต์แวร์ดีเจและคาราโอเกะหลากรสชาติ",
+    description: "djmanzo ซอฟต์แวร์ดีเจและคาราโอเกะหลากรสชาติสำหรับ Windows, macOS และ Linux รุ่นเบต้า ตั้งแต่ร่องของแผ่นเสียงจนถึงผู้คนบนฟลอร์",
+    lead: "ซอฟต์แวร์ดีเจและคาราโอเกะหลากรสชาติ สำหรับ Windows, macOS และ Linux รุ่นเบต้า: สเต็มแบบสด ผู้ช่วยที่อธิบายคำแนะนำของตัวเองและรับช่วงมิกซ์ได้ คืนคาราโอเกะในตัว และรุ่น Hobbyist ที่ฟรีตลอดไป",
+    does: "มันทำอะไรได้",
+    beside: "นอกจากนี้",
+    links: {
+      pricing: ["รุ่นและราคา", "เจ็ดรุ่นจากดาวน์โหลดเดียว ตั้งราคาตามที่ที่คุณอยู่"],
+      outboard: ["Outboard", "มาร์เก็ตเพลส: ธีม สกิน และภาพประกอบเพลงที่ดีเจทำให้ djmanzo ทุกอย่างในนั้นฟรี"],
+      talkback: ["Talkback", "พื้นที่พูดคุย: ฝีมือ ดนตรี อุปกรณ์ ชีวิตรอบ ๆ งาน และ djmanzo"],
+      blog: ["บล็อก", "บทความเกี่ยวกับการเป็นดีเจและ djmanzo"],
+      features: ["ฟีเจอร์ทั้งหมด", "สิ่งที่ djmanzo ทำได้ ทีละรุ่น พร้อมสิ่งที่ยังไม่ได้พิสูจน์"],
+      wishes: ["คำขอฟีเจอร์", "บอกว่า djmanzo ควรทำอะไรต่อ แล้วโหวต"],
+      account: ["บัญชีของคุณ", "เข้าสู่ระบบ ไลเซนส์ของคุณ และบรรทัดที่พามันเข้าสู่ djmanzo"],
+    },
+    download: "ดาวน์โหลด djmanzo",
+    featuresTitle: "ฟีเจอร์ทั้งหมด",
+    featuresDescription: "ทุกอย่างที่ djmanzo ทำได้ ทีละรุ่น: สิ่งที่มีให้ใช้ ทำเสร็จบางส่วน และวางแผนไว้ พร้อมสิ่งที่ยังไม่ได้พิสูจน์",
+    word: { shipped: "มีให้ใช้", part: "ทำเสร็จบางส่วน", planned: "วางแผนไว้" },
+    noEdition: "ยังไม่อยู่ในรุ่นใด",
+    frame: { site: "เว็บไซต์", imprint: "ข้อมูลเว็บไซต์", terms: "ข้อกำหนด", rules: "กติกาคอมมูนิตี้", privacy: "ความเป็นส่วนตัว" },
+  },
 };
 
 const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja };
