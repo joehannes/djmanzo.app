@@ -14,7 +14,7 @@
  */
 
 import type { SkinId } from "../skins";
-import type { Lang } from "./strings";
+import type { BuiltInLang, Lang } from "./strings";
 
 export interface Welcome {
   /** The first line of the heading. */
@@ -24,7 +24,8 @@ export interface Welcome {
   lead: string;
 }
 
-export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
+/** Every look's welcome; a packed language's arrives with its pack (`packs.ts`). */
+export const WELCOME = ({
   club: {
     en: {
       l1: "Made for the long blend.",
@@ -366,4 +367,4 @@ export const WELCOME: Record<SkinId, Record<Lang, Welcome>> = {
       lead: "ブースへようこそ。デッキ、シンク、キュー、ループ、エフェクトは手が覚えている場所に。rekordbox・Serato・TraktorのクレートもキューとBPMグリッドごと引き継げます。そして新しいこと：再生中の曲をボーカル・ドラム・ベースにその場で分離。カラオケナイトがまるごと同じダウンロードに。次の曲を理由つきで提案し、あなたのOKを待ち、コントロールに触れた瞬間に手を離すアシスタント。今夜、無料で試してください。ご近所への音量配慮だけは、お忘れなく。",
     },
   },
-};
+} satisfies Record<SkinId, Record<BuiltInLang, Welcome>>) as Record<SkinId, Record<Lang, Welcome>>;

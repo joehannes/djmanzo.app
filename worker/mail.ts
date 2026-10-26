@@ -22,7 +22,7 @@ import { LANGS } from "../src/v4/i18n/strings";
 import { EDITION_INFO, money } from "../shared/catalog";
 import type { AppEnv } from "./env";
 import { fail } from "./http";
-import { MAIL_WORDS } from "./mailwords";
+import { MAIL_WORDS, type MailWords } from "./mailwords";
 import { get, put, type Order, type User } from "./store";
 
 export function mailOn(env: AppEnv): boolean {
@@ -66,7 +66,9 @@ export function fill(s: string, vars: Record<string, string>): string {
   return s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? vars[k] : m));
 }
 
-export const langOf = (user: User | null): Lang => (LANGS as readonly string[]).includes(user?.lang ?? "") ? (user!.lang as Lang) : "en";
+/** The language a buyer is written to: theirs where the e-mails have words for it, else English. */
+export const langOf = (user: User | null): Lang => (user?.lang && user.lang in MAIL_WORDS ? (user.lang as Lang) : "en");
+const wordsIn = (lang: Lang): MailWords => MAIL_WORDS[lang] ?? MAIL_WORDS.en;
 const site = (origin: string) => new URL(origin).host;
 const download = (origin: string) => `${origin}/#download`;
 const accountUrl = (origin: string) => `${origin}/account`;
@@ -106,7 +108,7 @@ export async function ask(env: AppEnv, user: User, raw: string, lang: string | n
   const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, "0");
   await put(env.KV, `contact-code:${user.id}`, { email, hash: await hash(`${user.id}:${code}`), tries: 0 }, CODE_MINUTES * 60);
   await put(env.KV, `user:${user.id}`, user);
-  const w = MAIL_WORDS[langOf(user)].code;
+  const w = wordsIn(langOf(user)).code;
   const went = await send(env, email, { subject: fill(w.subject, { code }), text: fill(w.body, { code, site: site(origin) }) });
   if (!went) fail(502, "The code could not be sent just now. Try again in a minute.");
   // The address kept stays as it was until the code comes back.
@@ -144,7 +146,7 @@ export function needContact(env: AppEnv, user: User): string {
 
 function common(env: AppEnv, order: Order, user: User, origin: string) {
   const lang = langOf(user);
-  const w = MAIL_WORDS[lang];
+  const w = wordsIn(lang);
   const bought = order.plan === "perpetual" || order.plan === "monthly" || order.plan === "yearly" ? order.plan : "perpetual";
   return {
     w,

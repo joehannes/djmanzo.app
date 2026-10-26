@@ -4,7 +4,7 @@
  * narrow no-break space before : ; ! ?.
  */
 
-import type { Lang } from "../src/v4/i18n/strings";
+import type { BuiltInLang, PackLang } from "../src/v4/i18n/strings";
 
 export interface MailWords {
   plan: Record<"perpetual" | "monthly" | "yearly", string>;
@@ -18,7 +18,8 @@ export interface MailWords {
   gift: { subject: string; body: string };
 }
 
-export const MAIL_WORDS: Record<Lang, MailWords> = {
+/** A packed language's e-mails are written in English until its words are here. */
+export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLang, MailWords>> = {
   en: {
     plan: {
       perpetual: "bought once",

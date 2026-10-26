@@ -99,6 +99,16 @@ body {
   background: var(--motif, none) center / contain no-repeat;
 }
 
+/*
+ * Read right to left (Hebrew, Arabic): each paragraph takes the direction of
+ * its own words, so a part still in English reads left to right, its full
+ * stop where it belongs. A phrase in the language that starts with a Latin
+ * word carries a right-to-left mark from its pack (`i18n/packs.ts`).
+ */
+:root[dir="rtl"] :is(p, li, h1, h2, h3, h4, h5, h6, dt, dd, figcaption, blockquote, td, th, summary, label, small) {
+  unicode-bidi: plaintext;
+}
+
 img {
   max-width: 100%;
   display: block;

@@ -8,7 +8,7 @@
  */
 
 import { COMMUNITIES, FLAIRS, TRUST } from "../../../shared/talkback";
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 /** What a visitor is asked to sign in for. */
 export type Doing = "comment" | "all" | "rate" | "upload" | "take";
@@ -74,7 +74,7 @@ export interface TalkbackWords {
 /** The same sentence for each thing the demo sign-in cannot do. */
 const every = (s: string): Record<Doing, string> => ({ comment: s, all: s, rate: s, upload: s, take: s });
 
-export const TALKBACK: Record<Lang, TalkbackWords> = {
+export const TALKBACK: Record<Lang, TalkbackWords> = carried({
   en: {
     up: "Up",
     down: "Down",
@@ -747,7 +747,7 @@ export const TALKBACK: Record<Lang, TalkbackWords> = {
       2: ["常連", "1 日に投稿 20 件、コメント 200 件。"],
     },
   },
-};
+});
 
 /** One or many, in a language's words. */
 export const count = (w: { one: string; other: string }, n: number) => (n === 1 ? w.one : w.other).replace("{n}", String(n));

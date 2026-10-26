@@ -8,7 +8,7 @@
  */
 
 import { COMING_KINDS, LISTED_KINDS } from "../../../shared/outboard";
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 type Kind = (typeof LISTED_KINDS)[number]["kind"];
 
@@ -82,7 +82,7 @@ export interface OutboardWords {
   preview: { ownKeys: string; onSpace: string; added: string; more: string };
 }
 
-export const OUTBOARD: Record<Lang, OutboardWords> = {
+export const OUTBOARD: Record<Lang, OutboardWords> = carried({
   en: {
     backAll: "← Everything in Outboard",
     aMaker: "A maker",
@@ -584,4 +584,4 @@ export const OUTBOARD: Record<Lang, OutboardWords> = {
     },
     preview: { ownKeys: "独自のキー", onSpace: "（Space {keys}）", added: "djmanzo のグループ内に追加", more: "ほか {n} 件" },
   },
-};
+});

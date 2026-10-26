@@ -18,7 +18,8 @@ import type { Lang } from "./strings";
 
 export type { FactText, FactWords } from "./factwords";
 
-const LOAD: Record<Exclude<Lang, "en">, () => Promise<{ default: FactWords }>> = {
+/** A packed language's facts join here once translated; until then its features read in English. */
+const LOAD: Partial<Record<Exclude<Lang, "en">, () => Promise<{ default: FactWords }>>> = {
   es: () => import("./facts/es"),
   pt: () => import("./facts/pt"),
   de: () => import("./facts/de"),
@@ -33,14 +34,15 @@ const asked = new Set<Lang>();
 
 /** Fetch a language's words, once. */
 export function loadFacts(lang: Lang): void {
-  if (lang === "en" || asked.has(lang)) return;
+  const load = lang === "en" ? undefined : LOAD[lang];
+  if (!load || asked.has(lang)) return;
   asked.add(lang);
-  void LOAD[lang]().then((m) => (loaded[lang] = m.default));
+  void load().then((m) => (loaded[lang] = m.default));
 }
 
 /** For the tests: the words a language has, read directly. */
-export async function factWords(lang: Exclude<Lang, "en">): Promise<FactWords> {
-  return (await LOAD[lang]()).default;
+export async function factWords(lang: Exclude<Lang, "en">): Promise<FactWords | undefined> {
+  return (await LOAD[lang]?.())?.default;
 }
 
 const words = (): FactWords | undefined => (i18n.lang === "en" ? undefined : loaded[i18n.lang]);

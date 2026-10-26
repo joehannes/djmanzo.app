@@ -4,7 +4,7 @@
  * `facts/<lang>.ts`; the status words are the home page's (`home.ts`).
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 export interface FeaturesPageWords {
   eyebrow: string;
@@ -25,7 +25,7 @@ export interface FeaturesPageWords {
   orCustom: string;
 }
 
-export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = {
+export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
   en: {
     eyebrow: "Every feature",
     title: "All of it,<br />and how far it is.",
@@ -145,4 +145,4 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = {
     every: "すべてのエディション（無料の Hobbyist を含む）",
     orCustom: "· または Custom",
   },
-};
+});

@@ -33,7 +33,7 @@ const skinOf = (page: Page) => page.locator("html").getAttribute("data-skin");
 
 test("the look follows where the visitor is, and the deck plays that place's music", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/?country=DE");
+  await page.goto("/?country=DE&lang=en");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "club");
   await expect(page.locator("[data-hero-photo]")).toHaveAttribute("style", /club-hero\.webp/);
   await expect(page.locator("[data-groove=techno]")).toHaveAttribute("aria-pressed", "true");
@@ -52,7 +52,7 @@ test("the look follows where the visitor is, and the deck plays that place's mus
 
 test("the visitor can change the look, it stays, and the waveforms follow it", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/?country=DE");
+  await page.goto("/?country=DE&lang=en");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "club");
   await page.locator("#stems").scrollIntoViewIfNeeded();
   await expect(page.locator("canvas[data-wave=lanes]")).toHaveAttribute("data-colours", "#38e1c6 #7b61ff #2563ff #e6fbff");
@@ -99,7 +99,7 @@ test("the deck plays, changes groove in time, and its stems switch one by one", 
 
 test("the tour and the hardware search", async ({ page }) => {
   const errs = errors(page);
-  await page.goto("/?country=DE");
+  await page.goto("/?country=DE&lang=en");
   await page.locator("#tour").scrollIntoViewIfNeeded();
   await page.click("[data-tab=karaoke]");
   await expect(page.locator("[data-tab=karaoke]")).toHaveAttribute("aria-selected", "true");
@@ -164,7 +164,7 @@ test("the assistant answers its own questions from the facts, in the visitor's l
     sent.push(r.request().postDataJSON());
     return r.fulfill({ json: { say: "Antwort der KI.", options: [], actions: [] } });
   });
-  await page.goto("/?country=DE");
+  await page.goto("/?country=DE&lang=en");
   await page.click("[data-ask]");
   await expect(page.locator("[data-assistant]")).toContainText("djmanzo's assistant");
   await page.getByRole("button", { name: "Is it free?" }).click();
@@ -320,7 +320,8 @@ test("the visitor's own country is welcomed in its words and colours, and a coun
   const local = page.locator("[data-local]");
   await expect(local).toHaveAttribute("data-local", "DO");
   await expect(local).toContainText("¡Bienvenido!");
-  await expect(local).toContainText("Dominican Republic");
+  // In the language read there, which is the page's too.
+  await expect(local).toContainText("República Dominicana");
   await expect(local).toContainText("merengue");
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--flag"))).toContain("linear-gradient");
   await page.goto("/?country=DE");
@@ -330,14 +331,10 @@ test("the visitor's own country is welcomed in its words and colours, and a coun
   expect(errs).toEqual([]);
 });
 
-test("the flag beside the look picks the language: the bar, the welcome written for the look, and the page's own tag follow, and it stays", async ({ page }) => {
+test("the language is the one read where the visitor is, the flag picks another, and the choice stays", async ({ page }) => {
   const errs = errors(page);
+  // A visitor from Germany reads German, though the browser asks for English.
   await page.goto("/?country=DE");
-  await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.locator("#hero-title")).toContainText("Made for the long blend.");
-  await page.locator("[data-lang-picker]").click();
-  await expect(page.locator("[data-lang]")).toHaveCount(7);
-  await page.locator("[data-lang=de]").click();
   await expect(page.locator("html")).toHaveAttribute("lang", "de");
   await expect(page.locator("[data-lang-picker]")).toHaveAttribute("data-lang-picker", "de");
   await expect(page.locator("#hero-title")).toContainText("Gebaut für lange Blends.");
@@ -348,12 +345,52 @@ test("the flag beside the look picks the language: the bar, the welcome written 
   await page.locator("[data-skin-picker]").click();
   await page.locator("[data-skin=tropical]").click();
   await expect(page.locator("#hero-title")).toContainText("Salsa, Bachata, Reggaeton.");
-  // Kept in this browser; an address that names a language wins.
+  // The picker: the region's languages and English first, then every other the site speaks.
+  await page.locator("[data-lang-picker]").click();
+  await expect(page.locator(".langmenu > [data-lang]")).toHaveText(["Deutsch", "English"]);
+  expect(await page.locator("[data-lang-rest] [data-lang]").count()).toBeGreaterThan(5);
+  await page.locator("[data-lang=en]").click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator("#hero-title")).toContainText("The colmado, the wedding, the club.");
+  // Kept in this browser, over where the visitor is; an address that names a language wins.
   await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("lang", "de");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await page.goto("/?lang=ja");
   await expect(page.locator("html")).toHaveAttribute("lang", "ja");
   await expect(page.locator("footer")).toContainText("利用規約");
+  expect(errs).toEqual([]);
+});
+
+test("a language that comes as a pack: fetched for a visitor from where it is read, and Hebrew right to left without widening the page", async ({ page }) => {
+  const errs = errors(page);
+  const packs: string[] = [];
+  page.on("request", (r) => /\/assets\/(zh|he)-[^/]*\.js$/.test(r.url()) && packs.push(r.url()));
+  await page.goto("/?country=CN");
+  await expect(page.locator("html")).toHaveAttribute("lang", "zh-CN");
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  await expect(page.locator("#hero-title")).toContainText("小场子，大声音。");
+  await expect(page.getByRole("navigation", { name: "网站", exact: true }).getByRole("link", { name: "价格" })).toBeVisible();
+  expect(packs.some((u) => /\/zh-/.test(u))).toBe(true);
+  expect(packs.some((u) => /\/he-/.test(u))).toBe(false);
+  // What the pack does not cover yet reads in English, and the picker says so.
+  await page.locator("[data-lang-picker]").click();
+  await expect(page.locator(".langmenu > [data-lang]")).toHaveText(["简体中文", "English"]);
+  await expect(page.locator(".langmenu .about")).toContainText("英文");
+  await page.goto("/?country=IL");
+  await expect(page.locator("html")).toHaveAttribute("lang", "he");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.locator("#hero-title")).toContainText("מהזפה ועד הגג.");
+  // The bar starts on the right, and nothing hangs off either side.
+  const brand = await page.locator("header .brand").boundingBox();
+  expect(brand!.x).toBeGreaterThan(page.viewportSize()!.width / 2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+  // On a phone too, with the language menu open.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("[data-lang-picker]").click();
+  const menu = await page.locator(".langmenu").boundingBox();
+  expect(menu!.x).toBeGreaterThanOrEqual(0);
+  expect(menu!.x + menu!.width).toBeLessThanOrEqual(390);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
   expect(errs).toEqual([]);
 });
 
@@ -617,7 +654,7 @@ test("the deck plays the genre's recorded loop: three parts that switch off and 
   page.on("response", (r) => {
     if (r.url().includes("/v4/loops/")) fetched.push(`${r.status()} ${new URL(r.url()).pathname}`);
   });
-  await page.goto("/?country=DE");
+  await page.goto("/?country=DE&lang=en");
   await page.locator("[data-groove=house]").click();
   await expect(page.locator("[data-bpm]")).toHaveText(index.house.bpm.toFixed(1));
   await expect(page.locator("[data-deck]")).toContainText(index.house.camelot);

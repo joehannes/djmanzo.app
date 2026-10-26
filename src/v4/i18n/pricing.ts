@@ -8,7 +8,7 @@
  */
 
 import type { Edition, Module } from "../../../shared/catalog";
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 type Bought = "perpetual" | "monthly" | "yearly";
 
@@ -844,4 +844,4 @@ const ja: PricingWords = {
   },
 };
 
-export const PRICING: Record<Lang, PricingWords> = { en, es, pt, de, fr, it, ja };
+export const PRICING: Record<Lang, PricingWords> = carried({ en, es, pt, de, fr, it, ja });

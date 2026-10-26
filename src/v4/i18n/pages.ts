@@ -5,7 +5,7 @@
  * own `<br />` or link; `{forum}`, `{wishes}` are the site's addresses.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 type Status = "shipped" | "building" | "planned" | "considering" | "idea" | "not-planned";
 
@@ -442,4 +442,4 @@ const ja: PagesWords = {
   },
 };
 
-export const PAGES: Record<Lang, PagesWords> = { en, es, pt, de, fr, it, ja };
+export const PAGES: Record<Lang, PagesWords> = carried({ en, es, pt, de, fr, it, ja });

@@ -21,7 +21,7 @@
   import { STAGE_TO, href, navigate, stageOf, type Route } from "./router";
   import { gsap, reduced } from "./motion";
   import { LANG_INFO, i18n, t } from "./i18n.svelte";
-  import { CANNED, CANNED_BY_ID } from "./i18n/assistant";
+  import { CANNED, CANNED_BY_ID, answerOf, questionOf } from "./i18n/assistant";
   import type { Key } from "./i18n/strings";
 
   let { route }: { route: Route } = $props();
@@ -59,7 +59,7 @@
 
   /** A line in the visitor's language, as it reads now. */
   function words(l: Line): string {
-    if (l.canned) return l.from === "visitor" ? CANNED_BY_ID[l.canned].q[i18n.lang] : CANNED_BY_ID[l.canned].a[i18n.lang];
+    if (l.canned) return l.from === "visitor" ? questionOf(CANNED_BY_ID[l.canned], i18n.lang) : answerOf(CANNED_BY_ID[l.canned], i18n.lang);
     if (l.say) return l.say.map((p) => t(p.key, p.vars)).join(" ");
     return l.text ?? "";
   }
@@ -204,7 +204,7 @@
             {/if}
             {#if (l.options?.length || l.offer?.length) && i === lines.length - 1}
               <div class="opts">
-                {#each l.offer ?? [] as id (id)}<button class="chip" onclick={() => ask(id)} data-ask-canned={id}>{CANNED_BY_ID[id].q[i18n.lang]}</button>{/each}
+                {#each l.offer ?? [] as id (id)}<button class="chip" onclick={() => ask(id)} data-ask-canned={id}>{questionOf(CANNED_BY_ID[id], i18n.lang)}</button>{/each}
                 {#each l.options ?? [] as o (o)}<button class="chip" onclick={() => say(o)}>{o}</button>{/each}
               </div>
             {/if}

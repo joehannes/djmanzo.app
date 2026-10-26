@@ -7,7 +7,7 @@
  * `facts/`.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 const en = {
   proof: [
@@ -592,4 +592,4 @@ const ja: HomeWords = {
   },
 };
 
-export const HOME: Record<Lang, HomeWords> = { en, es, pt, de, fr, it, ja };
+export const HOME: Record<Lang, HomeWords> = carried({ en, es, pt, de, fr, it, ja });

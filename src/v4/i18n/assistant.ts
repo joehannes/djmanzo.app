@@ -11,12 +11,13 @@
  */
 
 import type { Action } from "../../../shared/guide";
-import type { Lang } from "./strings";
+import type { BuiltInLang, Lang, PackLang } from "./strings";
 
 export interface Canned {
   id: string;
-  q: Record<Lang, string>;
-  a: Record<Lang, string>;
+  /** A packed language's question and answer arrive with its pack (`packs.ts`). */
+  q: Record<BuiltInLang, string> & Partial<Record<PackLang, string>>;
+  a: Record<BuiltInLang, string> & Partial<Record<PackLang, string>>;
   actions: Action[];
 }
 
@@ -200,3 +201,8 @@ export const CANNED: Canned[] = [
 ];
 
 export const CANNED_BY_ID: Record<string, Canned> = Object.fromEntries(CANNED.map((c) => [c.id, c]));
+
+/** A canned question in `lang`, English where its pack has none. */
+export const questionOf = (c: Canned, lang: Lang): string => c.q[lang] ?? c.q.en;
+/** A canned answer in `lang`, English where its pack has none. */
+export const answerOf = (c: Canned, lang: Lang): string => c.a[lang] ?? c.a.en;

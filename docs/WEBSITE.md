@@ -1369,3 +1369,51 @@ reported.
   it electro swing's inheritance). A family or a deeply written genre is
   now never replaced, the new genres have families, and twelve of them were
   given a theme and skin pair djmanzo actually offers together.
+
+## Seventeen languages, and the one read where the visitor is (27 October)
+
+The owner asked for Chinese, more Asian and African languages, and Hebrew,
+and for the language to follow the region: English by default, but first
+the language most probably read where the visitor is.
+
+- **Which language** (`src/v4/i18n/where.ts`): each country lists the
+  languages the site speaks that are read there, the most probable first;
+  where the country's own is not spoken by the site, the closest stands in
+  when its readers read it (Indonesian for Malay, Thai for Lao, Hindi for
+  Nepali, Turkish for Azerbaijani, French for Haitian Creole). An unlisted
+  country, and an unknown one, is English. The browser breaks a tie between
+  a region's own languages (a Swiss browser in French, a Kenyan one in
+  English) but does not override the region otherwise. A choice in the
+  picker, or `?lang=`, overrides all of it and is kept. The language settles
+  with the look, once the edge's country is known; the picker lists the
+  region's languages and English first, then every other in two columns.
+- **Packs** (`src/v4/i18n/packs.ts`, `packs/<lang>.ts`): the seven languages
+  the site was written in stay in the page; the ten new ones — Chinese
+  (Simplified), Hindi, Arabic, Indonesian, Korean, Vietnamese, Thai,
+  Turkish, Swahili and Hebrew — are a file each, fetched only when chosen
+  and put into the dictionaries before the page switches, so nobody carries
+  all seventeen. What a pack does not cover yet reads in English, and the
+  picker says so; `test/packs.ts` lists each pack's parts still being
+  written, and the tests hold every pack to exactly that list, so it can
+  only shrink. The server-rendered pages (`?lang=zh`), the hreflang
+  alternates and the sitemap cover a pack's language once its words are in
+  `seo.ts`; e-mails stay in English until `worker/mailwords.ts` has them.
+- **Right to left** (Hebrew, Arabic): `<html dir="rtl">`, the bar and its
+  menus on logical sides, the skip link moved off the start side (off the
+  left it made a right-to-left page 9 999 px wide and blank — the browser
+  test now measures that). Each paragraph takes its direction from its own
+  first letter, so a part still in English reads left to right with its
+  full stop where it belongs; a Hebrew or Arabic phrase that opens with a
+  Latin word ("djmanzo …") is given a right-to-left mark when its pack is
+  installed. The deck's waveform keeps the played part on the left, as
+  every DJ application draws it.
+- **On a phone** the bar's menus (looks, language, download) open across
+  the screen under the bar, whichever side their button is on; the
+  language menu, wider for seventeen, had run off the edge.
+- **First:** Chinese and Hebrew, with the home page — the bar, the welcome
+  written for each of the nine looks, every section, the booth, the
+  screenshots' words and the assistant's ready answers — and the server
+  pages' words. The other eight follow, then the shop, the account, the
+  features and the forum for all ten. The translations were written for
+  this site, with each scene's own words for things; a native speaker's
+  read is still worth having before anything is printed.

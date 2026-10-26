@@ -1,13 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { LOOKS } from "../src/v4/looks";
 import { SKINS } from "../src/v4/skins";
 import { LOOK_WORDS, aboutOf, countryName, regionOf } from "../src/v4/i18n/looks";
-import { LANGS } from "../src/v4/i18n/strings";
+import { installAll, translated } from "./packs";
+
+beforeAll(installAll);
 
 describe("the look picker's words", () => {
-  for (const lang of LANGS.filter((l) => l !== "en")) {
+  for (const lang of translated("looks")) {
     it(`${lang}: every skin's region and ornaments, none in English, none left over`, () => {
-      expect(Object.keys(LOOK_WORDS[lang]).sort()).toEqual(SKINS.map((s) => s.id).sort());
+      expect(Object.keys(LOOK_WORDS[lang as Exclude<typeof lang, "en">] ?? {}).sort()).toEqual(SKINS.map((s) => s.id).sort());
       for (const s of SKINS) {
         expect(regionOf(s.id, lang).trim()).toBeTruthy();
         expect(aboutOf(s.id, lang)).not.toBe(LOOKS[s.id].about);

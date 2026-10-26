@@ -6,7 +6,7 @@
  * Sunset themes, the Karaoke activity) stay as the application shows them.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 export const NIGHT_IDS = ["bedroom", "learning", "family", "wedding", "club", "bar", "karaoke", "radio", "allin"] as const;
 export type NightId = (typeof NIGHT_IDS)[number];
@@ -30,7 +30,7 @@ export interface NightsWords {
   nights: Record<NightId, Night>;
 }
 
-export const NIGHTS: Record<Lang, NightsWords> = {
+export const NIGHTS: Record<Lang, NightsWords> = carried({
   en: {
     eyebrow: "Kinds of nights",
     title: "Every night asks<br />for something different.",
@@ -689,4 +689,4 @@ export const NIGHTS: Record<Lang, NightsWords> = {
       },
     },
   },
-};
+});

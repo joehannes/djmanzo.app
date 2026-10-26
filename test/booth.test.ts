@@ -1,9 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { BANKS, REGION_BANK, SOUNDS } from "../src/v4/booth/sounds";
 import { trimmed } from "../src/v4/booth/booth.svelte";
 import { BOOTH } from "../src/v4/i18n/booth";
-import { LANGS } from "../src/v4/i18n/strings";
+import { installAll, translated } from "./packs";
+
+beforeAll(installAll);
 import { GENRE_BY_ID } from "../src/lib/genres";
 import { SKINS } from "../src/v4/skins";
 
@@ -11,7 +13,7 @@ describe("the booth's sampler", () => {
   it("has every sound its banks name, and every sound has a name in every language", () => {
     const named = new Set([...Object.values(BANKS).flat(), ...Object.values(REGION_BANK).flat()]);
     for (const id of named) expect(SOUNDS[id], id).toBeTypeOf("function");
-    for (const lang of LANGS) for (const id of Object.keys(SOUNDS)) expect(BOOTH[lang].sounds[id], `${lang} ${id}`).toBeTruthy();
+    for (const lang of ["en" as const, ...translated("booth")]) for (const id of Object.keys(SOUNDS)) expect(BOOTH[lang].sounds[id], `${lang} ${id}`).toBeTruthy();
     // Every bank fills the eight pads, and every region has its own.
     for (const bank of [...Object.values(BANKS), ...Object.values(REGION_BANK)]) expect(bank).toHaveLength(8);
     expect(Object.keys(REGION_BANK).sort()).toEqual(SKINS.map((s) => s.id).sort());

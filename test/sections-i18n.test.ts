@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { SECTIONS } from "../src/v4/i18n/sections";
 import { ACCOUNT } from "../src/v4/i18n/account";
 import { FEATURES_PAGE } from "../src/v4/i18n/featurespage";
@@ -13,7 +13,9 @@ import { PEOPLE } from "../src/v4/i18n/people";
 import { STATUS } from "../src/v4/i18n/status";
 import { BOOTH } from "../src/v4/i18n/booth";
 import { MAIL_WORDS } from "../worker/mailwords";
-import { LANGS } from "../src/v4/i18n/strings";
+import { installAll, translated, type Part } from "./packs";
+
+beforeAll(installAll);
 
 /** Every leaf of a value, by its path. */
 function leaves(v: unknown, path = ""): [string, string][] {
@@ -26,11 +28,13 @@ const holes = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
 
 const DICTIONARIES = { sections: SECTIONS, account: ACCOUNT, featuresPage: FEATURES_PAGE, pages: PAGES, pricing: PRICING, bits: BITS, talkback: TALKBACK, outboard: OUTBOARD, compare: COMPARE, nights: NIGHTS, people: PEOPLE, status: STATUS, booth: BOOTH, mail: MAIL_WORDS };
 
-describe.each(Object.entries(DICTIONARIES))("%s, in every language", (_name, dict) => {
+describe.each(Object.entries(DICTIONARIES))("%s, in every language", (name, dict) => {
   const en = new Map(leaves(dict.en));
-  for (const lang of LANGS.filter((l) => l !== "en")) {
+  // The e-mails are the Worker's own; the rest come with a language's pack.
+  const langs = name === "mail" ? Object.keys(MAIL_WORDS).filter((l) => l !== "en") : translated(name as Part);
+  for (const lang of langs) {
     it(`${lang}: every phrase English has, with its markup and its blanks, and none empty`, () => {
-      const here = new Map(leaves(dict[lang]));
+      const here = new Map(leaves((dict as Record<string, unknown>)[lang]));
       expect([...here.keys()].sort()).toEqual([...en.keys()].sort());
       for (const [path, english] of en) {
         const t = here.get(path)!;

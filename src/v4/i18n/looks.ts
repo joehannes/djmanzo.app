@@ -9,7 +9,8 @@ import { LOOKS } from "../looks";
 import { SKIN_BY_ID, type SkinId } from "../skins";
 import { LANG_INFO, type Lang } from "./strings";
 
-export const LOOK_WORDS: Record<Exclude<Lang, "en">, Record<SkinId, { region: string; about: string }>> = {
+/** A packed language's words arrive with its pack (`packs.ts`). */
+export const LOOK_WORDS: Partial<Record<Exclude<Lang, "en">, Record<SkinId, { region: string; about: string }>>> = {
   es: {
     club: { region: "Europa", about: "Flyers de naves y raves: la rejilla de LED, los abanicos de láser y el cono de la torre de altavoces." },
     tropical: { region: "América Latina y el Caribe", about: "El Caribe y América Latina: la calada de madera de las casas, el papel picado sobre la calle, el sol de los petroglifos taínos." },
@@ -79,10 +80,10 @@ export const LOOK_WORDS: Record<Exclude<Lang, "en">, Record<SkinId, { region: st
 };
 
 /** Where a skin is the first look, in `lang`. */
-export const regionOf = (id: SkinId, lang: Lang): string => (lang === "en" ? SKIN_BY_ID[id].region : LOOK_WORDS[lang][id].region);
+export const regionOf = (id: SkinId, lang: Lang): string => (lang === "en" ? undefined : LOOK_WORDS[lang]?.[id]?.region) ?? SKIN_BY_ID[id].region;
 
 /** What a skin's ornaments refer to, in `lang`. */
-export const aboutOf = (id: SkinId, lang: Lang): string => (lang === "en" ? LOOKS[id].about : LOOK_WORDS[lang][id].about);
+export const aboutOf = (id: SkinId, lang: Lang): string => (lang === "en" ? undefined : LOOK_WORDS[lang]?.[id]?.about) ?? LOOKS[id].about;
 
 /** A country's name in `lang`, from its two-letter code; the code itself where the browser has no name for it. */
 export function countryName(code: string, lang: Lang): string {

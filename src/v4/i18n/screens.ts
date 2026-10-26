@@ -23,7 +23,8 @@ export interface ScreensWords {
   spots: Record<string, [string, string]>;
 }
 
-export const SCREENS: Record<Exclude<Lang, "en">, ScreensWords> = {
+/** A packed language's words arrive with its pack (`packs.ts`). */
+export const SCREENS: Partial<Record<Exclude<Lang, "en">, ScreensWords>> = {
   es: {
     shows: {
       autopilot: "Autopilot: el asistente mezclando, la sala, lo que podría venir después",
@@ -502,18 +503,18 @@ export const SCREENS: Record<Exclude<Lang, "en">, ScreensWords> = {
 
 /** What a screenshot shows, in `lang`. */
 export function showsOf(shot: Shot, lang: Lang): string {
-  return lang === "en" ? shot.shows : (SCREENS[lang].shows[shot.screen] ?? shot.shows);
+  return (lang === "en" ? undefined : SCREENS[lang]?.shows[shot.screen]) ?? shot.shows;
 }
 
 /** A screenshot's description for a reader that cannot see it, in `lang`. */
 export function altOf(shot: Shot, lang: Lang): string {
-  if (lang === "en") return shot.alt;
-  const w = SCREENS[lang];
+  const w = lang === "en" ? undefined : SCREENS[lang];
+  if (!w) return shot.alt;
   return fill(shot.skin ? w.altSkin : w.alt, { shows: showsOf(shot, lang), theme: shot.theme, skin: shot.skin ?? "" });
 }
 
 /** A spot's title and sentence, in `lang`. */
 export function spotOf(s: Spot, lang: Lang): { title: string; text: string } {
-  const own = lang === "en" ? undefined : SCREENS[lang].spots[s.title];
+  const own = lang === "en" ? undefined : SCREENS[lang]?.spots[s.title];
   return own ? { title: own[0], text: own[1] } : { title: s.title, text: s.text };
 }

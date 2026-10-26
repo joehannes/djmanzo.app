@@ -6,6 +6,7 @@
  */
 
 import { SKIN_BY_ID, countryFromLanguage, grooveFor, skinForCountry, type SkinId } from "./skins";
+import { followRegion } from "./i18n.svelte";
 
 const KEY = "djmanzo.v4.skin";
 
@@ -16,13 +17,15 @@ export const region = $state<{ country: string | null; skin: SkinId; chosen: boo
   by: "none",
 });
 
-/** Settle the skin once the edge's country is known (from the catalogue). */
+/** Settle the skin, and the language, once the edge's country is known (from the catalogue). */
 export function settle(edgeCountry: string | null) {
   const q = new URLSearchParams(location.search);
   const forcedSkin = q.get("skin") as SkinId | null;
   const forcedCountry = q.get("country");
   const country = (forcedCountry || edgeCountry || countryFromLanguage(navigator.language))?.toUpperCase() ?? null;
   region.country = country;
+  // The language follows where the visitor is, unless they chose one.
+  followRegion(country);
   let saved: SkinId | null = null;
   try {
     saved = localStorage.getItem(KEY) as SkinId | null;

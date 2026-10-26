@@ -5,7 +5,7 @@
  * is set: a narrow no-break space before : ; ! ?.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 /** How an order stands: paid, waiting for a bank transfer, or paid and still being cleared. */
 export type State = "paid" | "waiting" | "processing";
@@ -49,7 +49,7 @@ export interface StatusWords {
   };
 }
 
-export const STATUS: Record<Lang, StatusWords> = {
+export const STATUS: Record<Lang, StatusWords> = carried({
   en: {
     contact: {
       title: "Where we write to you",
@@ -542,4 +542,4 @@ export const STATUS: Record<Lang, StatusWords> = {
       copied: "コピーしました",
     },
   },
-};
+});

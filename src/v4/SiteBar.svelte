@@ -17,7 +17,7 @@
   import { SYSTEMS, SYSTEM_NAME, type System } from "./download";
   import { choice, chooseSystem, start as startChoice } from "./dlchoice.svelte";
   import { restore, setSounds, sounds } from "./sfx.svelte";
-  import { LANGS, LANG_INFO, chooseLanguage, i18n, startLanguage, t, type Lang } from "./i18n.svelte";
+  import { LANG_INFO, chooseLanguage, i18n, pickerLanguages, startLanguage, t, type Lang } from "./i18n.svelte";
   import { aboutOf, countryName, regionOf } from "./i18n/looks";
   import OsIcon from "./OsIcon.svelte";
   import Flag from "./Flag.svelte";
@@ -52,6 +52,9 @@
 
   /** Why the bar wears this look, in the visitor's language. */
   const by = (how: string) => (how === "choice" || how === "connection" || how === "language" || how === "address" ? t(`look.${how}`) : "");
+
+  /** The languages read where the visitor is, and English, first. */
+  const order = $derived(pickerLanguages(region.country));
 
   function speak(lang: Lang) {
     langs = false;
@@ -140,18 +143,25 @@
           </div>
         {/if}
       </div>
-      <!-- The language: a flag, and the seven the site speaks. -->
+      <!-- The language: a flag; the ones read where the visitor is and English first, then every other the site speaks. -->
       <div class="langs">
         <button class="lang-btn" aria-haspopup="menu" aria-expanded={langs} aria-label={t("lang.choose", { name: LANG_INFO[i18n.lang].name })} title={LANG_INFO[i18n.lang].name} onclick={() => (langs = !langs)} data-lang-picker={i18n.lang}>
           <Flag lang={i18n.lang} size={26} />
         </button>
         {#if langs}
           <div class="pop card langmenu" role="menu" aria-label={t("lang.label")}>
-            {#each LANGS as l (l)}
-              <button role="menuitemradio" aria-checked={i18n.lang === l} class="opt" lang={LANG_INFO[l].tag} onclick={() => speak(l)} data-lang={l} data-sound="scratch">
+            {#each order.first as l (l)}
+              <button role="menuitemradio" aria-checked={i18n.lang === l} class="opt" lang={LANG_INFO[l].tag} dir={LANG_INFO[l].rtl ? "rtl" : "ltr"} onclick={() => speak(l)} data-lang={l} data-sound="scratch">
                 <Flag lang={l} size={20} /> <span>{LANG_INFO[l].name}</span>
               </button>
             {/each}
+            <div class="more" data-lang-rest>
+              {#each order.rest as l (l)}
+                <button role="menuitemradio" aria-checked={i18n.lang === l} class="opt" lang={LANG_INFO[l].tag} dir={LANG_INFO[l].rtl ? "rtl" : "ltr"} onclick={() => speak(l)} data-lang={l} data-sound="scratch">
+                  <Flag lang={l} size={20} /> <span>{LANG_INFO[l].name}</span>
+                </button>
+              {/each}
+            </div>
             {#if i18n.lang !== "en"}<p class="about">{t("lang.partial")}</p>{/if}
           </div>
         {/if}
@@ -237,12 +247,13 @@
     color: var(--on-accent);
     font: 700 12px/1 var(--display);
   }
+  /* Off the start side, so it never widens a page read right to left. */
   .skip {
     position: absolute;
-    left: -9999px;
+    inset-inline-start: -9999px;
   }
   .skip:focus {
-    left: 12px;
+    inset-inline-start: 12px;
     top: 12px;
     z-index: 100;
     background: var(--accent);
@@ -365,7 +376,16 @@
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
   }
   .langmenu {
-    width: 230px;
+    width: 340px;
+  }
+  /* Every other language, two to a row under a line. */
+  .langmenu .more {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--line);
   }
   .skin-btn {
     display: inline-flex;
@@ -388,7 +408,7 @@
   }
   .pop {
     position: absolute;
-    right: 0;
+    inset-inline-end: 0;
     top: calc(100% + 10px);
     width: 300px;
     max-height: min(76vh, 680px);
@@ -412,7 +432,7 @@
     border: 0;
     background: none;
     color: var(--text);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     font: inherit;
   }
@@ -542,6 +562,13 @@
     }
     .burger {
       width: 34px;
+    }
+    /* A menu from the bar opens across the screen under it, whichever side its button is on. */
+    .pop {
+      position: fixed;
+      top: calc(var(--bar) + 6px);
+      inset-inline: 10px;
+      width: auto;
     }
   }
   /* A narrow phone: the sound switch moves into the folded menu, the avatar shrinks a little. */

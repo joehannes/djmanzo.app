@@ -23,7 +23,7 @@ import { areaOf, carriedBy } from "../shared/facts";
 import { EDITION_INFO } from "../shared/catalog";
 import { markdown as blogMarkdown } from "../src/lib/markdown";
 import { SUBTITLE, TITLE } from "../src/signal/auxiliary/routes";
-import { LANGS, SEO, factsIn, isLang, type Lang } from "../src/v4/i18n/seo";
+import { SEO_LANGS, factsIn, isLang, seoOf, type Lang } from "../src/v4/i18n/seo";
 import type { AppEnv } from "./env";
 import { HttpError, SECURITY_HEADERS } from "./http";
 import * as blog from "./blog";
@@ -118,7 +118,7 @@ export function render(template: string, page: Page, origin: string): string {
 
 /** Every page's way about: home, the sends, the blog; and the site's own pages. */
 function frame(body: string, lang: Lang): string {
-  const w = SEO[lang].frame;
+  const w = seoOf(lang).frame;
   return [
     `<nav aria-label="${esc(w.site)}"><a href="${inLang("/", lang)}">djmanzo</a> · <a href="/outboard">Outboard</a> · <a href="/talkback">Talkback</a> · <a href="/blog">Blog</a></nav>`,
     body,
@@ -130,7 +130,7 @@ function frame(body: string, lang: Lang): string {
 const inLang = (path: string, lang: Lang) => (lang === "en" ? path : `${path}?lang=${lang}`);
 
 /** The same page in every language the site speaks, and the one a search engine offers anyone else. */
-const everyLanguage = (path: string) => [...LANGS.map((l) => ({ lang: l as string, path: inLang(path, l) })), { lang: "x-default", path }];
+const everyLanguage = (path: string) => [...SEO_LANGS.map((l) => ({ lang: l as string, path: inLang(path, l) })), { lang: "x-default", path }];
 
 const iso = (ms: number) => new Date(ms).toISOString();
 
@@ -167,7 +167,7 @@ async function orMissing(path: string, build: () => Promise<Page>): Promise<Page
 
 function home(env: AppEnv, origin: string, lang: Lang): Page {
   const free = EDITION_INFO.hobbyist;
-  const w = SEO[lang];
+  const w = seoOf(lang);
   const said = factsIn(lang);
   const link = (path: string, [name, about]: [string, string]) => `<li><a href="${inLang(path, lang)}">${esc(name)}</a> — ${esc(about)}</li>`;
   return {
@@ -432,7 +432,7 @@ function legal(env: AppEnv, origin: string, id: "imprint" | "terms" | "rules" | 
 /** Every feature, grouped as the page groups them, each with its status, its caveat and the editions that carry it. */
 function features(origin: string, lang: Lang): Page {
   const named = (["hobbyist", "autopilot", "karaoke", "apprentice", "pro", "full"] as const).map((e) => EDITION_INFO[e]);
-  const w = SEO[lang];
+  const w = seoOf(lang);
   const word = w.word;
   const said = factsIn(lang);
   const groups = said.areas.map((a) => ({ a, facts: said.facts.filter((f) => areaOf(f) === a.id) })).filter((g) => g.facts.length);
@@ -646,7 +646,7 @@ export async function sitemap(env: AppEnv, origin: string): Promise<Response> {
   type Entry = { path: string; lastmod?: number; alternates?: { lang: string; path: string }[] };
   const entries: Entry[] = ["/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/wishes", "/releases"].map((path) => ({ path }));
   // The pages a search engine is given in every language, each with the others beside it.
-  for (const path of ["/", "/features"]) entries.unshift(...LANGS.map((l) => ({ path: inLang(path, l), alternates: everyLanguage(path) })));
+  for (const path of ["/", "/features"]) entries.unshift(...SEO_LANGS.map((l) => ({ path: inLang(path, l), alternates: everyLanguage(path) })));
   entries.push(...COMMUNITIES.map((c) => ({ path: `/talkback/c/${c.id}` })));
   if (env.DB) {
     const items = await market.listing(env);

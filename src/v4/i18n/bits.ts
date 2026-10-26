@@ -6,7 +6,7 @@
  * stay as it shows them.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 export interface BitsWords {
   support: {
@@ -26,7 +26,7 @@ export interface BitsWords {
   videos: { title: string; lead: string; play: string };
 }
 
-export const BITS: Record<Lang, BitsWords> = {
+export const BITS: Record<Lang, BitsWords> = carried({
   en: {
     support: {
       about: "A few words about you",
@@ -146,4 +146,4 @@ export const BITS: Record<Lang, BitsWords> = {
     shot: { full: "全画面で見る：{alt}", fullSize: "実寸", closeUp: "拡大", whole: "ウィンドウ全体", theme: "{theme} テーマ", skin: "{skin} スキン", close: "閉じる" },
     videos: { title: "動いているところを見る", lead: "djmanzo を作っている人たちによる djmanzo の動画。YouTube に接続するのは再生を押したときだけです。", play: "再生：{title}" },
   },
-};
+});

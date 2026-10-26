@@ -6,7 +6,7 @@
  */
 
 import type { Failure } from "../../../shared/signin";
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 export interface AccountWords {
   eyebrow: string;
@@ -668,4 +668,4 @@ const ja: AccountWords = {
   },
 };
 
-export const ACCOUNT: Record<Lang, AccountWords> = { en, es, pt, de, fr, it, ja };
+export const ACCOUNT: Record<Lang, AccountWords> = carried({ en, es, pt, de, fr, it, ja });

@@ -1,21 +1,35 @@
 /**
- * The site's words in seven languages: English, and the six where most of
- * the world's DJs and DJ-software buyers read — Spanish, Brazilian
- * Portuguese, German, French, Italian and Japanese. English is complete;
- * a phrase missing in another language is shown in English
- * (`i18n.svelte.ts`). `{name}` is filled in where it is used.
- *
- * Translated so far: the bar, the Download button and screen, the road
- * ahead's frame and the footer; the welcome, written for each look, is
- * `welcome.ts`. The sections' texts and the facts (`shared/facts.ts`) are
- * next.
+ * The site's words. Seven languages are carried in the page: English, and
+ * the six where most of the world's DJs and DJ-software buyers read —
+ * Spanish, Brazilian Portuguese, German, French, Italian and Japanese. Ten
+ * more — Chinese, Hindi, Arabic, Indonesian, Korean, Vietnamese, Thai,
+ * Turkish, Swahili and Hebrew — are packs of their own (`packs.ts`),
+ * fetched only when one is chosen, so nobody carries all seventeen.
+ * English is complete; a phrase missing in another language is shown in
+ * English (`i18n.svelte.ts`). `{name}` is filled in where it is used.
  */
 
-export const LANGS = ["en", "es", "pt", "de", "fr", "it", "ja"] as const;
+/** The languages carried in the page itself. */
+export const BUILT_IN = ["en", "es", "pt", "de", "fr", "it", "ja"] as const;
+/** The languages that arrive as a pack when chosen (`packs.ts`). */
+export const PACKED = ["zh", "hi", "ar", "id", "ko", "vi", "th", "tr", "sw", "he"] as const;
+export const LANGS = [...BUILT_IN, ...PACKED] as const;
 export type Lang = (typeof LANGS)[number];
+export type PackLang = (typeof PACKED)[number];
 
-/** Each language in its own words, and the BCP 47 tag the page carries. */
-export const LANG_INFO: Record<Lang, { name: string; tag: string }> = {
+export type BuiltInLang = (typeof BUILT_IN)[number];
+
+export const isPacked = (l: Lang): l is PackLang => (PACKED as readonly string[]).includes(l);
+
+/**
+ * A dictionary written for the languages the page carries. A packed
+ * language's entry is put in when its pack arrives (`packs.ts`), before the
+ * page switches to it, so reading `DICT[i18n.lang]` always finds one.
+ */
+export const carried = <T>(o: Record<BuiltInLang, T>): Record<Lang, T> => o as Record<Lang, T>;
+
+/** Each language in its own words, the BCP 47 tag the page carries, and its direction. */
+export const LANG_INFO: Record<Lang, { name: string; tag: string; rtl?: true }> = {
   en: { name: "English", tag: "en" },
   es: { name: "Español", tag: "es" },
   pt: { name: "Português (Brasil)", tag: "pt-BR" },
@@ -23,6 +37,16 @@ export const LANG_INFO: Record<Lang, { name: string; tag: string }> = {
   fr: { name: "Français", tag: "fr" },
   it: { name: "Italiano", tag: "it" },
   ja: { name: "日本語", tag: "ja" },
+  zh: { name: "简体中文", tag: "zh-CN" },
+  hi: { name: "हिन्दी", tag: "hi" },
+  ar: { name: "العربية", tag: "ar", rtl: true },
+  id: { name: "Bahasa Indonesia", tag: "id" },
+  ko: { name: "한국어", tag: "ko" },
+  vi: { name: "Tiếng Việt", tag: "vi" },
+  th: { name: "ไทย", tag: "th" },
+  tr: { name: "Türkçe", tag: "tr" },
+  sw: { name: "Kiswahili", tag: "sw" },
+  he: { name: "עברית", tag: "he", rtl: true },
 };
 
 const en = {
@@ -1164,5 +1188,6 @@ const ja: Partial<Record<Key, string>> = {
   "gift.rehearsal": "これはデモショップのリハーサルです。ギフト券は表示されますが、誰も受け取れません。",
 };
 
-export const STRINGS: Record<Lang, Partial<Record<Key, string>>> = { en, es, pt, de, fr, it, ja };
+/** A packed language's phrases arrive with its pack (`packs.ts`). */
+export const STRINGS: Partial<Record<Lang, Partial<Record<Key, string>>>> = { en, es, pt, de, fr, it, ja };
 export const ENGLISH = en;

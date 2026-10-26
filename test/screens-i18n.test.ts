@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import shots from "../shared/shots.json";
 import { SPOTS } from "../src/v4/hotspots";
 import { SCREENS, altOf, spotOf } from "../src/v4/i18n/screens";
-import { LANGS } from "../src/v4/i18n/strings";
+import { installAll, translated } from "./packs";
+
+beforeAll(installAll);
 import type { Shot } from "../src/signal/shots";
 
 const ALL = shots as Shot[];
@@ -18,11 +20,11 @@ describe("the screenshots' words", () => {
     }
   });
 
-  for (const lang of LANGS.filter((l) => l !== "en")) {
-    const w = SCREENS[lang];
+  for (const lang of translated("screens")) {
+    const w = () => SCREENS[lang as Exclude<typeof lang, "en">]!;
     it(`${lang}: every screen and every spot, none left over, numbers kept`, () => {
-      expect(Object.keys(w.shows).sort()).toEqual(screens);
-      expect(Object.keys(w.spots).sort()).toEqual(titles);
+      expect(Object.keys(w().shows).sort()).toEqual(screens);
+      expect(Object.keys(w().spots).sort()).toEqual(titles);
       for (const list of Object.values(SPOTS)) {
         for (const s of list) {
           const t = spotOf(s, lang);
@@ -37,7 +39,7 @@ describe("the screenshots' words", () => {
         const alt = altOf(s, lang);
         expect(alt).toContain(s.theme);
         if (s.skin) expect(alt).toContain(s.skin);
-        expect(alt).toContain(w.shows[s.screen]);
+        expect(alt).toContain(w().shows[s.screen]);
       }
     });
   }

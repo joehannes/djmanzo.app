@@ -6,7 +6,7 @@
  * are the site's addresses.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 export const RIVALS = ["VirtualDJ", "Serato DJ Pro", "rekordbox", "Traktor Pro 4", "djay Pro", "Mixxx", "KaraFun"] as const;
 export type Rival = (typeof RIVALS)[number];
@@ -35,7 +35,7 @@ export interface CompareWords {
   closing: string;
 }
 
-export const COMPARE: Record<Lang, CompareWords> = {
+export const COMPARE: Record<Lang, CompareWords> = carried({
   en: {
     eyebrow: "Compared",
     title: "djmanzo beside<br />the others.",
@@ -309,4 +309,4 @@ export const COMPARE: Record<Lang, CompareWords> = {
     ],
     closing: 'このどれかが今夜どうしても譲れないなら、今夜はほかのソフトのほうが良い選択です。あなたのプレイを覚えるアシスタント、同じブースでのカラオケ、Linux、そしていつもの半分の価格が欲しいなら — <a href="{pricing}">エディションと価格を見る</a>。',
   },
-};
+});

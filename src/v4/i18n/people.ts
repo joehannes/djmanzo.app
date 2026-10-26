@@ -6,7 +6,7 @@
  * phrase marked "html" carries its own link; `{wishes}` is its address.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 type Kind = "comment" | "testimonial" | "sample";
 
@@ -43,7 +43,7 @@ export interface PeopleWords {
   wishes: string;
 }
 
-export const PEOPLE: Record<Lang, PeopleWords> = {
+export const PEOPLE: Record<Lang, PeopleWords> = carried({
   en: {
     eyebrow: "People",
     title: "What DJs and singers<br />say and share.",
@@ -254,4 +254,4 @@ export const PEOPLE: Record<Lang, PeopleWords> = {
     shareText: "djmanzo を見つけた。あなたのプレイを覚える DJ・カラオケソフト。",
     wishes: '新しい機能の要望は<a href="{wishes}">リクエストのページ</a>へ。',
   },
-};
+});

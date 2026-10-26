@@ -5,7 +5,7 @@
  * (Pitch, Rewind, Roll) where a language does.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 export interface BoothWords {
   open: string; close: string; lead: string; knobHint: string; centre: string; stems: string;
@@ -22,7 +22,7 @@ export interface BoothWords {
   sounds: Record<string, string>;
 }
 
-export const BOOTH: Record<Lang, BoothWords> = {
+export const BOOTH: Record<Lang, BoothWords> = carried({
   en: {
     open: "🎛️ Open the booth",
     close: "Close the booth",
@@ -597,4 +597,4 @@ export const BOOTH: Record<Lang, BoothWords> = {
       wave: "波",
     },
   },
-};
+});

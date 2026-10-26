@@ -14,9 +14,9 @@ import fr from "./facts/fr";
 import it from "./facts/it";
 import ja from "./facts/ja";
 import pt from "./facts/pt";
-import { LANGS, LANG_INFO, type Lang } from "./strings";
+import { LANGS, LANG_INFO, type BuiltInLang, type Lang, type PackLang } from "./strings";
 
-export { LANGS, LANG_INFO, type Lang };
+export { LANG_INFO, type Lang };
 
 type Link = [string, string];
 
@@ -35,7 +35,8 @@ export interface SeoWords {
   frame: { site: string; imprint: string; terms: string; rules: string; privacy: string };
 }
 
-export const SEO: Record<Lang, SeoWords> = {
+/** A packed language is rendered by the server once its words are here; until then, in English. */
+export const SEO: Record<BuiltInLang, SeoWords> & Partial<Record<PackLang, SeoWords>> = {
   en: {
     title: "djmanzo — DJ and karaoke software in different flavours",
     description: "djmanzo, DJ and karaoke software in different flavours for Windows, macOS and Linux, in beta — followed from the groove of a record to the bodies on the floor.",
@@ -190,16 +191,66 @@ export const SEO: Record<Lang, SeoWords> = {
     noEdition: "まだどのエディションにもありません",
     frame: { site: "サイト", imprint: "運営者情報", terms: "利用規約", rules: "コミュニティのルール", privacy: "プライバシー" },
   },
+  zh: {
+    title: "djmanzo——多种风味的 DJ 与卡拉OK 软件",
+    description: "djmanzo，多种风味的 DJ 与卡拉OK 软件，支持 Windows、macOS 和 Linux，测试版——从唱片的纹路一路跟到舞池里的人。",
+    lead: "多种风味的 DJ 与卡拉OK 软件，支持 Windows、macOS 和 Linux，测试版：实时分轨、会解释推荐理由并能接管混音的助手、内置一整晚的卡拉OK，以及永久免费的 Hobbyist 版。",
+    does: "它能做什么",
+    beside: "此外",
+    links: {
+      pricing: ["版本与价格", "同一个下载的七个版本，按你所在的地区定价。"],
+      outboard: ["Outboard", "市场：DJ 们为 djmanzo 做的主题、皮肤和视觉效果。里面的一切都免费。"],
+      talkback: ["Talkback", "讨论区：技艺、音乐、器材、演出之外的生活，还有 djmanzo。"],
+      blog: ["博客", "关于 DJ 和 djmanzo 的文章。"],
+      features: ["全部功能", "djmanzo 能做什么，按版本列出，并注明尚未验证的部分。"],
+      wishes: ["功能请求", "提出 djmanzo 下一步该做什么，并投票。"],
+      account: ["你的账户", "登录、你的许可证，以及把它们带进 djmanzo 的那一行代码。"],
+    },
+    download: "下载 djmanzo",
+    featuresTitle: "全部功能",
+    featuresDescription: "djmanzo 能做的一切，按版本列出：已提供的、部分完成的和已计划的，并注明尚未验证的部分。",
+    word: { shipped: "已提供", part: "部分完成", planned: "已计划" },
+    noEdition: "尚未包含在任何版本中",
+    frame: { site: "网站", imprint: "网站信息", terms: "条款", rules: "社区规则", privacy: "隐私" },
+  },
+  he: {
+    title: "djmanzo — תוכנת דיג'יי וקריוקי בכמה טעמים",
+    description: "djmanzo, תוכנת דיג'יי וקריוקי בכמה טעמים ל־Windows,‏ macOS ו־Linux, בבטא — מהחריץ של התקליט ועד האנשים על הרחבה.",
+    lead: "תוכנת דיג'יי וקריוקי בכמה טעמים, ל־Windows,‏ macOS ו־Linux ובבטא: סטמים חיים, עוזרת שמסבירה את ההצעות שלה ויכולה לקחת את המיקס, ערב קריוקי מובנה, ומהדורת Hobbyist חינמית, לתמיד.",
+    does: "מה היא עושה",
+    beside: "ולצידה",
+    links: {
+      pricing: ["מהדורות ומחירים", "שבע מהדורות של הורדה אחת, בתמחור לפי המקום שבו אתם נמצאים."],
+      outboard: ["Outboard", "המרקטפלייס: ערכות נושא, סקינים וויז'ואלס שדיג'ייז יצרו ל־djmanzo. הכול בו בחינם."],
+      talkback: ["Talkback", "מקום הדיון: המלאכה, המוזיקה, הציוד, החיים סביב ההופעות, ו־djmanzo."],
+      blog: ["הבלוג", "כתבות על תקלוט ועל djmanzo."],
+      features: ["כל התכונות", "מה djmanzo עושה, מהדורה אחרי מהדורה, עם מה שעוד לא הוכח."],
+      wishes: ["בקשות לתכונות", "בקשו מה djmanzo צריכה לעשות בהמשך, והצביעו."],
+      account: ["החשבון שלך", "כניסה, הרישיונות שלך, והשורה שמביאה אותם אל djmanzo."],
+    },
+    download: "הורדת djmanzo",
+    featuresTitle: "כל התכונות",
+    featuresDescription: "כל מה ש־djmanzo עושה, מהדורה אחרי מהדורה: מה זמין, מה בנוי בחלקו ומה מתוכנן, עם מה שעוד לא הוכח.",
+    word: { shipped: "זמין", part: "בנוי בחלקו", planned: "מתוכנן" },
+    noEdition: "עוד לא בשום מהדורה",
+    frame: { site: "האתר", imprint: "פרטי האתר", terms: "תנאים", rules: "כללי הקהילה", privacy: "פרטיות" },
+  },
 };
 
-const FACT_WORDS: Record<Exclude<Lang, "en">, FactWords> = { es, pt, de, fr, it, ja };
+const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja };
 
-export const isLang = (s: string | null | undefined): s is Lang => !!s && (LANGS as readonly string[]).includes(s);
+/** The languages the server renders its pages in: those with words here. */
+export const SEO_LANGS: Lang[] = LANGS.filter((l) => SEO[l]);
+
+export const isLang = (s: string | null | undefined): s is Lang => !!s && (SEO_LANGS as string[]).includes(s);
+
+/** The words for `lang`, English where it has none yet. */
+export const seoOf = (lang: Lang): SeoWords => SEO[lang] ?? SEO.en;
 
 /** The features, their areas and the status line in `lang`; English where a language lacks a word. */
 export function factsIn(lang: Lang): { status: string; areas: typeof AREAS; facts: Fact[] } {
-  if (lang === "en") return { status: STATUS_LINE, areas: AREAS, facts: FACTS };
-  const w = FACT_WORDS[lang];
+  const w = lang === "en" ? undefined : FACT_WORDS[lang];
+  if (!w) return { status: STATUS_LINE, areas: AREAS, facts: FACTS };
   const area = (id: Area) => w.areas[id];
   return {
     status: w.status,

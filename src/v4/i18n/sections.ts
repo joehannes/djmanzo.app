@@ -11,7 +11,7 @@
  * the application shows them.
  */
 
-import type { Lang } from "./strings";
+import { carried, type Lang } from "./strings";
 
 type QA = [string, string];
 
@@ -804,7 +804,7 @@ const ja: SectionWords = {
   },
 };
 
-export const SECTIONS: Record<Lang, SectionWords> = { en, es, pt, de, fr, it, ja };
+export const SECTIONS: Record<Lang, SectionWords> = carried({ en, es, pt, de, fr, it, ja });
 
 /** Fill a phrase's `{name}`s. */
 export const fill = (s: string, vars: Record<string, string | number>): string => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
