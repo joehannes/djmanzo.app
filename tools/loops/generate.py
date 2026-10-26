@@ -21,7 +21,8 @@ out = os.path.abspath(sys.argv[2])
 os.makedirs(out, exist_ok=True)
 t0 = time.time()
 dit = AceStepHandler()
-msg, ok = dit.initialize_service(project_root=os.path.abspath(SRC), config_path="acestep-v15-turbo", device="cpu")
+# ACE_DIT picks the diffusion model: the 2B turbo (the default) or the 4B XL turbo, "acestep-v15-xl-turbo".
+msg, ok = dit.initialize_service(project_root=os.path.abspath(SRC), config_path=os.environ.get("ACE_DIT", "acestep-v15-turbo"), device="cpu")
 print("init", ok, msg[:300], f"{time.time()-t0:.0f}s", flush=True)
 if not ok:
     sys.exit(1)

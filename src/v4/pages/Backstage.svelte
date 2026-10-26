@@ -9,7 +9,7 @@
   import { onMount } from "svelte";
   import { api, post } from "../../lib/api";
   import { session } from "../../lib/session.svelte";
-  import { EDITIONS, MODULES, PLANS, money, type Edition, type Plan } from "../../../shared/catalog";
+  import { EDITIONS, EDITION_INFO, MODULES, PLANS, money, type Edition, type Plan } from "../../../shared/catalog";
   import { GENRES } from "../../lib/genres";
   import { href } from "../router";
   import { VIDEO_PLACES } from "../videos";
@@ -273,6 +273,53 @@
   // --- Wishes ---------------------------------------------------------------------
   let wishes = $state<any[]>([]);
   const STATUSES = ["idea", "considering", "planned", "building", "shipped", "not-planned"];
+  // --- Insights: what visitors look at and look for (worker/insights.ts) ----------------
+  interface Insights {
+    report: {
+      days: number;
+      since: string;
+      visits: number;
+      views: number;
+      daily: { day: string; visits: number; views: number }[];
+      pages: { path: string; views: number; visits: number; seconds: number | null; entries: number; exits: number }[];
+      bounce: number | null;
+      pagesPerVisit: number | null;
+      paths: { path: string; visits: number }[];
+      searches: { where: string; words: string; times: number; visits: number; found: number | null }[];
+      asks: { words: string; times: number }[];
+      clicks: { what: string; times: number; visits: number }[];
+      sections: { path: string; section: string; visits: number; share: number }[];
+      by: Record<"lang" | "look" | "country" | "device" | "referrer", { value: string; visits: number }[]>;
+      funnel: { step: string; visits: number }[];
+      paid: number;
+    };
+    ideas: { area: string; saw: string; idea: string }[];
+  }
+  let insights = $state<Insights | null>(null);
+  let iDays = $state(30);
+  let advice = $state<{ saw: string; change: string; why: string }[] | null>(null);
+  let advising = $state(false);
+  async function loadInsights() {
+    try {
+      insights = await api(`/api/admin/insights?days=${iDays}`);
+      advice = null;
+    } catch (e) {
+      error = (e as Error).message;
+    }
+  }
+  async function askAdvice() {
+    advising = true;
+    try {
+      advice = (await post<{ ideas: { saw: string; change: string; why: string }[] }>("/api/admin/insights/advice", { days: iDays })).ideas;
+    } catch (e) {
+      error = (e as Error).message;
+    } finally {
+      advising = false;
+    }
+  }
+  const share = (n: number, of: number) => (of ? `${Math.round((n / of) * 100)}%` : "—");
+  const BY_NAME = { lang: "Language", look: "Look", country: "Country", device: "Device", referrer: "Came from" } as const;
+
   // --- People: who the overview's count is -----------------------------------------
   interface Person {
     id: string;
@@ -347,10 +394,73 @@
   }
 
   // --- Orders ---------------------------------------------------------------------
-  let orders = $state<any[]>([]);
+  // --- Orders: who placed each, what it came to, how it stands ------------------------
+  interface OrderRow {
+    id: string;
+    uid: string;
+    edition: Edition;
+    modules?: string[];
+    plan: string;
+    currency: string;
+    base: number;
+    regional: number;
+    discount: number;
+    total: number;
+    provider: string;
+    providerRef?: string | null;
+    status: string;
+    renews: boolean;
+    licence?: string | null;
+    createdAt: number;
+    paidAt?: number;
+    promo?: string | null;
+    voucher?: string | null;
+    student?: boolean;
+    band: string;
+    claimedBand: string;
+    proof: { instrument?: string | null; billing?: string | null; reason: string };
+    upgrade?: { from: string; credit: number } | null;
+    gift?: { for: string[]; note: string | null; voucher?: string | null } | null;
+    granted?: { by: string; why: string | null } | null;
+    who: { name: string; email: string | null; providers: string[]; owner: boolean; demo: boolean } | null;
+  }
+  let orders = $state<OrderRow[]>([]);
+  let stripeMode = $state<string | null>(null);
   let bankCountry = $state<Record<string, string>>({});
+  let oState = $state("all");
+  let oWay = $state("all");
+  let oFind = $state("");
+  let oAll = $state(false);
+  let oOpen = $state<string | null>(null);
+  const ORDER_STATES = ["all", "pending", "paid", "failed", "cancelled", "refunded"];
+  const WAY: Record<string, string> = { stripe: "card (Stripe)", paypal: "PayPal", transfer: "bank transfer", demo: "rehearsal", free: "free", voucher: "voucher", trial: "trial", grant: "granted" };
+  const shown = $derived(
+    orders.filter(
+      (o) =>
+        (oAll || !["demo", "trial", "grant", "free"].includes(o.provider)) &&
+        (oState === "all" || o.status === oState) &&
+        (oWay === "all" || o.provider === oWay) &&
+        (!oFind.trim() || [o.id, o.who?.name, o.who?.email, o.edition, o.licence, o.promo].some((x) => x?.toLowerCase().includes(oFind.trim().toLowerCase()))),
+    ),
+  );
+  const sums = $derived.by(() => {
+    const paid: Record<string, number> = {};
+    const waiting: Record<string, number> = {};
+    for (const o of shown) {
+      const into = o.status === "paid" ? paid : o.status === "pending" ? waiting : null;
+      if (into) into[o.currency] = (into[o.currency] ?? 0) + o.total;
+    }
+    const say = (m: Record<string, number>) => Object.entries(m).map(([c, v]) => money(v, c as "USD")).join(" + ") || "—";
+    return { paid: say(paid), waiting: say(waiting) };
+  });
   async function loadOrders() {
-    orders = await api("/api/admin/orders");
+    try {
+      const r = await api<{ orders: OrderRow[]; stripeMode: string | null }>("/api/admin/orders");
+      orders = r.orders;
+      stripeMode = r.stripeMode;
+    } catch (e) {
+      error = (e as Error).message;
+    }
   }
   async function markPaid(id: string) {
     try {
@@ -360,6 +470,32 @@
     } catch (e) {
       error = (e as Error).message;
     }
+  }
+  async function cancelOrder(o: OrderRow) {
+    if (!confirm(`Call off ${o.who?.name ?? "this"}'s ${o.edition} order (${money(o.total, o.currency as "USD")})? Nothing has been paid for it.`)) return;
+    try {
+      await post(`/api/admin/orders/${o.id}/cancel`, {});
+      await loadOrders();
+    } catch (e) {
+      error = (e as Error).message;
+    }
+  }
+  /** Where Stripe shows a payment or a subscription. */
+  function stripeLink(ref: string): string {
+    const base = `https://dashboard.stripe.com/${stripeMode === "test" ? "test/" : ""}`;
+    return ref.startsWith("sub_") ? `${base}subscriptions/${ref}` : `${base}payments/${ref}`;
+  }
+  function ordersCsv() {
+    const head = ["id", "placed", "name", "email", "edition", "modules", "plan", "currency", "list", "regional", "discount", "total", "way", "state", "paid", "licence", "promo", "country claimed", "country proved", "proof"];
+    const cell = (v: unknown) => `"${String(v ?? "").replaceAll('"', '""')}"`;
+    const lines = shown.map((o) =>
+      [o.id, new Date(o.createdAt).toISOString(), o.who?.name, o.who?.email, o.edition, o.modules?.join(" "), o.plan, o.currency, o.base / 100, o.regional / 100, o.discount / 100, o.total / 100, o.provider, o.status, o.paidAt ? new Date(o.paidAt).toISOString() : "", o.licence, o.promo, o.claimedBand, o.band, o.proof?.reason]
+        .map(cell)
+        .join(","),
+    );
+    const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([[head.join(","), ...lines].join("\n")], { type: "text/csv" })), download: `djmanzo-orders-${new Date().toISOString().slice(0, 10)}.csv` });
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   // --- Blog desk ------------------------------------------------------------------
@@ -472,6 +608,105 @@
       Licences signed with: {overview.signing} · Blog drafts by: {overview.ai}
     </p>
   {/if}
+
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadInsights()} data-insights>
+    <summary>📈 Insights</summary>
+    <p class="small muted">What visitors look at and look for, so you can give them more of it. Kept without knowing who anyone is: no cookie, nothing stored in their browser, no address kept; a visit is one browser's day, under a key that changes every day. Browsers that ask not to be followed, and robots, are not counted. Kept 90 days.</p>
+    <div class="inline" role="group" aria-label="Period">
+      {#each [7, 30, 90] as d (d)}<button class="chip" aria-pressed={iDays === d} onclick={() => ((iDays = d), loadInsights())} data-insights-days={d}>{d} days</button>{/each}
+    </div>
+    {#if insights}
+      {@const r = insights.report}
+      {@const most = Math.max(1, ...r.daily.map((d) => d.visits))}
+      <div class="stats" data-insights-stats>
+        <div><b>{r.visits}</b><span>visits</span></div>
+        <div><b>{r.views}</b><span>pages seen</span></div>
+        <div><b>{r.pagesPerVisit?.toFixed(1) ?? "—"}</b><span>pages a visit</span></div>
+        <div><b>{r.bounce == null ? "—" : `${Math.round(r.bounce * 100)}%`}</b><span>saw one page</span></div>
+        <div><b>{r.paid}</b><span>paid orders</span></div>
+      </div>
+      {#if r.daily.length}
+        <figure class="days">
+          <figcaption class="small muted">Visits a day, since {r.since}</figcaption>
+          <svg viewBox="0 0 {r.daily.length * 12} 64" preserveAspectRatio="none" role="img" aria-label="Visits a day">
+            {#each r.daily as d, i (d.day)}
+              {@const h = d.visits ? Math.max(3, (d.visits / most) * 60) : 1}
+              <rect x={i * 12 + 1} y={64 - h} width="10" height={h} rx={d.visits ? 2 : 0} class:none={!d.visits}><title>{d.day}: {d.visits} visits, {d.views} pages</title></rect>
+            {/each}
+          </svg>
+        </figure>
+      {/if}
+
+      <h3 class="h3">Where to look first</h3>
+      <ul class="ideas" data-insights-ideas>
+        {#each insights.ideas as idea, i (i)}
+          <li><span class="tag">{idea.area}</span> <b>{idea.saw}</b><br />{idea.idea}</li>
+        {/each}
+      </ul>
+      <p class="small muted">Rules of thumb read from the numbers: where to look, not what is true.</p>
+      <button class="btn ghost" onclick={askAdvice} disabled={advising || !r.visits} data-insights-advice>{advising ? "Reading…" : "Ask the site's AI for its reading"}</button>
+      {#if advice}
+        <ol class="ideas">
+          {#each advice as a, i (i)}<li><b>{a.saw}</b><br />{a.change} <span class="muted">— {a.why}</span></li>{/each}
+        </ol>
+      {/if}
+
+      <h3 class="h3">Pages</h3>
+      <div class="scroll">
+        <table data-insights-pages>
+          <thead><tr><th>Page</th><th>Seen</th><th>Visits</th><th>Time on it</th><th>Came in here</th><th>Left from here</th></tr></thead>
+          <tbody>
+            {#each r.pages as p (p.path)}
+              <tr><td class="mono">{p.path}</td><td>{p.views}</td><td>{p.visits}</td><td>{p.seconds == null ? "—" : `${p.seconds} s`}</td><td>{p.entries}</td><td>{p.exits} ({share(p.exits, p.visits)})</td></tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="h3">The ways through</h3>
+      {#if r.paths.length}<ol class="plain">{#each r.paths as p (p.path)}<li><span class="mono">{p.path}</span> <span class="muted">· {p.visits}</span></li>{/each}</ol>{:else}<p class="muted">No visits yet.</p>{/if}
+
+      <h3 class="h3">Looked for</h3>
+      {#if r.searches.length}
+        <div class="scroll">
+          <table data-insights-searches>
+            <thead><tr><th>Words</th><th>Where</th><th>Times</th><th>Found</th></tr></thead>
+            <tbody>{#each r.searches as q (q.where + q.words)}<tr class:missed={q.found === 0}><td>“{q.words}”</td><td class="mono">{q.where}</td><td>{q.times}</td><td>{q.found ?? "—"}</td></tr>{/each}</tbody>
+          </table>
+        </div>
+      {:else}<p class="muted">Nothing searched yet.</p>{/if}
+
+      <h3 class="h3">Asked the assistant</h3>
+      {#if r.asks.length}<ul class="plain">{#each r.asks as a (a.words)}<li>“{a.words}” <span class="muted">· {a.times}</span></li>{/each}</ul>{:else}<p class="muted">Nothing asked in their own words yet.</p>{/if}
+
+      <h3 class="h3">Pressed</h3>
+      {#if r.clicks.length}<ul class="plain cols">{#each r.clicks as c (c.what)}<li><span class="mono">{c.what}</span> <span class="muted">· {c.times} by {c.visits}</span></li>{/each}</ul>{:else}<p class="muted">Nothing pressed yet.</p>{/if}
+
+      <h3 class="h3">How far down the home page</h3>
+      {#if r.sections.some((x) => x.path === "/")}
+        <ul class="reach">
+          {#each r.sections.filter((x) => x.path === "/") as x (x.section)}
+            <li><span class="mono">{x.section}</span><span class="bar"><span style:width={`${Math.round(x.share * 100)}%`}></span></span><span>{Math.round(x.share * 100)}%</span></li>
+          {/each}
+        </ul>
+      {:else}<p class="muted">No home page visits yet.</p>{/if}
+
+      <h3 class="h3">From a visit to a purchase</h3>
+      <ul class="reach" data-insights-funnel>
+        {#each r.funnel as f (f.step)}
+          <li><span>{f.step}</span><span class="bar"><span style:width={share(f.visits, r.funnel[0]?.visits ?? 0)}></span></span><span>{f.visits}</span></li>
+        {/each}
+        <li><span>paid</span><span class="bar"><span style:width={share(r.paid, r.funnel[0]?.visits ?? 0)}></span></span><span>{r.paid}</span></li>
+      </ul>
+
+      <h3 class="h3">Who, broadly</h3>
+      <div class="by">
+        {#each Object.entries(BY_NAME) as [k, name] (k)}
+          <div><b>{name}</b>{#each r.by[k as keyof typeof BY_NAME] as c (c.value)}<span>{c.value} <span class="muted">{share(c.visits, r.visits)}</span></span>{:else}<span class="muted">—</span>{/each}</div>
+        {/each}
+      </div>
+    {/if}
+  </details>
 
   <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPeople()} data-people>
     <summary>👥 People ({overview?.users ?? "…"})</summary>
@@ -807,29 +1042,57 @@
     {/each}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadOrders()}>
+  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadOrders()} data-orders>
     <summary>🧾 Orders</summary>
+    <p class="small muted">Every order placed on this site, newest first. An order is made when someone starts paying: a bank transfer waits here, unpaid, until the money arrives and you mark it paid, or you call it off. Free trials, your own grants and rehearsals (the demo checkout, before real payments were set up) are orders too, at nothing; they are hidden unless you ask for them.</p>
+    <div class="inline filters">
+      <select bind:value={oState} aria-label="State" data-orders-state>{#each ORDER_STATES as st (st)}<option value={st}>{st === "all" ? "every state" : st}</option>{/each}</select>
+      <select bind:value={oWay} aria-label="Way to pay"><option value="all">every way</option>{#each Object.entries(WAY) as [k, v] (k)}<option value={k}>{v}</option>{/each}</select>
+      <input type="search" bind:value={oFind} placeholder="Name, address, edition, licence…" aria-label="Find an order" />
+      <label class="small"><input type="checkbox" bind:checked={oAll} data-orders-all /> trials, grants and rehearsals too</label>
+      <button class="btn quiet" onclick={ordersCsv} disabled={!shown.length}>CSV</button>
+    </div>
+    <p class="small" data-orders-sum>{shown.length} order{shown.length === 1 ? "" : "s"} · paid {sums.paid} · waiting {sums.waiting}</p>
     <div class="scroll">
       <table>
-        <thead><tr><th>When</th><th>What</th><th>Total</th><th>How</th><th>State</th><th></th></tr></thead>
+        <thead><tr><th>Placed</th><th>Who</th><th>What</th><th>Total</th><th>How</th><th>State</th><th></th></tr></thead>
         <tbody>
-          {#each orders as o (o.id)}
-            <tr>
-              <td>{new Date(o.at).toLocaleString()}</td>
-              <td>{o.e} · {o.p}</td>
-              <td>{money(o.t, o.c)}</td>
-              <td>{o.v}</td>
-              <td>{o.s}</td>
-              <td>
-                {#if o.s === "pending" && o.v === "transfer"}
+          {#each shown as o (o.id)}
+            <tr class="order" class:open={oOpen === o.id} onclick={() => (oOpen = oOpen === o.id ? null : o.id)} data-order={o.id}>
+              <td>{new Date(o.createdAt).toLocaleString()}</td>
+              <td>{o.who?.name ?? "an account since removed"}{#if o.who?.owner}<span class="tag">Owner</span>{/if}<br /><span class="muted small">{o.who?.email ?? o.who?.providers.join(", ") ?? ""}</span></td>
+              <td>{EDITION_INFO[o.edition]?.name ?? o.edition}{o.modules?.length ? ` (${o.modules.join(", ")})` : ""} · {o.plan}{#if o.gift}<span class="tag">gift</span>{/if}{#if o.upgrade}<span class="tag">upgrade</span>{/if}</td>
+              <td>{money(o.total, o.currency as "USD")}</td>
+              <td>{WAY[o.provider] ?? o.provider}</td>
+              <td><span class="state {o.status}">{o.status}</span></td>
+              <td onclick={(e) => e.stopPropagation()}>
+                {#if o.status === "pending" && o.provider === "transfer"}
                   <input class="cc" type="text" maxlength="2" placeholder="bank country" bind:value={bankCountry[o.id]} />
                   <button class="btn quiet" onclick={() => markPaid(o.id)}>Mark paid</button>
                 {/if}
+                {#if o.status === "pending"}<button class="btn quiet" onclick={() => cancelOrder(o)} data-order-cancel>Call off</button>{/if}
               </td>
             </tr>
+            {#if oOpen === o.id}
+              <tr class="detail"><td colspan="7">
+                <dl>
+                  <dt>Order</dt><dd class="mono">{o.id}</dd>
+                  <dt>Price</dt><dd>list {money(o.base, o.currency as "USD")} → regional {money(o.regional, o.currency as "USD")}{o.discount ? ` − ${money(o.discount, o.currency as "USD")}${o.promo ? ` (${o.promo})` : ""}` : ""}{o.student ? " · student" : ""}{o.upgrade ? ` · credit ${money(o.upgrade.credit, o.currency as "USD")} from ${o.upgrade.from}` : ""} = {money(o.total, o.currency as "USD")}{o.renews ? ", renewing" : ""}</dd>
+                  <dt>Country</dt><dd>claimed {o.claimedBand}, priced {o.band}{o.proof?.instrument ? ` · paid from ${o.proof.instrument}` : ""}{o.proof?.billing ? ` · billed in ${o.proof.billing}` : ""} — {o.proof?.reason}</dd>
+                  {#if o.paidAt}<dt>Paid</dt><dd>{new Date(o.paidAt).toLocaleString()}</dd>{/if}
+                  {#if o.licence}<dt>Licence</dt><dd class="mono">{o.licence}</dd>{/if}
+                  {#if o.providerRef && o.provider === "stripe"}<dt>Stripe</dt><dd><a href={stripeLink(o.providerRef)} target="_blank" rel="noopener">{o.providerRef}</a></dd>{:else if o.providerRef}<dt>Reference</dt><dd class="mono">{o.providerRef}</dd>{/if}
+                  {#if o.gift}<dt>Gift</dt><dd>{o.gift.for.length ? `for ${o.gift.for.join(", ")}` : "for whoever gets the line"}{o.gift.note ? ` — “${o.gift.note}”` : ""}</dd>{/if}
+                  {#if o.granted}<dt>Granted</dt><dd>by {o.granted.by}{o.granted.why ? ` — ${o.granted.why}` : ""}</dd>{/if}
+                  <dt>Account</dt><dd>{o.who ? `${o.who.name} · signs in with ${o.who.providers.join(", ") || "nothing"}` : o.uid}</dd>
+                </dl>
+              </td></tr>
+            {/if}
           {/each}
         </tbody>
       </table>
+      {#if orders.length && !shown.length}<p class="muted">No order matches.</p>{/if}
+      {#if !orders.length}<p class="muted">No orders yet.</p>{/if}
     </div>
   </details>
 
@@ -1042,6 +1305,135 @@
     border-radius: 999px;
     background: color-mix(in srgb, var(--accent) 22%, transparent);
     color: var(--text);
+  }
+  .days {
+    margin: 12px 0;
+  }
+  .days svg {
+    display: block;
+    width: 100%;
+    height: 64px;
+  }
+  .days rect {
+    fill: var(--accent);
+  }
+  .days rect.none {
+    fill: var(--line);
+  }
+  .days rect:hover {
+    fill: var(--text);
+  }
+  .ideas {
+    display: grid;
+    gap: 10px;
+    padding-left: 18px;
+    max-width: 80ch;
+  }
+  .ideas .tag {
+    margin-left: 0;
+  }
+  .plain {
+    padding-left: 18px;
+    display: grid;
+    gap: 4px;
+  }
+  .cols {
+    columns: 2 260px;
+    display: block;
+  }
+  tr.missed td {
+    color: var(--accent);
+  }
+  .reach {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    max-width: 640px;
+  }
+  .reach li {
+    display: grid;
+    grid-template-columns: 200px 1fr 48px;
+    gap: 10px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .reach .bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--raised);
+    overflow: hidden;
+  }
+  .reach .bar span {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+  }
+  .by {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+  .by div {
+    display: grid;
+    gap: 2px;
+    font-size: 13px;
+    align-content: start;
+  }
+  .filters :global(select),
+  .filters :global(input[type="search"]) {
+    width: auto !important;
+    flex: 0 1 auto;
+  }
+  .filters :global(input[type="search"]) {
+    flex: 1 1 220px;
+  }
+  .filters label {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .filters :global(input[type="checkbox"]) {
+    width: auto !important;
+    margin: 0;
+  }
+  .order {
+    cursor: pointer;
+  }
+  .order.open td,
+  .detail td {
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+  }
+  .detail dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 14px;
+    margin: 4px 0;
+    font-size: 13px;
+  }
+  .detail dt {
+    color: var(--dim);
+  }
+  .detail dd {
+    margin: 0;
+  }
+  .state {
+    font: 600 11px/1.6 var(--mono);
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--raised);
+  }
+  .state.paid {
+    background: color-mix(in srgb, #22c55e 30%, transparent);
+  }
+  .state.pending {
+    background: color-mix(in srgb, #eab308 30%, transparent);
+  }
+  .state.failed,
+  .state.cancelled,
+  .state.refunded {
+    background: color-mix(in srgb, #ef4444 25%, transparent);
   }
   .wish {
     padding: 8px 0;

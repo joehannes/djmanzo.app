@@ -62,7 +62,7 @@ function facts(): string {
   return `${STATUS_LINE}\n\nWhat djmanzo does (status in brackets: "shipped" is built and tested but has not been through a real gig; "part" is partly built; "planned" means NOT in the app yet; caveats in parentheses must be kept when the feature is mentioned):\n${lines.join("\n")}\n\nThe seven editions, one download unlocked by signing in, with a free seven-day trial of any of them:\n${eds.join("\n")}`;
 }
 
-const SYSTEM = `You write the blog for djmanzo, a DJ and karaoke application for macOS and Linux that treats Dominican and Caribbean music as first-class alongside club music.
+const SYSTEM = `You write the blog for djmanzo, a DJ and karaoke application for Windows, macOS and Linux that treats Dominican and Caribbean music as first-class alongside club music.
 
 Readers are DJs and karaoke hosts, from bedroom hobbyists to working professionals. Write like a working DJ who knows the culture: concrete, warm, specific about music, gear, rooms and crowds. Short paragraphs. Markdown body with ## headings, lists where they help, no tables, no images, no HTML.
 

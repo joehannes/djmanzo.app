@@ -8,6 +8,7 @@
   Nobody is charged a price they did not see.
 -->
 <script lang="ts">
+  import { track } from "../v4/insights";
   import { untrack } from "svelte";
   import { ApiError, post } from "../lib/api";
   import { catalog } from "../lib/catalog.svelte";
@@ -191,6 +192,7 @@
         (window as any).paypal
           .Buttons({
             createOrder: async () => {
+              track("click", "checkout:paypal");
               const r = await post("/api/checkout/paypal", input);
               paypalOrder = r.order;
               return r.paypalOrder;
@@ -225,7 +227,7 @@
 {:else}
   <div class="methods" role="radiogroup" aria-label={w.methodsAria}>
     {#each methods as m (m)}
-      <button class="chip" role="radio" aria-checked={method === m} onclick={() => (method = m)}>{LABEL[m]}</button>
+      <button class="chip" role="radio" aria-checked={method === m} onclick={() => (method = m)} data-track={`pay with:${m}`}>{LABEL[m]}</button>
     {/each}
   </div>
 
@@ -245,7 +247,7 @@
   {:else if method === "card"}
     <div bind:this={cardHost} class="stripe"></div>
     <div bind:this={addressHost} class="stripe"></div>
-    <button class="btn primary" onclick={() => card()} disabled={busy}>{busy ? "…" : fill(w.payAmount, { amount: display })}</button>
+    <button class="btn primary" onclick={() => card()} disabled={busy} data-track="checkout:card">{busy ? "…" : fill(w.payAmount, { amount: display })}</button>
     <p class="small muted">{w.cardNote}</p>
   {:else if method === "paypal"}
     <p class="small muted">{w.paypalNote}</p>
@@ -254,7 +256,7 @@
     <label class="field"><span>{w.billingIn}</span>
       <select bind:value={demoBilling}>{#each list as c (c.code)}<option value={c.code}>{flag(c.code)} {c.name}</option>{/each}</select>
     </label>
-    <button class="btn primary" onclick={bank} disabled={busy}>{w.bank}</button>
+    <button class="btn primary" onclick={bank} disabled={busy} data-track="checkout:transfer">{w.bank}</button>
   {:else}
     <p class="notice">{w.noWay}</p>
   {/if}

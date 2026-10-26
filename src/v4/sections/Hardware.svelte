@@ -4,6 +4,7 @@
   mapping has yet met its device. Better than a wall of logos: a search box.
 -->
 <script lang="ts">
+  import { searched } from "../insights";
   import { DEVICES, STATUS_WORDS, search } from "../hardware";
   import { art } from "../region.svelte";
   import FactList from "./FactList.svelte";
@@ -19,6 +20,8 @@
   let q = $state("");
   let only = $state<"all" | "mapped" | "planned">("all");
   const found = $derived(search(q).filter((d) => only === "all" || d.status === only));
+  // For Insights: what visitors look for here, and whether they found it.
+  $effect(() => searched("hardware", q, found.length));
 </script>
 
 <section class="section hardware" id="hardware" aria-labelledby="hw-title">

@@ -35,6 +35,7 @@ import * as releaseNotes from "./notes";
 import * as payments from "./payments";
 import * as signin from "./signin";
 import * as voucher from "./voucher";
+import * as insights from "./insights";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
 import { get, list, put, saveLicence, type Licence, type Order, type Promo, type User, type Video } from "./store";
@@ -395,7 +396,7 @@ route("GET", "/api/admin/overview", async (c) => {
     community.comments(c.env, "sample", { pending: true }),
     list(c.env.KV, "promo:", 10000),
   ]);
-  const paid = orders.filter((o) => o.metadata?.s === "paid" && o.metadata?.v !== "demo");
+  const paid = orders.filter((o) => insights.paidFor(o.metadata));
   const revenue: Record<string, number> = {};
   for (const o of paid) revenue[o.metadata!.c] = (revenue[o.metadata!.c] || 0) + o.metadata!.t;
   const byEdition: Record<string, number> = {};
@@ -417,6 +418,23 @@ route("GET", "/api/admin/overview", async (c) => {
     providers: auth.enabledProviders(c.env).map((p) => p.id),
     payments: { stripe: !!c.env.STRIPE_SECRET_KEY, paypal: !!c.env.PAYPAL_CLIENT_ID, transfer: !!c.env.BANK_TRANSFER_DETAILS, demo: auth.demoMode(c.env) },
   };
+});
+
+// What visitors look at and look for, without knowing who they are (`worker/insights.ts`).
+route("POST", "/api/hit", async (c) => {
+  await insights.record(c.env, c.req, await body(c.req, 16 * 1024).catch(() => null));
+  return new Response(null, { status: 204 });
+});
+route("GET", "/api/admin/insights", async (c) => {
+  await needAdmin(c);
+  await insights.forget(c.env);
+  const r = await insights.report(c.env, Number(c.url.searchParams.get("days") || 30));
+  return { report: r, ideas: insights.suggest(r) };
+});
+route("POST", "/api/admin/insights/advice", async (c) => {
+  await needAdmin(c);
+  const days = Number((await body<{ days?: number }>(c.req)).days || 30);
+  return insights.advise(c.env, await insights.report(c.env, days));
 });
 
 // Who the "people" on the overview are: every account, newest first, with how it signs in.
@@ -526,17 +544,30 @@ route("POST", "/api/admin/comments/moderate", async (c) => {
   return community.moderate(c.env, String(b.key || ""), !!b.approve);
 });
 
+// The orders, newest first, each whole and with who placed it: the 300 newest read in full.
 route("GET", "/api/admin/orders", async (c) => {
   await needAdmin(c);
-  const keys = await list<Record<string, unknown>>(c.env.KV, "order:", 10000);
-  return keys
-    .map((k) => ({ id: k.name.slice(6), ...(k.metadata ?? {}) }) as { id: string; at?: number })
-    .sort((a, b) => Number(b.at) - Number(a.at))
-    .slice(0, 500);
+  const keys = await list<{ at?: number }>(c.env.KV, "order:", 10000);
+  const newest = keys.sort((a, b) => Number(b.metadata?.at ?? 0) - Number(a.metadata?.at ?? 0)).slice(0, 300);
+  const people = new Map<string, Promise<User | null>>();
+  const rows = await Promise.all(
+    newest.map(async (k) => {
+      const o = await get<Order>(c.env.KV, k.name);
+      if (!o) return null;
+      if (!people.has(o.uid)) people.set(o.uid, get<User>(c.env.KV, `user:${o.uid}`));
+      const u = await people.get(o.uid)!;
+      return { ...o, who: u ? { name: u.name, email: u.email, providers: u.identities.map((i) => i.provider), owner: !!u.owner, demo: !!u.demo } : null };
+    }),
+  );
+  return { orders: rows.filter((r) => r !== null), stripeMode: payments.modeOf(await payments.withPayments(c.env)).stripe };
 });
 route("GET", "/api/admin/orders/:id", async (c) => {
   await needAdmin(c);
   return get<Order>(c.env.KV, `order:${c.params.id}`);
+});
+route("POST", "/api/admin/orders/:id/cancel", async (c) => {
+  await needAdmin(c);
+  return checkout.cancelOrder(c.env, c.params.id);
 });
 route("POST", "/api/admin/orders/:id/paid", async (c) => {
   await needAdmin(c);

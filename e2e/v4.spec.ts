@@ -482,6 +482,31 @@ test("Backstage: the crew sets a password, comes in with it, and grants a licenc
   expect(errs).toEqual([]);
 });
 
+test("Insights: a visitor's pages and search reach Backstage, with no cookie and nothing kept in their browser", async ({ browser, page }) => {
+  // An ordinary browser: a headless one is taken for a robot and not counted.
+  const visitor = await browser.newContext({ userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36" });
+  const v = await visitor.newPage();
+  const words = `insight ${Date.now().toString(36)}`;
+  await v.goto("/");
+  await v.goto("/features");
+  await v.locator("[data-feature-search]").fill(words);
+  await v.waitForTimeout(2000);
+  const stored = await v.evaluate(() => ({ cookie: document.cookie, local: Object.keys(localStorage).filter((k) => /insight|visit/i.test(k)), session: sessionStorage.length }));
+  expect(stored).toEqual({ cookie: "", local: [], session: 0 });
+  // Leaving the page sends what is left.
+  await v.close({ runBeforeUnload: true });
+  await visitor.close();
+
+  await page.goto("/backstage");
+  await page.locator("[data-crew-password]").fill("crew-secret");
+  await page.getByRole("button", { name: "Come in" }).click();
+  await page.locator("[data-insights] summary").click();
+  await page.locator("[data-insights-days='7']").click();
+  await expect(page.locator("[data-insights-searches]")).toContainText(words);
+  await expect(page.locator("[data-insights-pages]")).toContainText("/features");
+  await expect(page.locator("[data-insights-stats]")).toContainText("visits");
+});
+
 test("Backstage: payments are set without a deploy, shown back only by their ends, and the shop follows", async ({ page, request }) => {
   const errs = errors(page);
   const clear = { values: { STRIPE_PUBLISHABLE_KEY: "", STRIPE_SECRET_KEY: "" } };

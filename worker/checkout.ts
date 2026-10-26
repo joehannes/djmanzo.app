@@ -784,4 +784,15 @@ export async function markPaid(env: AppEnv, orderId: string, bankCountry: string
   return { ...(await issue(env, order, user)), proof };
 }
 
+/** The crew calls off an order nobody will pay: a bank transfer that never came, a card payment left half-done. */
+export async function cancelOrder(env: AppEnv, orderId: string): Promise<Order> {
+  const order = await get<Order>(env.KV, `order:${orderId}`);
+  if (!order) fail(404, "No such order.");
+  if (order.status !== "pending") fail(409, `This order is ${order.status}; only a waiting one can be called off.`);
+  if (order.provider === "stripe" && order.providerRef?.startsWith("pi_")) await stripe(env, "POST", `payment_intents/${order.providerRef}/cancel`).catch(() => null);
+  order.status = "cancelled";
+  await saveOrder(env, order);
+  return order;
+}
+
 export { inForce };

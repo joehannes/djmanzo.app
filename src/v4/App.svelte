@@ -35,6 +35,7 @@
   import Toast from "./Toast.svelte";
   import { flavourOf } from "../../shared/flavours";
   import { i18n } from "./i18n.svelte";
+  import { describe, track, view } from "./insights";
 
   let route = $state<Route>(parse(location.pathname));
   let ready = $state(false);
@@ -75,6 +76,7 @@
   function go(r: Route) {
     const changed = r.page !== route.page || r.rest.join("/") !== route.rest.join("/");
     route = r;
+    view(location.pathname);
     if (changed && r.page !== "home") scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     requestAnimationFrame(() => ScrollTrigger.refresh());
   }
@@ -95,7 +97,38 @@
     if (id) requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(id)?.scrollIntoView()));
   }
 
+  /** For Insights, what a press is called: by its `data-track`, or by what the control already says it is. */
+  const NAMED: [string, (el: HTMLElement) => string][] = [
+    ["[data-track]", (el) => el.dataset.track ?? ""],
+    ["[data-download-kind]", (el) => `download:${el.dataset.downloadKind}`],
+    ["[data-download-default]", (el) => `download:${el.dataset.downloadDefault || "menu"}`],
+    ["[data-lang]", (el) => `language:${el.dataset.lang}`],
+    ["[data-skin]", (el) => `look:${el.dataset.skin}`],
+    ["[data-groove]", (el) => `deck:${el.dataset.groove}`],
+    ["[data-stem]", (el) => `deck part:${el.dataset.stem}`],
+    ["[data-choose]", (el) => `edition:${el.dataset.choose}`],
+    ["[data-plan]", (el) => `plan:${el.dataset.plan}`],
+    ["[data-trial]", () => "trial"],
+    ["[data-night]", (el) => `night:${el.dataset.night}`],
+  ];
+
+  /** For Insights: a press on something named, a sign-in begun, a link to another site. */
+  function noted(e: MouseEvent) {
+    const el = e.target as HTMLElement;
+    for (const [selector, name] of NAMED) {
+      const hit = el.closest<HTMLElement>(selector);
+      if (hit) return track("click", name(hit));
+    }
+    const a = el.closest("a");
+    if (!a?.href) return;
+    if (a.origin === location.origin && a.pathname.startsWith("/auth/start/")) track("click", `signin:${a.pathname.split("/")[3] ?? ""}`);
+    else if (a.origin !== location.origin && /^https?:/.test(a.protocol)) track("click", `out:${a.hostname.replace(/^www\./, "")}`);
+  }
+
   onMount(() => {
+    describe(() => ({ lang: i18n.lang, look: region.skin }));
+    view(location.pathname);
+    document.addEventListener("click", noted, { capture: true });
     // Back from a provider: what it said, read once and taken out of the address.
     session.readReturn();
     void session.refresh();
@@ -111,6 +144,7 @@
     return () => {
       removeEventListener("popstate", popped);
       document.removeEventListener("click", intercept);
+      document.removeEventListener("click", noted, { capture: true });
     };
   });
 </script>

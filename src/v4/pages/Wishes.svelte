@@ -9,6 +9,7 @@
   that requests do turn into features.
 -->
 <script lang="ts">
+  import { searched } from "../insights";
   import { onMount } from "svelte";
   import { api, post } from "../../lib/api";
   import { session } from "../../lib/session.svelte";
@@ -75,6 +76,8 @@
     return sort === "top" ? list.toSorted((a, b) => b.votes - a.votes || b.createdAt - a.createdAt) : list.toSorted((a, b) => b.createdAt - a.createdAt);
   });
   const count = (s: string) => (s === "all" ? wishes.length : wishes.filter((w) => w.status === s).length);
+  // For Insights: what visitors look for here, and whether they found it.
+  $effect(() => searched("wishes", query, shown.length));
 
   async function vote(w: WishRow) {
     try {

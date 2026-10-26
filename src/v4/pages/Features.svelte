@@ -6,6 +6,7 @@
   on a screenshot of the real application where one shows it.
 -->
 <script lang="ts">
+  import { searched } from "../insights";
   import { onMount } from "svelte";
   import { EDITION_INFO, type Edition } from "../../../shared/catalog";
   import { AREAS, FACTS, areaOf, carriedBy, type Area, type Fact } from "../../../shared/facts";
@@ -42,6 +43,8 @@
   const groups = $derived(AREAS.map((a) => ({ ...ta(a), facts: FACTS.map(tf).filter((f) => areaOf(f) === a.id && matches(f)) })).filter((g) => g.facts.length));
   const counts = { shipped: FACTS.filter((f) => f.status === "shipped").length, part: FACTS.filter((f) => f.status === "part").length, planned: FACTS.filter((f) => f.status === "planned").length };
   const shown = $derived(groups.reduce((n, g) => n + g.facts.length, 0));
+  // For Insights: what visitors look for here, and whether they found it.
+  $effect(() => searched("features", query, shown));
 
   onMount(() => {
     const e = new URLSearchParams(location.search).get("edition") as Edition | null;

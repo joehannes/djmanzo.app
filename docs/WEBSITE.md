@@ -1212,3 +1212,49 @@ reported.
   the Apprentice, Karaoke and Auto-Pilot · AI editions, in all seven
   languages: seven cells in a row, the platforms across two columns when
   the row wraps so every row is full.
+
+## Orders in full, and Insights (26 October)
+
+- **The owner asked** whether the order they found was real or one of the
+  session's tests. None of the tests touch the live site's store (they run
+  against `wrangler dev`'s local one); the live overview showed one bank
+  transfer waiting and nothing paid. **🧾 Orders** now says who placed each
+  order (name, address, how they sign in), what it came to (list, regional,
+  discount, promo, credit, total), the country it was priced for and why,
+  its licence, gift or grant, and a link to the payment in Stripe's
+  dashboard. It filters by state, way to pay and words, exports CSV, and
+  calls off a waiting order (`POST /api/admin/orders/:id/cancel`, which
+  also cancels a Stripe payment left half-done). Free trials, the crew's
+  grants and rehearsals are orders at nothing, hidden unless asked for,
+  and no longer counted as "paid orders" on the overview (`paidFor`).
+- **📈 Insights** (`worker/insights.ts`, `src/v4/insights.ts`, D1 table
+  `hits`, migration 0004) shows what visitors look at and look for: visits
+  a day, pages with their time and how many came in or left there, the
+  commonest ways through the site, what was searched for (features,
+  hardware, wishes) with what found nothing marked, what the assistant was
+  asked in visitors' own words, what was pressed (downloads by system,
+  editions, plans, the trial, checkouts by way, sign-ins by provider, the
+  deck, looks and languages, links out), how far down the home page people
+  get, the steps from a visit to a purchase, and language, look, country,
+  device and the site people came from. **Where to look first** turns it
+  into rules of thumb once there are twenty visits; **Ask the site's AI**
+  sends the same aggregate numbers (nothing about anyone) to the site's AI
+  for its reading.
+- **Kept without knowing who anyone is.** No cookie, nothing stored in the
+  browser; a visit is a SHA-256 of the day's random salt (KV, two days),
+  the address and the browser's name, cut to sixteen hex digits, so it
+  cannot be turned back into an address nor followed into the next day.
+  The address is never stored; e-mail addresses and phone numbers are taken
+  out of what is typed; Global Privacy Control, Do Not Track and robots
+  (headless browsers included) are not counted; rows go after 90 days. The
+  privacy notice says all of this (`shared/legal.ts`).
+- **Tests:** `test/insights.test.ts` holds a recorded visit to its pages,
+  times, path, searches (found and not), the assistant's question with the
+  address and number taken out, sections, devices and funnel; the robot,
+  GPC and DNT not counted; no address or cookie anywhere; the same browser
+  the next day a new visit; the rules of thumb; crew only (breaking the GPC
+  check, the address scrubbing or the daily salt fails it).
+  `test/orders.test.ts` holds the orders' rows and calling off (breaking the
+  "waiting only" rule fails it). The browser test sends a real visit from an
+  ordinary browser and finds its search in Backstage, with no cookie or
+  storage left behind (removing the send on leaving fails it).

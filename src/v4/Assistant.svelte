@@ -10,6 +10,7 @@
   questions it can answer.
 -->
 <script lang="ts">
+  import { track } from "./insights";
   import { onMount, tick } from "svelte";
   import { post, api } from "../lib/api";
   import { NAMED, type Edition } from "../../shared/catalog";
@@ -71,6 +72,7 @@
   /** A question offered as a button: answered from what djmanzo does, without the AI. */
   function ask(id: string) {
     if (busy) return;
+    track("click", `assistant:${id}`);
     lines.push({ from: "visitor", canned: id });
     const left = unasked();
     lines.push({ from: "guide", canned: id, actions: CANNED_BY_ID[id].actions, offer: left.length ? left : undefined });
@@ -80,6 +82,7 @@
   async function toggle() {
     open = !open;
     if (open) {
+      track("click", "assistant:open");
       hello();
       await tick();
       if (panel && !reduced()) gsap.fromTo(panel, { y: 24, opacity: 0, scale: 0.98 }, { y: 0, opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" });
@@ -98,6 +101,7 @@
     if (!text || busy) return;
     draft = "";
     const typed = CANNED.find((c) => Object.values(c.q).some((q) => q.toLowerCase() === text.toLowerCase()));
+    if (!typed) track("ask", text);
     if (typed) return ask(typed.id);
     lines.push({ from: "visitor", text });
     busy = true;

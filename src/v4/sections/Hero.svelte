@@ -105,7 +105,7 @@
   <div class="wrap deckwrap" data-hero-rise>
     <div class="deck card" data-deck data-deck-source={deck.source}>
       <div class="transport">
-        <button class="play" class:on={deck.playing} class:busy={deck.loading} aria-busy={deck.loading} onclick={toggle} aria-label={deck.playing ? t("hero.stop") : t("hero.play")} data-play>
+        <button data-track="deck:play" class="play" class:on={deck.playing} class:busy={deck.loading} aria-busy={deck.loading} onclick={toggle} aria-label={deck.playing ? t("hero.stop") : t("hero.play")} data-play>
           {#if deck.playing}
             <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
           {:else}
