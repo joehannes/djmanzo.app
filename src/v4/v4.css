@@ -109,6 +109,11 @@ body {
   unicode-bidi: plaintext;
 }
 
+/* Korean breaks a line between words, never inside one. */
+:lang(ko) {
+  word-break: keep-all;
+}
+
 img {
   max-width: 100%;
   display: block;

@@ -279,6 +279,28 @@ export const SEO: Record<BuiltInLang, SeoWords> & Partial<Record<PackLang, SeoWo
     noEdition: "अभी किसी एडिशन में नहीं",
     frame: { site: "साइट", imprint: "साइट की जानकारी", terms: "शर्तें", rules: "कम्युनिटी के नियम", privacy: "प्राइवेसी" },
   },
+  ko: {
+    title: "djmanzo — 다양한 맛의 DJ·노래방 소프트웨어",
+    description: "djmanzo, Windows, macOS, Linux용 다양한 맛의 DJ·노래방 소프트웨어, 베타 — 레코드의 홈에서 플로어 위의 사람들까지.",
+    lead: "Windows, macOS, Linux용 다양한 맛의 DJ·노래방 소프트웨어, 베타: 라이브 스템, 추천 이유를 설명하고 믹스를 맡을 수 있는 어시스턴트, 노래방의 밤 내장, 그리고 영원히 무료인 Hobbyist 에디션.",
+    does: "하는 일",
+    beside: "그 밖에",
+    links: {
+      pricing: ["에디션과 가격", "하나의 다운로드에 일곱 개 에디션, 사는 곳에 맞춘 가격."],
+      outboard: ["Outboard", "마켓플레이스: DJ들이 djmanzo를 위해 만든 테마, 스킨, 비주얼. 모두 무료입니다."],
+      talkback: ["Talkback", "이야기하는 곳: 기술, 음악, 장비, 공연을 둘러싼 삶, 그리고 djmanzo."],
+      blog: ["블로그", "디제잉과 djmanzo에 관한 글."],
+      features: ["모든 기능", "djmanzo가 하는 일을 에디션별로, 아직 검증되지 않은 것까지."],
+      wishes: ["기능 요청", "djmanzo가 다음에 할 일을 요청하고 투표하세요."],
+      account: ["내 계정", "로그인, 내 라이선스, 그리고 그것을 djmanzo로 옮기는 한 줄."],
+    },
+    download: "djmanzo 다운로드",
+    featuresTitle: "모든 기능",
+    featuresDescription: "djmanzo가 하는 모든 일을 에디션별로: 제공 중인 것, 일부 구현된 것, 계획된 것, 그리고 아직 검증되지 않은 것.",
+    word: { shipped: "제공 중", part: "일부 구현", planned: "계획됨" },
+    noEdition: "아직 어떤 에디션에도 없음",
+    frame: { site: "사이트", imprint: "사이트 정보", terms: "이용약관", rules: "커뮤니티 규칙", privacy: "개인정보" },
+  },
 };
 
 const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja };
