@@ -5,6 +5,8 @@ describe("Backstage's orders", () => {
   it("show who placed each and what it came to, and a waiting one can be called off, by the crew only", async () => {
     const env = openSite({ BANK_TRANSFER_DETAILS: "IBAN AT00 0000 0000 0000 0000, the owner" });
     const buyer = await person(env, "Buyer");
+    // Where the receipt goes, confirmed first: the address GitHub vouched for, by the buyer's own press.
+    expect((await buyer.call("/api/me/contact", { method: "POST", json: { email: "buyer@example.test" } })).data.contact.confirmed).toBeGreaterThan(0);
     const placed = await buyer.call("/api/checkout/transfer", { method: "POST", json: { edition: "full", plan: "perpetual", country: "AT", billing: "AT" } });
     expect(placed.status).toBe(200);
     const id = placed.data.order.id as string;

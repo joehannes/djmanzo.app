@@ -35,6 +35,9 @@ import { fail, randomId } from "./http";
 import { inForce, termEnd } from "./licence";
 import { consume, judge, lookup, usedBy, type Judgement } from "./promo";
 import { stripe, verifyWebhook } from "./stripe";
+import * as mail from "./mail";
+import { lineFor } from "./applicence";
+import { stripeMethods } from "./payments";
 import * as voucher from "./voucher";
 import { paypal } from "./paypal";
 import { get, put, saveLicence, type Licence, type Order, type User } from "./store";
@@ -228,7 +231,7 @@ function describe(q: Quote): string {
   return `djmanzo ${EDITION_INFO[q.edition].name}${custom} — ${PLAN_INFO[q.plan].name}${up}`;
 }
 
-async function newOrder(env: AppEnv, user: User, q: Quote, claimed: Band, proof: Order["proof"], provider: Order["provider"], renews: boolean, gift: QuoteInput["gift"] = null): Promise<Order> {
+async function newOrder(env: AppEnv, user: User, q: Quote, claimed: Band, proof: Order["proof"], provider: Order["provider"], renews: boolean, gift: QuoteInput["gift"] = null, origin: string | null = null): Promise<Order> {
   const order: Order = {
     id: `o_${randomId(12)}`,
     uid: user.id,
@@ -251,8 +254,9 @@ async function newOrder(env: AppEnv, user: User, q: Quote, claimed: Band, proof:
     status: "pending",
     renews,
     createdAt: Date.now(),
-    email: user.email,
+    email: user.contact?.email ?? user.email,
     name: user.name,
+    origin,
     ...(gift ? { gift: { for: gift.for ? [gift.for] : [], note: gift.note ?? null, voucher: null } } : {}),
   };
   await put(env.KV, `order:${order.id}`, order, undefined, { u: user.id, s: order.status, t: order.total, c: order.currency, e: order.edition, p: order.plan, v: provider, at: order.createdAt });
@@ -275,7 +279,12 @@ export async function userLicences(env: AppEnv, uid: string): Promise<Licence[]>
  * cannot make two.
  */
 export async function issue(env: AppEnv, order: Order, user: User, opts: { expires?: number | null; subscription?: string | null; months?: number } = {}): Promise<{ licence: Licence; gift?: undefined } | { gift: Gift; licence?: undefined }> {
-  if (order.gift) return { gift: await giveGift(env, order, user) };
+  if (order.gift) {
+    const first = !order.gift.voucher;
+    const gift = await giveGift(env, order, user);
+    if (first) await afterPaid(env, order, user, { giftLine: gift.line });
+    return { gift };
+  }
   if (order.licence) {
     const existing = await get<Licence>(env.KV, `licence:${order.licence}`);
     if (existing) return { licence: existing };
@@ -290,7 +299,7 @@ export async function issue(env: AppEnv, order: Order, user: User, opts: { expir
     status: "active",
     expires: opts.expires !== undefined ? opts.expires : termEnd(order.plan, Date.now(), opts.months),
     order: order.id,
-    demo: order.provider === "demo" || !!user.demo,
+    demo: order.provider === "demo" || !!user.demo || !!order.test,
     createdAt: Date.now(),
     subscription: opts.subscription ?? null,
   };
@@ -312,7 +321,18 @@ export async function issue(env: AppEnv, order: Order, user: User, opts: { expir
       await saveLicence(env.KV, old);
     }
   }
+  if (["stripe", "paypal", "transfer"].includes(order.provider) && order.total > 0) {
+    const line = await lineFor(env, user).catch(() => null);
+    await afterPaid(env, order, user, { line: line?.licence ?? null });
+  }
   return { licence };
+}
+
+/** Money taken: the receipt, with the licence key or the gift, to the address the buyer confirmed. Once. */
+async function afterPaid(env: AppEnv, order: Order, user: User, got: { line?: string | null; giftLine?: string | null }): Promise<void> {
+  if (!["stripe", "paypal", "transfer"].includes(order.provider) || order.total <= 0 || order.mailed?.receipt || !order.origin) return;
+  await mail.toBuyer(env, order, user, mail.receipt(env, order, user, order.origin, got), "receipt");
+  await saveOrder(env, order);
 }
 
 /** A gift bought: the voucher line to hand over, and where it is taken. */
@@ -559,10 +579,13 @@ async function stripeProduct(env: AppEnv, edition: Edition): Promise<string> {
   return p.id;
 }
 
-export async function stripeConfirm(env: AppEnv, user: User, origin: string, input: QuoteInput & { paymentMethod: string; acceptHigher?: boolean }) {
+export async function stripeConfirm(env: AppEnv, user: User, origin: string, input: QuoteInput & { paymentMethod: string; acceptHigher?: boolean }, client: { ip: string; ua: string } | null = null) {
   realBuyer(user);
+  mail.needContact(env, user);
   if (!/^pm_[A-Za-z0-9]+$/.test(input.paymentMethod || "")) fail(400, "The card form did not finish.");
   const pm = await stripe(env, "GET", `payment_methods/${input.paymentMethod}`);
+  const offered = await stripeMethods(env);
+  if (!(input.plan === "perpetual" ? offered.once : offered.renewing).includes(pm.type)) fail(400, "That way to pay is not offered here: choose another.");
   // The paying instrument's country: a card's (Apple Pay and Google Pay carry one), PayPal's payer, or Austria for EPS, whose banks are all Austrian.
   const instrument: string | null = pm.card?.country ?? pm.sepa_debit?.country ?? pm.link?.country ?? pm.paypal?.country ?? (pm.type === "eps" ? "AT" : null);
   const billing: string | null = pm.billing_details?.address?.country ?? null;
@@ -574,8 +597,12 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
   if (q.total === 0) return freeCheckout(env, user, input);
 
   const customer = await stripeCustomer(env, user);
-  await stripe(env, "POST", `payment_methods/${input.paymentMethod}/attach`, { customer });
-  const order = await newOrder(env, user, q, claimed, { instrument, billing, reason: proof.reason }, "stripe", q.plan !== "perpetual", input.gift);
+  // Only what renews is kept on the customer: a way to pay that works once (EPS, Klarna…) cannot be, and Stripe refuses to.
+  if (q.plan !== "perpetual") await stripe(env, "POST", `payment_methods/${input.paymentMethod}/attach`, { customer });
+  const order = await newOrder(env, user, q, claimed, { instrument, billing, reason: proof.reason }, "stripe", q.plan !== "perpetual", input.gift, origin);
+  order.method = methodName(pm);
+  // Stripe's test mode moves no money: what it pays for is a rehearsal, whatever the card form looked like.
+  if (!String(env.STRIPE_SECRET_KEY).includes("_live_")) order.test = true;
   const currency = q.currency.toLowerCase();
 
   if (q.plan === "perpetual") {
@@ -588,6 +615,10 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
         currency,
         customer,
         payment_method: input.paymentMethod,
+        // Exactly the way the buyer chose: what the form offered is what the payment takes.
+        payment_method_types: [pm.type],
+        // A direct debit needs the buyer's agreement on record: given in the form, here.
+        ...(pm.type === "sepa_debit" && client ? { mandate_data: { customer_acceptance: { type: "online", online: { ip_address: client.ip, user_agent: client.ua } } } } : {}),
         confirm: true,
         description: describe(q),
         // A method that leaves the page (PayPal, EPS) comes back to the shop, which finishes it (`Pricing.svelte`).
@@ -600,6 +631,7 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
     await saveOrder(env, order);
     if (pi.status === "succeeded") return { order, ...(await issue(env, order, user)), proof };
     if (pi.status === "requires_action") return { order, clientSecret: pi.client_secret, requiresAction: true, proof };
+    if (pi.status === "processing") return { order: await underway(env, order, user), processing: true, proof };
     order.status = "failed";
     await saveOrder(env, order);
     fail(402, "The payment did not go through.");
@@ -618,6 +650,7 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
       customer,
       default_payment_method: input.paymentMethod,
       payment_behavior: "allow_incomplete",
+      payment_settings: { payment_method_types: [pm.type], save_default_payment_method: "on_subscription" },
       items: [{ price_data: { currency, product: await stripeProduct(env, q.edition), unit_amount: q.regional, recurring: { interval: q.plan === "yearly" ? "year" : "month" } } }],
       ...(coupon ? { discounts: [{ coupon }] } : {}),
       metadata: { order: order.id, uid: user.id },
@@ -632,9 +665,27 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
   }
   const pi = sub.latest_invoice?.payment_intent;
   if (pi?.status === "requires_action") return { order, clientSecret: pi.client_secret, requiresAction: true, proof };
+  if (pi?.status === "processing") return { order: await underway(env, order, user), processing: true, proof };
   order.status = "failed";
   await saveOrder(env, order);
   fail(402, "The payment did not go through.");
+}
+
+/** How a payment method is called by the person who used it: "Visa …4242", "Apple Pay", "SEPA Direct Debit". */
+export function methodName(pm: Record<string, any>): string {
+  const wallet = pm.card?.wallet?.type as string | undefined;
+  if (wallet) return ({ apple_pay: "Apple Pay", google_pay: "Google Pay", link: "Link", samsung_pay: "Samsung Pay" } as Record<string, string>)[wallet] ?? wallet;
+  if (pm.type === "card" && pm.card) return `${String(pm.card.brand ?? "card").replace(/^\w/, (c: string) => c.toUpperCase())} …${pm.card.last4 ?? ""}`.trim();
+  const NAMES: Record<string, string> = { sepa_debit: "SEPA Direct Debit", eps: "EPS", paypal: "PayPal", link: "Link", klarna: "Klarna", ideal: "iDEAL", bancontact: "Bancontact", p24: "Przelewy24", twint: "TWINT", revolut_pay: "Revolut Pay", amazon_pay: "Amazon Pay" };
+  return NAMES[pm.type] ?? String(pm.type ?? "card");
+}
+
+/** A payment the bank is still clearing: the order waits, and the buyer is told what that means. */
+async function underway(env: AppEnv, order: Order, user: User): Promise<Order> {
+  order.status = "pending";
+  if (order.origin && !order.mailed?.processing) await mail.toBuyer(env, order, user, mail.processing(env, order, user, order.origin), "processing");
+  await saveOrder(env, order);
+  return order;
 }
 
 /** After 3-D Secure: ask Stripe how it ended. */
@@ -643,10 +694,12 @@ export async function stripeFinalize(env: AppEnv, user: User, orderId: string) {
   if (!order || order.uid !== user.id || order.provider !== "stripe" || !order.providerRef) fail(404, "No such order.");
   if (order.plan === "perpetual") {
     const pi = await stripe(env, "GET", `payment_intents/${order.providerRef}`);
+    if (pi.status === "processing") return { order: await underway(env, order, user), processing: true };
     if (pi.status !== "succeeded") fail(402, "The payment has not gone through.");
     return { order, ...(await issue(env, order, user)) };
   }
-  const sub = await stripe(env, "GET", `subscriptions/${order.providerRef}`);
+  const sub = await stripe(env, "GET", `subscriptions/${order.providerRef}`, { expand: ["latest_invoice.payment_intent"] });
+  if (sub.latest_invoice?.payment_intent?.status === "processing") return { order: await underway(env, order, user), processing: true };
   if (sub.status !== "active" && sub.status !== "trialing") fail(402, "The payment has not gone through.");
   return { order, ...(await issue(env, order, user, { expires: sub.current_period_end * 1000 + 3 * 86400_000, subscription: sub.id })) };
 }
@@ -665,6 +718,16 @@ export async function stripeWebhook(env: AppEnv, req: Request): Promise<Response
   if (event.type === "invoice.paid") {
     const licence = await licenceFor(o.subscription);
     const end = o.lines?.data?.[0]?.period?.end;
+    // The first payment of a subscription that the bank cleared later: its licence now.
+    if (!licence && o.subscription) {
+      const sub = await stripe(env, "GET", `subscriptions/${o.subscription}`).catch(() => null);
+      const order = sub?.metadata?.order ? await get<Order>(env.KV, `order:${sub.metadata.order}`) : null;
+      const user = order && (await get<User>(env.KV, `user:${order.uid}`));
+      if (sub && order && user && !order.licence && !order.gift?.voucher) {
+        order.origin ??= new URL(req.url).origin;
+        await issue(env, order, user, { expires: (end ?? sub.current_period_end) * 1000 + 3 * 86400_000, subscription: sub.id });
+      }
+    }
     if (licence && end) {
       licence.expires = Math.max(licence.expires ?? 0, end * 1000 + 3 * 86400_000);
       licence.status = "active";
@@ -680,7 +743,16 @@ export async function stripeWebhook(env: AppEnv, req: Request): Promise<Response
   } else if (event.type === "payment_intent.succeeded" && o.metadata?.order) {
     const order = await get<Order>(env.KV, `order:${o.metadata.order}`);
     const user = order && (await get<User>(env.KV, `user:${order.uid}`));
-    if (order && user && order.plan === "perpetual" && !order.licence && !order.gift?.voucher) await issue(env, order, user);
+    if (order && user && order.plan === "perpetual" && !order.licence && !order.gift?.voucher) {
+      order.origin ??= new URL(req.url).origin;
+      await issue(env, order, user);
+    }
+  } else if (event.type === "payment_intent.payment_failed" && o.metadata?.order) {
+    const order = await get<Order>(env.KV, `order:${o.metadata.order}`);
+    if (order && order.status === "pending") {
+      order.status = "failed";
+      await saveOrder(env, order);
+    }
   } else if (event.type === "charge.refunded" && o.payment_intent) {
     // Find the order by the payment intent through its metadata.
     const pi = await stripe(env, "GET", `payment_intents/${o.payment_intent}`).catch(() => null);
@@ -706,11 +778,13 @@ export async function stripeWebhook(env: AppEnv, req: Request): Promise<Response
  * its dashboard ahead of time; a prepaid term needs nothing and is honest
  * about what it is.
  */
-export async function paypalCreate(env: AppEnv, user: User, input: QuoteInput) {
+export async function paypalCreate(env: AppEnv, user: User, input: QuoteInput, origin: string | null = null) {
   realBuyer(user);
+  mail.needContact(env, user);
   const q = await quote(env, user, input);
   if (q.total === 0) fail(400, "Nothing to pay — use the free checkout.");
-  const order = await newOrder(env, user, q, q.band, { reason: "Waiting for PayPal." }, "paypal", false, input.gift);
+  const order = await newOrder(env, user, q, q.band, { reason: "Waiting for PayPal." }, "paypal", false, input.gift, origin);
+  order.method = "PayPal";
   const pp = await paypal(
     env,
     "POST",
@@ -766,17 +840,21 @@ export async function paypalCapture(env: AppEnv, user: User, orderId: string, ac
  * The order waits; the owner marks it paid in Backstage after reading the
  * transfer, whose sending bank's country is the proof.
  */
-export async function transferCheckout(env: AppEnv, user: User, input: QuoteInput & { billing?: string }) {
+export async function transferCheckout(env: AppEnv, user: User, input: QuoteInput & { billing?: string }, origin: string | null = null) {
   realBuyer(user);
   if (!env.BANK_TRANSFER_DETAILS) fail(404, "Bank transfer is not offered.");
+  const to = mail.needContact(env, user);
   const q = await quote(env, user, input);
-  const order = await newOrder(env, user, q, q.band, { billing: input.billing ?? null, reason: "Proven by the sending bank, checked by hand." }, "transfer", false, input.gift);
-  return { order, instructions: env.BANK_TRANSFER_DETAILS, reference: order.id, display: money(q.total, q.currency) };
+  const order = await newOrder(env, user, q, q.band, { billing: input.billing ?? null, reason: "Proven by the sending bank, checked by hand." }, "transfer", false, input.gift, origin);
+  const mailed = origin ? await mail.toBuyer(env, order, user, mail.waiting(env, order, user, origin, env.BANK_TRANSFER_DETAILS), "waiting") : false;
+  await saveOrder(env, order);
+  return { order, instructions: env.BANK_TRANSFER_DETAILS, reference: order.id, display: money(q.total, q.currency), mailedTo: mailed ? to : null };
 }
 
-export async function markPaid(env: AppEnv, orderId: string, bankCountry: string | null) {
+export async function markPaid(env: AppEnv, orderId: string, bankCountry: string | null, origin: string | null = null) {
   const order = await get<Order>(env.KV, `order:${orderId}`);
   if (!order) fail(404, "No such order.");
+  if (origin) order.origin ??= origin;
   const user = await get<User>(env.KV, `user:${order.uid}`);
   if (!user) fail(404, "The buyer's account is gone.");
   const proof = proven({ instrument: bankCountry, billing: order.proof.billing ?? bankCountry }, order.claimedBand);

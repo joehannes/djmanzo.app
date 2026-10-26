@@ -7,6 +7,8 @@
   site already has works here.
 -->
 <script lang="ts">
+  import Contact from "../../shop/Contact.svelte";
+  import Status from "../../shop/Status.svelte";
   import { onMount } from "svelte";
   import { EDITIONS, MODULES, MODULE_TITLE, NAMED, money, type Edition, type Module, type Plan } from "../../../shared/catalog";
   import { BAND_NAME, band as bandOf, currencyFor, regional, type Band } from "../../../shared/regions";
@@ -61,6 +63,8 @@
   let quote = $state<any>(null);
   let quoteError = $state<string | null>(null);
   let done = $state<any>(null);
+  /** The buyer's address is settled (`Contact.svelte`): the checkout may show. */
+  let reachable = $state(false);
   let trialMsg = $state<string | null>(null);
   let voucher = $state("");
   let voucherMsg = $state<string | null>(null);
@@ -228,6 +232,8 @@
         </label>
         <button class="btn ghost" onclick={() => (done = null)}>{w.back}</button>
       </div>
+    {:else if done?.order && (done.instructions || done.processing || (done.licence && done.licence.plan !== "trial" && !done.licence.demo))}
+      <Status {done} edition={c?.editions[done.order.edition as Edition]?.name ?? done.order.edition} plan={(w.plan[done.order.plan as "perpetual"] ?? done.order.plan).toLowerCase()} days={c?.trialDays ?? 7} releases={RELEASES} ontrial={trial} onback={() => (done = null)} />
     {:else if done}
       <div class="done card" data-done>
         <p class="eyebrow">{w.doneEyebrow}</p>
@@ -308,7 +314,9 @@
               <SignIn compact back={`/pricing${location.search}#checkout`} why={w.signInWhy} />
             {:else}
               <p class="dim">{@html fill(w.signedAs, { name: session.user.name.replace(/[<>&]/g, "") })}</p>
-              {#if quote}
+              <!-- Where the receipt and licence go, settled before a payment (a rehearsal or nothing to pay needs none). -->
+              {#if quote && quote.total > 0 && !catalog.data?.pay?.demo}<Contact bind:ready={reachable} />{/if}
+              {#if quote && (reachable || quote.total === 0 || catalog.data?.pay?.demo)}
                 <Checkout {edition} modules={chosenModules} {plan} {country} {promo} {gift} total={quote.total} display={money(quote.total, quote.currency)} ondone={(r) => (done = r)} />
               {/if}
             {/if}

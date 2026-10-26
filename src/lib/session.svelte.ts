@@ -29,6 +29,8 @@ export interface SessionUser {
   supports?: string[];
   /** They support djmanzo somewhere. */
   supporter?: boolean;
+  /** Where the site writes to them, and when they confirmed it (null: kept while e-mail is not set up). */
+  contact?: { email: string; confirmed: number | null } | null;
 }
 
 class Session {
@@ -36,6 +38,8 @@ class Session {
   admin = $state(false);
   /** One of the crew's own accounts, whether or not it has given the crew's password in this browser yet. */
   crew = $state(false);
+  /** Whether the site can send e-mail: a code to confirm an address, a receipt. */
+  mail = $state(false);
   providers = $state<{ id: string; name: string }[]>([]);
   demo = $state(true);
   loaded = $state(false);
@@ -63,10 +67,11 @@ class Session {
 
   async refresh() {
     try {
-      const me = await api<{ user: SessionUser | null; admin: boolean; crew?: boolean; providers: { id: string; name: string }[]; demo: boolean }>("/api/me");
+      const me = await api<{ user: SessionUser | null; admin: boolean; crew?: boolean; mail?: boolean; providers: { id: string; name: string }[]; demo: boolean }>("/api/me");
       this.user = me.user;
       this.admin = me.admin;
       this.crew = !!me.crew;
+      this.mail = !!me.mail;
       this.providers = me.providers;
       this.demo = me.demo;
       if (me.user) void this.syncProfile();

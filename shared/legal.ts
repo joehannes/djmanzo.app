@@ -41,6 +41,7 @@ export const PRIVACY: Clause[] = [
   { head: "The AI screen:", text: "a new account's post may be sent to Anthropic's Claude to be read before a person does. Under Anthropic's commercial terms, what is sent this way is not used to train its models." },
   { head: "What you allowed on the Signal Path", text: "(roughly where you are, your own location) stays in your browser; *Forget me* removes it." },
   { head: "Purchases:", text: "handled by the payment provider; this site keeps the order and the licence." },
+  { head: "The address we write to:", text: "the e-mail address you confirm before paying, for the code that confirms it, word of a payment under way, and your receipt and licence key. Sent through Resend, which delivers the message and keeps no more of it than delivering takes. Kept with your account; never used for anything else." },
 ];
 export const PRIVACY_OUTRO = "To see, correct or remove what is kept about you, write to {contact}.";
 

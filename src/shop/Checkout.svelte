@@ -33,7 +33,8 @@
     gift?: { for: string | null; note: string | null } | null;
     total: number;
     display: string;
-    ondone: (r: { licence?: { id: string; edition: string; modules?: string[]; plan: string; expires: number | null; demo?: boolean }; gift?: { id: string; line: string; edition: string; rehearsal?: boolean } }) => void;
+    /** What the Worker said when it was done: a licence, a gift, a transfer to make, or a payment the bank is clearing. */
+    ondone: (r: any) => void;
   }
   let { edition, modules, plan, country, promo, voucher = "", gift = null, total, display, ondone }: Props = $props();
 
@@ -50,7 +51,6 @@
   let busy = $state(false);
   let error = $state<string | null>(null);
   let confirmHigher = $state<{ reason: string; display: string } | null>(null);
-  let transfer = $state<{ instructions: string; reference: string; display: string } | null>(null);
   const list = countries();
 
   // Demo: the two countries a real payment would carry, typed in.
@@ -96,8 +96,8 @@
     busy = true;
     error = null;
     try {
-      const r = await post("/api/checkout/transfer", { ...input, billing: demoBilling });
-      transfer = { instructions: r.instructions, reference: r.reference, display: r.display };
+      // Placed: the order's status, its bank details and what was e-mailed are said by the summary (`Status.svelte`).
+      ondone(await post("/api/checkout/transfer", { ...input, billing: demoBilling }));
     } catch (e) {
       handle(e);
     } finally {
@@ -132,11 +132,14 @@
         if (cancelled) return;
         stripe = (window as any).Stripe(pay.stripe!.key);
         const currency = (catalog.data?.visitor.currency ?? "USD").toLowerCase();
+        // Only the ways to pay the account has on that this checkout finishes (`worker/payments.ts`).
+        const offered = pay.stripe!.methods ?? { once: ["card"], renewing: ["card"] };
         elements = stripe.elements({
           mode: plan === "perpetual" ? "payment" : "subscription",
           amount: total,
           currency,
           paymentMethodCreation: "manual",
+          paymentMethodTypes: plan === "perpetual" ? offered.once : offered.renewing,
           appearance: { theme: document.documentElement.dataset.day === "1" ? "stripe" : "night" },
         });
         // The wallets the crew allowed in Backstage; the rest of the methods are Stripe's dashboard's to turn on.
@@ -218,12 +221,6 @@
   <!-- The parent shows sign-in; nothing to pay with yet. -->
 {:else if total === 0}
   <button class="btn primary" onclick={free} disabled={busy}>{w.nothing}</button>
-{:else if transfer}
-  <div class="notice ok">
-    <p><b>{fill(w.waiting, { reference: transfer.reference, amount: transfer.display })}</b></p>
-    <pre>{transfer.instructions}</pre>
-    <p class="small">{@html fill(w.reference, { reference: transfer.reference })}</p>
-  </div>
 {:else}
   <div class="methods" role="radiogroup" aria-label={w.methodsAria}>
     {#each methods as m (m)}
@@ -285,13 +282,6 @@
   }
   .stripe {
     margin-bottom: 12px;
-  }
-  pre {
-    white-space: pre-wrap;
-    font: inherit;
-    background: rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 8px;
   }
   .notice {
     margin-top: 10px;

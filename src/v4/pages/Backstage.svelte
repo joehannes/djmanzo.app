@@ -131,6 +131,9 @@
     { key: "PAYPAL_ENV", label: "PayPal mode", secret: false, hint: "live or sandbox" },
     { key: "BANK_TRANSFER_DETAILS", label: "Bank transfer details", secret: false, hint: "Shown to a buyer who pays by transfer: account holder, IBAN, BIC", area: true },
     { key: "DEMO_MODE", label: "Demo checkout", secret: false, hint: "auto (on until a real way to pay is set), on, or off" },
+    { key: "RESEND_API_KEY", label: "E-mail: Resend API key", secret: true, hint: "re_… (resend.com → API Keys): codes, receipts and licences go out through it" },
+    { key: "MAIL_FROM", label: "E-mail: from", secret: false, hint: "djmanzo <hello@your-domain> — a domain verified at Resend" },
+    { key: "RECEIPT_NOTE", label: "Receipt note", secret: false, hint: "One line on every receipt, e.g. how VAT is handled" },
   ];
   let payView = $state<any>(null);
   let payDraft = $state<Record<string, string>>({});
@@ -911,6 +914,7 @@
       {#if payCheck}
         <ul class="small" data-pay-checked>
           {#if payCheck.stripe}<li>Stripe: {payCheck.stripe.ok ? `connected (${payCheck.stripe.country ?? "?"}, ${payCheck.stripe.currency ?? "?"}); charges ${payCheck.stripe.charges ? "on" : "not yet on"}, payouts ${payCheck.stripe.payouts ? `on, to ${payCheck.stripe.payoutTo ?? "your bank"}` : "not yet on"}; this domain ${payCheck.stripe.applePayDomain ? `registered (Apple Pay ${payCheck.stripe.applePayDomain.applePay})` : "not registered for Apple Pay"}` : payCheck.stripe.said}</li>{/if}
+          {#if payCheck.stripe?.methods}<li data-pay-methods>Stripe's ways to pay: on in your Stripe account — {payCheck.stripe.methods.enabled.join(", ") || "none"}; offered here for one payment — {payCheck.stripe.methods.once.join(", ")}; for what renews — {payCheck.stripe.methods.renewing.join(", ")}.{#if payCheck.stripe.methods.enabled.some((m: string) => !payCheck.stripe.methods.once.includes(m) && !["apple_pay", "google_pay"].includes(m))} On in Stripe but not offered here, because this checkout does not finish them yet: {payCheck.stripe.methods.enabled.filter((m: string) => !payCheck.stripe.methods.once.includes(m) && !["apple_pay", "google_pay"].includes(m)).join(", ")}.{/if} Change them in Stripe → Settings → Payment methods; the shop follows within ten minutes.</li>{/if}
           {#if payCheck.paypal}<li>PayPal: {payCheck.paypal.ok ? `connected (${payCheck.paypal.mode})` : payCheck.paypal.said}</li>{/if}
           {#if !payCheck.stripe && !payCheck.paypal}<li>Nothing to check: no keys are set.</li>{/if}
         </ul>

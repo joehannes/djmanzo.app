@@ -22,7 +22,7 @@ export interface Catalog {
   studentShare: number;
   trialDays: number;
   visitor: { country: string | null; band: number; currency: Currency };
-  pay: { demo: boolean; stripe: { key: string; wallets?: { applePay: boolean; googlePay: boolean } } | null; paypal: { clientId: string } | null; transfer: boolean };
+  pay: { demo: boolean; stripe: { key: string; wallets?: { applePay: boolean; googlePay: boolean }; methods?: { once: string[]; renewing: string[] } } | null; paypal: { clientId: string } | null; transfer: boolean };
   major: number;
   downloads: string;
 }

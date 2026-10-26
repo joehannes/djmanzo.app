@@ -36,6 +36,7 @@ import * as payments from "./payments";
 import * as signin from "./signin";
 import * as voucher from "./voucher";
 import * as insights from "./insights";
+import * as mail from "./mail";
 import { inForce, keys } from "./licence";
 import { HttpError, body, brake, clientIp, country, fail, json, text, unb64url } from "./http";
 import { get, list, put, saveLicence, type Licence, type Order, type Promo, type User, type Video } from "./store";
@@ -111,6 +112,8 @@ route("GET", "/api/me", async (c) => {
     crew: await auth.isCrew(c.env, u),
     providers: auth.enabledProviders(c.env),
     demo: auth.demoMode(c.env),
+    // Whether the site can send e-mail: a code to confirm an address, a receipt.
+    mail: mail.mailOn(c.env),
   };
 });
 
@@ -140,6 +143,12 @@ route("PUT", "/api/me/profile", async (c) => community.saveProfile(c.env, await 
 
 // --- The catalogue and a quote ---------------------------------------------
 
+/** Stripe's card form as offered here: the ways to pay the account switched on that this checkout finishes, and the wallets Backstage allows. */
+async function stripeOffer(env: AppEnv) {
+  const [allowed, m] = await Promise.all([payments.wallets(env), payments.stripeMethods(env)]);
+  return { key: env.STRIPE_PUBLISHABLE_KEY, wallets: { applePay: allowed.applePay && m.applePay, googlePay: allowed.googlePay && m.googlePay }, methods: { once: m.once, renewing: m.renewing } };
+}
+
 route("GET", "/api/catalog", async (c) => {
   const where = country(c.req);
   return {
@@ -159,7 +168,7 @@ route("GET", "/api/catalog", async (c) => {
     visitor: { country: where, band: band(where), currency: currencyFor(where) },
     pay: {
       demo: auth.demoMode(c.env),
-      stripe: c.env.STRIPE_PUBLISHABLE_KEY && c.env.STRIPE_SECRET_KEY ? { key: c.env.STRIPE_PUBLISHABLE_KEY, wallets: await payments.wallets(c.env) } : null,
+      stripe: c.env.STRIPE_PUBLISHABLE_KEY && c.env.STRIPE_SECRET_KEY ? await stripeOffer(c.env) : null,
       paypal: c.env.PAYPAL_CLIENT_ID && c.env.PAYPAL_CLIENT_SECRET ? { clientId: c.env.PAYPAL_CLIENT_ID } : null,
       transfer: !!c.env.BANK_TRANSFER_DETAILS,
     },
@@ -194,20 +203,20 @@ route("POST", "/api/checkout/stripe", async (c) => {
     ...checkout.checkInput(input),
     paymentMethod: String(input.paymentMethod || ""),
     acceptHigher: !!input.acceptHigher,
-  });
+  }, { ip: clientIp(c.req), ua: c.req.headers.get("user-agent") ?? "" });
 });
 route("POST", "/api/checkout/stripe/finalize", async (c) => checkout.stripeFinalize(c.env, await needUser(c), String((await body<{ order?: string }>(c.req)).order || "")));
 route("POST", "/api/webhooks/stripe", (c) => checkout.stripeWebhook(c.env, c.req));
 route("POST", "/api/webhooks/kofi", (c) => support.kofi(c.env, c.req));
 route("POST", "/api/webhooks/buymeacoffee", (c) => support.buymeacoffee(c.env, c.req));
-route("POST", "/api/checkout/paypal", async (c) => checkout.paypalCreate(c.env, await needUser(c), checkout.checkInput(await body(c.req))));
+route("POST", "/api/checkout/paypal", async (c) => checkout.paypalCreate(c.env, await needUser(c), checkout.checkInput(await body(c.req)), c.url.origin));
 route("POST", "/api/checkout/paypal/capture", async (c) => {
   const b = await body<{ order?: string; acceptHigher?: boolean }>(c.req);
   return checkout.paypalCapture(c.env, await needUser(c), String(b.order || ""), !!b.acceptHigher);
 });
 route("POST", "/api/checkout/transfer", async (c) => {
   const input = await body<Record<string, unknown>>(c.req);
-  return checkout.transferCheckout(c.env, await needUser(c), { ...checkout.checkInput(input), billing: text(input.billing, 2).toUpperCase() });
+  return checkout.transferCheckout(c.env, await needUser(c), { ...checkout.checkInput(input), billing: text(input.billing, 2).toUpperCase() }, c.url.origin);
 });
 
 // --- djmanzo, the application: its own licence protocol (`worker/applicence.ts`) --
@@ -420,6 +429,13 @@ route("GET", "/api/admin/overview", async (c) => {
   };
 });
 
+// Where the site writes to a buyer, confirmed before they pay (`worker/mail.ts`).
+route("POST", "/api/me/contact", async (c) => {
+  const b = await body<{ email?: string; lang?: string }>(c.req);
+  return mail.ask(c.env, await needUser(c), String(b.email ?? ""), b.lang ?? null, c.url.origin);
+});
+route("POST", "/api/me/contact/confirm", async (c) => mail.confirm(c.env, await needUser(c), String((await body<{ code?: string }>(c.req)).code ?? "")));
+
 // What visitors look at and look for, without knowing who they are (`worker/insights.ts`).
 route("POST", "/api/hit", async (c) => {
   await insights.record(c.env, c.req, await body(c.req, 16 * 1024).catch(() => null));
@@ -572,7 +588,7 @@ route("POST", "/api/admin/orders/:id/cancel", async (c) => {
 route("POST", "/api/admin/orders/:id/paid", async (c) => {
   await needAdmin(c);
   const b = await body<{ bankCountry?: string }>(c.req);
-  return checkout.markPaid(c.env, c.params.id, b.bankCountry ? text(b.bankCountry, 2).toUpperCase() : null);
+  return checkout.markPaid(c.env, c.params.id, b.bankCountry ? text(b.bankCountry, 2).toUpperCase() : null, c.url.origin);
 });
 route("POST", "/api/admin/licences", async (c) => {
   const admin = await needAdmin(c);

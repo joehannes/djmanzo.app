@@ -79,6 +79,10 @@ export interface User {
   sponsorOf?: string[];
   /** Their own GitHub Sponsors page, when GitHub said they have one: shown as verified. */
   githubSponsors?: string;
+  /** Where the site writes to them — receipts, licences, payments under way — and when they confirmed it (null: kept, not confirmable while no e-mail is set up). `worker/mail.ts`. */
+  contact?: { email: string; confirmed: number | null };
+  /** The language the site last spoke to them in, for what it writes to them. */
+  lang?: string;
 }
 
 export interface Session {
@@ -128,6 +132,14 @@ export interface Order {
   gift?: { for: string[]; note: string | null; voucher?: string | null } | null;
   /** Granted by the crew in Backstage: who, and why. */
   granted?: { by: string; why: string | null } | null;
+  /** The site's own address when the order was placed, for the links in what is written to the buyer. */
+  origin?: string | null;
+  /** How it was paid, as the buyer would say it: "Visa …4242", "Apple Pay", "SEPA Direct Debit". */
+  method?: string | null;
+  /** Paid in Stripe's test mode: no money moved, so its licence is a rehearsal's. */
+  test?: boolean;
+  /** When each message to the buyer went (0: it could not be sent). */
+  mailed?: Partial<Record<"waiting" | "processing" | "receipt", number>>;
 }
 
 export interface Licence {

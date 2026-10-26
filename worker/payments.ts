@@ -31,6 +31,9 @@ export const FIELDS = {
   PAYPAL_ENV: { secret: false, check: /^(live|sandbox)$/ },
   BANK_TRANSFER_DETAILS: { secret: false, check: /^[\s\S]{10,2000}$/ },
   DEMO_MODE: { secret: false, check: /^(auto|on|off)$/ },
+  RESEND_API_KEY: { secret: true, check: /^re_[A-Za-z0-9_]{10,}$/ },
+  MAIL_FROM: { secret: false, check: /^[^<>\n]{0,80}<?[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+>?$/ },
+  RECEIPT_NOTE: { secret: false, check: /^[^\n]{3,300}$/ },
 } as const;
 export type Field = keyof typeof FIELDS;
 
@@ -185,6 +188,58 @@ export async function wallets(env: AppEnv): Promise<Wallets> {
   return cached?.settings.wallets ?? EMPTY.wallets;
 }
 
+// --- Which of Stripe's ways to pay are offered ---------------------------------------------
+
+/**
+ * The ways to pay this checkout finishes, beside the card (which carries
+ * Apple Pay and Google Pay). One payment: the card, Link, and those that
+ * leave the page and come back (EPS, PayPal, iDEAL, Bancontact), or clear
+ * a few days later (SEPA Direct Debit, finished by the webhook). What
+ * renews: the card and Link only. Klarna and the rest are not offered,
+ * whatever Stripe's dashboard says, until the checkout is made to finish them.
+ */
+export const ONCE = ["card", "link", "eps", "paypal", "sepa_debit", "ideal", "bancontact"] as const;
+export const RENEWING = ["card", "link"] as const;
+
+export interface StripeMethods {
+  /** What Stripe's dashboard has switched on for this account. */
+  enabled: string[];
+  once: string[];
+  renewing: string[];
+  applePay: boolean;
+  googlePay: boolean;
+}
+
+/**
+ * What the account has switched on (its default payment method configuration),
+ * asked of Stripe at most every ten minutes (kept in KV, so every Worker shares
+ * it), and what of it is offered here. Unreadable, it is the card alone: the
+ * one way to pay every account has.
+ */
+export async function stripeMethods(env: AppEnv): Promise<StripeMethods> {
+  const key = String(env.STRIPE_SECRET_KEY ?? "");
+  const cardOnly: StripeMethods = { enabled: ["card"], once: ["card"], renewing: ["card"], applePay: false, googlePay: false };
+  if (!key) return cardOnly;
+  const kvKey = `stripe:methods:${key.slice(-8)}`;
+  const kept = await env.KV.get(kvKey);
+  if (kept) return JSON.parse(kept) as StripeMethods;
+  const r = await fetch("https://api.stripe.com/v1/payment_method_configurations?limit=20", { headers: { authorization: `Bearer ${key}` } }).catch(() => null);
+  const list = r?.ok ? (((await r.json()) as { data?: Record<string, any>[] }).data ?? []) : [];
+  const config = list.find((c) => c.is_default && c.active) ?? list.find((c) => c.active && !c.parent) ?? null;
+  if (!config) return cardOnly;
+  const on = (m: string) => !!config[m]?.available && config[m]?.display_preference?.value === "on";
+  const enabled = Object.keys(config).filter((k) => typeof config[k] === "object" && config[k] !== null && "available" in config[k] && on(k));
+  const value: StripeMethods = {
+    enabled,
+    once: ["card", ...ONCE.filter((m) => m !== "card" && on(m))],
+    renewing: ["card", ...RENEWING.filter((m) => m !== "card" && on(m))],
+    applePay: on("apple_pay"),
+    googlePay: on("google_pay"),
+  };
+  await env.KV.put(kvKey, JSON.stringify(value), { expirationTtl: 600 });
+  return value;
+}
+
 // --- Checks the crew can run ---------------------------------------------------------
 
 /** Ask Stripe and PayPal whether the keys work, and what Stripe says about payouts. */
@@ -205,6 +260,7 @@ export async function check(env: AppEnv, origin: string) {
           payouts: !!a.payouts_enabled,
           payoutTo: a.external_accounts?.data?.[0] ? `${a.external_accounts.data[0].bank_name ?? "a bank"} …${a.external_accounts.data[0].last4 ?? ""}` : null,
           applePayDomain: domain ? { domain: domain.domain_name, applePay: domain.apple_pay?.status ?? null, googlePay: domain.google_pay?.status ?? null } : null,
+          methods: await stripeMethods(env),
         }
       : { ok: false, said: r ? `Stripe answered ${r.status}.` : "Stripe could not be reached." };
   }

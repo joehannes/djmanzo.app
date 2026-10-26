@@ -103,6 +103,7 @@ in. The password or `ADMIN_TOKEN` on their own still open Backstage (as an
 | Stripe | `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`. The webhook endpoint to register in Stripe is `https://<site>/api/webhooks/stripe` |
 | PayPal | `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_ENV` (`live` or `sandbox`) |
 | Bank transfer | `BANK_TRANSFER_DETAILS` (shown at checkout) |
+| E-mail to buyers | `RESEND_API_KEY`, `MAIL_FROM` (e.g. `djmanzo <hello@your-domain>`), and `RECEIPT_NOTE`, one line on every receipt (how VAT is handled). See *E-mail to buyers* below |
 | Signing licences | `LICENCE_PRIVATE_KEY`: the Ed25519 key whose public half is `DJMANZO_LICENCE_KEY`. Without it the site signs with the development key, which only djmanzo's debug builds believe |
 | The imprint | `IMPRINT_NAME`, `IMPRINT_ADDRESS`, `IMPRINT_EMAIL` (required by law before selling in the EU) |
 | How many computers at once | `MAX_ACTIVATIONS`, a variable: how many computers one person may have djmanzo activated on at once (3 when unset). They see and remove them on their account page |
@@ -132,18 +133,67 @@ pays out to your Wise EUR IBAN.
    Pay, PayPal and EPS**. PayPal on Stripe is open to EU businesses and asks
    you to connect, or create, a PayPal Business account during onboarding.
    PayPal payments then reach the Stripe balance and pay out to Wise with
-   the rest.
+   the rest. **The shop offers only what is on here and what its checkout
+   finishes**, read from Stripe every ten minutes: for one payment the card
+   (with Apple Pay and Google Pay), Link, EPS, PayPal, SEPA Direct Debit,
+   iDEAL and Bancontact; for what renews, the card and Link. Something on
+   in Stripe that the checkout does not finish yet (Klarna, for one) is not
+   offered; *Check the connections* lists what is on, what is offered, and
+   what is left out.
 4. Under *Developers → API keys*, copy the publishable and secret keys
    into Backstage → 💳 Payments.
 5. Under *Developers → Webhooks*, add the endpoint
    `https://<site>/api/webhooks/stripe` for `payment_intent.succeeded`,
-   `invoice.paid`, `customer.subscription.deleted` and `charge.refunded`.
-   Put its signing secret (`whsec_…`) in Backstage too.
+   `payment_intent.payment_failed`, `invoice.paid`,
+   `customer.subscription.deleted` and `charge.refunded`. Put its signing
+   secret (`whsec_…`) in Backstage too. Without it, a payment the bank
+   clears later (SEPA Direct Debit) never brings its licence.
 6. In Backstage, press **Register this domain for Apple Pay and Google
    Pay**. Apple Pay shows in the card form only on a domain registered with
    Stripe.
-7. Press **Check the connections**, then buy something small with a real
-   card and refund it from Stripe's dashboard.
+7. Press **Check the connections**, then rehearse in Stripe's test mode
+   (below), and finally buy something small with a real card and refund it
+   from Stripe's dashboard.
+
+**Rehearsing without real money: Stripe's test mode.** In Stripe's
+dashboard, switch on *Test mode*, copy its keys (`pk_test_…`, `sk_test_…`)
+and a webhook secret made for the test endpoint into Backstage →
+💳 Payments. The shop's card form is then Stripe's test form (Backstage
+says *Card form: test*). Buy with the card `4242 4242 4242 4242` (any future
+date, any CVC); `4000 0027 6000 3184` asks for 3-D Secure; the IBAN
+`AT61 1904 3002 3457 3201` is a SEPA Direct Debit that Stripe clears a few
+minutes later, through the webhook. Every step happens as with real money:
+the address confirmed first, the order, the status card, the e-mails, the
+licence. A licence bought in test mode is a rehearsal's: it shows in the
+account but unlocks nothing in djmanzo, and its receipt says *[test]*. Put the live
+keys back when you are done: while test keys are in, nobody can pay for
+real.
+
+### E-mail to buyers
+
+Before anyone pays, the checkout asks where to write to them: the address
+their sign-in provider confirmed, at a press, or any other, by a six-digit
+code sent to it. That address then gets word of a bank transfer to make or
+a payment under way, and the receipt with the licence key (or the gift's
+link) once it is paid. It goes out through **Resend** (resend.com; free up
+to 3,000 messages a month, 100 a day):
+
+1. Make an account at resend.com, and under *Domains* add a domain you
+   own (the site's own, or any). Add the DNS records it shows (SPF and
+   DKIM) at your domain's DNS host and wait until Resend says *Verified*.
+   Resend sends only from a verified domain.
+2. Under *API Keys*, create a key with sending access.
+3. In Backstage → 💳 Payments, set **E-mail: Resend API key** (`re_…`) and
+   **E-mail: from**, e.g. `djmanzo <hello@your-domain>`. Replies go to
+   `IMPRINT_EMAIL`.
+4. Set **Receipt note** to the line your receipts must carry; as an
+   Austrian *Kleinunternehmer*, for example "Umsatzsteuerfrei aufgrund der
+   Kleinunternehmerregelung (§ 6 Abs. 1 Z 27 UStG)". Ask your
+   Steuerberater for the exact wording.
+
+Until both keys are set, nothing is e-mailed: an address the provider did
+not confirm is kept unconfirmed, the status card says nothing was sent,
+and the licence is in the buyer's account as always.
 
 **PayPal on its own** (the PayPal button that is not inside the card form)
 is also wired: a PayPal Business account, then an app under

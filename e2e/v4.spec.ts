@@ -507,6 +507,50 @@ test("Insights: a visitor's pages and search reach Backstage, with no cookie and
   await expect(page.locator("[data-insights-stats]")).toContainText("visits");
 });
 
+test("buying: the address the receipt goes to is confirmed first, and the order's state is said plainly after", async ({ page }) => {
+  const errs = errors(page);
+  // The shop with a bank transfer and e-mail, and a real (not demo) account: answered here, so nothing is stored.
+  let contact: { email: string; confirmed: number | null } | null = null;
+  await page.route("**/api/catalog", async (r) => {
+    const j = await (await r.fetch()).json();
+    await r.fulfill({ json: { ...j, pay: { demo: false, stripe: null, paypal: null, transfer: true } } });
+  });
+  await page.route("**/api/me", async (r) => {
+    const j = await (await r.fetch()).json();
+    await r.fulfill({ json: { ...j, mail: true, user: { id: "u_buyer", name: "Kai", email: "kai@example.test", avatar: null, demo: false, owner: false, providers: ["github"], contact } } });
+  });
+  let asked = "";
+  await page.route("**/api/me/contact", async (r) => {
+    asked = r.request().postDataJSON().email;
+    await r.fulfill({ json: { sent: true, mail: true, contact: null, pending: asked } });
+  });
+  await page.route("**/api/me/contact/confirm", async (r) => {
+    contact = { email: asked, confirmed: Date.now() };
+    await r.fulfill({ json: { contact } });
+  });
+  await page.route("**/api/checkout/transfer", (r) =>
+    r.fulfill({ json: { order: { id: "o_e2eTransfer1", total: 5500, currency: "EUR", edition: "karaoke", plan: "perpetual", status: "pending", email: asked }, instructions: "IBAN AT00 1234 5678 9012 3456", reference: "o_e2eTransfer1", display: "€55.00", mailedTo: asked } }),
+  );
+  await page.goto("/pricing?edition=karaoke#checkout");
+  // No way to pay shows before the address is settled.
+  await expect(page.locator("[data-contact-email]")).toHaveValue("kai@example.test");
+  await expect(page.getByRole("button", { name: /bank details/i })).toHaveCount(0);
+  await page.locator("[data-contact-email]").fill("kai.bookings@example.org");
+  await page.locator("[data-contact-ask]").click();
+  await page.locator("[data-contact-code]").fill("123456");
+  await page.locator("[data-contact-confirm]").click();
+  await expect(page.locator("[data-contact-ready]")).toContainText("kai.bookings@example.org");
+  await page.getByRole("button", { name: /bank details/i }).click();
+  const status = page.locator("[data-status=waiting]");
+  await expect(status).toContainText("djmanzo Karaoke is reserved for you.");
+  await expect(status).toContainText("Nothing has been paid yet.");
+  await expect(status.locator("[data-status-bank]")).toHaveText("IBAN AT00 1234 5678 9012 3456");
+  await expect(status.locator("[data-status-mail]")).toContainText("kai.bookings@example.org");
+  await expect(status.getByRole("link", { name: "Download djmanzo" })).toBeVisible();
+  await expect(status.locator("[data-status-trial]")).toBeVisible();
+  expect(errs).toEqual([]);
+});
+
 test("Backstage: payments are set without a deploy, shown back only by their ends, and the shop follows", async ({ page, request }) => {
   const errs = errors(page);
   const clear = { values: { STRIPE_PUBLISHABLE_KEY: "", STRIPE_SECRET_KEY: "" } };

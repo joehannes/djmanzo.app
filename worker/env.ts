@@ -68,6 +68,12 @@ export interface Secrets {
   PAYPAL_ENV: string;
   /** Bank details shown for a manual transfer; the transfer option is offered only when set. */
   BANK_TRANSFER_DETAILS: string;
+  /** Resend's API key: e-mail to buyers (`worker/mail.ts`). */
+  RESEND_API_KEY?: string;
+  /** Who that e-mail is from, on a domain verified at Resend: `djmanzo <hello@example.org>`. */
+  MAIL_FROM?: string;
+  /** A line printed on every receipt, such as how VAT is handled. */
+  RECEIPT_NOTE?: string;
 
   /** When set, blog drafts are written by Claude (otherwise by Workers AI), and the Signal Path's guide speaks. */
   ANTHROPIC_API_KEY: string;

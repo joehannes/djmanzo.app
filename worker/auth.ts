@@ -784,6 +784,7 @@ export function publicUser(u: User, env?: AppEnv) {
     avatar: u.avatar,
     demo: !!u.demo,
     owner: !!u.owner,
+    contact: u.contact ?? null,
     providers: u.identities.map((i) => i.provider),
     patreon: u.patreon ?? null,
     githubSponsors: u.githubSponsors ?? null,

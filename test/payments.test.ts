@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { browser, crew, openSite, person } from "./people";
+import { stripeConfig } from "./stripe-config";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -8,8 +9,17 @@ const SK = "sk_test_51AbCdEfGhIjKlMnOpSecret9876";
 const WH = "whsec_AbCdEfGhIjKlMnOp1234";
 const set = (env: never, json: unknown) => crew(env)("/api/admin/payments", { method: "PUT", json });
 
+const STRIPE_ON = stripeConfig(["card", "apple_pay", "google_pay", "link", "eps", "klarna"], ["sepa_debit", "ideal"]);
+/** Stripe answering only what the catalog asks: which ways to pay are on. */
+const stripeAnswers = (config = STRIPE_ON) =>
+  vi.stubGlobal("fetch", async (url: string) => {
+    if (String(url).startsWith("https://api.stripe.com/v1/payment_method_configurations")) return Response.json({ data: [config] });
+    throw new Error(`unexpected fetch ${url}`);
+  });
+
 describe("the ways to pay, set in Backstage", () => {
   it("connect Stripe without a deploy: the shop offers the card form, and the demo checkout steps aside", async () => {
+    stripeAnswers();
     const env = openSite();
     const before = (await browser(env)("/api/catalog")).data.pay;
     expect(before.stripe).toBeNull();
@@ -18,7 +28,8 @@ describe("the ways to pay, set in Backstage", () => {
     expect(r.status).toBe(200);
     expect(r.data.mode).toMatchObject({ stripe: "test", stripeWebhook: true, paypal: null });
     const after = (await browser(env)("/api/catalog")).data.pay;
-    expect(after.stripe).toEqual({ key: PK, wallets: { applePay: true, googlePay: true } });
+    // Only what the account has on and this checkout finishes: Klarna is on in Stripe but not offered; SEPA and iDEAL are off.
+    expect(after.stripe).toEqual({ key: PK, wallets: { applePay: true, googlePay: true }, methods: { once: ["card", "link", "eps"], renewing: ["card", "link"] } });
     expect(after.demo).toBe(false);
   });
 
@@ -36,6 +47,7 @@ describe("the ways to pay, set in Backstage", () => {
   });
 
   it("wins over a Worker secret, and falls back to it when cleared", async () => {
+    stripeAnswers();
     const env = openSite({ STRIPE_PUBLISHABLE_KEY: "pk_test_FromTheWorkerSecret1", STRIPE_SECRET_KEY: "sk_test_FromTheWorkerSecret1" });
     expect((await crew(env)("/api/admin/payments")).data.fields.STRIPE_SECRET_KEY.from).toBe("worker secret");
     await set(env, { values: { STRIPE_PUBLISHABLE_KEY: PK, STRIPE_SECRET_KEY: SK } });
@@ -54,10 +66,15 @@ describe("the ways to pay, set in Backstage", () => {
     expect((await lena.call("/api/admin/payments")).status).toBe(403);
   });
 
-  it("switches Apple Pay and Google Pay in the card form", async () => {
+  it("switches Apple Pay and Google Pay in the card form, and offers neither when Stripe has it off", async () => {
+    stripeAnswers();
     const env = openSite();
     await set(env, { values: { STRIPE_PUBLISHABLE_KEY: PK, STRIPE_SECRET_KEY: SK }, wallets: { applePay: false } });
     expect((await browser(env)("/api/catalog")).data.pay.stripe.wallets).toEqual({ applePay: false, googlePay: true });
+    stripeAnswers(stripeConfig(["card", "apple_pay"], ["google_pay"]));
+    const other = openSite();
+    await set(other, { values: { STRIPE_PUBLISHABLE_KEY: PK, STRIPE_SECRET_KEY: SK } });
+    expect((await browser(other)("/api/catalog")).data.pay.stripe.wallets).toEqual({ applePay: true, googlePay: false });
   });
 
   it("are unreadable, and say so, once the secret they were kept under changes", async () => {
@@ -82,11 +99,21 @@ describe("the crew's checks", () => {
         return Response.json({ country: "AT", default_currency: "eur", charges_enabled: true, payouts_enabled: true, external_accounts: { data: [{ bank_name: "WISE EUROPE", last4: "4321" }] } });
       }
       if (String(url).startsWith("https://api.stripe.com/v1/payment_method_domains")) return Response.json({ data: [{ domain_name: "djmanzo.test", apple_pay: { status: "active" }, google_pay: { status: "active" } }] });
+      if (String(url).startsWith("https://api.stripe.com/v1/payment_method_configurations")) return Response.json({ data: [STRIPE_ON] });
       if (String(url) === "https://api-m.paypal.com/v1/oauth2/token") return Response.json({ access_token: "t" });
       throw new Error(`unexpected fetch ${url}`);
     });
     const r = (await crew(env)("/api/admin/payments/check", { method: "POST" })).data;
-    expect(r.stripe).toEqual({ ok: true, country: "AT", currency: "eur", charges: true, payouts: true, payoutTo: "WISE EUROPE …4321", applePayDomain: { domain: "djmanzo.test", applePay: "active", googlePay: "active" } });
+    expect(r.stripe).toEqual({
+      ok: true,
+      country: "AT",
+      currency: "eur",
+      charges: true,
+      payouts: true,
+      payoutTo: "WISE EUROPE …4321",
+      applePayDomain: { domain: "djmanzo.test", applePay: "active", googlePay: "active" },
+      methods: { enabled: ["card", "apple_pay", "google_pay", "link", "eps", "klarna"], once: ["card", "link", "eps"], renewing: ["card", "link"], applePay: true, googlePay: true },
+    });
     expect(r.paypal).toEqual({ ok: true, mode: "live" });
   });
 

@@ -1258,3 +1258,57 @@ reported.
   "waiting only" rule fails it). The browser test sends a real visit from an
   ordinary browser and finds its search in Backstage, with no cookie or
   storage left behind (removing the send on leaving fails it).
+
+## Paying: the address confirmed first, e-mails, and where an order stands (26 October)
+
+- **The owner asked** that a confirmed payment bring the licence and send
+  it to the buyer, that the buyer confirm their address before paying,
+  that a receipt, the licence key and word of a payment under way go to
+  it, and that the checkout end by saying what happened, where the buyer
+  stands and what comes next — and that only the Stripe ways to pay that
+  are on in the account and actually work be offered.
+- **The address** (`User.contact`, `worker/mail.ts`, `src/shop/Contact.svelte`):
+  shown before any way to pay. The address the sign-in provider confirmed
+  is confirmed at a press; any other by a six-digit code (30 minutes, five
+  tries, five codes an hour). `POST /api/me/contact`, `…/confirm`. Paying
+  (Stripe, PayPal, transfer) without it is refused (428). Without e-mail
+  set up, an unconfirmed address is kept, since nothing could confirm it.
+- **E-mail** through Resend (`RESEND_API_KEY`, `MAIL_FROM`, `RECEIPT_NOTE`,
+  in Backstage → Payments), in the buyer's language (`worker/mailwords.ts`,
+  seven languages): the code; a bank transfer's details at once; a payment
+  the bank is still clearing; and, once paid, the receipt (order, date,
+  item, discount, total, how it was paid, seller from the imprint, the
+  receipt note) with the licence key djmanzo takes under Settings →
+  Licence, or a gift's link. Each is sent once and noted on the order
+  (`Order.mailed`); one that cannot be sent never stops a payment.
+- **Where an order stands** (`src/shop/Status.svelte`, `src/v4/i18n/status.ts`):
+  paid, waiting for a transfer (with the bank details and a copy button),
+  or paid and being cleared — what happened, where the buyer stands, what
+  comes next (download now, start the trial, the licence arriving in the
+  account by itself), and whether and where it was e-mailed.
+- **Stripe** (`worker/payments.ts` `stripeMethods`, `worker/checkout.ts`):
+  the account's payment method configuration, read every ten minutes
+  (KV), crossed with what this checkout finishes: for one payment card
+  (Apple Pay, Google Pay), Link, EPS, PayPal, SEPA Direct Debit, iDEAL,
+  Bancontact; for what renews card and Link. The card form is given
+  exactly those (`paymentMethodTypes`) and the server refuses any other.
+  Fixed on the way: a one-time payment no longer attaches its payment
+  method to the customer first (Stripe refuses that for EPS and the like,
+  so they failed before charging); a payment Stripe says is `processing`
+  (SEPA) is no longer marked failed but waits, and the webhook issues its
+  licence and receipt (a subscription's first invoice paid later too); a
+  debit carries its mandate (the buyer's address and browser); a
+  subscription is held to the way it was paid. Test-mode keys make
+  rehearsals: the licence is a demo's, the receipt says [test].
+- **Tests:** `test/checkout-mail.test.ts` buys end to end against Stripe
+  and Resend stood in for by their APIs: the code, wrong codes, the 428s;
+  a transfer's e-mail and, after "mark paid", the receipt with the licence
+  key, once; nothing e-mailed without Resend; a card bought once (no
+  attach, held to the card, licence, receipt naming "Visa …4242"); SEPA
+  (mandate, waiting, "on its way" in Spanish, then the webhook's licence
+  and receipt); Klarna refused; a subscription attached and held to the
+  card. Breaking the no-attach rule, the address gate or the processing
+  state fails them. The browser test confirms an address by code and reads
+  the waiting card (showing the checkout before the address fails it).
+  Nothing here has been run against Stripe or Resend themselves: that
+  needs the owner's keys (SETUP.md, *Rehearsing without real money*).
