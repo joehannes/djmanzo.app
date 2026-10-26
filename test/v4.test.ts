@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { GENRE_BY_ID } from "../src/lib/genres";
+import { LANGS } from "../src/v4/i18n/strings";
 import { SKINS, SKIN_BY_ID, countryFromLanguage, genresOf, grooveFor, skinForCountry, skinForStyle } from "../src/v4/skins";
 import { hasLoop } from "../src/v4/loops";
 import { PARTS, bands, hits, render, stems, type Clock } from "../src/v4/wave/model";
@@ -241,7 +242,13 @@ describe("the visitor's own country, inside their region's look", () => {
       expect(f.colours.length, code).toBeGreaterThanOrEqual(2);
       expect(f.colours.length, code).toBeLessThanOrEqual(3);
       for (const c of f.colours) expect(c, code).toMatch(/^#[0-9A-F]{6}$/);
+      // A welcome in the country's own script is for a language the site speaks.
+      if (f.native) {
+        expect(LANGS, code).toContain(f.native.lang);
+        expect(f.native.hello.trim() && f.native.scene.trim(), code).toBeTruthy();
+      }
     }
+    expect(flavourOf("EG")?.native?.hello).toBe("أهلًا وسهلًا!");
     expect(flavourOf("do")?.scene).toMatch(/merengue/);
     expect(flavourOf("XX")).toBeNull();
     expect(flavourOf(null)).toBeNull();

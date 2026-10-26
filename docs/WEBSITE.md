@@ -1417,3 +1417,12 @@ the language most probably read where the visitor is.
   features and the forum for all ten. The translations were written for
   this site, with each scene's own words for things; a native speaker's
   read is still worth having before anything is printed.
+- **Arabic** (Modern Standard, from the Gulf to the Maghreb) followed, the
+  second language read right to left. A country's welcome over the hero
+  is written in Latin letters so anyone can say it ("Ahlan wa sahlan!");
+  where the page speaks that country's language it now shows the welcome
+  and the floors' music in the language's own script (`shared/flavours.ts`
+  `native`: Arabic for Egypt, Morocco, the Emirates and Saudi Arabia;
+  Hebrew for Israel; Chinese for China and Taiwan; Hindi, Japanese, Korean,
+  Thai, Vietnamese, Turkish and Swahili). China, Taiwan, Israel, Turkey,
+  Vietnam, Tanzania and Saudi Arabia have welcomes of their own now.

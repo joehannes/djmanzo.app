@@ -18,6 +18,8 @@ export interface Flavour {
   scene: string;
   /** Its national colours, two or three. */
   colours: string[];
+  /** The welcome and the scene in the country's own script, shown when the page speaks that language. */
+  native?: { lang: string; hello: string; scene: string };
 }
 
 export const FLAVOURS: Record<string, Flavour> = {
@@ -58,18 +60,25 @@ export const FLAVOURS: Record<string, Flavour> = {
   NG: { hello: "Welcome · Ẹ káàbọ̀", scene: "afrobeats, highlife and amapiano", colours: ["#008751", "#FFFFFF"] },
   GH: { hello: "Akwaaba!", scene: "afrobeats, highlife and hiplife", colours: ["#CE1126", "#FCD116", "#006B3F"] },
   ZA: { hello: "Welcome · Siyakwamukela", scene: "amapiano, gqom and house", colours: ["#007A4D", "#FFB612", "#DE3831"] },
-  KE: { hello: "Karibu!", scene: "gengetone, benga and afrobeats", colours: ["#006600", "#BB0000", "#000000"] },
+  TZ: { hello: "Karibu!", scene: "bongo flava, singeli and amapiano", colours: ["#1EB53A", "#FCD116", "#00A3DD"], native: { lang: "sw", hello: "Karibu!", scene: "bongo flava, singeli na amapiano" } },
+  KE: { hello: "Karibu!", scene: "gengetone, benga and afrobeats", colours: ["#006600", "#BB0000", "#000000"], native: { lang: "sw", hello: "Karibu!", scene: "gengetone, benga na afrobeats" } },
   // North Africa and the Middle East
-  EG: { hello: "Ahlan wa sahlan!", scene: "mahraganat, shaabi and house", colours: ["#CE1126", "#FFFFFF", "#000000"] },
-  MA: { hello: "Marhaba!", scene: "chaabi, gnawa and raï", colours: ["#C1272D", "#006233"] },
-  AE: { hello: "Marhaba!", scene: "Arabic pop, house and afro house", colours: ["#00732F", "#FF0000", "#000000"] },
+  EG: { hello: "Ahlan wa sahlan!", scene: "mahraganat, shaabi and house", colours: ["#CE1126", "#FFFFFF", "#000000"], native: { lang: "ar", hello: "أهلًا وسهلًا!", scene: "مهرجانات وشعبي وهاوس" } },
+  SA: { hello: "Marhaba!", scene: "khaleeji, Arabic pop and house", colours: ["#006C35", "#FFFFFF"], native: { lang: "ar", hello: "مرحبا!", scene: "خليجي وبوب عربي وهاوس" } },
+  IL: { hello: "Bruchim haba'im!", scene: "psytrance, techno and Mizrahi pop", colours: ["#0038B8", "#FFFFFF"], native: { lang: "he", hello: "ברוכים הבאים!", scene: "פסייטראנס, טכנו ומזרחית" } },
+  TR: { hello: "Hoş geldiniz!", scene: "Turkish pop, house and arabesk", colours: ["#E30A17", "#FFFFFF"], native: { lang: "tr", hello: "Hoş geldiniz!", scene: "Türkçe pop, house ve arabesk" } },
+  MA: { hello: "Marhaba!", scene: "chaabi, gnawa and raï", colours: ["#C1272D", "#006233"], native: { lang: "ar", hello: "مرحبا!", scene: "شعبي وكناوة وراي" } },
+  AE: { hello: "Marhaba!", scene: "Arabic pop, house and afro house", colours: ["#00732F", "#FF0000", "#000000"], native: { lang: "ar", hello: "مرحبا!", scene: "بوب عربي وهاوس وأفرو هاوس" } },
   // Asia and the Pacific
-  IN: { hello: "Namaste!", scene: "Bollywood, bhangra and EDM", colours: ["#FF9933", "#FFFFFF", "#138808"] },
-  JP: { hello: "Yōkoso!", scene: "city pop, techno and J-pop", colours: ["#BC002D", "#FFFFFF"] },
-  KR: { hello: "Hwanyeong-hamnida!", scene: "K-pop, house and hip-hop", colours: ["#CD2E3A", "#0047A0", "#FFFFFF"] },
+  IN: { hello: "Namaste!", scene: "Bollywood, bhangra and EDM", colours: ["#FF9933", "#FFFFFF", "#138808"], native: { lang: "hi", hello: "नमस्ते!", scene: "बॉलीवुड, भांगड़ा और EDM" } },
+  CN: { hello: "Huānyíng!", scene: "techno, house and C-pop", colours: ["#EE1C25", "#FFDE00"], native: { lang: "zh", hello: "欢迎！", scene: "电子、浩室和华语流行" } },
+  TW: { hello: "Huānyíng!", scene: "house, techno and Mandopop", colours: ["#FE0000", "#000095", "#FFFFFF"], native: { lang: "zh", hello: "歡迎！", scene: "浩室、电子和华语流行" } },
+  VN: { hello: "Chào mừng!", scene: "V-pop, vinahouse and EDM", colours: ["#DA251D", "#FFFF00"], native: { lang: "vi", hello: "Chào mừng!", scene: "V-pop, vinahouse và EDM" } },
+  JP: { hello: "Yōkoso!", scene: "city pop, techno and J-pop", colours: ["#BC002D", "#FFFFFF"], native: { lang: "ja", hello: "ようこそ！", scene: "シティポップ、テクノ、J-POP" } },
+  KR: { hello: "Hwanyeong-hamnida!", scene: "K-pop, house and hip-hop", colours: ["#CD2E3A", "#0047A0", "#FFFFFF"], native: { lang: "ko", hello: "환영합니다!", scene: "K-pop, 하우스, 힙합" } },
   PH: { hello: "Mabuhay!", scene: "OPM, budots and EDM", colours: ["#0038A8", "#CE1126", "#FCD116"] },
   ID: { hello: "Selamat datang!", scene: "dangdut, funkot and EDM", colours: ["#FF0000", "#FFFFFF"] },
-  TH: { hello: "Sawasdee!", scene: "luk thung, mor lam and EDM", colours: ["#A51931", "#F4F5F8", "#2D2A4A"] },
+  TH: { hello: "Sawasdee!", scene: "luk thung, mor lam and EDM", colours: ["#A51931", "#F4F5F8", "#2D2A4A"], native: { lang: "th", hello: "สวัสดี!", scene: "ลูกทุ่ง หมอลำ และ EDM" } },
   AU: { hello: "G'day!", scene: "drum & bass, house and techno", colours: ["#00008B", "#FF0000", "#FFFFFF"] },
   NZ: { hello: "Kia ora!", scene: "drum & bass, reggae and house", colours: ["#00247D", "#CC142B", "#FFFFFF"] },
 };

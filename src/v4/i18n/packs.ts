@@ -72,6 +72,7 @@ const WHOLE = {
 const LOAD: Partial<Record<PackLang, () => Promise<{ default: Pack }>>> = {
   zh: () => import("./packs/zh"),
   he: () => import("./packs/he"),
+  ar: () => import("./packs/ar"),
 };
 
 /** The packed languages that have a pack. */

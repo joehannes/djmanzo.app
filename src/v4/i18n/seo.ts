@@ -235,6 +235,28 @@ export const SEO: Record<BuiltInLang, SeoWords> & Partial<Record<PackLang, SeoWo
     noEdition: "עוד לא בשום מהדורה",
     frame: { site: "האתר", imprint: "פרטי האתר", terms: "תנאים", rules: "כללי הקהילה", privacy: "פרטיות" },
   },
+  ar: {
+    title: "djmanzo — برنامج دي جي وكاريوكي بنكهات متعددة",
+    description: "djmanzo، برنامج دي جي وكاريوكي بنكهات متعددة لـ Windows وmacOS وLinux، تجريبي — من أخدود الأسطوانة إلى الأجساد على الحلبة.",
+    lead: "برنامج دي جي وكاريوكي بنكهات متعددة، لـ Windows وmacOS وLinux وتجريبي: مسارات منفصلة حية، ومساعد يشرح اقتراحاته ويستطيع تولي المزج، وليلة كاريوكي مدمجة، ونسخة Hobbyist مجانية إلى الأبد.",
+    does: "ماذا يفعل",
+    beside: "وإلى جانبه",
+    links: {
+      pricing: ["النسخ والأسعار", "سبع نسخ من تنزيل واحد، بأسعار تناسب مكانكم."],
+      outboard: ["Outboard", "السوق: سمات وأغلفة ومرئيات يصنعها الدي جي لـ djmanzo. كل ما فيه مجاني."],
+      talkback: ["Talkback", "مساحة النقاش: الحرفة، الموسيقى، المعدات، الحياة حول الحفلات، وdjmanzo."],
+      blog: ["المدونة", "مقالات عن الدي جي وdjmanzo."],
+      features: ["كل الميزات", "ما يفعله djmanzo، نسخة بنسخة، مع ما لم يُثبت بعد."],
+      wishes: ["طلبات الميزات", "اطلبوا ما يجب أن يفعله djmanzo تاليًا، وصوّتوا."],
+      account: ["حسابكم", "تسجيل الدخول، وتراخيصكم، والسطر الذي يحملها إلى djmanzo."],
+    },
+    download: "نزّلوا djmanzo",
+    featuresTitle: "كل الميزات",
+    featuresDescription: "كل ما يفعله djmanzo، نسخة بنسخة: ما هو متوفر، وما هو مبني جزئيًا، وما هو مخطط له، مع ما لم يُثبت بعد.",
+    word: { shipped: "متوفر", part: "مبني جزئيًا", planned: "مخطط له" },
+    noEdition: "ليس في أي نسخة بعد",
+    frame: { site: "الموقع", imprint: "بيانات الموقع", terms: "الشروط", rules: "قواعد المجتمع", privacy: "الخصوصية" },
+  },
 };
 
 const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja };

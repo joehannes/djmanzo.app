@@ -12,6 +12,8 @@
 
   // The visitor's own country inside their region's look (shared/flavours.ts).
   const flavour = $derived(flavourOf(region.country));
+  /** Its welcome in its own script, when the page speaks its language. */
+  const own = $derived(flavour?.native?.lang === i18n.lang ? flavour.native : null);
   const countryName = (code: string) => {
     try {
       return new Intl.DisplayNames([LANG_INFO[i18n.lang].tag], { type: "region" }).of(code) ?? code;
@@ -93,7 +95,7 @@
     {#if flavour}
       <p class="local" data-hero-rise data-local={region.country}>
         <span class="flag" aria-hidden="true">{#each flavour.colours as c (c)}<i style:background={c}></i>{/each}</span>
-        <b>{flavour.hello}</b> {countryName(region.country!)} · {sceneIn(flavour.scene)}
+        <b>{own?.hello ?? flavour.hello}</b> {countryName(region.country!)} · {own?.scene ?? sceneIn(flavour.scene)}
       </p>
     {/if}
     <p class="eyebrow" data-hero-rise>{t("hero.eyebrow")}</p>
