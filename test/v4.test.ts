@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { GENRE_BY_ID } from "../src/lib/genres";
-import { SKINS, SKIN_BY_ID, countryFromLanguage, grooveFor, skinForCountry, skinForStyle } from "../src/v4/skins";
+import { SKINS, SKIN_BY_ID, countryFromLanguage, genresOf, grooveFor, skinForCountry, skinForStyle } from "../src/v4/skins";
+import { hasLoop } from "../src/v4/loops";
 import { PARTS, bands, hits, render, stems, type Clock } from "../src/v4/wave/model";
 
 describe("the site's skins follow where the visitor is", () => {
@@ -29,10 +30,21 @@ describe("the site's skins follow where the visitor is", () => {
     expect(grooveFor(SKIN_BY_ID.club, "DE")).toBe("techno");
     // A Dominican visitor who picked the club look hears the club's music.
     expect(grooveFor(SKIN_BY_ID.club, "DO")).toBe("techno");
+    // So does a German who picked the neon look, though it keeps techno among its common grooves.
+    expect(SKIN_BY_ID.neon.common).toContain("techno");
+    expect(grooveFor(SKIN_BY_ID.neon, "DE")).toBe(genresOf(SKIN_BY_ID.neon, "DE")[0]);
+    expect(grooveFor(SKIN_BY_ID.neon, "DE")).not.toBe("techno");
   });
 
   it("only offers grooves the engine can play", () => {
-    for (const s of SKINS) for (const g of s.genres) expect(GENRE_BY_ID[g], `${s.id}: ${g}`).toBeTruthy();
+    for (const s of SKINS) {
+      for (const g of [...s.local, ...s.common, ...s.special]) expect(GENRE_BY_ID[g], `${s.id}: ${g}`).toBeTruthy();
+      // What the deck shows has its loop recorded, wherever the visitor is.
+      expect(genresOf(s).length, s.id).toBeGreaterThan(0);
+      for (const country of [null, "DO", "ZA", "JP", "IN", "AU", "EG", "US", "DE"]) {
+        for (const g of genresOf(s, country)) expect(hasLoop(g), `${s.id} ${country}: ${g}`).toBe(true);
+      }
+    }
   });
 
   it("reads a country from a browser language when the edge says nothing", () => {

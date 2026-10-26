@@ -61,8 +61,9 @@ test("the visitor can change the look, it stays, and the waveforms follow it", a
   await expect(page.locator("html")).toHaveAttribute("data-skin", "neon");
   await expect(page.locator("canvas[data-wave=lanes]")).toHaveAttribute("data-colours", "#ff4fd8 #4fd2ff #7c3aed #f7e8ff");
   await expect(page.locator("canvas[data-wave=bands]")).toHaveAttribute("data-colours", "#4fd2ff #ff4fd8 #f7e8ff");
-  // A new look brings its own music.
-  await expect(page.locator("[data-groove=pop]")).toHaveAttribute("aria-pressed", "true");
+  // A new look brings its own music: the first of its grooves, not the club's techno.
+  await expect(page.locator("[data-groove]").first()).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-groove=techno]")).not.toHaveAttribute("aria-pressed", "true");
 
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("data-skin", "neon");
@@ -78,7 +79,7 @@ test("the deck plays, changes groove in time, and its stems switch one by one", 
   await expect(page.locator("[data-wave=bands]")).toHaveAttribute("data-renderer", /webgl2|2d/);
   await page.click("[data-play]");
   await expect(page.locator("[data-play]")).toHaveAttribute("aria-label", "Stop the deck");
-  await expect(page.locator("[data-bpm]")).toHaveText("90.0");
+  await expect(page.locator("[data-bpm]")).toHaveText(LOOP_INDEX.hiphop.bpm.toFixed(1));
   await page.click("[data-groove=house]");
   // The recorded loop's own tempo, as it was made, not the middle of house's range.
   await expect(page.locator("[data-bpm]")).toHaveText(LOOP_INDEX.house.bpm.toFixed(1));

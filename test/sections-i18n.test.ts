@@ -11,6 +11,7 @@ import { COMPARE } from "../src/v4/i18n/compare";
 import { NIGHTS } from "../src/v4/i18n/nights";
 import { PEOPLE } from "../src/v4/i18n/people";
 import { STATUS } from "../src/v4/i18n/status";
+import { BOOTH } from "../src/v4/i18n/booth";
 import { MAIL_WORDS } from "../worker/mailwords";
 import { LANGS } from "../src/v4/i18n/strings";
 
@@ -23,7 +24,7 @@ function leaves(v: unknown, path = ""): [string, string][] {
 const tags = (s: string) => (s.match(/<\/?[a-z]+/g) ?? []).sort();
 const holes = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
 
-const DICTIONARIES = { sections: SECTIONS, account: ACCOUNT, featuresPage: FEATURES_PAGE, pages: PAGES, pricing: PRICING, bits: BITS, talkback: TALKBACK, outboard: OUTBOARD, compare: COMPARE, nights: NIGHTS, people: PEOPLE, status: STATUS, mail: MAIL_WORDS };
+const DICTIONARIES = { sections: SECTIONS, account: ACCOUNT, featuresPage: FEATURES_PAGE, pages: PAGES, pricing: PRICING, bits: BITS, talkback: TALKBACK, outboard: OUTBOARD, compare: COMPARE, nights: NIGHTS, people: PEOPLE, status: STATUS, booth: BOOTH, mail: MAIL_WORDS };
 
 describe.each(Object.entries(DICTIONARIES))("%s, in every language", (_name, dict) => {
   const en = new Map(leaves(dict.en));

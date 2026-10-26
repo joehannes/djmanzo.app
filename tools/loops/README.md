@@ -9,12 +9,23 @@ recording is in it. A genre without a loop plays the synthesiser's sketch
 ## How it was made
 
 1. **Generated** with [ACE-Step 1.5](https://github.com/ace-step/ACE-Step-1.5)
-   (MIT licence; its authors say its output may be used commercially and
-   that it was trained on licensed, royalty-free and synthetic music). Each
-   genre's caption, tempo, key, length and seed are in `jobs.json`;
-   `generate.py` is the script that ran them, with the turbo diffusion
-   model and the 0.6B planning model, on a CPU in bfloat16, about two and a
-   half minutes per 40-second track. Instrumentals only.
+   **XL** (MIT licence; its authors say its output may be used commercially
+   and that it was trained on licensed, royalty-free and synthetic music).
+   Each genre's caption, tempo, key, length and seed are in `jobs.json`;
+   `generate.py` is the script that ran them, with the XL turbo diffusion
+   model (`ACE-Step/acestep-v15-xl-turbo`, about 5 billion parameters, 8
+   steps; its weights are published in 32-bit and were converted to
+   bfloat16 as they downloaded, 10 GB) and the 0.6B planning model, on four
+   CPU cores in bfloat16: four to seventeen minutes per 40-second track
+   (more when the CPU is shared), at most about 8 GB of memory. ACE-Step
+   stops a diffusion run at ten minutes; `ACESTEP_GENERATION_TIMEOUT=3600`
+   gives a CPU the hour it may need. Instrumentals only. The first cut, on
+   25 October, used the 2B turbo model; on 26 October the owner asked for
+   the XL one. ACE-Step rates its XL turbo and XL SFT models alike for
+   quality; SFT takes 50 steps with guidance (a dozen times the work) where
+   turbo takes 8, which on a CPU decided it. A re-upload of the XL SFT
+   model on Hugging Face (SynapseMusicV12-XL-SFT) carries ACE-Step's own
+   model card; the official repository was used instead.
 2. **Taken apart** with [Demucs](https://github.com/adefossez/demucs)
    v4.1.0, `htdemucs_ft` (MIT licence), into drums, bass, other and vocals;
    other and vocals are kept together as "the rest".
@@ -32,7 +43,7 @@ recording is in it. A genre without a loop plays the synthesiser's sketch
    second) so the site draws what it plays.
 
 ```
-python -I generate.py jobs.json masters/ path/to/ACE-Step-1.5   # USE_LM=1 ACESTEP_CPU_BF16=1
+python -I generate.py jobs.json masters/ path/to/ACE-Step-1.5   # ACE_DIT=acestep-v15-xl-turbo USE_LM=1 ACESTEP_CPU_BF16=1 ACESTEP_GENERATION_TIMEOUT=3600
 python -I make_loops.py jobs.json masters/ public/v4/loops/
 cp public/v4/loops/index.json src/v4/loops/index.json
 ```

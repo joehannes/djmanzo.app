@@ -10,7 +10,8 @@ export default defineConfig({
     // WebGL through SwiftShader, so the Signal Path's painting is really drawn in the tests.
     launchOptions: {
       ...(process.env.DJMANZO_CHROMIUM ? { executablePath: process.env.DJMANZO_CHROMIUM } : {}),
-      args: ["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader"],
+      // A pretend microphone, answering yes, for the booth's voice recording.
+      args: ["--use-gl=swiftshader", "--enable-webgl", "--ignore-gpu-blocklist", "--enable-unsafe-swiftshader", "--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
     },
   },
   webServer: process.env.SITE

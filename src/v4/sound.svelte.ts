@@ -83,11 +83,32 @@ function load(ctx: BaseAudioContext, genre: string): Promise<Loaded> {
   return p;
 }
 
-let playing: { genre: string; sources: AudioBufferSourceNode[]; gains: Record<Stem, GainNode>; t0: number } | null = null;
+/**
+ * The loop as it sounds now. Its place is kept as an anchor — where in the
+ * loop it was at an audio time, and how fast it runs — so the pitch fader,
+ * a brake or a rewind can move it and the clock still says where the beat is.
+ */
+let playing: {
+  genre: string;
+  loop: Loaded;
+  sources: AudioBufferSourceNode[];
+  gains: Record<Stem, GainNode>;
+  meters: Record<Stem, AnalyserNode>;
+  rate: number;
+  anchorTime: number;
+  anchorPos: number;
+} | null = null;
 /** The loop's waveform, for drawing, once fetched; the genre it belongs to. */
 let shape: { genre: string; peaks: Peaks } | null = null;
 /** Counts the visitor's asks, so a loop that arrives after another was asked for is not played. */
 let asked = 0;
+
+/** How loud each stem is set (the booth's faders), apart from being on or off. */
+export const levels = $state<Record<Stem, number>>({ drums: 1, bass: 1, rest: 1 });
+/** The pitch fader: how fast the loop runs, 0.92–1.08 (a turntable's ±8 %). */
+export const speed = $state({ rate: 1 });
+
+const stemGain = (s: Stem) => (deck.on[s] ? levels[s] : 0);
 
 function release(fade = 0.06) {
   if (!playing) return;
@@ -104,6 +125,58 @@ function drawn(genre: string) {
   void peaks(genre).then((p) => {
     if (p && deck.genre === genre) shape = { genre, peaks: p };
   });
+}
+
+/** Where in the loop (seconds from its start) it is at audio time `t`. */
+export function loopPosition(t = hasEngine() ? getEngine().ctx.currentTime : 0): number | null {
+  if (!playing) return null;
+  const len = playing.loop.info.seconds;
+  const p = playing.anchorPos + (t - playing.anchorTime) * playing.rate;
+  return ((p % len) + len) % len;
+}
+
+/** The beat, for anything that keeps time with the deck: the audio time of a downbeat, and the length of a beat now. */
+export function beatClock(): { one: number; beat: number; bar: number } | null {
+  if (!hasEngine()) return null;
+  const e = getEngine();
+  if (playing) {
+    const beat = 60 / playing.loop.info.bpm / playing.rate;
+    return { one: playing.anchorTime - playing.anchorPos / playing.rate, beat, bar: beat * 4 };
+  }
+  if (deck.playing && deck.source === "sketch") {
+    const d = e.decks[0];
+    const beat = 60 / e.tempo;
+    return { one: d.nextTime - (d.step % 16) * d.stepDur, beat, bar: beat * 4 };
+  }
+  return null;
+}
+
+/** Start the loop's three sources at `pos` seconds into it, at audio time `when`, through fresh gains. */
+function startSources(loop: Loaded, pos: number, when: number, rate: number, buffers: Record<Stem, AudioBuffer> = loop.buffers, from = loop.start) {
+  const e = getEngine();
+  const ctx = e.ctx;
+  const gains = {} as Record<Stem, GainNode>;
+  const meters = {} as Record<Stem, AnalyserNode>;
+  const sources = STEMS.map((s) => {
+    const g = ctx.createGain();
+    g.gain.value = stemGain(s);
+    g.connect(e.decks[0].input);
+    const m = ctx.createAnalyser();
+    m.fftSize = 256;
+    g.connect(m);
+    gains[s] = g;
+    meters[s] = m;
+    const src = ctx.createBufferSource();
+    src.buffer = buffers[s];
+    src.loop = true;
+    src.loopStart = from;
+    src.loopEnd = from + loop.info.seconds;
+    src.playbackRate.value = rate;
+    src.connect(g);
+    src.start(when, from + pos);
+    return src;
+  });
+  return { sources, gains, meters };
 }
 
 async function playLoop(genre: string) {
@@ -124,27 +197,139 @@ async function playLoop(genre: string) {
   }
   if (ask !== asked || !deck.playing || deck.genre !== genre) return;
   release();
-  const ctx = e.ctx;
-  const input = e.decks[0].input;
-  const when = ctx.currentTime + 0.04;
-  const gains = {} as Record<Stem, GainNode>;
-  const sources = STEMS.map((s) => {
-    const g = ctx.createGain();
-    g.gain.value = deck.on[s] ? 1 : 0;
-    g.connect(input);
-    gains[s] = g;
-    const src = ctx.createBufferSource();
-    src.buffer = loop.buffers[s];
-    src.loop = true;
-    src.loopStart = loop.start;
-    src.loopEnd = loop.start + loop.info.seconds;
-    src.connect(g);
-    src.start(when, loop.start);
-    return src;
-  });
-  playing = { genre, sources, gains, t0: when };
+  const when = e.ctx.currentTime + 0.04;
+  playing = { genre, loop, ...startSources(loop, 0, when, speed.rate), rate: speed.rate, anchorTime: when, anchorPos: 0 };
   deck.loading = false;
   deck.source = "loop";
+}
+
+/** Bring the loop back in at `pos` (the top by default), at audio time `when`, at the pitch fader's speed. */
+function restart(pos = 0, when = getEngine().ctx.currentTime + 0.02) {
+  if (!playing) return;
+  const keep = playing;
+  release(0.01);
+  playing = { ...keep, ...startSources(keep.loop, pos, when, speed.rate), rate: speed.rate, anchorTime: when, anchorPos: pos };
+}
+
+// --- The booth's moves on the loop -----------------------------------------------------------
+
+/** The pitch fader: the loop runs faster or slower, and the beat with it. */
+export function setRate(rate: number) {
+  speed.rate = Math.max(0.92, Math.min(1.08, rate));
+  if (!hasEngine()) return;
+  const e = getEngine();
+  const now = e.ctx.currentTime;
+  if (playing) {
+    playing.anchorPos = loopPosition(now) ?? 0;
+    playing.anchorTime = now;
+    playing.rate = speed.rate;
+    for (const s of playing.sources) s.playbackRate.setTargetAtTime(speed.rate, now, 0.03);
+  } else if (deck.source === "sketch") e.setTempo(tempoOf(deck.genre) * speed.rate);
+}
+
+/** One stem's fader. */
+export function setLevel(stem: Stem, v: number) {
+  levels[stem] = Math.max(0, Math.min(1, v));
+  if (playing) playing.gains[stem].gain.setTargetAtTime(stemGain(stem), getEngine().ctx.currentTime, 0.015);
+}
+
+/** How loud each stem is sounding now, 0–1, for the meters. */
+export function stemLevels(): Record<Stem, number> {
+  const out = { drums: 0, bass: 0, rest: 0 } as Record<Stem, number>;
+  if (!playing) return out;
+  const buf = new Uint8Array(256);
+  for (const s of STEMS) {
+    playing.meters[s].getByteTimeDomainData(buf);
+    let peak = 0;
+    for (const v of buf) peak = Math.max(peak, Math.abs(v - 128));
+    out[s] = Math.min(1, peak / 100);
+  }
+  return out;
+}
+
+/** What the deck is doing beyond playing: for the platter, which slows, stops and spins back with it. */
+export const moves = $state<{ now: "brake" | "rewind" | "roll" | null }>({ now: null });
+
+/** The turntable's stop button: the loop slows to a halt, then comes back in on the one. */
+export function brake() {
+  if (!playing || moves.now) return;
+  const e = getEngine();
+  const now = e.ctx.currentTime;
+  moves.now = "brake";
+  for (const s of playing.sources) {
+    s.playbackRate.setValueAtTime(playing.rate, now);
+    s.playbackRate.exponentialRampToValueAtTime(0.02, now + 0.9);
+  }
+  setTimeout(() => {
+    moves.now = null;
+    if (playing) restart(0);
+  }, 1300);
+}
+
+/** The selector's rewind: the record pulled back, faster and faster, then from the top. */
+export function rewind() {
+  if (!playing || moves.now) return;
+  const e = getEngine();
+  const ctx = e.ctx;
+  const keep = playing;
+  const pos = loopPosition(ctx.currentTime) ?? 0;
+  const len = keep.loop.info.seconds;
+  moves.now = "rewind";
+  // The same loop backwards: from the mirror of where it is, so it runs back over what was just heard.
+  const backwards = Object.fromEntries(STEMS.map((s) => [s, reversed(ctx, keep.loop.buffers[s])])) as Record<Stem, AudioBuffer>;
+  const from = keep.loop.buffers.drums.duration - keep.loop.start - len;
+  release(0.01);
+  const now = ctx.currentTime + 0.01;
+  const back = startSources(keep.loop, (len - pos) % len, now, 1, backwards, from);
+  for (const s of back.sources) {
+    s.playbackRate.setValueAtTime(1, now);
+    s.playbackRate.exponentialRampToValueAtTime(3.5, now + 0.75);
+  }
+  setTimeout(() => {
+    for (const s of back.sources) s.stop();
+    for (const g of Object.values(back.gains)) g.disconnect();
+    moves.now = null;
+    if (deck.playing && deck.genre === keep.genre) {
+      playing = keep;
+      restart(0);
+    }
+  }, 800);
+}
+
+const mirrors = new WeakMap<AudioBuffer, AudioBuffer>();
+function reversed(ctx: BaseAudioContext, b: AudioBuffer): AudioBuffer {
+  let r = mirrors.get(b);
+  if (!r) {
+    r = ctx.createBuffer(b.numberOfChannels, b.length, b.sampleRate);
+    for (let c = 0; c < b.numberOfChannels; c++) r.getChannelData(c).set(b.getChannelData(c).slice().reverse());
+    mirrors.set(b, r);
+  }
+  return r;
+}
+
+/**
+ * The loop roll: while held, the last `beats` of a beat (¼, ⅛, 1/16 of a bar's
+ * beat) repeat; let go and the loop is where it would have been.
+ */
+export function roll(on: boolean, beats = 0.5) {
+  if (!playing) return;
+  const ctx = getEngine().ctx;
+  const now = ctx.currentTime;
+  if (on) {
+    if (moves.now) return;
+    moves.now = "roll";
+    const beat = 60 / playing.loop.info.bpm;
+    const size = beat * beats;
+    const pos = loopPosition(now) ?? 0;
+    const at = Math.floor(pos / size) * size;
+    for (const s of playing.sources) {
+      s.loopStart = playing.loop.start + at;
+      s.loopEnd = playing.loop.start + at + size;
+    }
+  } else if (moves.now === "roll") {
+    moves.now = null;
+    restart(loopPosition(now) ?? 0, now + 0.005);
+  }
 }
 
 // --- The synthesiser's sketch -------------------------------------------------------------
@@ -221,7 +406,7 @@ export function setStem(stem: Stem, on: boolean) {
     const g = playing.gains[stem].gain;
     const now = getEngine().ctx.currentTime;
     g.setValueAtTime(g.value, now);
-    g.linearRampToValueAtTime(on ? 1 : 0, now + 0.012);
+    g.linearRampToValueAtTime(on ? levels[stem] : 0, now + 0.012);
   }
   sketchParts();
 }
@@ -233,10 +418,11 @@ export type Drawing = { kind: "loop"; peaks: Peaks; seconds: number; t0: number 
 export function where(): { clock: Clock; now: number; genre: Genre; idle: boolean; drawing: Drawing } {
   const genre = GENRE_BY_ID[deck.genre] ?? GENRE_BY_ID.house;
   const loop = LOOPS[genre.id];
-  const own: Drawing = loop && shape?.genre === genre.id ? { kind: "loop", peaks: shape.peaks, seconds: loop.seconds, t0: playing?.t0 ?? 0 } : { kind: "pattern" };
+  const clock = beatClock();
+  const own: Drawing = loop && shape?.genre === genre.id ? { kind: "loop", peaks: shape.peaks, seconds: loop.seconds * (playing ? 1 / playing.rate : 1), t0: playing && clock ? clock.one : 0 } : { kind: "pattern" };
   if (deck.playing && hasEngine()) {
     const e = getEngine();
-    if (playing) return { clock: { time: playing.t0, step: 0, stepDur: 60 / loop.bpm / 4 }, now: e.ctx.currentTime, genre, idle: false, drawing: own };
+    if (playing && clock) return { clock: { time: clock.one, step: 0, stepDur: clock.beat / 4 }, now: e.ctx.currentTime, genre, idle: false, drawing: own };
     const d = e.decks[0];
     // The synthesiser is playing (no loop, or its files not yet here): draw what it plays.
     return { clock: { time: d.nextTime, step: d.step, stepDur: d.stepDur }, now: e.ctx.currentTime, genre, idle: false, drawing: { kind: "pattern" } };

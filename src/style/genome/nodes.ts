@@ -397,6 +397,41 @@ const FAMILY_OF: Record<string, string> = {
   disco: "classics",
   rock: "classics",
   pop: "party",
+  // The grooves each look adds to the deck.
+  ukgarage: "edm",
+  italodisco: "edm",
+  futurebass: "edm",
+  eurobeat: "edm",
+  goa: "edm",
+  melbournebounce: "edm",
+  tropicalhouse: "edm",
+  afrohouse: "edm",
+  gqom: "edm",
+  orientalhouse: "edm",
+  asianunderground: "edm",
+  funkot: "edm",
+  chiptune: "edm",
+  baile: "latin",
+  islandreggae: "latin",
+  trap: "urban",
+  jerseyclub: "urban",
+  amapiano: "urban",
+  kuduro: "urban",
+  highlife: "urban",
+  mahraganat: "urban",
+  citypop: "classics",
+  gnawa: "classics",
+  country: "classics",
+  kpop: "party",
+  bollywood: "party",
+  bhangra: "party",
+  garba: "party",
+  kuthu: "party",
+  dabke: "party",
+  khaleeji: "party",
+  rai: "party",
+  molam: "party",
+  polynesian: "party",
 };
 
 /** A lighter node from one of the island's genre notes. */
@@ -529,11 +564,12 @@ const LIGHT: GenomeNode[] = [
   },
 ];
 
-const deepIds = new Set(DEEP.map((n) => n.id));
+/** A family or a deeply written genre is never replaced by a genre note of the same name (the deck's "EDM" is not the family). */
+const written = new Set([...FAMILIES, ...DEEP].map((n) => n.id));
 
 /** Every node, by id. */
 export const NODES: Record<string, GenomeNode> = Object.fromEntries(
-  [...FAMILIES, ...DEEP, ...GENRES.filter((g) => !deepIds.has(g.id)).map(seeded), ...LIGHT].map((n) => [n.id, n]),
+  [...FAMILIES, ...DEEP, ...GENRES.filter((g) => !written.has(g.id)).map(seeded), ...LIGHT].map((n) => [n.id, n]),
 );
 
 /** The families, for choosing a broad style first. */

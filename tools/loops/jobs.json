@@ -133,5 +133,383 @@
   "key": "D minor",
   "duration": 40,
   "seed": 33
+ },
+ {
+  "genre": "ukgarage",
+  "id": "ukgarage",
+  "caption": "UK garage, 2-step shuffled drums, skippy swung hi-hats, organ and chord stabs, warm rolling sub bass, London pirate radio energy, polished professional mix, instrumental",
+  "bpm": 132,
+  "key": "F minor",
+  "duration": 40,
+  "seed": 31
+ },
+ {
+  "genre": "trance",
+  "id": "trance",
+  "caption": "uplifting trance, rolling offbeat bass, supersaw lead arpeggios, big euphoric pads, driving four-on-the-floor kick, festival main stage, polished professional mastering, instrumental",
+  "bpm": 138,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 32
+ },
+ {
+  "genre": "kompa",
+  "id": "kompa",
+  "caption": "Haitian kompa, steady cymbal and drum groove, warm bass, clean electric guitar arpeggios, synth horns, smooth couples dance, polished professional mix, instrumental",
+  "bpm": 120,
+  "key": "C major",
+  "duration": 40,
+  "seed": 33
+ },
+ {
+  "genre": "soca",
+  "id": "soca",
+  "caption": "Trinidad soca, fast carnival road march, driving kick and snare, steel pan riff, brass stabs, energetic power soca, polished professional mix, instrumental",
+  "bpm": 156,
+  "key": "D major",
+  "duration": 40,
+  "seed": 34
+ },
+ {
+  "genre": "baile",
+  "id": "baile",
+  "caption": "Brazilian funk carioca baile funk, tamborzão drum machine beat, heavy 808 bass, Rio de Janeiro party, punchy and raw, polished professional mix, instrumental",
+  "bpm": 130,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 35
+ },
+ {
+  "genre": "trap",
+  "id": "trap",
+  "caption": "Atlanta trap, booming 808 bass glides, rapid triplet hi-hat rolls, crisp snare on three, dark bell melody, polished professional mix, instrumental",
+  "bpm": 140,
+  "key": "C minor",
+  "duration": 40,
+  "seed": 36
+ },
+ {
+  "genre": "rnb",
+  "id": "rnb",
+  "caption": "smooth contemporary R&B, laid-back crisp drums, warm Rhodes chords, deep sub bass, silky synth pads, late night, polished professional mix, instrumental",
+  "bpm": 90,
+  "key": "Bb minor",
+  "duration": 40,
+  "seed": 37
+ },
+ {
+  "genre": "amapiano",
+  "id": "amapiano",
+  "caption": "South African amapiano, deep log drum bass, shuffling shakers, soft jazzy piano chords, airy pads, slow hypnotic groove, polished professional mix, instrumental",
+  "bpm": 112,
+  "key": "F minor",
+  "duration": 40,
+  "seed": 38
+ },
+ {
+  "genre": "afrohouse",
+  "id": "afrohouse",
+  "caption": "afro house, tribal percussion, deep driving four-on-the-floor kick, hypnotic marimba and kalimba riffs, warm bass, polished professional mix, instrumental",
+  "bpm": 122,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 39
+ },
+ {
+  "genre": "highlife",
+  "id": "highlife",
+  "caption": "Ghanaian highlife, bright interlocking electric guitars, brass section, bell pattern, walking bass, joyful dance band, polished professional mix, instrumental",
+  "bpm": 118,
+  "key": "G major",
+  "duration": 40,
+  "seed": 40
+ },
+ {
+  "genre": "kpop",
+  "id": "kpop",
+  "caption": "K-pop dance track, punchy electronic drums, bright synth hooks, big bass drop, energetic choreography beat, polished professional mastering, instrumental",
+  "bpm": 124,
+  "key": "C minor",
+  "duration": 40,
+  "seed": 41
+ },
+ {
+  "genre": "citypop",
+  "id": "citypop",
+  "caption": "1980s Japanese city pop, slap bass, funky clean guitar, lush electric piano, glossy synth brass, night drive, polished professional mix, instrumental",
+  "bpm": 112,
+  "key": "D major",
+  "duration": 40,
+  "seed": 42
+ },
+ {
+  "genre": "funkot",
+  "id": "funkot",
+  "caption": "Indonesian funkot dance music, very fast house beat, kendang drum fills, wobbling bass, playful synth melody, Jakarta club, polished professional mix, instrumental",
+  "bpm": 170,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 43
+ },
+ {
+  "genre": "futurebass",
+  "id": "futurebass",
+  "caption": "future bass, wobbling supersaw chords with sidechain, punchy trap drums, bright synth chops, emotional drop, polished professional mastering, instrumental",
+  "bpm": 150,
+  "key": "F major",
+  "duration": 40,
+  "seed": 44
+ },
+ {
+  "genre": "rai",
+  "id": "rai",
+  "caption": "Algerian raï, darbuka and bendir percussion, synth accordion lead, warm bass, Oran wedding dance groove, polished professional mix, instrumental",
+  "bpm": 105,
+  "key": "D minor",
+  "duration": 40,
+  "seed": 45
+ },
+ {
+  "genre": "khaleeji",
+  "id": "khaleeji",
+  "caption": "Gulf khaleeji music, clapping rhythm, deep frame drums, oud melody, strings, celebratory wedding dance, polished professional mix, instrumental",
+  "bpm": 100,
+  "key": "C minor",
+  "duration": 40,
+  "seed": 46
+ },
+ {
+  "genre": "dabke",
+  "id": "dabke",
+  "caption": "Levantine dabke, driving tabl drum, mijwiz reed lead, handclaps, energetic line dance wedding groove, polished professional mix, instrumental",
+  "bpm": 128,
+  "key": "G minor",
+  "duration": 40,
+  "seed": 47
+ },
+ {
+  "genre": "mahraganat",
+  "id": "mahraganat",
+  "caption": "Egyptian mahraganat electro shaabi, distorted synth riffs, fast tabla loops, hard kicks, Cairo street party, raw and energetic, instrumental",
+  "bpm": 130,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 48
+ },
+ {
+  "genre": "orientalhouse",
+  "id": "orientalhouse",
+  "caption": "oriental deep house, warm four-on-the-floor kick, oud and ney melodies, darbuka percussion, deep bass, desert sunset, polished professional mix, instrumental",
+  "bpm": 118,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 49
+ },
+ {
+  "genre": "bhangra",
+  "id": "bhangra",
+  "caption": "Punjabi bhangra, dhol drum groove, tumbi riff, chimta jingles, heavy bass, energetic wedding dance, polished professional mix, instrumental",
+  "bpm": 100,
+  "key": "G major",
+  "duration": 40,
+  "seed": 50
+ },
+ {
+  "genre": "bollywood",
+  "id": "bollywood",
+  "caption": "Bollywood dance number, tabla and dhol beat, sitar and string hook, big synth bass, festive filmi party, polished professional mix, instrumental",
+  "bpm": 120,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 51
+ },
+ {
+  "genre": "garba",
+  "id": "garba",
+  "caption": "Gujarati garba for Navratri, fast dhol and dandiya stick rhythm, harmonium and flute melody, circling dance groove, festive, polished professional mix, instrumental",
+  "bpm": 128,
+  "key": "C major",
+  "duration": 40,
+  "seed": 52
+ },
+ {
+  "genre": "asianunderground",
+  "id": "asianunderground",
+  "caption": "Asian underground drum and bass, fast breakbeats with tabla, deep sub bass, sitar drone, London club, polished professional mix, instrumental",
+  "bpm": 170,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 53
+ },
+ {
+  "genre": "islandreggae",
+  "id": "islandreggae",
+  "caption": "Pacific island reggae, laid-back one drop groove, ukulele skank, warm bass, beach sunset, Polynesian vibe, polished professional mix, instrumental",
+  "bpm": 90,
+  "key": "G major",
+  "duration": 40,
+  "seed": 54
+ },
+ {
+  "genre": "melbournebounce",
+  "id": "melbournebounce",
+  "caption": "Melbourne bounce, bouncy four-on-the-floor kick, offbeat pitched bass, squeaky lead synth, festival energy, polished professional mastering, instrumental",
+  "bpm": 128,
+  "key": "F minor",
+  "duration": 40,
+  "seed": 55
+ },
+ {
+  "genre": "tropicalhouse",
+  "id": "tropicalhouse",
+  "caption": "tropical house, relaxed four-on-the-floor, marimba and steel drum melody, plucked synths, warm bass, beach sunset, polished professional mix, instrumental",
+  "bpm": 110,
+  "key": "C major",
+  "duration": 40,
+  "seed": 56
+ },
+ {
+  "genre": "rock",
+  "id": "rock",
+  "caption": "indie dance rock, live drums with disco hi-hat, driving bass guitar, crunchy electric guitar riffs, energetic, polished professional mix, instrumental",
+  "bpm": 124,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 57
+ },
+ {
+  "genre": "edm",
+  "id": "edm",
+  "caption": "big room EDM festival anthem, huge kick, pumping sidechained synth leads, build-up energy, main stage drop, polished professional mastering, instrumental",
+  "bpm": 128,
+  "key": "F minor",
+  "duration": 40,
+  "seed": 58
+ },
+ {
+  "genre": "hardstyle",
+  "id": "hardstyle",
+  "caption": "Dutch hardstyle, distorted reverse bass kick, euphoric screeching lead melody, festival energy, polished professional mastering, instrumental",
+  "bpm": 150,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 61
+ },
+ {
+  "genre": "italodisco",
+  "id": "italodisco",
+  "caption": "1980s Italo disco, arpeggiated synth bass, drum machine, catchy synth lead, retro dancefloor, polished professional mix, instrumental",
+  "bpm": 120,
+  "key": "D minor",
+  "duration": 40,
+  "seed": 62
+ },
+ {
+  "genre": "jerseyclub",
+  "id": "jerseyclub",
+  "caption": "Jersey club, rapid bouncy triplet kick patterns, chopped synth stabs, Newark house party, energetic, polished professional mix, instrumental",
+  "bpm": 140,
+  "key": "F minor",
+  "duration": 40,
+  "seed": 63
+ },
+ {
+  "genre": "country",
+  "id": "country",
+  "caption": "modern country line dance, twangy telecaster guitar, banjo, fiddle, stomping kick and handclap, Nashville party, polished professional mix, instrumental",
+  "bpm": 118,
+  "key": "G major",
+  "duration": 40,
+  "seed": 64
+ },
+ {
+  "genre": "gqom",
+  "id": "gqom",
+  "caption": "South African gqom from Durban, dark broken kick patterns, heavy toms, hypnotic minimal synth, raw club energy, instrumental",
+  "bpm": 126,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 65
+ },
+ {
+  "genre": "kuduro",
+  "id": "kuduro",
+  "caption": "Angolan kuduro, fast hard-hitting electronic drums, syncopated kicks, playful synth riffs, Luanda street party, polished professional mix, instrumental",
+  "bpm": 135,
+  "key": "G minor",
+  "duration": 40,
+  "seed": 66
+ },
+ {
+  "genre": "molam",
+  "id": "molam",
+  "caption": "Thai and Lao molam dance, khaen mouth organ riffs, phin lute, fast electronic drums, deep bass, Isan festival, polished professional mix, instrumental",
+  "bpm": 135,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 67
+ },
+ {
+  "genre": "eurobeat",
+  "id": "eurobeat",
+  "caption": "Japanese eurobeat for parapara, fast four-on-the-floor, octave synth bass, blazing synth brass lead, 1990s high energy, polished professional mix, instrumental",
+  "bpm": 155,
+  "key": "B minor",
+  "duration": 40,
+  "seed": 68
+ },
+ {
+  "genre": "gnawa",
+  "id": "gnawa",
+  "caption": "Moroccan gnawa trance groove, guembri bass lute, iron qraqeb castanets, hypnotic handclaps, deep house kick underneath, polished professional mix, instrumental",
+  "bpm": 118,
+  "key": "D minor",
+  "duration": 40,
+  "seed": 69
+ },
+ {
+  "genre": "kuthu",
+  "id": "kuthu",
+  "caption": "Tamil kuthu dance, thundering parai and thavil drums, nadaswaram melody, heavy bass, Chennai street celebration, polished professional mix, instrumental",
+  "bpm": 105,
+  "key": "C minor",
+  "duration": 40,
+  "seed": 70
+ },
+ {
+  "genre": "goa",
+  "id": "goa",
+  "caption": "Goa psytrance, rolling triplet bassline, driving kick, acid squelch and psychedelic leads, sunrise beach party, polished professional mastering, instrumental",
+  "bpm": 142,
+  "key": "E minor",
+  "duration": 40,
+  "seed": 71
+ },
+ {
+  "genre": "polynesian",
+  "id": "polynesian",
+  "caption": "Polynesian log drum fire dance, fast pate and toere wooden drums, deep rumbling bass, modern kick underneath, island ceremony energy, polished professional mix, instrumental",
+  "bpm": 128,
+  "key": "D minor",
+  "duration": 40,
+  "seed": 72
+ },
+ {
+  "genre": "chiptune",
+  "id": "chiptune",
+  "caption": "chiptune dance, 8-bit square wave melody, Game Boy arpeggios, punchy chip drums, playful retro video game energy, polished professional mix, instrumental",
+  "bpm": 140,
+  "key": "C major",
+  "duration": 40,
+  "seed": 73
+ },
+ {
+  "genre": "electroswing",
+  "id": "electroswing",
+  "caption": "electro swing, 1930s swing horns and clarinet, walking upright bass, modern house kick and hats, playful Gatsby party, polished professional mix, instrumental",
+  "bpm": 124,
+  "key": "Bb major",
+  "duration": 40,
+  "seed": 74
  }
 ]

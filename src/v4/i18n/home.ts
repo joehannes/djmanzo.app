@@ -49,7 +49,7 @@ const en = {
     wave: "The deck's three stems, each in its own lane",
     play: "Play the deck",
     on: "{n} of 3 parts on",
-    credit: "Music made for djmanzo with ACE-Step 1.5; its parts separated with Demucs.",
+    credit: "Music made for djmanzo with ACE-Step 1.5 XL; its parts separated with Demucs.",
   },
   tour: {
     eyebrow: "The application",
@@ -134,7 +134,7 @@ const es: HomeWords = {
     wave: "Los tres stems del plato, cada uno en su carril",
     play: "Reproducir el plato",
     on: "{n} de 3 partes encendidas",
-    credit: "Música hecha para djmanzo con ACE-Step 1.5; sus partes, separadas con Demucs.",
+    credit: "Música hecha para djmanzo con ACE-Step 1.5 XL; sus partes, separadas con Demucs.",
   },
   tour: {
     eyebrow: "La aplicación",
@@ -217,7 +217,7 @@ const pt: HomeWords = {
     wave: "Os três stems do deck, cada um na sua faixa",
     play: "Tocar o deck",
     on: "{n} de 3 partes ligadas",
-    credit: "Música feita para o djmanzo com ACE-Step 1.5; as partes separadas com Demucs.",
+    credit: "Música feita para o djmanzo com ACE-Step 1.5 XL; as partes separadas com Demucs.",
   },
   tour: {
     eyebrow: "O aplicativo",
@@ -300,7 +300,7 @@ const de: HomeWords = {
     wave: "Die drei Stems des Decks, jeder in seiner Spur",
     play: "Deck starten",
     on: "{n} von 3 Teilen an",
-    credit: "Musik für djmanzo mit ACE-Step 1.5 gemacht; ihre Teile mit Demucs getrennt.",
+    credit: "Musik für djmanzo mit ACE-Step 1.5 XL gemacht; ihre Teile mit Demucs getrennt.",
   },
   tour: {
     eyebrow: "Die Anwendung",
@@ -383,7 +383,7 @@ const fr: HomeWords = {
     wave: "Les trois stems de la platine, chacun sur sa piste",
     play: "Lancer la platine",
     on: "{n} parties sur 3 actives",
-    credit: "Musique faite pour djmanzo avec ACE-Step 1.5 ; ses parties séparées avec Demucs.",
+    credit: "Musique faite pour djmanzo avec ACE-Step 1.5 XL ; ses parties séparées avec Demucs.",
   },
   tour: {
     eyebrow: "L'application",
@@ -466,7 +466,7 @@ const it: HomeWords = {
     wave: "I tre stem del deck, ognuno nella sua corsia",
     play: "Avvia il deck",
     on: "{n} parti su 3 accese",
-    credit: "Musica fatta per djmanzo con ACE-Step 1.5; le parti separate con Demucs.",
+    credit: "Musica fatta per djmanzo con ACE-Step 1.5 XL; le parti separate con Demucs.",
   },
   tour: {
     eyebrow: "L'applicazione",
@@ -549,7 +549,7 @@ const ja: HomeWords = {
     wave: "デッキの3つのステム、それぞれ別のレーンに",
     play: "デッキを再生",
     on: "3パート中{n}パートがオン",
-    credit: "音楽は ACE-Step 1.5 で djmanzo のために制作し、パートは Demucs で分離しました。",
+    credit: "音楽は ACE-Step 1.5 XL で djmanzo のために制作し、パートは Demucs で分離しました。",
   },
   tour: {
     eyebrow: "アプリケーション",

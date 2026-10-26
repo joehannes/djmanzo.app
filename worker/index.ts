@@ -426,6 +426,7 @@ route("GET", "/api/admin/overview", async (c) => {
     signing: c.env.LICENCE_PRIVATE_KEY ? "secret" : "development key in KV",
     providers: auth.enabledProviders(c.env).map((p) => p.id),
     payments: { stripe: !!c.env.STRIPE_SECRET_KEY, paypal: !!c.env.PAYPAL_CLIENT_ID, transfer: !!c.env.BANK_TRANSFER_DETAILS, demo: auth.demoMode(c.env) },
+    mail: mail.mailOn(c.env),
   };
 });
 

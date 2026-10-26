@@ -1312,3 +1312,60 @@ reported.
   the waiting card (showing the checkout before the address fails it).
   Nothing here has been run against Stripe or Resend themselves: that
   needs the owner's keys (SETUP.md, *Rehearsing without real money*).
+
+## The deck's music in XL, five local genres a look, and the booth (26–27 October)
+
+- **XL.** The owner asked for ACE-Step 1.5 XL. The fifteen loops were made
+  again with its XL turbo model (`tools/loops/README.md` says how and why
+  turbo rather than SFT); listening files with the old take first and the
+  XL take second were made for the owner, loudness-matched, since nothing
+  here can say which sounds better. Measured: the XL takes are wider in
+  stereo in every genre measured and brighter in five of eight; none clips.
+  The Opus files are now encoded from the stems themselves, not from AAC.
+- **Grooves by region** (`src/v4/skins.ts`): each look offers five of its
+  region's own genres, three heard all over the world (shared between
+  looks: house, pop, hip-hop, techno, EDM, afrobeats, reggaeton,
+  dancehall) and one or two specials. In the look of the visitor's own
+  part of the world their country's genre comes first, even where it is
+  not among the five (kompa for Haiti, baile funk for Brazil, soca for
+  Trinidad, highlife for Ghana…); a look picked from elsewhere leads with
+  its own, even when it shelves the visitor's genre among its common ones
+  (a German in the neon look does not get techno first). Forty new genres in
+  `src/lib/genres.ts`, each with its roots, rooms, dance, mixing habit and
+  a pattern for the synthesiser; each gets its own XL loop
+  (`tools/loops/jobs.json`, 57 jobs), and a genre appears on the deck once
+  its loop is made. The deck groups them: *Here*, *Everywhere*, *Special*.
+- **The booth** (`src/v4/booth/`), opened under the deck: a record that
+  spins at 33⅓ with the pitch, stops on a brake and spins back on a rewind,
+  and scratches when dragged; four beat lights; the three stems' faders
+  with live meters; Low, Mid and High (to a kill), Filter, Echo, Space and
+  Pitch (±8 %) knobs (drag, arrow keys, double-click to centre); Brake,
+  Rewind (the dancehall pull-up), Roll (held, an eighth repeating) and
+  Build & drop (two bars of rising filter and a riser, then the drop on
+  the one). **The sampler** has eight pads a bank: *Everywhere*, the
+  look's region, a wedding, an anniversary in a club, a colmado party and a
+  US party — 52 sounds made in the browser (`sounds.ts`: oscillators,
+  filtered noise, Karplus–Strong strings, inharmonic bells), so nobody's
+  recording is used. A pad plays on the next sixteenth (*Tap*), goes round
+  on the beat's grid (*Repeat*, ⅛ by default) or on every bar's one (*In the
+  loop*). *Your voice* records up to four seconds through the microphone,
+  trims and levels it, and puts it on a pad with its own pitch knob; it is
+  kept in the page's memory only and never sent. Pads and moves go through
+  the deck's effects. Seven languages (`src/v4/i18n/booth.ts`).
+- **Tests:** `test/booth.test.ts` (every bank's sound exists and is named
+  in every language; the recording trimmed and levelled; each look's 5 + 3
+  + 1–2 genres exist and are generated, and the common ones are common —
+  which caught EDM common in one look only). `e2e/booth.spec.ts` renders
+  every sound in Chromium (heard, finite, not blasting, over in five
+  seconds) and drives the booth with the loop: a knob by keyboard, a fader,
+  brake, rewind, build & drop, a pad, a pad going round and stopped, and a
+  voice from Chromium's pretend microphone on its pad. It found two faults:
+  a waveshaper curve of even length left the air horn humming after it
+  ended, and the filtered noise ran out of its two-second buffer before a
+  long envelope did (the wave was nearly silent); the curve now has an odd
+  length and the noise loops.
+- **The style genome** builds a node from every genre note; the deck's new
+  "EDM" genre replaced the genome's EDM *family* of the same name (and with
+  it electro swing's inheritance). A family or a deeply written genre is
+  now never replaced, the new genres have families, and twelve of them were
+  given a theme and skin pair djmanzo actually offers together.

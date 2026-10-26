@@ -608,7 +608,8 @@
     </div>
     <p class="small muted">
       Sign-in: {overview.providers.join(", ") || "none connected (demo sign-in on)"} · Payments: {Object.entries(overview.payments).filter(([, v]) => v).map(([k]) => k).join(", ")} ·
-      Licences signed with: {overview.signing} · Blog drafts by: {overview.ai}
+      Licences signed with: {overview.signing} · Blog drafts by: {overview.ai} ·
+      <span data-overview-mail>E-mail to buyers: {overview.mail ? "on (Resend)" : "off — receipts and licence keys are not e-mailed until a Resend key and sender are set under 💳 Payments"}</span>
     </p>
   {/if}
 

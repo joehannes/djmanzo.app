@@ -10,6 +10,8 @@
  * already is); nothing about the person.
  */
 
+import { hasLoop } from "./loops";
+
 export type SkinId = "club" | "tropical" | "urban" | "afro" | "neon" | "oasis" | "monsoon" | "pacific" | "studio";
 
 export interface Skin {
@@ -20,8 +22,14 @@ export interface Skin {
   region: string;
   /** One line under the hero, in this skin's voice. */
   line: string;
-  /** Grooves the engine plays for this skin (`lib/genres.ts` ids), the first by default. */
-  genres: string[];
+  /**
+   * Grooves the deck plays for this skin (`lib/genres.ts` ids), as a DJ there
+   * would: five of the region's own (the first by default), three heard all
+   * over the world, and one or two specials. Every one has a recorded loop.
+   */
+  local: string[];
+  common: string[];
+  special: string[];
   /** The style family (`style/genome`) the guide is told the visitor is in. */
   family: string;
   tokens: {
@@ -53,7 +61,9 @@ export const SKINS: Skin[] = [
     name: "Club",
     region: "Europe",
     line: "Warehouse techno, Ibiza sunsets, drum & bass at four in the morning.",
-    genres: ["techno", "house", "dnb", "lounge"],
+    local: ["techno", "ukgarage", "trance", "dnb", "hardstyle"],
+    common: ["house", "edm", "afrobeats"],
+    special: ["italodisco", "lounge"],
     family: "edm",
     tokens: { bg: "#06080c", surface: "#0e131a", raised: "#151c26", line: "#222c39", text: "#e8eef6", dim: "#8593a6", accent: "#38e1c6", accent2: "#7b61ff", onAccent: "#031512" },
     bands: ["#2563ff", "#38e1c6", "#e6fbff"],
@@ -65,7 +75,9 @@ export const SKINS: Skin[] = [
     name: "Tropical",
     region: "Latin America & the Caribbean",
     line: "Merengue at the wedding, bachata at the colmado, reggaeton till sunrise.",
-    genres: ["merengue", "bachata", "reggaeton", "salsa", "cumbia", "dembow"],
+    local: ["merengue", "bachata", "salsa", "reggaeton", "cumbia"],
+    common: ["house", "hiphop", "pop"],
+    special: ["dembow", "soca"],
     family: "latin",
     tokens: { bg: "#0c0708", surface: "#170e10", raised: "#21141a", line: "#3a2229", text: "#fbefe8", dim: "#b39189", accent: "#ff6b3d", accent2: "#ffc857", onAccent: "#1d0a03" },
     bands: ["#ff3d6e", "#ff6b3d", "#ffe3a3"],
@@ -77,7 +89,9 @@ export const SKINS: Skin[] = [
     name: "Urban",
     region: "North America",
     line: "Block parties, battle mixers, and the record everybody knows the words to.",
-    genres: ["hiphop", "house", "disco", "pop"],
+    local: ["hiphop", "trap", "rnb", "jerseyclub", "country"],
+    common: ["house", "pop", "reggaeton"],
+    special: ["disco"],
     family: "urban",
     tokens: { bg: "#08080a", surface: "#121216", raised: "#1a1a20", line: "#2a2a33", text: "#f2f0ec", dim: "#9a978f", accent: "#ff3b47", accent2: "#f5c542", onAccent: "#1a0204" },
     bands: ["#ff3b47", "#f5c542", "#fff6dd"],
@@ -89,7 +103,9 @@ export const SKINS: Skin[] = [
     name: "Afro",
     region: "Africa",
     line: "Amapiano log drums on the rooftop, afrobeats until the city wakes.",
-    genres: ["afrobeats", "house", "dancehall"],
+    local: ["afrobeats", "amapiano", "afrohouse", "highlife", "gqom"],
+    common: ["house", "hiphop", "dancehall"],
+    special: ["kuduro"],
     family: "urban",
     tokens: { bg: "#070908", surface: "#0f1411", raised: "#161d18", line: "#26322a", text: "#f3efe4", dim: "#98a08f", accent: "#f2b134", accent2: "#2fbf71", onAccent: "#1a1102" },
     bands: ["#2fbf71", "#f2b134", "#fff1cc"],
@@ -101,7 +117,9 @@ export const SKINS: Skin[] = [
     name: "Neon",
     region: "East and Southeast Asia",
     line: "Small clubs, big sound systems, and karaoke rooms that never close.",
-    genres: ["pop", "house", "techno"],
+    local: ["kpop", "citypop", "funkot", "futurebass", "molam"],
+    common: ["house", "pop", "techno"],
+    special: ["eurobeat"],
     family: "party",
     tokens: { bg: "#07060d", surface: "#100e1a", raised: "#181528", line: "#2a2540", text: "#f1eefc", dim: "#9890b5", accent: "#ff4fd8", accent2: "#4fd2ff", onAccent: "#1c0218" },
     bands: ["#4fd2ff", "#ff4fd8", "#f7e8ff"],
@@ -113,7 +131,9 @@ export const SKINS: Skin[] = [
     name: "Oasis",
     region: "The Middle East & North Africa",
     line: "Raï and shaabi at the wedding, Arabic pop on the terrace, deep house on the rooftop after midnight.",
-    genres: ["house", "pop", "lounge"],
+    local: ["rai", "khaleeji", "dabke", "mahraganat", "orientalhouse"],
+    common: ["house", "pop", "hiphop"],
+    special: ["gnawa"],
     family: "party",
     tokens: { bg: "#070a10", surface: "#0e1420", raised: "#151d2c", line: "#24304a", text: "#f3efe6", dim: "#9aa3b6", accent: "#2ec4b6", accent2: "#e9b949", onAccent: "#04201d" },
     bands: ["#1f6fb2", "#2ec4b6", "#f6e7b8"],
@@ -126,7 +146,9 @@ export const SKINS: Skin[] = [
     name: "Monsoon",
     region: "South Asia",
     line: "Bhangra at the sangeet, Bollywood at the baraat, house in the city once the wedding is over.",
-    genres: ["pop", "house", "lounge"],
+    local: ["bhangra", "bollywood", "garba", "kuthu", "asianunderground"],
+    common: ["house", "pop", "hiphop"],
+    special: ["goa"],
     family: "party",
     tokens: { bg: "#0d0610", surface: "#170c1b", raised: "#221327", line: "#3a2242", text: "#fbf0ea", dim: "#b598ab", accent: "#ff9f1c", accent2: "#e0218a", onAccent: "#211100" },
     bands: ["#e0218a", "#ff9f1c", "#ffe8b3"],
@@ -139,7 +161,9 @@ export const SKINS: Skin[] = [
     name: "Pacific",
     region: "Oceania",
     line: "Beach bars at sunset, a festival in the bush, island reggae under the stars.",
-    genres: ["house", "dancehall", "dnb", "lounge"],
+    local: ["islandreggae", "melbournebounce", "tropicalhouse", "dnb", "goa"],
+    common: ["house", "hiphop", "dancehall"],
+    special: ["polynesian"],
     family: "edm",
     tokens: { bg: "#050b0f", surface: "#0b161d", raised: "#112029", line: "#1d3442", text: "#ecf5f4", dim: "#8fa8ad", accent: "#2dd4bf", accent2: "#ff8a5c", onAccent: "#03201c" },
     bands: ["#0e7490", "#2dd4bf", "#e0fbf6"],
@@ -152,7 +176,9 @@ export const SKINS: Skin[] = [
     name: "Studio",
     region: "Everywhere else",
     line: "A desk, two decks, and whatever the room needs tonight.",
-    genres: ["house", "lounge", "disco", "techno"],
+    local: ["house", "techno", "disco", "lounge", "rock"],
+    common: ["pop", "hiphop", "edm"],
+    special: ["chiptune", "electroswing"],
     family: "music",
     // Not blue: nearly every DJ-software brand already is.
     tokens: { bg: "#0b0c0e", surface: "#14161a", raised: "#1e2228", line: "#2a2f37", text: "#eceef1", dim: "#9aa1ab", accent: "#ffb547", accent2: "#c6f432", onAccent: "#1c1203" },
@@ -163,6 +189,23 @@ export const SKINS: Skin[] = [
 ];
 
 export const SKIN_BY_ID = Object.fromEntries(SKINS.map((s) => [s.id, s])) as Record<SkinId, Skin>;
+
+/**
+ * The grooves a skin offers, in its three groups, the visitor's country's own
+ * first among the region's; only those whose loop has been made (`loops.ts`),
+ * so a genre appears with its music.
+ */
+export function bankOfGenres(skin: Skin, country?: string | null): { local: string[]; common: string[]; special: string[] } {
+  const own = LOCAL[(country ?? "").toUpperCase()];
+  const local = own && skinForCountry(country) === skin.id && !skin.local.includes(own) ? [own, ...skin.local] : skin.local;
+  return { local: local.filter(hasLoop), common: skin.common.filter(hasLoop), special: skin.special.filter(hasLoop) };
+}
+
+/** Every groove a skin offers, its own first. */
+export function genresOf(skin: Skin, country?: string | null): string[] {
+  const b = bankOfGenres(skin, country);
+  return [...new Set([...b.local, ...b.common, ...b.special])];
+}
 
 const EUROPE = "AD AL AT BA BE BG BY CH CY CZ DE DK EE ES FI FO FR GB GG GI GR HR HU IE IM IS IT JE LI LT LU LV MC MD ME MK MT NL NO PL PT RO RS RU SE SI SK SM UA VA XK";
 const LATIN =
@@ -220,16 +263,53 @@ const LOCAL: Record<string, string> = {
   CY: "house",
   MT: "house",
   NG: "afrobeats",
-  ZA: "afrobeats",
-  GH: "afrobeats",
-  AU: "dnb",
+  ZA: "amapiano",
+  GH: "highlife",
+  AO: "kuduro",
+  AU: "melbournebounce",
   NZ: "dnb",
+  FJ: "islandreggae",
+  WS: "islandreggae",
+  TO: "islandreggae",
+  PF: "polynesian",
+  CK: "polynesian",
+  TT: "soca",
+  BB: "soca",
+  BR: "baile",
+  NL: "hardstyle",
+  DE: "techno",
+  US: "hiphop",
+  KR: "kpop",
+  JP: "citypop",
+  ID: "funkot",
+  TH: "molam",
+  LA: "molam",
+  DZ: "rai",
+  MA: "gnawa",
+  EG: "mahraganat",
+  LB: "dabke",
+  SY: "dabke",
+  PS: "dabke",
+  JO: "dabke",
+  SA: "khaleeji",
+  AE: "khaleeji",
+  KW: "khaleeji",
+  QA: "khaleeji",
+  BH: "khaleeji",
+  OM: "khaleeji",
+  IN: "bollywood",
+  PK: "bhangra",
 };
 
-/** The groove a visitor from `country` hears first in `skin`. */
+/**
+ * The groove a visitor from `country` hears first in `skin`: their own, when it is one of the
+ * look's local grooves or the look is their part of the world's; else the look's own first.
+ * A look picked from elsewhere plays its own music, even if it shelves the visitor's among the common ones.
+ */
 export function grooveFor(skin: Skin, country: string | null | undefined): string {
   const local = LOCAL[(country ?? "").toUpperCase()];
-  return local && (skin.genres.includes(local) || skinForCountry(country) === skin.id) ? local : skin.genres[0];
+  if (local && hasLoop(local) && (skin.local.includes(local) || skinForCountry(country) === skin.id)) return local;
+  return genresOf(skin, country)[0] ?? "house";
 }
 
 /**

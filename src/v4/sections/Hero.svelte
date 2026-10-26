@@ -36,6 +36,10 @@
   import { WELCOME } from "../i18n/welcome";
   import DownloadButton from "../DownloadButton.svelte";
   import Wave from "../wave/Wave.svelte";
+  import Booth from "../booth/Booth.svelte";
+  import { booth } from "../booth/booth.svelte";
+  import { BOOTH } from "../i18n/booth";
+  import { bankOfGenres } from "../skins";
 
   let hero: HTMLElement;
   let photo: HTMLElement;
@@ -45,6 +49,9 @@
   const welcome = $derived(WELCOME[region.skin][i18n.lang]);
   const genre = $derived(GENRE_BY_ID[deck.genre] ?? GENRE_BY_ID.house);
   const key = $derived(keyOf(genre));
+  const bw = $derived(BOOTH[i18n.lang]);
+  /** The look's grooves in three groups — the region's own (the visitor's country's first), the world's, and specials — those with a loop. */
+  const grooves = $derived(bankOfGenres(skin(), region.country));
 
   // A new look fades its photograph in.
   let shown: string | null = null;
@@ -118,8 +125,13 @@
           <span class="genre">{genre.name}</span>
         </div>
         <div class="grooves" role="group" aria-label={t("hero.grooves")}>
-          {#each skin().genres as g (g)}
-            <button class="chip" aria-pressed={deck.genre === g} onclick={() => setGenre(g)} data-groove={g}>{GENRE_BY_ID[g].name}</button>
+          {#each (["local", "common", "special"] as const).filter((k) => grooves[k].length) as k (k)}
+            <div class="group" data-groove-group={k}>
+              <span class="mono dim gl">{bw.groups[k]}</span>
+              {#each grooves[k] as g (g)}
+                <button class="chip" aria-pressed={deck.genre === g} onclick={() => setGenre(g)} data-groove={g}>{GENRE_BY_ID[g].emoji} {GENRE_BY_ID[g].name}</button>
+              {/each}
+            </div>
           {/each}
         </div>
       </div>
@@ -128,12 +140,38 @@
         <span class="tag past mono" aria-hidden="true">{t("hero.played")}</span>
         <span class="tag next mono" aria-hidden="true">{t("hero.coming")}</span>
       </div>
-      <p class="caption">{deck.playing ? t("hero.playing") : t("hero.idle")}</p>
+      <div class="under">
+        <p class="caption">{deck.playing ? t("hero.playing") : t("hero.idle")}</p>
+        <button class="btn {booth.open ? 'ghost' : 'primary'} small booth-toggle" aria-expanded={booth.open} onclick={() => (booth.open = !booth.open)} data-booth-toggle>{booth.open ? bw.close : bw.open}</button>
+      </div>
+      {#if booth.open}<Booth />{/if}
     </div>
   </div>
 </section>
 
 <style>
+  .grooves .group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+  .grooves .gl {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    min-width: 76px;
+  }
+  .under {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .under .caption {
+    margin: 0;
+  }
   .play.busy {
     animation: busy 0.9s ease-in-out infinite alternate;
   }
@@ -329,7 +367,7 @@
   }
   .grooves {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 6px;
     margin-left: auto;
   }

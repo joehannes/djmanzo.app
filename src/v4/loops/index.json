@@ -1,12 +1,12 @@
 {
  "techno": {
-  "bpm": 130.01,
+  "bpm": 133.01,
   "key": "F minor",
   "camelot": "4A",
   "bars": 16,
-  "seconds": 29.535714285714285,
+  "seconds": 28.87,
   "pre": 0.25,
-  "frames": 1324575,
+  "frames": 1295217,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -25,13 +25,13 @@
   }
  },
  "house": {
-  "bpm": 125.01,
+  "bpm": 125.0,
   "key": "A minor",
   "camelot": "8A",
   "bars": 16,
-  "seconds": 30.717414965986393,
+  "seconds": 30.720068027210885,
   "pre": 0.25,
-  "frames": 1376688,
+  "frames": 1376805,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -50,13 +50,13 @@
   }
  },
  "dnb": {
-  "bpm": 174.01,
+  "bpm": 172.37,
   "key": "D minor",
   "camelot": "7A",
   "bars": 16,
-  "seconds": 22.06784580498866,
+  "seconds": 22.278004535147392,
   "pre": 0.25,
-  "frames": 995242,
+  "frames": 1004510,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -75,13 +75,13 @@
   }
  },
  "lounge": {
-  "bpm": 97.0,
+  "bpm": 96.0,
   "key": "D major",
   "camelot": "10B",
   "bars": 8,
-  "seconds": 19.794399092970522,
+  "seconds": 19.9997052154195,
   "pre": 0.25,
-  "frames": 894983,
+  "frames": 904037,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -100,13 +100,13 @@
   }
  },
  "merengue": {
-  "bpm": 150.03,
+  "bpm": 149.98,
   "key": "C major",
   "camelot": "8B",
   "bars": 16,
-  "seconds": 25.59419501133787,
+  "seconds": 25.603015873015874,
   "pre": 0.25,
-  "frames": 1150754,
+  "frames": 1151143,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -125,13 +125,13 @@
   }
  },
  "bachata": {
-  "bpm": 130.0,
+  "bpm": 130.64,
   "key": "E minor",
   "camelot": "9A",
   "bars": 16,
-  "seconds": 29.539274376417232,
+  "seconds": 29.3934693877551,
   "pre": 0.25,
-  "frames": 1324732,
+  "frames": 1318302,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -150,13 +150,13 @@
   }
  },
  "reggaeton": {
-  "bpm": 94.01,
+  "bpm": 93.0,
   "key": "G minor",
   "camelot": "6A",
   "bars": 8,
-  "seconds": 20.42421768707483,
+  "seconds": 20.644467120181407,
   "pre": 0.25,
-  "frames": 922758,
+  "frames": 932471,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -175,13 +175,13 @@
   }
  },
  "salsa": {
-  "bpm": 177.99,
+  "bpm": 178.21,
   "key": "A minor",
   "camelot": "8A",
   "bars": 16,
-  "seconds": 21.574353741496598,
+  "seconds": 21.5481179138322,
   "pre": 0.25,
-  "frames": 973479,
+  "frames": 972322,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -200,13 +200,13 @@
   }
  },
  "cumbia": {
-  "bpm": 97.53,
+  "bpm": 96.01,
   "key": "A minor",
   "camelot": "8A",
   "bars": 8,
-  "seconds": 19.687165532879817,
+  "seconds": 19.997256235827663,
   "pre": 0.25,
-  "frames": 890254,
+  "frames": 903929,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -229,9 +229,9 @@
   "key": "C minor",
   "camelot": "5A",
   "bars": 16,
-  "seconds": 30.72047619047619,
+  "seconds": 30.72,
   "pre": 0.25,
-  "frames": 1376823,
+  "frames": 1376802,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -250,13 +250,13 @@
   }
  },
  "hiphop": {
-  "bpm": 90.0,
+  "bpm": 91.0,
   "key": "E minor",
   "camelot": "9A",
   "bars": 8,
-  "seconds": 21.33433106575964,
+  "seconds": 21.09857142857143,
   "pre": 0.25,
-  "frames": 962894,
+  "frames": 952497,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -275,13 +275,13 @@
   }
  },
  "disco": {
-  "bpm": 118.02,
+  "bpm": 118.0,
   "key": "A minor",
   "camelot": "8A",
   "bars": 16,
-  "seconds": 32.53700680272109,
+  "seconds": 32.54263038548753,
   "pre": 0.25,
-  "frames": 1456932,
+  "frames": 1457180,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -300,13 +300,13 @@
   }
  },
  "pop": {
-  "bpm": 119.97,
+  "bpm": 120.0,
   "key": "G major",
   "camelot": "9B",
   "bars": 16,
-  "seconds": 32.006734693877554,
+  "seconds": 31.99988662131519,
   "pre": 0.25,
-  "frames": 1433547,
+  "frames": 1433245,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -325,13 +325,13 @@
   }
  },
  "afrobeats": {
-  "bpm": 112.97,
+  "bpm": 110.0,
   "key": "F minor",
   "camelot": "4A",
   "bars": 8,
-  "seconds": 16.99546485260771,
+  "seconds": 17.45482993197279,
   "pre": 0.25,
-  "frames": 771550,
+  "frames": 791808,
   "sampleRate": 44100,
   "stems": [
    "drums",
@@ -350,13 +350,13 @@
   }
  },
  "dancehall": {
-  "bpm": 94.99,
+  "bpm": 96.73,
   "key": "D minor",
   "camelot": "7A",
   "bars": 8,
-  "seconds": 20.21265306122449,
+  "seconds": 19.848639455782312,
   "pre": 0.25,
-  "frames": 913428,
+  "frames": 897375,
   "sampleRate": 44100,
   "stems": [
    "drums",
