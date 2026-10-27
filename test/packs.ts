@@ -14,8 +14,13 @@ export type Part = Exclude<keyof Pack, "strings">;
 /** What comes after the home page: the shop, the account, the pages, the features, the forum. */
 const AFTER_HOME: Part[] = ["status", "pricing", "account", "pages", "bits", "featuresPage", "compare", "nights", "people", "talkback", "outboard"];
 
+/** The parts after the home page each pack has, as they arrive. */
+const WRITTEN: Partial<Record<PackLang, Part[]>> = {
+  zh: AFTER_HOME,
+};
+
 /** The parts of each pack not written yet. */
-export const PENDING: Record<PackLang, Part[]> = Object.fromEntries(PACKED.map((l) => [l, AFTER_HOME])) as Record<PackLang, Part[]>;
+export const PENDING: Record<PackLang, Part[]> = Object.fromEntries(PACKED.map((l) => [l, AFTER_HOME.filter((p) => !WRITTEN[l]?.includes(p))])) as Record<PackLang, Part[]>;
 
 export async function installAll(): Promise<void> {
   for (const l of PACKED) if (hasPack(l)) await loadPack(l);
