@@ -17,6 +17,8 @@ const AFTER_HOME: Part[] = ["status", "pricing", "account", "pages", "bits", "fe
 /** The parts after the home page each pack has, as they arrive. */
 const WRITTEN: Partial<Record<PackLang, Part[]>> = {
   zh: AFTER_HOME,
+  he: AFTER_HOME,
+  ar: AFTER_HOME,
 };
 
 /** The parts of each pack not written yet. */
