@@ -1,10 +1,11 @@
 /**
- * Hindi (हिन्दी), the home page: the bar, the welcome for every look, the
- * sections, the booth, the screenshots and the assistant's ready answers.
- * Written as India's DJs speak: Devanagari, with the booth's own English
- * words (डेक, क्यू, लूप) where those are what is said. Edition names and
- * djmanzo's own interface labels stay as the application shows them. The
- * rest of the site reads in English until its parts are added here.
+ * Hindi (हिन्दी), the whole site: the home page (the bar, the welcome for
+ * every look, the sections, the booth, the screenshots and the assistant's
+ * ready answers), the shop, the account, the pages, the forum and the
+ * marketplace. Written as India's DJs speak: Devanagari, with the booth's own
+ * English words (डेक, क्यू, लूप) where those are what is said. Edition names
+ * and djmanzo's own interface labels stay as the application shows them. The
+ * feature descriptions themselves still read in English.
  */
 
 import type { Pack } from "../packs";

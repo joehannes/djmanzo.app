@@ -21,6 +21,7 @@ const WRITTEN: Partial<Record<PackLang, Part[]>> = {
   ar: AFTER_HOME,
   hi: AFTER_HOME,
   ko: AFTER_HOME,
+  id: AFTER_HOME,
 };
 
 /** The parts of each pack not written yet. */
