@@ -632,6 +632,9 @@
         <span aria-hidden="true">{item.icon}</span><span class="nav-tip"><b>{item.label}</b><small>{item.description}</small></span>
       </button>
     {/each}
+    <a class="backstage-exit" href={href("home")} aria-label="Leave Backstage: return to the main page">
+      <span aria-hidden="true">↩</span><span class="nav-tip"><b>Leave Backstage</b><small>Return to the main page</small></span>
+    </a>
   </nav>
 
   {#if overview}
@@ -1232,7 +1235,7 @@
     box-shadow: 0 12px 25px -20px #000;
     backdrop-filter: blur(14px);
   }
-  .backstage-nav button {
+  .backstage-nav :is(button, a) {
     position: relative;
     width: 35px;
     height: 35px;
@@ -1245,15 +1248,17 @@
     color: var(--text);
     font-size: 17px;
     cursor: pointer;
+    text-decoration: none;
     transition: transform 0.15s, background 0.15s, border-color 0.15s;
   }
-  .backstage-nav button:hover,
+  .backstage-nav :is(button, a):hover,
   .backstage-nav button.active {
     border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
     background: color-mix(in srgb, var(--accent) 15%, transparent);
   }
-  .backstage-nav button:hover { transform: translateY(-2px); }
-  .backstage-nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .backstage-nav :is(button, a):hover { transform: translateY(-2px); }
+  .backstage-nav :is(button, a):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .backstage-exit { margin-inline-start: 2px; border-color: color-mix(in srgb, var(--accent-2) 35%, var(--line)) !important; }
   .nav-tip {
     position: absolute;
     z-index: 5;
@@ -1276,8 +1281,8 @@
     transition: opacity 0.15s, transform 0.15s;
   }
   .nav-tip small { color: var(--dim); }
-  .backstage-nav button:hover .nav-tip,
-  .backstage-nav button:focus-visible .nav-tip { opacity: 1; transform: translate(-50%, 0); }
+  .backstage-nav :is(button, a):hover .nav-tip,
+  .backstage-nav :is(button, a):focus-visible .nav-tip { opacity: 1; transform: translate(-50%, 0); }
   .backstage :global(.field) {
     display: grid;
     gap: 6px;
@@ -1490,7 +1495,7 @@
   }
   @media (max-width: 620px) {
     .backstage-nav { border-radius: 12px; }
-    .backstage-nav button { width: 32px; height: 32px; font-size: 15px; }
+    .backstage-nav :is(button, a) { width: 32px; height: 32px; font-size: 15px; }
   }
   .filters :global(select),
   .filters :global(input[type="search"]) {
