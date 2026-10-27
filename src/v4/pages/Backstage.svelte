@@ -573,6 +573,37 @@
   function toggle<T>(list: T[], v: T): T[] {
     return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
   }
+
+  const BACKSTAGE_PANELS = [
+    { id: "insights", icon: "📈", label: "Insights", description: "Traffic and audience" },
+    { id: "people", icon: "👥", label: "People", description: "Accounts and crew" },
+    { id: "promos", icon: "🎟️", label: "Promo codes", description: "Codes and vouchers" },
+    { id: "vouchers", icon: "🎁", label: "Vouchers", description: "Signed gifts" },
+    { id: "signin", icon: "🙋", label: "Sign-in", description: "Identity providers" },
+    { id: "payments", icon: "💳", label: "Payments", description: "Checkout connections" },
+    { id: "grant", icon: "🔑", label: "Grant licence", description: "Give access directly" },
+    { id: "password", icon: "🔒", label: "Crew password", description: "Backstage access" },
+    { id: "wishes", icon: "🧱", label: "Wishes", description: "Product requests" },
+    { id: "pending", icon: "👀", label: "Moderation", description: "Read before publishing" },
+    { id: "outboard", icon: "📦", label: "Outboard", description: "Packs waiting" },
+    { id: "crew", icon: "🚩", label: "Talkback", description: "Reports and appeals" },
+    { id: "orders", icon: "🧾", label: "Orders", description: "Sales and transfers" },
+    { id: "blog", icon: "📻", label: "Blog desk", description: "Drafts and posts" },
+    { id: "videos", icon: "🎬", label: "Videos", description: "Plaza programming" },
+  ] as const;
+  type BackstagePanel = (typeof BACKSTAGE_PANELS)[number]["id"];
+  let backstagePanel = $state<BackstagePanel>("insights");
+
+  $effect(() => {
+    if (!session.admin) return;
+    const load: Partial<Record<BackstagePanel, () => Promise<unknown>>> = {
+      insights: loadInsights, people: loadPeople, promos: loadPromos, vouchers: loadVouchers,
+      signin: loadSignin, payments: loadPayments, password: loadPassword, wishes: loadWishes,
+      pending: loadPending, outboard: loadOutboard, crew: loadCrew, orders: loadOrders,
+      blog: loadBlog, videos: loadVideos,
+    };
+    void load[backstagePanel]?.();
+  });
 </script>
 
 <div class="wrap content backstage" data-backstage>
@@ -595,6 +626,14 @@
 {:else}
   {#if error}<p class="notice" role="alert">{error} <button class="link" onclick={() => (error = null)}>dismiss</button></p>{/if}
 
+  <nav class="backstage-nav" aria-label="Backstage sections">
+    {#each BACKSTAGE_PANELS as item (item.id)}
+      <button class:active={backstagePanel === item.id} aria-current={backstagePanel === item.id ? "page" : undefined} aria-label={`${item.label}: ${item.description}`} onclick={() => (backstagePanel = item.id)}>
+        <span aria-hidden="true">{item.icon}</span><span class="nav-tip"><b>{item.label}</b><small>{item.description}</small></span>
+      </button>
+    {/each}
+  </nav>
+
   {#if overview}
     <div class="stats">
       <div><b>{overview.users}</b><span>people</span></div>
@@ -613,7 +652,7 @@
     </p>
   {/if}
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadInsights()} data-insights>
+  <details open class="case" class:active={backstagePanel === "insights"} data-insights>
     <summary>📈 Insights</summary>
     <p class="small muted">What visitors look at and look for, so you can give them more of it. Kept without knowing who anyone is: no cookie, nothing stored in their browser, no address kept; a visit is one browser's day, under a key that changes every day. Browsers that ask not to be followed, and robots, are not counted. Kept 90 days.</p>
     <div class="inline" role="group" aria-label="Period">
@@ -712,7 +751,7 @@
     {/if}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPeople()} data-people>
+  <details open class="case" class:active={backstagePanel === "people"} data-people>
     <summary>👥 People ({overview?.users ?? "…"})</summary>
     <p class="small muted">Every account on this site, newest first. One person signed in with GitHub and Google under the same confirmed address is one account. "Owner" is the account the crew's password or token signs in as when no crew account is signed in.</p>
     {#if people && !people.length}<p class="muted">No one yet.</p>{/if}
@@ -729,7 +768,7 @@
     {/each}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPromos()}>
+  <details open class="case" class:active={backstagePanel === "promos"}>
     <summary>🎟️ Promo codes & vouchers</summary>
     <form onsubmit={mint} class="grid">
       <div class="chips" role="radiogroup" aria-label="Kind">
@@ -797,7 +836,7 @@
     {/if}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadVouchers()} data-vouchers>
+  <details open class="case" class:active={backstagePanel === "vouchers"} data-vouchers>
     <summary>🎁 Vouchers</summary>
     <p class="small muted">A signed line to give away: djmanzo reads it by itself and knows it is real. 100 % is a gift — the edition outright; less is a discount at the box office. One held to somebody is taken at the shop, signed in as them.</p>
     <form onsubmit={makeVouchers} class="grid">
@@ -851,7 +890,7 @@
     {/if}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadSignin()} data-signin-keys>
+  <details open class="case" class:active={backstagePanel === "signin"} data-signin-keys>
     <summary>🙋 Sign-in</summary>
     <p class="small muted">Which accounts people can sign in with, here and in djmanzo. Each provider needs an app registered in <b>your</b> account there — the link and the steps are under each one — and wants the one address on this site it may send people back to: copy it exactly. Keys set here are kept encrypted and win over the Worker secrets of the same name; empty a field to fall back to the secret.</p>
     {#if signView}
@@ -882,7 +921,7 @@
     {#if signMsg}<p class="notice" data-signin-msg>{signMsg}</p>{/if}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPayments()} data-payments>
+  <details open class="case" class:active={backstagePanel === "payments"} data-payments>
     <summary>💳 Payments</summary>
     <p class="small muted">How the shop takes money. The recommended setup: one <b>Stripe</b> account (Austria, sole trader) paying out to your Wise EUR IBAN, whose card form takes cards, Apple Pay and Google Pay — and PayPal and EPS once you turn them on in Stripe → Settings → Payment methods. PayPal on its own is an alternative. Keys set here are kept encrypted and win over the Worker secrets of the same name; empty a field to fall back to the secret. SETUP.md, "Payments", walks through it.</p>
     {#if payView}
@@ -924,7 +963,7 @@
     {#if payMsg}<p class="notice" data-pay-msg>{payMsg}</p>{/if}
   </details>
 
-  <details class="case" data-grant>
+  <details open class="case" class:active={backstagePanel === "grant"} data-grant>
     <summary>🔑 Grant a licence</summary>
     <p class="small muted">Straight into an account, with nothing to pay or redeem: for a friend, a tester, a refund made good. Name the account by its e-mail address, its id, or a sign-in (github:1234567); they need to have signed in on the site once. djmanzo picks it up at the next sign-in.</p>
     <form onsubmit={grantLicence} class="grid">
@@ -946,7 +985,7 @@
     {#if grantError}<p class="notice">{grantError}</p>{/if}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPassword()} data-password>
+  <details open class="case" class:active={backstagePanel === "password"} data-password>
     <summary>🔒 The crew's password</summary>
     <p class="small muted">There is no default password. {pwState?.set ? `One is set (since ${new Date(pwState.at ?? 0).toISOString().slice(0, 10)}); setting another replaces it.` : "None is set yet: until one is, signing in with a crew account (the owner's GitHub account or address, or one on ADMIN_EMAILS) opens Backstage on its own."} Once one is set, a crew account asks for it too, once in each browser, for 12 hours; nobody else gets in with it but the crew. It is kept only as a salted hash. The ADMIN_TOKEN secret always opens Backstage too, should the password be forgotten.</p>
     <form onsubmit={setPassword} class="grid">
@@ -959,7 +998,7 @@
     {#if pwMsg}<p class="notice" data-pw-msg>{pwMsg}</p>{/if}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadWishes()}>
+  <details open class="case" class:active={backstagePanel === "wishes"}>
     <summary>🧱 Wishes</summary>
     {#each wishes as w (w.id)}
       {@const note = { v: w.note ?? "" }}
@@ -977,7 +1016,7 @@
     {/each}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadPending()}>
+  <details open class="case" class:active={backstagePanel === "pending"}>
     <summary>👀 To read before it goes public ({overview?.pending ?? "…"})</summary>
     {#if !pending.length}<p class="muted">Nothing waiting.</p>{/if}
     {#each pending as c (c.key)}
@@ -991,7 +1030,7 @@
     {/each}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadOutboard()} data-outboard-queue>
+  <details open class="case" class:active={backstagePanel === "outboard"} data-outboard-queue>
     <summary>📦 Outboard: packs waiting ({packQueue.length})</summary>
     {#if crewNote}<p class="notice" role="alert">{crewNote}</p>{/if}
     {#each packQueue as p (`${p.id}@${p.version}`)}
@@ -1009,7 +1048,7 @@
     {/each}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadCrew()} data-crew-queue>
+  <details open class="case" class:active={backstagePanel === "crew"} data-crew-queue>
     <summary>🚩 Talkback: reports, held posts, appeals ({crewWork.reports.length + crewWork.held.length + crewWork.appeals.length})</summary>
     {#if crewNote}<p class="notice" role="alert">{crewNote}</p>{/if}
     <h4>Held, waiting to be read</h4>
@@ -1047,7 +1086,7 @@
     {/each}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadOrders()} data-orders>
+  <details open class="case" class:active={backstagePanel === "orders"} data-orders>
     <summary>🧾 Orders</summary>
     <p class="small muted">Every order placed on this site, newest first. An order is made when someone starts paying: a bank transfer waits here, unpaid, until the money arrives and you mark it paid, or you call it off. Free trials, your own grants and rehearsals (the demo checkout, before real payments were set up) are orders too, at nothing; they are hidden unless you ask for them.</p>
     <div class="inline filters">
@@ -1101,7 +1140,7 @@
     </div>
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadBlog()}>
+  <details open class="case" class:active={backstagePanel === "blog"}>
     <summary>📻 The blog desk</summary>
     <form onsubmit={generate}>
       <label class="field"><span>Topic</span><input type="text" bind:value={topic} required placeholder="Running a karaoke night at a beach bar" /></label>
@@ -1144,7 +1183,7 @@
     {/if}
   </details>
 
-  <details class="case" ontoggle={(e) => (e.currentTarget as HTMLDetailsElement).open && loadVideos()}>
+  <details open class="case" class:active={backstagePanel === "videos"}>
     <summary>🎬 Videos in the plaza and on the Signal Path</summary>
     <p class="small muted">Videos show on the home page under “See it played”, in the order of the part of the page each shows; YouTube is reached only when a visitor presses play.</p>
     <ul>{#each videos as v, i (v.id)}<li>{v.title} <code>{v.id}</code>{#if v.stage} · {VIDEO_PLACES.find((st) => st.id === v.stage)?.name ?? v.stage}{/if} <button class="link" onclick={() => saveVideos(videos.filter((_, j) => j !== i))}>remove</button></li>{/each}</ul>
@@ -1176,6 +1215,69 @@
   .head {
     margin-bottom: 24px;
   }
+  .backstage-nav {
+    position: sticky;
+    top: calc(var(--bar) + 10px);
+    z-index: 4;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0 0 18px;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--surface) 82%, transparent);
+    box-shadow: 0 12px 25px -20px #000;
+    backdrop-filter: blur(14px);
+  }
+  .backstage-nav button {
+    position: relative;
+    width: 35px;
+    height: 35px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    font-size: 17px;
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s, border-color 0.15s;
+  }
+  .backstage-nav button:hover,
+  .backstage-nav button.active {
+    border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+  }
+  .backstage-nav button:hover { transform: translateY(-2px); }
+  .backstage-nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .nav-tip {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    bottom: calc(100% + 9px);
+    display: grid;
+    gap: 2px;
+    width: max-content;
+    max-width: 210px;
+    padding: 7px 9px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 10px 24px -14px #000;
+    color: var(--text);
+    font: 12px/1.25 var(--font, sans-serif);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 4px);
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .nav-tip small { color: var(--dim); }
+  .backstage-nav button:hover .nav-tip,
+  .backstage-nav button:focus-visible .nav-tip { opacity: 1; transform: translate(-50%, 0); }
   .backstage :global(.field) {
     display: grid;
     gap: 6px;
@@ -1256,16 +1358,16 @@
     color: var(--ink-soft);
   }
   .case {
+    display: none;
     margin: 10px 0;
-    padding: 10px 14px;
+    padding: 16px;
     border-radius: 12px;
     border: 2px solid var(--line);
     background: repeating-linear-gradient(45deg, transparent 0 10px, rgba(255, 255, 255, 0.015) 10px 20px);
   }
+  .case.active { display: block; }
   .case summary {
-    cursor: pointer;
-    font-weight: 800;
-    font-size: 1.05rem;
+    display: none;
   }
   .grid {
     display: grid;
@@ -1385,6 +1487,10 @@
     gap: 2px;
     font-size: 13px;
     align-content: start;
+  }
+  @media (max-width: 620px) {
+    .backstage-nav { border-radius: 12px; }
+    .backstage-nav button { width: 32px; height: 32px; font-size: 15px; }
   }
   .filters :global(select),
   .filters :global(input[type="search"]) {

@@ -55,6 +55,13 @@
   const bw = $derived(BOOTH[i18n.lang]);
   /** The look's grooves in three groups — the region's own (the visitor's country's first), the world's, and specials — those with a loop. */
   const grooves = $derived(bankOfGenres(skin(), region.country));
+  let genreMenu = $state(false);
+  let genrePicker: HTMLElement;
+
+  function chooseGenre(id: string) {
+    setGenre(id);
+    genreMenu = false;
+  }
 
   /** The deck's tempo as its display shows it: how far the pitch fader and the jog have moved it. */
   const tempoText = $derived(`${speed.rate >= 1 ? "+" : "−"}${Math.abs((speed.rate - 1) * 100).toFixed(1)}%`);
@@ -106,7 +113,19 @@
       { el: photo, depth: 18 },
       { el: glow, depth: -30 },
     ]);
-    if (reduced()) return undoLean;
+    const closeGenreMenu = (e: PointerEvent) => {
+      if (genreMenu && genrePicker && !genrePicker.contains(e.target as Node)) genreMenu = false;
+    };
+    const closeGenreMenuWithKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") genreMenu = false;
+    };
+    document.addEventListener("pointerdown", closeGenreMenu);
+    document.addEventListener("keydown", closeGenreMenuWithKey);
+    if (reduced()) return () => {
+      undoLean();
+      document.removeEventListener("pointerdown", closeGenreMenu);
+      document.removeEventListener("keydown", closeGenreMenuWithKey);
+    };
     const ctx = gsap.context(() => {
       gsap.from(title.querySelectorAll(".line > span"), { yPercent: 110, duration: 1.1, ease: "power4.out", stagger: 0.09, delay: 0.1 });
       gsap.from("[data-hero-rise]", { y: 24, opacity: 0, duration: 0.9, ease: "power3.out", stagger: 0.08, delay: 0.45 });
@@ -117,6 +136,8 @@
       undoLean();
       ctx.revert();
       ScrollTrigger.refresh();
+      document.removeEventListener("pointerdown", closeGenreMenu);
+      document.removeEventListener("keydown", closeGenreMenuWithKey);
     };
   });
 </script>
@@ -175,17 +196,29 @@
           <div class="cell"><span class="k">KEY</span><b>{key.camelot}</b><span class="v">{key.name}</span></div>
           <div class="cell"><span class="k">TEMPO</span><b data-tempo-shown>{tempoText}</b></div>
           <div class="cell" aria-hidden="true"><span class="k">BEAT</span><span class="count">{#each [0, 1, 2, 3] as b (b)}<i class:on={beatNo === b} class:one={b === 0}></i>{/each}</span></div>
-          <div class="cell track"><span class="k">TRACK</span><span class="genre">{genre.emoji} {genre.name}</span></div>
-        </div>
-        <div class="grooves" role="group" aria-label={t("hero.grooves")}>
-          {#each (["local", "common", "special"] as const).filter((k) => grooves[k].length) as k (k)}
-            <div class="group" data-groove-group={k}>
-              <span class="mono dim gl">{bw.groups[k]}</span>
-              {#each grooves[k] as g (g)}
-                <button class="chip" aria-pressed={deck.genre === g} onclick={() => setGenre(g)} data-groove={g}>{GENRE_BY_ID[g].emoji} {GENRE_BY_ID[g].name}</button>
-              {/each}
-            </div>
-          {/each}
+          <div class="cell track" bind:this={genrePicker}>
+            <span class="k">TRACK</span>
+            <button class="genre-trigger" aria-haspopup="dialog" aria-expanded={genreMenu} onclick={() => (genreMenu = !genreMenu)} data-genre-trigger>
+              <span>{genre.emoji} {genre.name}</span><span class="genre-caret" aria-hidden="true">⌄</span>
+            </button>
+            {#if genreMenu}
+              <div class="genre-picker card" role="dialog" aria-label={t("hero.grooves")} data-genre-picker>
+                <div class="picker-head"><span class="mono">SELECT A GROOVE</span><button class="picker-close" onclick={() => (genreMenu = false)} aria-label="Close genre selection">×</button></div>
+                <div class="picker-groups">
+                  {#each (["local", "common", "special"] as const).filter((k) => grooves[k].length) as k (k)}
+                    <div class="picker-group" data-groove-group={k}>
+                      <span class="mono dim gl">{bw.groups[k]}</span>
+                      <div class="picker-chips">
+                        {#each grooves[k] as g (g)}
+                          <button class="chip" aria-pressed={deck.genre === g} onclick={() => chooseGenre(g)} data-groove={g}>{GENRE_BY_ID[g].emoji} {GENRE_BY_ID[g].name}</button>
+                        {/each}
+                      </div>
+                    </div>
+                  {/each}
+                </div>
+              </div>
+            {/if}
+          </div>
         </div>
       </div>
       <div class="strip">
@@ -195,7 +228,9 @@
       </div>
       <div class="under">
         <p class="caption">{deck.playing ? t("hero.playing") : t("hero.idle")}</p>
-        <button class="btn {booth.open ? 'ghost' : 'primary'} small booth-toggle" aria-expanded={booth.open} onclick={() => (booth.open = !booth.open)} data-booth-toggle>{booth.open ? bw.close : bw.open}</button>
+        <button class:open={booth.open} class="booth-toggle" aria-expanded={booth.open} aria-controls="booth-console" onclick={() => (booth.open = !booth.open)} data-booth-toggle>
+          <span class="booth-toggle-icon" aria-hidden="true">⌁</span><span>{booth.open ? bw.close : bw.open}</span><span class="booth-toggle-caret" aria-hidden="true">⌄</span>
+        </button>
       </div>
       {#if booth.open}<Booth />{/if}
     </div>
@@ -203,17 +238,17 @@
 </section>
 
 <style>
-  .grooves .group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    align-items: center;
+  .picker-group {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    gap: 8px;
+    align-items: start;
   }
-  .grooves .gl {
+  .picker-group .gl {
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    min-width: 76px;
+    padding-top: 7px;
   }
   .under {
     display: flex;
@@ -512,49 +547,92 @@
     background: var(--accent);
     box-shadow: 0 0 10px var(--accent);
   }
-  .track .genre {
+  .track {
+    position: relative;
+  }
+  .genre-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 3px 7px 3px 5px;
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    border-radius: 5px;
     color: var(--accent);
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    background: linear-gradient(110deg, color-mix(in srgb, var(--accent) 18%, transparent), transparent 68%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.1), 0 0 14px color-mix(in srgb, var(--accent) 12%, transparent);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, transform 0.12s;
   }
-  .grooves {
+  .genre-trigger:hover,
+  .genre-trigger[aria-expanded="true"] {
+    border-color: var(--accent);
+    background: linear-gradient(110deg, color-mix(in srgb, var(--accent) 32%, transparent), transparent 75%);
+  }
+  .genre-trigger:active { transform: translateY(1px); }
+  .genre-trigger:focus-visible,
+  .picker-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .genre-caret { font-size: 15px; line-height: 0.5; opacity: 0.8; }
+  .genre-picker {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 12px);
+    right: 0;
+    width: min(540px, calc(100vw - 56px));
+    padding: 12px;
+    border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+    background:
+      radial-gradient(circle at 90% 0, color-mix(in srgb, var(--accent) 20%, transparent), transparent 40%),
+      repeating-linear-gradient(90deg, rgb(255 255 255 / 0.018) 0 1px, transparent 1px 3px),
+      linear-gradient(150deg, rgb(35 35 42 / 0.98), rgb(12 12 15 / 0.98));
+    box-shadow: 0 22px 45px -16px #000, 0 0 30px color-mix(in srgb, var(--accent) 20%, transparent);
+    animation: picker-in 0.18s ease-out both;
+  }
+  @keyframes picker-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+  .picker-head {
     display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-left: auto;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    color: var(--lcd);
+    font-size: 10px;
+    letter-spacing: 0.14em;
   }
-  /* The grooves, as a player's browse buttons: dark rubber, lit when loaded. */
-  .grooves .chip {
+  .picker-close {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.2);
+    color: #fff;
+    font: 300 21px/1 sans-serif;
+    cursor: pointer;
+  }
+  .picker-groups { display: grid; gap: 9px; }
+  .picker-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .picker-chips .chip {
     min-height: 30px;
     font-size: 13px;
     padding: 0 12px;
     color: #e6e6ec;
     border: 0;
     background: linear-gradient(180deg, #2a2a30, #1d1d22);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.09),
-      0 2px 0 #050506;
-    transition:
-      transform 0.06s,
-      box-shadow 0.15s;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.09), 0 2px 0 #050506;
+    transition: transform 0.06s, box-shadow 0.15s;
   }
-  .grooves .chip:hover {
-    background: linear-gradient(180deg, #33333a, #222228);
-  }
-  .grooves .chip:active {
-    transform: translateY(1px);
-  }
-  .grooves .chip[aria-pressed="true"] {
+  .picker-chips .chip:hover { background: linear-gradient(180deg, #33333a, #222228); }
+  .picker-chips .chip:active { transform: translateY(1px); }
+  .picker-chips .chip[aria-pressed="true"] {
     color: #fff;
-    box-shadow:
-      inset 0 0 0 1px var(--accent),
-      inset 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent),
-      0 0 12px color-mix(in srgb, var(--accent) 35%, transparent),
-      0 2px 0 #050506;
+    box-shadow: inset 0 0 0 1px var(--accent), inset 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 0 #050506;
   }
-  .grooves .gl {
-    color: rgb(232 232 238 / 0.5);
+  .track .genre {
+    color: var(--accent);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
   /* The waveform, in the player's screen. */
   .strip {
@@ -587,9 +665,55 @@
     font-size: 13px;
     color: var(--dim);
   }
+  .booth-toggle {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    min-width: min(100%, 230px);
+    margin: 4px auto -30px;
+    padding: 10px 20px;
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
+    border-radius: 0 0 999px 999px;
+    color: #f4f1f5;
+    background: linear-gradient(120deg, color-mix(in srgb, var(--accent) 26%, rgb(15 15 19 / 0.92)), color-mix(in srgb, var(--accent-2) 20%, rgb(15 15 19 / 0.92)));
+    box-shadow: 0 11px 22px -13px #000, inset 0 1px 0 rgb(255 255 255 / 0.22), 0 0 20px color-mix(in srgb, var(--accent) 14%, transparent);
+    backdrop-filter: blur(12px);
+    font: 600 13px/1 var(--font, inherit);
+    cursor: pointer;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, margin 0.3s ease;
+  }
+  .booth-toggle::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -150% 25%;
+    background: linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.34) 50%, transparent 65%);
+    transform: rotate(8deg) translateX(-100%);
+    transition: transform 0.7s ease;
+  }
+  .booth-toggle:hover::before,
+  .booth-toggle.open::before { transform: rotate(8deg) translateX(120%); }
+  .booth-toggle:hover,
+  .booth-toggle.open {
+    transform: translateY(3px);
+    box-shadow: 0 15px 26px -13px #000, inset 0 1px 0 rgb(255 255 255 / 0.3), 0 0 28px color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+  .booth-toggle.open { margin-bottom: -6px; }
+  .booth-toggle-icon { color: var(--accent); font-size: 21px; line-height: 0.5; text-shadow: 0 0 10px var(--accent); }
+  .booth-toggle-caret { transition: transform 0.25s ease; }
+  .booth-toggle.open .booth-toggle-caret { transform: rotate(180deg); }
+  .booth-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
   @media (max-width: 720px) {
-    .grooves {
-      margin-left: 0;
-    }
+    .genre-picker { right: auto; left: 0; }
+    .picker-group { grid-template-columns: 1fr; gap: 4px; }
+    .picker-group .gl { padding-top: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .genre-picker { animation: none; }
+    .booth-toggle, .booth-toggle::before, .booth-toggle-caret { transition: none; }
   }
 </style>

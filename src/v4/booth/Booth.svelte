@@ -136,7 +136,7 @@
   const nextFx = (step: number) => effect({ kind: FX_KINDS[(FX_KINDS.indexOf(booth.fx.kind) + step + FX_KINDS.length) % FX_KINDS.length] });
 </script>
 
-<section class="booth" data-booth style:--pulse={pulse} style:--beat={`${beatLength}s`} aria-label={w.open.replace(/^\S+\s/, "")}>
+<section class="booth" id="booth-console" data-booth style:--pulse={pulse} style:--beat={`${beatLength}s`} aria-label={w.open.replace(/^\S+\s/, "")}>
   <p class="lead small">{w.lead}</p>
 
   <div class="console">
@@ -228,12 +228,38 @@
 
     <!-- The sampler -->
     <div class="unit sampler">
-      <div class="tabs" role="tablist" aria-label={w.sampler}>
-        {#each BANKS as b (b)}
+      <div class="sampler-control topics-control">
+        <div class="sampler-label"><span class="sampler-index">01</span><span>FX TOPICS</span><small>choose the sound palette</small></div>
+        <div class="tabs" role="tablist" aria-label={w.sampler}>
+        {#each BANKS.filter((b) => b !== "voice") as b (b)}
           <button role="tab" class="hw tab" aria-selected={booth.bank === b} onclick={() => (booth.bank = b)} data-bank={b}><i class="led"></i>{b === "region" ? w.banks.region.replace("{region}", skin().name) : w.banks[b]}</button>
         {/each}
+        </div>
       </div>
-      <div class="modes">
+
+      <div class="sampler-control voice-control">
+        <div class="sampler-label"><span class="sampler-index">02</span><span>VOICE / MC</span><small>record and throw in your own line</small></div>
+        <button role="tab" class="hw voice-tab" aria-selected={booth.bank === "voice"} onclick={() => (booth.bank = "voice")} data-bank="voice"><i class="led"></i>{w.banks.voice}</button>
+        {#if booth.bank === "voice"}
+          <div class="voice">
+            <button class="rec" class:on={booth.voice.state === "recording"} onclick={record} data-record aria-label={booth.voice.state === "recording" ? w.voice.recording : w.voice.record}>
+              <span class="dot"></span>
+            </button>
+            <span class="small">{booth.voice.state === "recording" ? w.voice.recording : w.voice.record}</span>
+            {#if booth.voice.state === "ready"}<span class="small" data-voice-ready>{w.voice.ready.replace("{seconds}", String(booth.voice.seconds))}</span>{/if}
+            {#if booth.voice.state === "denied"}<span class="small notice">{w.voice.denied}</span>{/if}
+            {#if booth.voice.state === "unsupported"}<span class="small notice">{w.voice.unsupported}</span>{/if}
+            {#if booth.voice.state === "ready"}
+              <Knob label={w.voice.pitch} value={booth.voice.pitch / 12} hint={w.knobHint} onturn={(v) => (booth.voice.pitch = Math.round(v * 12))} />
+            {/if}
+          </div>
+          <p class="dim small">{w.voice.private}</p>
+        {/if}
+      </div>
+
+      <div class="sampler-control mode-control">
+        <div class="sampler-label"><span class="sampler-index">03</span><span>PLAY MODE</span><small>how the pad follows the beat</small></div>
+        <div class="modes">
         {#each ["tap", "repeat", "loop"] as const as m (m)}
           <button class="hw mode" aria-pressed={booth.mode === m} onclick={() => (booth.mode = m)} data-mode={m}><i class="led"></i>{w.modes[m]}</button>
         {/each}
@@ -244,23 +270,8 @@
           {/each}
         {/if}
         {#if Object.keys(booth.going).length}<button class="hw stop" onclick={hush} data-hush>■ {w.hush}</button>{/if}
-      </div>
-
-      {#if booth.bank === "voice"}
-        <div class="voice">
-          <button class="rec" class:on={booth.voice.state === "recording"} onclick={record} data-record aria-label={booth.voice.state === "recording" ? w.voice.recording : w.voice.record}>
-            <span class="dot"></span>
-          </button>
-          <span class="small">{booth.voice.state === "recording" ? w.voice.recording : w.voice.record}</span>
-          {#if booth.voice.state === "ready"}<span class="small" data-voice-ready>{w.voice.ready.replace("{seconds}", String(booth.voice.seconds))}</span>{/if}
-          {#if booth.voice.state === "denied"}<span class="small notice">{w.voice.denied}</span>{/if}
-          {#if booth.voice.state === "unsupported"}<span class="small notice">{w.voice.unsupported}</span>{/if}
-          {#if booth.voice.state === "ready"}
-            <Knob label={w.voice.pitch} value={booth.voice.pitch / 12} hint={w.knobHint} onturn={(v) => (booth.voice.pitch = Math.round(v * 12))} />
-          {/if}
         </div>
-        <p class="dim small">{w.voice.private}</p>
-      {/if}
+      </div>
 
       <div class="pads" class:voicepads={booth.bank === "voice"}>
         {#each pads as id, i (id)}
@@ -779,6 +790,39 @@
   }
 
   /* --- The sampler --- */
+  .sampler {
+    gap: 9px;
+  }
+  .sampler-control {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 9px;
+    border: 1px solid rgb(255 255 255 / 0.055);
+    background: linear-gradient(135deg, rgb(0 0 0 / 0.22), rgb(255 255 255 / 0.025));
+  }
+  .topics-control { border-inline-start: 3px solid color-mix(in srgb, var(--accent) 68%, #fff); }
+  .voice-control { border-inline-start: 3px solid #ff546f; }
+  .mode-control { border-inline-start: 3px solid #52d9ff; }
+  .sampler-label {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    gap: 7px;
+    align-items: baseline;
+    color: rgb(245 245 250 / 0.85);
+    font: 700 10px/1 var(--mono, monospace);
+    letter-spacing: 0.11em;
+  }
+  .sampler-label small {
+    justify-self: end;
+    color: var(--hw-print);
+    font: 500 9px/1.15 var(--font, sans-serif);
+    letter-spacing: 0;
+    text-transform: none;
+  }
+  .sampler-index { color: var(--accent); }
+  .voice-control .sampler-index { color: #ff6179; }
+  .mode-control .sampler-index { color: #52d9ff; }
   .tabs,
   .modes {
     display: flex;
@@ -790,6 +834,15 @@
     font-size: 11.5px;
     padding: 6px 9px;
   }
+  .voice-tab {
+    justify-self: start;
+    color: #ffdce2;
+  }
+  .voice-tab[aria-selected="true"] {
+    background: linear-gradient(180deg, #61303a, #2c1a20);
+    box-shadow: inset 0 0 0 1px #ff5b73, inset 0 0 12px rgb(255 91 115 / 0.22), 0 2px 0 #050506;
+  }
+  .voice-tab[aria-selected="true"] .led { background: #ff5b73; box-shadow: 0 0 8px #ff5b73; }
   .mode {
     font-size: 11.5px;
     padding: 7px 10px;
@@ -800,6 +853,10 @@
   }
   .rate[aria-pressed="true"] {
     color: var(--accent);
+  }
+  .mode[aria-pressed="true"] {
+    background: linear-gradient(180deg, #1c4557, #172b34);
+    box-shadow: inset 0 0 0 1px #52d9ff, inset 0 0 12px rgb(82 217 255 / 0.17), 0 2px 0 #050506;
   }
   .stop {
     margin-inline-start: auto;

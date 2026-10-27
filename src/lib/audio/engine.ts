@@ -584,7 +584,10 @@ export class Engine {
       if (!this.gateOn) this.gateNode.gain.setTargetAtTime(1, this.ctx.currentTime, 0.01);
       return;
     }
-    const levels = { echo: 0.55, reverb: 0.9, flanger: 0.7, crush: 0.6 };
+    // The booth is meant to be felt as well as seen. These are deliberately
+    // 50% wetter than the original calibration; the limiter is still after
+    // the effects path, so a deep setting stays controlled.
+    const levels = { echo: 0.825, reverb: 1.35, flanger: 1.05, crush: 0.9 };
     this.fx[name].gain.setTargetAtTime(amount * levels[name], this.ctx.currentTime, 0.04);
   }
 
