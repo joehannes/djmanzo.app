@@ -798,5 +798,130 @@
    "bass": "bass.webm",
    "rest": "rest.webm"
   }
+ },
+ "mahraganat": {
+  "bpm": 128.0,
+  "key": "E minor",
+  "camelot": "9A",
+  "bars": 16,
+  "seconds": 30.000204081632653,
+  "pre": 0.25,
+  "frames": 1345059,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "orientalhouse": {
+  "bpm": 118.0,
+  "key": "A minor",
+  "camelot": "8A",
+  "bars": 16,
+  "seconds": 32.542857142857144,
+  "pre": 0.25,
+  "frames": 1457190,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "bhangra": {
+  "bpm": 99.99,
+  "key": "G major",
+  "camelot": "9B",
+  "bars": 8,
+  "seconds": 19.20138321995465,
+  "pre": 0.25,
+  "frames": 868831,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "bollywood": {
+  "bpm": 119.99,
+  "key": "A minor",
+  "camelot": "8A",
+  "bars": 16,
+  "seconds": 32.00174603174603,
+  "pre": 0.25,
+  "frames": 1433327,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "garba": {
+  "bpm": 128.0,
+  "key": "C major",
+  "camelot": "8B",
+  "bars": 16,
+  "seconds": 30.000249433106575,
+  "pre": 0.25,
+  "frames": 1345061,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
  }
 }
