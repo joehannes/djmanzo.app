@@ -14,8 +14,11 @@ import { getEngine, hasEngine } from "../../lib/audio/engine";
 import { beatClock, deck, roll, setRate, stop as stopDeck, tempoOf } from "../sound.svelte";
 import { SOUNDS, VOICE, type BankId } from "./sounds";
 
-export type Knob = "low" | "mid" | "high" | "filter" | "echo" | "space" | "pitch";
+export type Knob = "low" | "mid" | "high" | "filter" | "pitch";
 export type Mode = "tap" | "repeat" | "loop";
+/** The beat effects, one at a time, as on a mixer's Beat FX section. */
+export type FxKind = "echo" | "space" | "flanger" | "crush" | "gate";
+export const FX_KINDS: FxKind[] = ["echo", "space", "flanger", "crush", "gate"];
 
 export const booth = $state({
   open: false,
@@ -23,7 +26,11 @@ export const booth = $state({
   mode: "tap" as Mode,
   /** How often Repeat fires, in beats: ¼ is a sixteenth, ½ an eighth, 1 a beat. */
   every: 0.5,
-  knobs: { low: 0, mid: 0, high: 0, filter: 0, echo: 0, space: 0, pitch: 0 } as Record<Knob, number>,
+  knobs: { low: 0, mid: 0, high: 0, filter: 0, pitch: 0 } as Record<Knob, number>,
+  /** The beat effect chosen, how deep, and whether it is on. */
+  fx: { kind: "echo" as FxKind, depth: 0.6, on: false },
+  /** The jog's rim pushed or held back: added to the pitch fader while it is turned. */
+  bend: 0,
   /** The pads going round, by sound. */
   going: {} as Record<string, Mode>,
   /** The last pad that sounded, and when, so it can light up. */
@@ -35,20 +42,34 @@ export const booth = $state({
 
 /** −1…+1 for each knob; the EQ cuts to a kill and lifts to +6 dB; Pitch is ±8 %. */
 export function turn(knob: Knob, v: number) {
-  const value = Math.max(knob === "echo" || knob === "space" ? 0 : -1, Math.min(1, v));
+  const value = Math.max(-1, Math.min(1, v));
   booth.knobs[knob] = value;
-  if (knob === "pitch") return setRate(1 + value * 0.08);
+  if (knob === "pitch") return setRate(1 + value * 0.08 + booth.bend);
   if (!hasEngine()) return;
   const e = getEngine();
   if (knob === "low" || knob === "mid" || knob === "high") e.decks[0].eq(knob, value < 0 ? value * 26 : value * 6);
   else if (knob === "filter") e.setFilter(value);
-  else if (knob === "echo") e.setFx("echo", value);
-  else if (knob === "space") e.setFx("reverb", value);
 }
 
-/** Every knob back to the middle. */
+/** The jog's rim: turned forward it hurries the record, held back it drags it, by up to 6 %. */
+export function bend(amount: number) {
+  booth.bend = Math.max(-0.06, Math.min(0.06, amount));
+  setRate(1 + booth.knobs.pitch * 0.08 + booth.bend);
+}
+
+/** The beat effect: which, how deep, on or off; only the chosen one is heard. */
+export function effect(change: Partial<typeof booth.fx>) {
+  Object.assign(booth.fx, change);
+  booth.fx.depth = Math.max(0, Math.min(1, booth.fx.depth));
+  if (!hasEngine()) return;
+  const e = getEngine();
+  for (const k of FX_KINDS) e.setFx(k === "space" ? "reverb" : k, booth.fx.on && booth.fx.kind === k ? booth.fx.depth : 0);
+}
+
+/** Every knob back to the middle, and the effect off. */
 export function centre() {
   for (const k of Object.keys(booth.knobs) as Knob[]) turn(k, 0);
+  effect({ on: false });
 }
 
 // --- Build & drop ------------------------------------------------------------------------------
@@ -166,6 +187,7 @@ export function fold() {
   out = null;
   roll(false);
   stopDeck();
+  booth.bend = 0;
   if (!hasEngine()) return;
   centre();
   getEngine().silence();

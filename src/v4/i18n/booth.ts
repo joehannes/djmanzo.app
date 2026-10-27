@@ -17,6 +17,8 @@ export interface BoothWords {
   every: string; hush: string;
   voice: Record<"record" | "recording" | "ready" | "denied" | "unsupported" | "private" | "pitch" | "pad", string>;
   platter: string;
+  /** The gear's own controls: the deck's cue button, the tonearm, the jog's rim, the beat effects, the pitch fader. */
+  hw: Record<"cue" | "arm" | "jog" | "fx" | "fxOn" | "pitch", string>;
   groups: Record<"local" | "common" | "special", string>;
   /** Each sampler sound's name (`booth/sounds.ts`). */
   sounds: Record<string, string>;
@@ -49,6 +51,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "You",
     },
     platter: "Drag the record to scratch",
+    hw: { cue: "Cue: while playing, back to the top; stopped, hold to listen from it", arm: "Tonearm: lower it to play, lift it to stop", jog: "turn the rim to nudge the tempo", fx: "Beat effects", fxOn: "Beat effect on or off", pitch: "Pitch fader, ±8%: double-click for zero" },
     groups: { local: "Here", common: "Everywhere", special: "Special" },
     sounds: {
       airhorn: "Air horn",
@@ -131,6 +134,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Tú",
     },
     platter: "Arrastra el disco para hacer scratch",
+    hw: { cue: "Cue: sonando, vuelve al principio; parado, mantenlo para escuchar desde ahí", arm: "Brazo: bájalo para que suene, levántalo para parar", jog: "gira el borde para empujar el tempo", fx: "Efectos al compás", fxOn: "Efecto al compás, encendido o apagado", pitch: "Fader de pitch, ±8 %: doble clic para el cero" },
     groups: { local: "De aquí", common: "De todas partes", special: "Especial" },
     sounds: {
       airhorn: "Bocina de aire",
@@ -213,6 +217,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Você",
     },
     platter: "Arraste o disco para fazer scratch",
+    hw: { cue: "Cue: tocando, volta ao início; parado, segure para ouvir dali", arm: "Braço: abaixe para tocar, levante para parar", jog: "gire a borda para empurrar o andamento", fx: "Efeitos no tempo", fxOn: "Efeito no tempo ligado ou desligado", pitch: "Fader de pitch, ±8%: clique duplo para o zero" },
     groups: { local: "Daqui", common: "De todo lugar", special: "Especial" },
     sounds: {
       airhorn: "Buzina de ar",
@@ -295,6 +300,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Du",
     },
     platter: "Zieh an der Platte zum Scratchen",
+    hw: { cue: "Cue: läuft er, zurück an den Anfang; steht er, gedrückt halten und von dort hören", arm: "Tonarm: absenken zum Abspielen, anheben zum Stoppen", jog: "am Rand drehen, um das Tempo anzuschieben", fx: "Beat-Effekte", fxOn: "Beat-Effekt an oder aus", pitch: "Pitch-Fader, ±8 %: Doppelklick für null" },
     groups: { local: "Von hier", common: "Überall", special: "Spezial" },
     sounds: {
       airhorn: "Druckluftfanfare",
@@ -377,6 +383,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Vous",
     },
     platter: "Faites glisser le disque pour scratcher",
+    hw: { cue: "Cue : en lecture, retour au début ; à l’arrêt, maintenez pour écouter depuis là", arm: "Bras : abaissez-le pour jouer, relevez-le pour arrêter", jog: "tournez le bord pour pousser le tempo", fx: "Effets en rythme", fxOn: "Effet en rythme, allumé ou éteint", pitch: "Fader de pitch, ±8 % : double-clic pour le zéro" },
     groups: { local: "D'ici", common: "De partout", special: "Spécial" },
     sounds: {
       airhorn: "Trompe à air",
@@ -459,6 +466,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Tu",
     },
     platter: "Trascina il disco per fare scratch",
+    hw: { cue: "Cue: in riproduzione, torna all’inizio; fermo, tienilo premuto per ascoltare da lì", arm: "Braccio: abbassalo per suonare, alzalo per fermare", jog: "gira il bordo per spingere il tempo", fx: "Effetti a tempo", fxOn: "Effetto a tempo acceso o spento", pitch: "Fader del pitch, ±8%: doppio clic per lo zero" },
     groups: { local: "Di qui", common: "Di ovunque", special: "Speciale" },
     sounds: {
       airhorn: "Trombetta",
@@ -541,6 +549,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "あなた",
     },
     platter: "レコードをドラッグしてスクラッチ",
+    hw: { cue: "キュー：再生中は頭に戻る。停止中は押している間そこから再生", arm: "トーンアーム：下ろすと再生、上げると停止", jog: "縁を回してテンポを微調整", fx: "ビートエフェクト", fxOn: "ビートエフェクトのオン／オフ", pitch: "ピッチフェーダー ±8%：ダブルクリックでゼロ" },
     groups: { local: "この地域", common: "世界中", special: "スペシャル" },
     sounds: {
       airhorn: "エアホーン",

@@ -450,6 +450,7 @@ const pack: Pack = {
       pad: "你",
     },
     platter: "拖动唱片来搓碟",
+    hw: { cue: "Cue：播放中回到开头；停止时按住从那里试听", arm: "唱臂：放下即播放，抬起即停止", jog: "转动边缘微调速度", fx: "节拍效果", fxOn: "节拍效果开或关", pitch: "音调推子 ±8%：双击归零" },
     groups: { local: "本地", common: "通用", special: "特别" },
     sounds: {
       airhorn: "气笛",

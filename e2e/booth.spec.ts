@@ -58,7 +58,10 @@ test("the booth: the loop plays through the knobs and faders, the moves and the 
   await filter.focus();
   for (let i = 0; i < 6; i++) await page.keyboard.press("ArrowUp");
   await expect(filter).toHaveAttribute("aria-valuenow", "0.3");
-  await booth.locator("[data-fader=drums]").fill("0.4");
+  const drums = booth.locator("[data-fader=drums]");
+  await drums.focus();
+  for (let i = 0; i < 6; i++) await page.keyboard.press("ArrowDown");
+  await expect(drums).toHaveAttribute("aria-valuenow", "0.88");
   // The moves.
   await booth.locator("[data-move=brake]").click();
   await page.waitForTimeout(1500);
@@ -127,11 +130,13 @@ test("put away, the booth leaves nothing playing: not the loop, a pad going roun
     await expect(booth).toBeVisible();
     await page.locator("[data-play]").click();
     await expect(page.locator("[data-deck-source=loop]")).toBeVisible();
-    // Echo and space all the way up, and a pad going round with them.
-    for (const k of ["Echo", "Space"]) {
-      await booth.locator(`[role=slider][data-knob="${k}"]`).focus();
-      for (let i = 0; i < 20; i++) await page.keyboard.press("ArrowUp");
-    }
+    // The beat effect: the reverb, all the way up and on, and a pad going round through it.
+    for (let i = 0; i < 5 && !(await booth.locator("[data-fx-kind=space]").count()); i++) await booth.locator("[data-fx-next]").click();
+    await expect(booth.locator("[data-fx-kind=space]")).toBeVisible();
+    await booth.locator('[role=slider][data-knob="depth"]').focus();
+    for (let i = 0; i < 20; i++) await page.keyboard.press("ArrowUp");
+    await booth.locator("[data-fx-on]").click();
+    await expect(booth.locator("[data-fx-on]")).toHaveAttribute("aria-pressed", "true");
     await booth.locator("[data-bank=wedding]").click();
     await booth.locator("[data-mode=repeat]").click();
     await booth.locator("[data-pad=clink]").dispatchEvent("pointerdown");
@@ -157,4 +162,77 @@ test("put away, the booth leaves nothing playing: not the loop, a pad going roun
   await expect(page.locator("[data-booth] .pad.going")).toHaveCount(0);
   await page.waitForTimeout(150);
   expect(await loudest(1500), "out of sight, nothing is heard").toBeLessThan(0.002);
+});
+
+test("the gear: cue and play as on a CDJ, the tonearm, the pitch fader and the jog's rim, a stem killed, the beat effects", async ({ page }) => {
+  const errs: string[] = [];
+  page.on("pageerror", (e) => errs.push(e.message));
+  await page.goto("/?lang=en");
+  const play = page.locator("[data-play]");
+  const cue = page.locator("[data-cue]");
+  // Stopped, the cue button plays while it is held, and stops when it is let go.
+  await cue.dispatchEvent("pointerdown");
+  await expect(play).toHaveClass(/\bon\b/);
+  await cue.dispatchEvent("pointerup");
+  await expect(play).not.toHaveClass(/\bon\b/);
+  // Playing, it goes back to the top and stops.
+  await play.click();
+  await expect(play).toHaveClass(/\bon\b/);
+  await cue.dispatchEvent("pointerdown");
+  await cue.dispatchEvent("pointerup");
+  await expect(play).not.toHaveClass(/\bon\b/);
+
+  await page.locator("[data-booth-toggle]").click();
+  const booth = page.locator("[data-booth]");
+  // The tonearm lowered plays the record; lifted, it stops.
+  const arm = booth.locator("[data-arm]");
+  await arm.click();
+  await expect(arm).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("[data-deck-source=loop]")).toBeVisible();
+  // The pitch fader up five notches: the display says how much faster.
+  const pitch = booth.locator("[data-fader=pitch]");
+  await pitch.focus();
+  for (let i = 0; i < 5; i++) await page.keyboard.press("ArrowUp");
+  await expect(pitch).toHaveAttribute("aria-valuetext", "+1.6 %");
+  await expect(page.locator("[data-tempo-shown]")).toHaveText("+1.6%");
+  // The jog's rim, turned forward: the tempo rises while it turns, and comes back to the fader's when let go.
+  const box = (await booth.locator("[data-platter]").boundingBox())!;
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height / 2;
+  const r = box.width * 0.45;
+  // From the left of the rim (the tonearm lies over the right), a quarter turn clockwise.
+  await page.mouse.move(cx - r, cy);
+  await page.mouse.down();
+  let pushed = 0;
+  for (let i = 1; i <= 8; i++) {
+    const a = Math.PI + (i / 8) * (Math.PI / 2);
+    await page.mouse.move(cx + r * Math.cos(a), cy + r * Math.sin(a));
+    const shown = Number((await page.locator("[data-tempo-shown]").textContent())!.replace("−", "-").replace("%", ""));
+    pushed = Math.max(pushed, shown);
+  }
+  await page.mouse.up();
+  expect(pushed, "the rim pushed the tempo").toBeGreaterThan(2.1);
+  await expect(page.locator("[data-tempo-shown]")).toHaveText("+1.6%");
+  // A stem killed and brought back.
+  const kill = booth.locator("[data-kill=bass]");
+  await kill.click();
+  await expect(kill).toHaveAttribute("aria-pressed", "false");
+  await kill.click();
+  await expect(kill).toHaveAttribute("aria-pressed", "true");
+  // The beat effects go round, and back.
+  for (const k of ["space", "flanger", "crush", "gate", "echo"]) {
+    await booth.locator("[data-fx-next]").click();
+    await expect(booth.locator(`[data-fx-kind=${k}]`)).toBeVisible();
+  }
+  await booth.locator("[data-fx-prev]").click();
+  await expect(booth.locator("[data-fx-kind=gate]")).toBeVisible();
+  await booth.locator("[data-fx-on]").click();
+  await expect(booth.locator("[data-fx-on]")).toHaveAttribute("aria-pressed", "true");
+  // Centred, the knobs, the pitch fader and the effect are back where they rest.
+  await booth.getByRole("button", { name: "Centre the knobs" }).click();
+  await expect(booth.locator("[data-fx-on]")).toHaveAttribute("aria-pressed", "false");
+  await expect(pitch).toHaveAttribute("aria-valuenow", "0");
+  await arm.click();
+  await expect(arm).toHaveAttribute("aria-pressed", "false");
+  expect(errs).toEqual([]);
 });

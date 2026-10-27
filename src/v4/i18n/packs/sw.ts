@@ -452,6 +452,7 @@ const pack: Pack = {
       pad: "Wewe",
     },
     platter: "Buruta santuri ufanye scratch",
+    hw: { cue: "Cue: ikicheza, rudi mwanzo; ikiwa imesimama, shikilia kusikiliza kutoka hapo", arm: "Mkono wa santuri: ushushe ili kucheza, uinue ili kusimamisha", jog: "zungusha ukingo kusukuma kasi kidogo", fx: "Athari za mdundo", fxOn: "Washa au zima athari ya mdundo", pitch: "Fader ya pitch, ±8%: bofya mara mbili kurudi sifuri" },
     groups: { local: "Hapa", common: "Kila mahali", special: "Maalum" },
     sounds: {
       airhorn: "Honi ya hewa",

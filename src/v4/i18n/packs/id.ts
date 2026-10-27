@@ -451,6 +451,7 @@ const pack: Pack = {
       pad: "Kamu",
     },
     platter: "Seret piringan untuk scratch",
+    hw: { cue: "Cue: saat diputar, kembali ke awal; saat berhenti, tahan untuk mendengar dari situ", arm: "Lengan: turunkan untuk memutar, angkat untuk berhenti", jog: "putar tepinya untuk mendorong tempo", fx: "Efek ketukan", fxOn: "Efek ketukan nyala atau mati", pitch: "Fader pitch, ±8%: klik dua kali untuk nol" },
     groups: { local: "Lokal", common: "Di mana saja", special: "Spesial" },
     sounds: {
       airhorn: "Air horn",

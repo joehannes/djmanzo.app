@@ -1426,3 +1426,61 @@ the language most probably read where the visitor is.
   Hebrew for Israel; Chinese for China and Taiwan; Hindi, Japanese, Korean,
   Thai, Vietnamese, Turkish and Swahili). China, Taiwan, Israel, Turkey,
   Vietnam, Tanzania and Saudi Arabia have welcomes of their own now.
+
+## The booth as gear, and quiet when it is put away (27 October)
+
+- **Put away, it is quiet.** Closing the booth, leaving the page, minimising
+  the window or bringing another tab to the front stops everything. The deck
+  stops and the pads stop going round. What the sampler had scheduled is
+  cut, and a build on its way does not land. The knobs and the effect go
+  back to rest. The echo's and the reverb's tails are not heard: the engine
+  has a gain after its master that `silence()` closes, the echo stops
+  feeding itself while what is left runs out unheard, and then the audio
+  clock is let sleep until the next play (`engine.ts`, `booth.svelte.ts`
+  `fold`, `App.svelte`).
+- **The player is a CDJ's top.** It has a cue and a play button with rings
+  of light, orange and green. *Cue* sends a playing deck back to the top
+  and stops it; on a stopped deck it plays for as long as it is held. The
+  display shows the BPM, the key, the tempo the pitch fader and the jog
+  have given it, the beat of the bar and the track. The waveform sits in
+  the player's screen, and the grooves are dark rubber browse buttons, lit
+  when loaded.
+- **The booth is a turntable, a mixer and a sampler on one stand,** in
+  brushed metal with screws, unmirrored in a language read right to left as
+  gear is.
+  - *The turntable* has a platter with its strobe dots and light, and a
+    record labelled with the groove. A tonearm lowers onto it to play and
+    lifts off to stop. A long pitch fader runs ±8 %, with its readout. The
+    rim of the record can be turned to nudge the tempo by up to 6 % while
+    it turns, as a CDJ's jog does; the record itself scratches. The four
+    moves are rubber buttons at its foot.
+  - *The mixer* has HI, MID and LOW knobs (knurled caps in a lit ring, lit
+    from the middle) and the filter. Each stem has a channel with a kill
+    button and a twelve-segment meter (green, amber, red; up at once, down
+    slowly) beside its fader (`Fader.svelte`: drag, click, arrow keys,
+    double-click to rest). Below them is a **Beat FX** unit, as on a club
+    mixer: one effect at a time from Echo, Space, Flanger, Crush and Trans
+    (the gate). It has its display, a level/depth knob, and an ON button
+    that pulses on the beat. The engine's flanger, crush and gate, unused
+    until now, are heard here for the first time.
+  - *The sampler's* pads are rubber over lights of their own colour. They
+    flash when hit and breathe on the beat while they go round. Its bank
+    and mode buttons have their LEDs, and *Your voice* has a red REC
+    button.
+  - Hardware labels (CUE, BPM, HI, BEAT FX, ON) are printed as gear prints
+    them in every country. What they do is said in each of the seventeen
+    languages, in the buttons' names and hints (`booth.ts` `hw`).
+- **Tests:** `e2e/booth.spec.ts` listens at every way out to the speakers
+  from outside the page's code. It hears the loop through the reverb at
+  full depth with a pad going round, then nothing once the booth is closed
+  and nothing once the page is hidden; opened again, the booth plays again.
+  A second test plays the gear: cue held and let go, cue on a playing
+  deck, the tonearm, the pitch fader to +1.6 % on the display, the rim
+  turned a quarter clockwise (the tempo rises, then comes back), a stem
+  killed and restored, every beat effect in turn, and Centre.
+  - Mutation checks, each made to fail on purpose:
+    - silence removed: a tail was heard;
+    - the visibility listener removed;
+    - the close not folding;
+    - a cue that keeps playing;
+    - a rim that does nothing.

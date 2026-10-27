@@ -451,6 +451,7 @@ const pack: Pack = {
       pad: "Bạn",
     },
     platter: "Kéo đĩa để scratch",
+    hw: { cue: "Cue: khi đang phát, về đầu; khi dừng, giữ để nghe từ đó", arm: "Cần đĩa: hạ xuống để phát, nhấc lên để dừng", jog: "xoay vành để đẩy nhịp một chút", fx: "Hiệu ứng theo nhịp", fxOn: "Bật hoặc tắt hiệu ứng nhịp", pitch: "Fader pitch, ±8%: nhấp đúp để về 0" },
     groups: { local: "Ở đây", common: "Mọi nơi", special: "Đặc biệt" },
     sounds: {
       airhorn: "Còi hơi",

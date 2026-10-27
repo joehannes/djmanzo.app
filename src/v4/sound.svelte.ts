@@ -105,7 +105,7 @@ let asked = 0;
 
 /** How loud each stem is set (the booth's faders), apart from being on or off. */
 export const levels = $state<Record<Stem, number>>({ drums: 1, bass: 1, rest: 1 });
-/** The pitch fader: how fast the loop runs, 0.92–1.08 (a turntable's ±8 %). */
+/** How fast the loop runs: the pitch fader's ±8 % (0.92–1.08), and the jog's nudge on top of it. */
 export const speed = $state({ rate: 1 });
 
 const stemGain = (s: Stem) => (deck.on[s] ? levels[s] : 0);
@@ -215,7 +215,7 @@ function restart(pos = 0, when = getEngine().ctx.currentTime + 0.02) {
 
 /** The pitch fader: the loop runs faster or slower, and the beat with it. */
 export function setRate(rate: number) {
-  speed.rate = Math.max(0.92, Math.min(1.08, rate));
+  speed.rate = Math.max(0.86, Math.min(1.14, rate));
   if (!hasEngine()) return;
   const e = getEngine();
   const now = e.ctx.currentTime;

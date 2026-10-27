@@ -452,6 +452,7 @@ const pack: Pack = {
       pad: "Sen",
     },
     platter: "Scratch için plağı sürükle",
+    hw: { cue: "Cue: çalarken başa döner; dururken basılı tut, oradan dinle", arm: "Ton kolu: çalmak için indir, durdurmak için kaldır", jog: "tempoyu dürtmek için kenarı çevir", fx: "Beat efektleri", fxOn: "Beat efekti açık ya da kapalı", pitch: "Pitch fader'ı, ±%8: sıfır için çift tıkla" },
     groups: { local: "Buradan", common: "Her yerden", special: "Özel" },
     sounds: {
       airhorn: "Hava kornası",

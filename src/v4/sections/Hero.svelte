@@ -30,7 +30,8 @@
       return scene;
     }
   };
-  import { deck, keyOf, setGenre, tempoOf, toggle } from "../sound.svelte";
+  import { beatClock, deck, keyOf, play, setGenre, speed, stop, tempoOf, toggle } from "../sound.svelte";
+  import { getEngine, hasEngine } from "../../lib/audio/engine";
   import { gsap, lean, reduced, ScrollTrigger } from "../motion";
   import { href } from "../router";
   import { choice } from "../dlchoice.svelte";
@@ -54,6 +55,43 @@
   const bw = $derived(BOOTH[i18n.lang]);
   /** The look's grooves in three groups — the region's own (the visitor's country's first), the world's, and specials — those with a loop. */
   const grooves = $derived(bankOfGenres(skin(), region.country));
+
+  /** The deck's tempo as its display shows it: how far the pitch fader and the jog have moved it. */
+  const tempoText = $derived(`${speed.rate >= 1 ? "+" : "−"}${Math.abs((speed.rate - 1) * 100).toFixed(1)}%`);
+  /** Which beat of the bar it is on, for the display's counter; −1 at rest. */
+  let beatNo = $state(-1);
+  $effect(() => {
+    if (!deck.playing) {
+      beatNo = -1;
+      return;
+    }
+    let frame = 0;
+    const count = () => {
+      const c = beatClock();
+      beatNo = c && hasEngine() ? Math.floor((getEngine().ctx.currentTime - c.one) / c.beat) % 4 : -1;
+      frame = requestAnimationFrame(count);
+    };
+    frame = requestAnimationFrame(count);
+    return () => cancelAnimationFrame(frame);
+  });
+
+  /**
+   * The cue button, as on a CDJ: pressed while the deck plays, back to the
+   * top and stopped; pressed while it is stopped, it plays for as long as it
+   * is held.
+   */
+  let cueing = false;
+  function cueDown() {
+    if (cueing) return;
+    if (deck.playing) return stop();
+    cueing = true;
+    play();
+  }
+  function cueUp() {
+    if (!cueing) return;
+    cueing = false;
+    stop();
+  }
 
   // A new look fades its photograph in.
   let shown: string | null = null;
@@ -114,17 +152,30 @@
   <div class="wrap deckwrap" data-hero-rise>
     <div class="deck card" data-deck data-deck-source={deck.source}>
       <div class="transport">
-        <button data-track="deck:play" class="play" class:on={deck.playing} class:busy={deck.loading} aria-busy={deck.loading} onclick={toggle} aria-label={deck.playing ? t("hero.stop") : t("hero.play")} data-play>
-          {#if deck.playing}
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
-          {:else}
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M7 4.5v15l12-7.5z" /></svg>
-          {/if}
-        </button>
-        <div class="readout mono" aria-live="polite">
-          <span><b data-bpm>{tempoOf(genre.id).toFixed(1)}</b> BPM</span>
-          <span><b>{key.camelot}</b> {key.name}</span>
-          <span class="genre">{genre.name}</span>
+        <div class="buttons">
+          <button
+            class="cue"
+            class:lit={!deck.playing}
+            onpointerdown={cueDown}
+            onpointerup={cueUp}
+            onpointerleave={cueUp}
+            onpointercancel={cueUp}
+            onkeydown={(e) => (e.key === "Enter" || e.key === " ") && !e.repeat && (e.preventDefault(), cueDown())}
+            onkeyup={(e) => (e.key === "Enter" || e.key === " ") && cueUp()}
+            title={bw.hw.cue}
+            aria-label={bw.hw.cue}
+            data-cue>CUE</button
+          >
+          <button data-track="deck:play" class="play" class:on={deck.playing} class:busy={deck.loading} aria-busy={deck.loading} onclick={toggle} aria-label={deck.playing ? t("hero.stop") : t("hero.play")} data-play>
+            <svg viewBox="0 0 34 18" width="30" height="16" aria-hidden="true"><path d="M2 2v14l11-7z" /><rect x="19" y="2" width="4.5" height="14" rx="1" /><rect x="27" y="2" width="4.5" height="14" rx="1" /></svg>
+          </button>
+        </div>
+        <div class="screen mono">
+          <div class="cell bpm" aria-live="polite"><span class="k">BPM</span><b data-bpm>{tempoOf(genre.id).toFixed(1)}</b></div>
+          <div class="cell"><span class="k">KEY</span><b>{key.camelot}</b><span class="v">{key.name}</span></div>
+          <div class="cell"><span class="k">TEMPO</span><b data-tempo-shown>{tempoText}</b></div>
+          <div class="cell" aria-hidden="true"><span class="k">BEAT</span><span class="count">{#each [0, 1, 2, 3] as b (b)}<i class:on={beatNo === b} class:one={b === 0}></i>{/each}</span></div>
+          <div class="cell track"><span class="k">TRACK</span><span class="genre">{genre.emoji} {genre.name}</span></div>
         </div>
         <div class="grooves" role="group" aria-label={t("hero.grooves")}>
           {#each (["local", "common", "special"] as const).filter((k) => grooves[k].length) as k (k)}
@@ -315,12 +366,19 @@
   .deckwrap {
     padding-bottom: 40px;
   }
+  /* The deck: a CDJ's top plate, dark and a little glossy over the photograph. */
   .deck {
-    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    --lcd: color-mix(in srgb, var(--accent) 45%, #c8f6ff);
+    background:
+      repeating-linear-gradient(90deg, rgb(255 255 255 / 0.012) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg, color-mix(in srgb, #1d1d22 90%, transparent), color-mix(in srgb, #0e0e11 94%, transparent));
     backdrop-filter: blur(18px) saturate(1.3);
-    border-color: color-mix(in srgb, var(--text) 12%, transparent);
+    border-color: rgb(255 255 255 / 0.09);
     padding: 14px;
-    box-shadow: 0 30px 80px -20px rgb(0 0 0 / 0.7);
+    color: #ececf1;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.08),
+      0 30px 80px -20px rgb(0 0 0 / 0.75);
   }
   .transport {
     display: flex;
@@ -329,43 +387,135 @@
     gap: 14px;
     margin-bottom: 12px;
   }
+  /* Gear reads left to right in every language: the buttons and the display are not mirrored. */
+  .buttons {
+    direction: ltr;
+    display: flex;
+    gap: 10px;
+    flex: none;
+  }
+  /* Cue and play: round rubber buttons with a ring of light, orange and green as on the players in every booth. */
+  .cue,
   .play {
-    width: 46px;
-    height: 46px;
+    --ring: #ff9a1f;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     border: 0;
-    background: var(--accent);
-    color: var(--on-accent);
     display: grid;
     place-items: center;
     cursor: pointer;
     flex: none;
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent);
-    transition: box-shadow 0.3s;
+    color: #e9e9ee;
+    background: radial-gradient(circle at 50% 35%, #34343a, #1b1b1f 70%);
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--ring) 22%, #111),
+      0 3px 0 #050506,
+      0 6px 14px rgb(0 0 0 / 0.5),
+      inset 0 1px 0 rgb(255 255 255 / 0.12);
+    transition:
+      box-shadow 0.2s,
+      transform 0.06s;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .cue {
+    font: 700 12px/1 var(--mono, monospace);
+    letter-spacing: 0.08em;
+  }
+  .play {
+    --ring: #2bff7a;
+  }
+  .cue:active,
+  .play:active {
+    transform: translateY(2px);
+  }
+  .cue.lit,
+  .play.on {
+    box-shadow:
+      0 0 0 3px var(--ring),
+      0 0 18px 2px color-mix(in srgb, var(--ring) 55%, transparent),
+      0 3px 0 #050506,
+      inset 0 1px 0 rgb(255 255 255 / 0.12);
+  }
+  .cue.lit {
+    color: var(--ring);
   }
   .play svg {
     fill: currentColor;
   }
-  .play.on {
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent);
+  .play.on svg {
+    fill: var(--ring);
   }
-  .readout {
+  .cue:focus-visible,
+  .play:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+  /* The player's display: what is loaded, its tempo and key, and the beat it is on. */
+  .screen {
+    direction: ltr;
     display: flex;
     flex-wrap: wrap;
-    gap: 18px;
-    font-size: 12px;
-    color: var(--dim);
+    gap: 6px 18px;
+    align-items: flex-end;
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #07111a, #04080d);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.07),
+      inset 0 2px 10px #000;
+    color: var(--lcd);
+    font-variant-numeric: tabular-nums;
+  }
+  .cell {
+    display: grid;
+    gap: 2px;
+  }
+  .cell .k {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    opacity: 0.55;
+  }
+  .cell b {
+    font-weight: 600;
+    font-size: 15px;
+    text-shadow: 0 0 8px color-mix(in srgb, var(--lcd) 60%, transparent);
+  }
+  .cell.bpm b {
+    font-size: 24px;
+    line-height: 1;
+  }
+  .cell .v {
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.06em;
+    opacity: 0.75;
   }
-  .readout b {
-    color: var(--text);
-    font-weight: 500;
-    font-size: 15px;
-    letter-spacing: 0;
+  .count {
+    display: flex;
+    gap: 4px;
+    padding: 4px 0;
   }
-  .genre {
+  .count i {
+    width: 14px;
+    height: 7px;
+    border-radius: 1.5px;
+    background: color-mix(in srgb, var(--lcd) 14%, transparent);
+  }
+  .count i.on {
+    background: var(--lcd);
+    box-shadow: 0 0 8px var(--lcd);
+  }
+  .count i.one.on {
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent);
+  }
+  .track .genre {
     color: var(--accent);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
   .grooves {
     display: flex;
@@ -373,16 +523,48 @@
     gap: 6px;
     margin-left: auto;
   }
+  /* The grooves, as a player's browse buttons: dark rubber, lit when loaded. */
   .grooves .chip {
     min-height: 30px;
     font-size: 13px;
     padding: 0 12px;
+    color: #e6e6ec;
+    border: 0;
+    background: linear-gradient(180deg, #2a2a30, #1d1d22);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.09),
+      0 2px 0 #050506;
+    transition:
+      transform 0.06s,
+      box-shadow 0.15s;
   }
+  .grooves .chip:hover {
+    background: linear-gradient(180deg, #33333a, #222228);
+  }
+  .grooves .chip:active {
+    transform: translateY(1px);
+  }
+  .grooves .chip[aria-pressed="true"] {
+    color: #fff;
+    box-shadow:
+      inset 0 0 0 1px var(--accent),
+      inset 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent),
+      0 0 12px color-mix(in srgb, var(--accent) 35%, transparent),
+      0 2px 0 #050506;
+  }
+  .grooves .gl {
+    color: rgb(232 232 238 / 0.5);
+  }
+  /* The waveform, in the player's screen. */
   .strip {
     position: relative;
     height: clamp(90px, 13vw, 140px);
     border-radius: 10px;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 70%, transparent), color-mix(in srgb, var(--bg) 92%, transparent));
+    background: linear-gradient(180deg, #06090d, #020304);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.07),
+      inset 0 2px 12px #000,
+      0 0 0 4px #0b0b0e;
     overflow: hidden;
   }
   .tag {
