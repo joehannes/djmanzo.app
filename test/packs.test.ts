@@ -17,7 +17,7 @@ function leaves(v: unknown, path = ""): [string, string][] {
 }
 const holes = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
 
-const PARTS: Part[] = ["looks", "welcome", "home", "sections", "booth", "screens", "assistant", "status", "pricing", "account", "pages", "bits", "featuresPage", "compare", "nights", "people", "talkback", "outboard"];
+const PARTS: Part[] = ["looks", "welcome", "home", "sections", "booth", "screens", "assistant", "status", "pricing", "account", "pages", "bits", "featuresPage", "compare", "nights", "people", "talkback", "outboard", "journey"];
 const written = PACKED.filter((l) => SPEAKS.includes(l));
 
 beforeAll(installAll);

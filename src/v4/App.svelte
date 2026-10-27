@@ -18,6 +18,7 @@
   import { isOwn, parse, type Route } from "./router";
   import { ScrollTrigger } from "./motion";
   import SiteBar from "./SiteBar.svelte";
+  import Trail from "./Trail.svelte";
   import Footer from "./Footer.svelte";
   import Assistant from "./Assistant.svelte";
   import Home from "./pages/Home.svelte";
@@ -33,6 +34,7 @@
   import Compare from "./pages/Compare.svelte";
   import Nights from "./pages/Nights.svelte";
   import People from "./pages/People.svelte";
+  import Journey from "./pages/Journey.svelte";
   import Toast from "./Toast.svelte";
   import { flavourOf } from "../../shared/flavours";
   import { i18n } from "./i18n.svelte";
@@ -157,6 +159,7 @@
 </script>
 
 <SiteBar {route} />
+<Trail {route} />
 
 <main id="main" data-page={route.page} data-ready={ready ? "" : undefined}>
   <!-- A new language builds the page again: headings split into words for their entrance are whole again, in the new words. -->
@@ -181,6 +184,8 @@
     <Nights />
   {:else if route.page === "people"}
     <People />
+  {:else if route.page === "journey"}
+    <Journey />
   {:else if route.page === "backstage"}
     <Backstage />
   {:else if route.page === "read"}

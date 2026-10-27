@@ -1484,3 +1484,54 @@ the language most probably read where the visitor is.
     - the close not folding;
     - a cue that keeps playing;
     - a rim that does nothing.
+
+## The journey, and the trail along a long page (27 October)
+
+- **The journey** (`/journey`, `pages/Journey.svelte`, `journey.ts`) asks
+  seven quick questions, any of them skippable:
+  - where the DJ is (starting, at home, playing out, working, touring,
+    hosting karaoke, running a venue);
+  - where they play;
+  - their styles (their region's first, then every groove with a loop);
+  - what is in their booth;
+  - what they play on now;
+  - what is next for them;
+  - the money question.
+
+  Then it draws the site around the answers:
+  - the edition that fits, and why, in a sentence;
+  - their styles on the deck, to press and hear;
+  - up to six next steps, each a card that leads to the part of the site
+    that answers it. A rekordbox DJ is first told that their crates come
+    along; a karaoke host gets the karaoke night; a venue gets Auto-Pilot.
+    Downloading it is always last.
+
+  The rules are pure functions with their own tests. The answers are kept
+  in the browser and in the page's address (`/journey?y=host&e=wedding,…`),
+  so a journey can be shared and opens the same in any language; nothing is
+  sent anywhere. The bar links it, lit in the accent.
+- **The trail** (`Trail.svelte`) slides in under the bar once a page is
+  scrolled into:
+  - where the visitor is (djmanzo › the page › the part they are reading);
+  - the next part's name with a jump to it;
+  - a line that fills with how far down they are;
+  - dots for the parts;
+  - a map of the page's parts, and what DJs ask first: does my controller
+    work, do my crates come along, what does it cost, is there a free
+    edition, stems, karaoke, plan my journey.
+
+  It is built from the page's own sections (their ids and headings, with
+  short names written for the home page's), so a page added later has its
+  trail without being listed. Jumps leave room for it
+  (`scroll-padding-top`).
+- **Seventeen languages** from the first commit: the seven in the page,
+  and the ten packs, each with the journey (`packs/*.ts` `journey`).
+  `test/journey.test.ts` holds every language to every word, with the
+  blanks kept and nothing left in English. The browser tests walk a
+  karaoke host through the questions to the Karaoke edition. They play a
+  style and stop it, and reopen the link in German. They also follow the
+  trail: next, the map, a part, and the ask that leads to the journey.
+  - Mutation checks, each made to fail on purpose:
+    - the host and the working DJ who sing both given Karaoke;
+    - software no longer putting the crates first;
+    - a trail stuck on the first part.

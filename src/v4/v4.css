@@ -30,7 +30,8 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--bar) + 12px);
+  /* The bar, and the trail under it once a page is scrolled into (`Trail.svelte`). */
+  scroll-padding-top: calc(var(--bar) + 50px);
 }
 @media (prefers-reduced-motion: reduce) {
   html {

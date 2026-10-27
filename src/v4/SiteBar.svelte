@@ -19,6 +19,7 @@
   import { restore, setSounds, sounds } from "./sfx.svelte";
   import { LANG_INFO, chooseLanguage, i18n, pickerLanguages, startLanguage, t, type Lang } from "./i18n.svelte";
   import { aboutOf, countryName, regionOf } from "./i18n/looks";
+  import { JOURNEY } from "./i18n/journey";
   import OsIcon from "./OsIcon.svelte";
   import Flag from "./Flag.svelte";
 
@@ -108,7 +109,8 @@
       <a class="nav" class:on={route.page === "pricing"} href={href("pricing")} onclick={() => (menu = false)}>{t("nav.pricing")}</a>
       <a class="nav" class:on={route.page === "market"} href={href("market")} onclick={() => (menu = false)}>{t("nav.market")}</a>
       <a class="nav" class:on={route.page === "community"} href={href("community")} onclick={() => (menu = false)}>{t("nav.community")}</a>
-      <a class="nav" href="/blog">{t("nav.journal")}</a>
+      <a class="nav journal" href="/blog">{t("nav.journal")}</a>
+      <a class="nav journey" class:on={route.page === "journey"} href={href("journey")} onclick={() => (menu = false)} title={JOURNEY[i18n.lang].nav} data-journey-link>✦ <span class="jl">{JOURNEY[i18n.lang].nav}</span></a>
       <!-- On a narrow phone the sound switch lives here, so the bar fits. -->
       <button class="nav sound-row" aria-pressed={sounds.on} onclick={() => setSounds(!sounds.on)} data-sounds-row>{sounds.on ? "🔊" : "🔈"} {sounds.on ? t("sound.onLabel") : t("sound.offLabel")}</button>
     </nav>
@@ -335,6 +337,15 @@
     color: var(--text);
     background: color-mix(in srgb, var(--text) 7%, transparent);
   }
+  /* The journey: the one link that asks about the visitor, lit a little. */
+  .nav.journey {
+    color: var(--accent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .nav.journey:hover,
+  .nav.journey.on {
+    background: color-mix(in srgb, var(--accent) 14%, transparent);
+  }
   .right {
     margin-left: auto;
     display: flex;
@@ -502,6 +513,22 @@
   @media (max-width: 1360px) {
     .skin-name {
       display: none;
+    }
+  }
+  /* Between the full bar and the menu, the journal gives its place to the journey: it is in the footer, and in the menu. */
+  @media (min-width: 1081px) and (max-width: 1500px) {
+    .nav.journal {
+      display: none;
+    }
+  }
+  /* Narrower still, the journey is its star alone, its name in its title. */
+  @media (min-width: 1081px) and (max-width: 1240px) {
+    .nav.journey .jl {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
     }
   }
   @media (max-width: 1080px) {

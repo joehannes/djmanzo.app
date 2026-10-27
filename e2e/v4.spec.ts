@@ -701,3 +701,67 @@ test("the comparison, the kinds of nights and the people's page are pages of thi
   for (const path of ["/compare", "/nights", "/people"]) await expect(page.locator(`footer a[href="${path}"]`)).toHaveCount(1);
   expect(errs).toEqual([]);
 });
+
+test("the journey: seven questions, each skippable, then the edition, the steps and the visitor's sound, kept in the link", async ({ page }) => {
+  const errs: string[] = [];
+  page.on("pageerror", (e) => errs.push(e.message));
+  await page.goto("/?lang=en");
+  await page.locator("[data-journey-link]").click();
+  await expect(page).toHaveURL(/\/journey/);
+  await page.locator("[data-journey-begin]").click();
+  // One answer moves on by itself.
+  await page.locator("[data-question=you] [data-option=host]").click();
+  await expect(page.locator("[data-question=events]")).toBeVisible();
+  await page.locator("[data-option=wedding]").click();
+  await page.locator("[data-option=karaoke]").click();
+  await page.locator("[data-journey-next]").click();
+  await page.locator("[data-question=styles] [data-option]").first().click();
+  // The rest skipped.
+  for (let i = 0; i < 4; i++) await page.locator("[data-journey-skip]").click();
+  await page.locator("[data-journey-finish]").click();
+  await expect(page.locator("[data-journey-heading]")).toHaveText("The karaoke host: your way in");
+  await expect(page.locator("[data-journey-edition=karaoke]")).toBeVisible();
+  await expect(page.locator("[data-journey-step]").first()).toHaveAttribute("data-journey-step", "karaoke");
+  await expect(page.locator("[data-journey-step]").last()).toHaveAttribute("data-journey-step", "try");
+  await expect(page).toHaveURL(/y=host&e=wedding,karaoke&s=/);
+  // The style plays on the deck, and stops.
+  const hear = page.locator("[data-hear]").first();
+  await hear.click();
+  await expect(hear).toHaveAttribute("aria-pressed", "true");
+  await hear.click();
+  await expect(hear).toHaveAttribute("aria-pressed", "false");
+  // The link alone brings the same journey back, in another language.
+  const link = new URL(page.url());
+  await page.goto(`/journey${link.search}&lang=de`);
+  await expect(page.locator("[data-journey-heading]")).toHaveText("Am Karaoke-Mikro: dein Weg hinein");
+  await expect(page.locator("[data-journey-edition=karaoke]")).toBeVisible();
+  // A step leads where it says.
+  await page.locator("[data-journey-step=karaoke] a").click();
+  await expect(page).toHaveURL(/\/#karaoke$/);
+  expect(errs).toEqual([]);
+});
+
+test("the trail: where the visitor is on a long page, what comes next, a jump to it, and the page's map with what DJs ask", async ({ page }) => {
+  await page.goto("/?lang=en");
+  const trail = page.locator("[data-trail]");
+  await expect(trail).toHaveAttribute("aria-hidden", "true");
+  await page.locator("#stems").scrollIntoViewIfNeeded();
+  await expect(trail).toHaveAttribute("aria-hidden", "false");
+  await expect(page.locator("[data-trail-here]")).toContainText("Stems");
+  // Next is the part after this one; a press goes there.
+  const next = page.locator("[data-trail-next]");
+  const nextKey = await next.getAttribute("data-trail-next");
+  expect(nextKey).toBeTruthy();
+  await next.click();
+  await expect(page.locator("[data-trail-here]")).not.toContainText("Stems");
+  // The map lists the page's parts, and what DJs ask first leads somewhere.
+  await page.locator("[data-trail-map]").click();
+  await expect(page.locator("[data-trail-panel]")).toBeVisible();
+  await expect(page.locator("[data-trail-part=hardware]")).toHaveText(/Hardware/);
+  await page.locator("[data-trail-part=hardware]").click();
+  await expect(page.locator("[data-trail-panel]")).toHaveCount(0);
+  await expect(page.locator("[data-trail-here]")).toContainText("Hardware");
+  await page.locator("[data-trail-map]").click();
+  await page.locator("[data-trail-ask=journey]").click();
+  await expect(page).toHaveURL(/\/journey$/);
+});

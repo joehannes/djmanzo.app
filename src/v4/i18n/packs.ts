@@ -13,6 +13,7 @@ import { BOOTH, type BoothWords } from "./booth";
 import { COMPARE, type CompareWords } from "./compare";
 import { FEATURES_PAGE, type FeaturesPageWords } from "./featurespage";
 import { HOME, type HomeWords } from "./home";
+import { JOURNEY, type JourneyWords } from "./journey";
 import { LOOK_WORDS } from "./looks";
 import { NIGHTS, type NightsWords } from "./nights";
 import { OUTBOARD, type OutboardWords } from "./outboard";
@@ -49,6 +50,7 @@ export interface Pack {
   people?: PeopleWords;
   talkback?: TalkbackWords;
   outboard?: OutboardWords;
+  journey?: JourneyWords;
 }
 
 /** The dictionaries that are a whole record per language, by the pack's name for them. */
@@ -67,6 +69,7 @@ const WHOLE = {
   people: PEOPLE,
   talkback: TALKBACK,
   outboard: OUTBOARD,
+  journey: JOURNEY,
 } as const;
 
 const LOAD: Partial<Record<PackLang, () => Promise<{ default: Pack }>>> = {

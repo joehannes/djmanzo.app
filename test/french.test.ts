@@ -19,6 +19,7 @@ import { NIGHTS } from "../src/v4/i18n/nights";
 import { PEOPLE } from "../src/v4/i18n/people";
 import { STATUS } from "../src/v4/i18n/status";
 import { BOOTH } from "../src/v4/i18n/booth";
+import { JOURNEY } from "../src/v4/i18n/journey";
 import { MAIL_WORDS } from "../worker/mailwords";
 
 /** Every string in a value. */
@@ -26,7 +27,7 @@ const texts = (v: unknown): string[] => (typeof v === "string" ? [v] : v && type
 
 describe("French, set as French is set", () => {
   it("has a narrow no-break space before ? ! : ; and inside « », so a line never starts with one", () => {
-    const all = [...texts(ACCOUNT.fr), ...texts(FEATURES_PAGE.fr), ...texts(PAGES.fr), ...texts(PRICING.fr), ...texts(BITS.fr), ...texts(SCREENS.fr), ...texts(LOOK_WORDS.fr), ...texts(TALKBACK.fr), ...texts(OUTBOARD.fr), ...texts(COMPARE.fr), ...texts(NIGHTS.fr), ...texts(PEOPLE.fr), ...texts(STATUS.fr), ...texts(BOOTH.fr), ...texts(MAIL_WORDS.fr), ...texts(fr), ...texts(HOME.fr), ...texts(SECTIONS.fr), ...texts(STRINGS.fr), ...Object.values(WELCOME).flatMap((w) => texts(w.fr)), ...CANNED.flatMap((c) => texts((c as unknown as Record<string, unknown>).fr ?? Object.values(c).map((x) => (x && typeof x === "object" ? (x as Record<string, unknown>).fr : null))))];
+    const all = [...texts(ACCOUNT.fr), ...texts(FEATURES_PAGE.fr), ...texts(PAGES.fr), ...texts(PRICING.fr), ...texts(BITS.fr), ...texts(SCREENS.fr), ...texts(LOOK_WORDS.fr), ...texts(TALKBACK.fr), ...texts(OUTBOARD.fr), ...texts(COMPARE.fr), ...texts(NIGHTS.fr), ...texts(PEOPLE.fr), ...texts(STATUS.fr), ...texts(BOOTH.fr), ...texts(JOURNEY.fr), ...texts(MAIL_WORDS.fr), ...texts(fr), ...texts(HOME.fr), ...texts(SECTIONS.fr), ...texts(STRINGS.fr), ...Object.values(WELCOME).flatMap((w) => texts(w.fr)), ...CANNED.flatMap((c) => texts((c as unknown as Record<string, unknown>).fr ?? Object.values(c).map((x) => (x && typeof x === "object" ? (x as Record<string, unknown>).fr : null))))];
     expect(all.length).toBeGreaterThan(300);
     const loose = all.filter((t) => /[ \u00a0][?!:;»]|« /.test(t.replace(/https?:\/\/\S+/g, "")));
     expect(loose).toEqual([]);

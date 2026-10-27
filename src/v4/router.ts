@@ -8,7 +8,7 @@
  * Path's stages (`/#/amp`), now the page and section that show the same.
  */
 
-export const PAGES = ["home", "features", "pricing", "market", "community", "account", "wishes", "releases", "compare", "nights", "people", "backstage", "read"] as const;
+export const PAGES = ["home", "features", "pricing", "market", "community", "account", "wishes", "releases", "compare", "nights", "people", "journey", "backstage", "read"] as const;
 export type PageId = (typeof PAGES)[number];
 
 export interface Route {
@@ -28,11 +28,12 @@ const PATH_OF: Record<Exclude<PageId, "home" | "read">, string> = {
   compare: "compare",
   nights: "nights",
   people: "people",
+  journey: "journey",
   backstage: "backstage",
 };
 const PAGE_OF: Record<string, PageId> = Object.fromEntries(Object.entries(PATH_OF).map(([page, path]) => [path, page as PageId]));
 /** Pages that take nothing after their name. */
-const BARE: PageId[] = ["pricing", "account", "wishes", "releases", "compare", "nights", "people", "backstage"];
+const BARE: PageId[] = ["pricing", "account", "wishes", "releases", "compare", "nights", "people", "journey", "backstage"];
 /** Pages the Worker writes: shown as they came, inside the site. */
 const READ = ["blog", "imprint", "terms", "rules", "privacy"];
 
