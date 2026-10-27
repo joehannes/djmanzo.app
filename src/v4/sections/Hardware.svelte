@@ -159,7 +159,7 @@
     color: var(--dim);
   }
   .devices b {
-    font: 600 17px/1.2 var(--display);
+    font: var(--display-weight, 600) 17px/1.2 var(--display);
   }
   .maker {
     color: var(--dim);

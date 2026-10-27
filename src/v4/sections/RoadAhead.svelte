@@ -165,7 +165,7 @@
     fill: var(--text);
   }
   .item b {
-    font: 600 17px/1.25 var(--display);
+    font: var(--display-weight, 600) 17px/1.25 var(--display);
   }
   .item p {
     margin: 6px 0 0;

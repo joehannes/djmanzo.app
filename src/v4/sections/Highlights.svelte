@@ -11,6 +11,7 @@
   import { href } from "../router";
   import { i18n } from "../i18n.svelte";
   import { HOME } from "../i18n/home";
+  import { JOURNEY } from "../i18n/journey";
 
   const ITEMS = [
     { key: "stems" as const, to: "#stems", area: "mixing" as Area, facts: ["stems", "outputs", "deckqueue", "transport", "fx", "sampler"], icon: "M3 6h18M3 10h12M3 14h16M3 18h8" },
@@ -34,7 +35,10 @@
   <div class="wrap">
     <div class="head">
       <h2 class="h3" id="hl-title" data-reveal>{w.hl.title}</h2>
-      <a class="all" href={href("features")} data-reveal>{w.hl.all.replace("{n}", String(shipped))}</a>
+      <span class="ways" data-reveal>
+        <a class="journey" href={href("journey")} data-hl-journey>✦ {JOURNEY[i18n.lang].trail.ask.journey}</a>
+        <a class="all" href={href("features")}>{w.hl.all.replace("{n}", String(shipped))}</a>
+      </span>
     </div>
     <ul class="grid">
       {#each ITEMS as it (it.key)}
@@ -71,10 +75,30 @@
     gap: 12px;
     margin-bottom: 22px;
   }
+  .ways {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 18px;
+  }
   .all {
     color: var(--accent);
     font-weight: 600;
     text-decoration: none;
+  }
+  /* The way to a page drawn for the visitor, beside the way to every feature. */
+  .journey {
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--line));
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    transition: background-color 0.2s;
+  }
+  .journey:hover {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
   }
   .grid {
     list-style: none;
@@ -115,6 +139,16 @@
   .grid > li:hover {
     border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
     background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    transform: translateY(-2px);
+  }
+  .grid > li:hover .icon {
+    transform: rotate(-6deg) scale(1.08);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .grid > li:hover,
+    .grid > li:hover .icon {
+      transform: none;
+    }
   }
   .grid > li > a {
     display: grid;
@@ -164,9 +198,10 @@
     border-radius: 11px;
     background: color-mix(in srgb, var(--accent) 15%, transparent);
     color: var(--accent);
+    transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
   }
   b {
-    font: 600 16px/1.25 var(--display);
+    font: var(--display-weight, 600) 16px/1.25 var(--display);
   }
   .text {
     font-size: 14px;

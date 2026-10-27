@@ -247,7 +247,7 @@
     place-items: center;
     background: var(--accent);
     color: var(--on-accent);
-    font: 700 12px/1 var(--display);
+    font: var(--display-bold, 700) 12px/1 var(--display);
   }
   /* Off the start side, so it never widens a page read right to left. */
   .skip {
@@ -305,7 +305,7 @@
     color: var(--text);
   }
   .brand b {
-    font: 700 20px/1 var(--display);
+    font: var(--display-bold, 700) 20px/1 var(--display);
     letter-spacing: -0.03em;
   }
   .beta {

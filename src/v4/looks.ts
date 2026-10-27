@@ -16,8 +16,13 @@ import type { SkinId } from "./skins";
 export interface Look {
   /** What the ornaments refer to, in a sentence. */
   about: string;
-  /** The display face (Google Fonts family name) and its CSS stack. */
-  font: { family: string; weights: string; stack: string };
+  /**
+   * The display face (Google Fonts family name) and its CSS stack; the
+   * weight its headings are set in, where the face has no 600, so the
+   * browser never thickens it by itself; and its letter-spacing, where the
+   * page's tight default would close up a face already narrow.
+   */
+  font: { family: string; weights: string; stack: string; weight?: number; track?: string };
   /** A repeating tile, `size` × `size`. */
   pattern: { svg: string; size: number; opacity: number };
   /** A band 1200 × 48, repeated sideways, between sections. */
@@ -61,7 +66,7 @@ export const LOOKS: Record<SkinId, Look> = {
   },
   urban: {
     about: "Block-party flyers and record sleeves: halftone dots, the equaliser's bars, a record on the turntable.",
-    font: { family: "Anton", weights: "400", stack: '"Anton", "Impact", "Inter", system-ui, sans-serif' },
+    font: { family: "Anton", weights: "400", stack: '"Anton", "Impact", "Inter", system-ui, sans-serif', weight: 400, track: "0.01em" },
     pattern: {
       size: 24,
       opacity: 0.14,
@@ -131,7 +136,7 @@ export const LOOKS: Record<SkinId, Look> = {
   },
   monsoon: {
     about: "South Asia's celebrations: rangoli drawn at the door, the toran of marigolds over it, the mandala's rings.",
-    font: { family: "Rozha One", weights: "400", stack: '"Rozha One", Georgia, serif' },
+    font: { family: "Rozha One", weights: "400", stack: '"Rozha One", Georgia, serif', weight: 400, track: "-0.01em" },
     pattern: {
       size: 52,
       opacity: 0.16,
@@ -166,6 +171,9 @@ export function lookVars(look: Look, a: string, b: string): Record<string, strin
   const p = look.pattern;
   return {
     "--display": look.font.stack,
+    "--display-weight": String(look.font.weight ?? 600),
+    "--display-bold": String(look.font.weight ?? 700),
+    "--display-track": look.font.track ?? "-0.03em",
     "--pattern": svgUri(p.svg, `0 0 ${p.size} ${p.size}`, a, b),
     "--pattern-size": `${p.size}px`,
     "--pattern-opacity": String(p.opacity),

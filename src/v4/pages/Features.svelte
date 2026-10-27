@@ -280,7 +280,7 @@
   }
   h3 {
     margin: 0;
-    font: 600 16px/1.3 var(--display);
+    font: var(--display-weight, 600) 16px/1.3 var(--display);
   }
   .fact p {
     margin: 0;

@@ -54,9 +54,12 @@
           <ul>
             {#each part.ids.map((id) => FACT_BY_ID[id]).filter(Boolean).map(tf) as f (f.id)}
               <li data-fact={f.id}>
-                <b>{f.name}</b>
-                <p>{f.about}</p>
-                {#if f.caveat}<p class="caveat">{f.caveat}</p>{/if}
+                <!-- The night at a glance: each thing by its name, its words a press away. -->
+                <details>
+                  <summary><b>{f.name}</b><span class="chev" aria-hidden="true"></span></summary>
+                  <p>{f.about}</p>
+                  {#if f.caveat}<p class="caveat">{f.caveat}</p>{/if}
+                </details>
               </li>
             {/each}
           </ul>
@@ -190,10 +193,44 @@
     padding: 0;
     margin: 0;
     display: grid;
-    gap: 14px;
+    gap: 0;
+  }
+  .part li + li {
+    border-top: 1px solid var(--line);
+  }
+  .part summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  .part summary::-webkit-details-marker {
+    display: none;
+  }
+  .part summary:hover b {
+    color: var(--accent);
   }
   .part b {
+    flex: 1;
     font-size: 15px;
+    transition: color 0.15s;
+  }
+  .chev {
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-inline-end: 2px solid var(--dim);
+    border-bottom: 2px solid var(--dim);
+    transform: rotate(45deg) translate(-2px, -2px);
+    transition: transform 0.25s;
+  }
+  details[open] .chev {
+    transform: rotate(-135deg) translate(-2px, -2px);
+  }
+  .part details p:last-child {
+    margin-bottom: 12px;
   }
   .part p {
     margin: 4px 0 0;

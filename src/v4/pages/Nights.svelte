@@ -137,6 +137,7 @@
   }
   .phase {
     font-family: var(--display);
+    font-weight: var(--display-weight, 600);
     color: var(--accent);
   }
   .row {

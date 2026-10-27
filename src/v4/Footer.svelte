@@ -72,7 +72,7 @@
     }
   }
   .brand {
-    font: 700 22px/1 var(--display);
+    font: var(--display-bold, 700) 22px/1 var(--display);
     letter-spacing: -0.03em;
     margin: 0 0 12px;
   }

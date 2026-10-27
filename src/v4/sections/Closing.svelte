@@ -133,7 +133,7 @@
     font-size: 14px;
   }
   .os b {
-    font: 600 18px/1.2 var(--display);
+    font: var(--display-weight, 600) 18px/1.2 var(--display);
   }
   .os small {
     color: var(--dim);

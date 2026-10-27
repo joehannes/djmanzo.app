@@ -465,7 +465,7 @@
     display: grid;
     place-items: center;
     background: var(--raised);
-    font: 600 30px/1 var(--display);
+    font: var(--display-weight, 600) 30px/1 var(--display);
   }
   .who p {
     margin: 6px 0 0;

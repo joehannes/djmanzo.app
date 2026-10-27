@@ -412,6 +412,7 @@
   }
   .stepcard b {
     font-family: var(--display);
+    font-weight: var(--display-weight, 600);
     font-size: 18px;
     line-height: 1.2;
   }

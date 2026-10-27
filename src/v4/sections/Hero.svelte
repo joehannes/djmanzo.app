@@ -256,6 +256,7 @@
   .local b {
     color: var(--text);
     font-family: var(--display);
+    font-weight: var(--display-weight, 600);
   }
   .flag {
     display: inline-flex;

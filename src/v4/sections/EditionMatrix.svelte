@@ -157,7 +157,7 @@
     background: none;
     border: 0;
     color: var(--text);
-    font: 600 14px/1.2 var(--display);
+    font: var(--display-weight, 600) 14px/1.2 var(--display);
     cursor: pointer;
   }
   .dot {

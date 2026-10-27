@@ -149,9 +149,21 @@ img {
 .h2,
 .h3 {
   font-family: var(--display);
-  font-weight: 600;
-  letter-spacing: -0.03em;
+  /* Each look's face at a weight it has, and its own spacing (`looks.ts`). */
+  font-weight: var(--display-weight, 600);
+  letter-spacing: var(--display-track, -0.03em);
   margin: 0;
+}
+/* Headings break into lines of even length, paragraphs never end on a word alone. */
+.h1,
+.h2,
+.h3 {
+  text-wrap: balance;
+}
+p,
+li,
+.lead {
+  text-wrap: pretty;
 }
 .h1 {
   font-size: clamp(2.7rem, 7vw, 5.6rem);
@@ -164,7 +176,7 @@ img {
 .h3 {
   font-size: clamp(1.2rem, 2vw, 1.5rem);
   line-height: 1.2;
-  letter-spacing: -0.015em;
+  letter-spacing: calc(var(--display-track, -0.03em) / 2);
 }
 
 .lead {
@@ -205,12 +217,30 @@ img {
   transform: translateY(1px);
 }
 .btn.primary {
-  background: var(--accent);
+  /* A light that sweeps across on hover, as over a lit pad. */
+  background: linear-gradient(110deg, var(--accent) 42%, color-mix(in srgb, var(--accent) 70%, #fff) 50%, var(--accent) 58%) 100% 0 / 260% 100%;
   color: var(--on-accent);
   box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent);
+  transition:
+    transform 0.15s,
+    background-position 0.6s ease,
+    box-shadow 0.2s;
 }
 .btn.primary:hover {
+  background-position: 0 0;
+  transform: translateY(-1px);
   box-shadow: 0 8px 30px -6px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.btn.primary:active {
+  transform: translateY(1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn.primary,
+  .btn.primary:hover {
+    transition: none;
+    background-position: 100% 0;
+    transform: none;
+  }
 }
 .btn.ghost {
   background: color-mix(in srgb, var(--text) 6%, transparent);
@@ -252,10 +282,14 @@ img {
   cursor: pointer;
   transition:
     border-color 0.2s,
-    background-color 0.2s;
+    background-color 0.2s,
+    transform 0.1s;
 }
 .chip:hover {
   border-color: color-mix(in srgb, var(--accent) 60%, var(--line));
+}
+.chip:active {
+  transform: scale(0.97);
 }
 .chip[aria-pressed="true"],
 .chip.on {

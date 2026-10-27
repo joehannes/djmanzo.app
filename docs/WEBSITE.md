@@ -1535,3 +1535,25 @@ the language most probably read where the visitor is.
     - the host and the working DJ who sing both given Karaoke;
     - software no longer putting the crates first;
     - a trail stuck on the first part.
+
+## Faces at their own weights, and a page read at a glance (27 October)
+
+- **Type.** Anton (the Urban look) and Rozha One (the South Asian look)
+  come in one weight, 400. Headings asked for 600, so the browser thickened
+  them itself, smudging their letters together; Anton's tight tracking
+  closed them up further. Each look now gives its headings a weight its
+  face has (`--display-weight`, `--display-bold`) and its own tracking
+  (`--display-track`, `looks.ts`). Headings break into lines of even
+  length (`text-wrap: balance`), and paragraphs do not end on a word alone
+  (`text-wrap: pretty`).
+- **At a glance.** A section's features show their names and how they
+  stand, the first one open and each of the others a press away
+  (`FactList.svelte`). The karaoke night's four columns read the same way.
+  Every word is still in the page. The home page is about 8 % shorter for
+  it (23 441 → 21 586 px at 1300 px wide); the trail and the highlights do
+  the rest of the jumping.
+- **Movement.** A light sweeps across a primary button on hover, as over a
+  lit pad. Chips give under a press. A highlight's card lifts and its icon
+  turns a little. All of it stays still for whoever asks for less motion.
+  The highlights carry the way to the journey beside the way to every
+  feature.
