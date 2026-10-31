@@ -5,7 +5,8 @@
  * "คุณ" for the reader and no polite particles in the interface, as Thai
  * sites write; read in Laos too, Lao being close enough to read it. Edition
  * names and djmanzo's own interface labels stay as the application shows
- * them. The feature descriptions themselves still read in English.
+ * them. The feature descriptions are in facts/th.ts, fetched when the
+ * language is chosen.
  */
 
 import type { Pack } from "../packs";

@@ -14,6 +14,14 @@ import fr from "./facts/fr";
 import it from "./facts/it";
 import ja from "./facts/ja";
 import pt from "./facts/pt";
+import th from "./facts/th";
+import vi from "./facts/vi";
+import id from "./facts/id";
+import ko from "./facts/ko";
+import hi from "./facts/hi";
+import ar from "./facts/ar";
+import he from "./facts/he";
+import zh from "./facts/zh";
 import { LANGS, LANG_INFO, type BuiltInLang, type Lang, type PackLang } from "./strings";
 
 export { LANG_INFO, type Lang };
@@ -413,7 +421,7 @@ export const SEO: Record<BuiltInLang, SeoWords> & Partial<Record<PackLang, SeoWo
   },
 };
 
-const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja };
+const FACT_WORDS: Partial<Record<Exclude<Lang, "en">, FactWords>> = { es, pt, de, fr, it, ja, zh, he, ar, hi, ko, id, vi, th };
 
 /** The languages the server renders its pages in: those with words here. */
 export const SEO_LANGS: Lang[] = LANGS.filter((l) => SEO[l]);

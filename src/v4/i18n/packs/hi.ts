@@ -5,7 +5,8 @@
  * marketplace. Written as India's DJs speak: Devanagari, with the booth's own
  * English words (डेक, क्यू, लूप) where those are what is said. Edition names
  * and djmanzo's own interface labels stay as the application shows them. The
- * feature descriptions themselves still read in English.
+ * feature descriptions are in facts/hi.ts, fetched when the language is
+ * chosen.
  */
 
 import type { Pack } from "../packs";

@@ -5,7 +5,8 @@
  * the marketplace. The friendly "kamu" Indonesian apps use; read in Malaysia
  * and Brunei too, Malay being close enough to read it. Edition names and
  * djmanzo's own interface labels stay as the application shows them. The
- * feature descriptions themselves still read in English.
+ * feature descriptions are in facts/id.ts, fetched when the language is
+ * chosen.
  */
 
 import type { Pack } from "../packs";

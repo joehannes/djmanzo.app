@@ -26,6 +26,14 @@ const LOAD: Partial<Record<Exclude<Lang, "en">, () => Promise<{ default: FactWor
   fr: () => import("./facts/fr"),
   it: () => import("./facts/it"),
   ja: () => import("./facts/ja"),
+  th: () => import("./facts/th"),
+  vi: () => import("./facts/vi"),
+  id: () => import("./facts/id"),
+  ko: () => import("./facts/ko"),
+  hi: () => import("./facts/hi"),
+  ar: () => import("./facts/ar"),
+  he: () => import("./facts/he"),
+  zh: () => import("./facts/zh"),
 };
 
 /** The loaded languages' words, by language. */

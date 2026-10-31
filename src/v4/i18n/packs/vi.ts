@@ -5,7 +5,8 @@
  * the marketplace. "Bạn" for the reader, and the booth's own English words
  * (deck, cue, loop, stem) as Vietnamese DJs say them. Edition names and
  * djmanzo's own interface labels stay as the application shows them. The
- * feature descriptions themselves still read in English.
+ * feature descriptions are in facts/vi.ts, fetched when the language is
+ * chosen.
  */
 
 import type { Pack } from "../packs";

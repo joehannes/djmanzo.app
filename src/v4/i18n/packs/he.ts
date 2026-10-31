@@ -4,7 +4,8 @@
  * ready answers), the shop, the account, the pages, the forum and the
  * marketplace. Read right to left (`LANG_INFO.he.rtl`); edition names and
  * djmanzo's own interface labels stay as the application shows them. The
- * feature descriptions themselves still read in English.
+ * feature descriptions are in facts/he.ts, fetched when the language is
+ * chosen.
  */
 
 import type { Pack } from "../packs";

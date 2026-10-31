@@ -3,8 +3,8 @@
  * welcome for every look, the sections, the booth, the screenshots and the
  * assistant's ready answers), the shop, the account, the pages, the forum and
  * the marketplace. Edition names and djmanzo's own interface labels stay as
- * the application shows them. The feature descriptions themselves still read
- * in English.
+ * the application shows them. The feature descriptions are in facts/zh.ts,
+ * fetched when the language is chosen.
  */
 
 import type { Pack } from "../packs";

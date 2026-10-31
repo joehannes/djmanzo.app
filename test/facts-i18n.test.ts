@@ -7,8 +7,16 @@ import de from "../src/v4/i18n/facts/de";
 import fr from "../src/v4/i18n/facts/fr";
 import it_ from "../src/v4/i18n/facts/it";
 import ja from "../src/v4/i18n/facts/ja";
+import th from "../src/v4/i18n/facts/th";
+import vi from "../src/v4/i18n/facts/vi";
+import id from "../src/v4/i18n/facts/id";
+import ko from "../src/v4/i18n/facts/ko";
+import hi from "../src/v4/i18n/facts/hi";
+import ar from "../src/v4/i18n/facts/ar";
+import he from "../src/v4/i18n/facts/he";
+import zh from "../src/v4/i18n/facts/zh";
 
-const ALL: Record<string, FactWords> = { es, pt, de, fr, it: it_, ja };
+const ALL: Record<string, FactWords> = { es, pt, de, fr, it: it_, ja, zh, he, ar, hi, ko, id, vi, th };
 
 describe("every feature, in every language the site speaks", () => {
   for (const [lang, w] of Object.entries(ALL)) {
