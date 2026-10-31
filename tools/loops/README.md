@@ -33,8 +33,10 @@ recording is in it. A genre without a loop plays the synthesiser's sketch
    asked, at which the onsets line up best with themselves one to eight bars
    later (searched to a twentieth of a millisecond), the beat's phase, the
    loudest 8 or 16 whole bars
-   clear of the track's first and last three seconds, and a 30 ms
-   equal-power crossfade at the seam into what follows the loop. Each stem
+   clear of the track's first and last three seconds, the beat refined there
+   by a straight line through the drum hits on the loop's own beats, and a
+   30 ms equal-power crossfade at the loop's end into what led up to its
+   start. Each stem
    is written as the loop with a quarter of a second of its own end before
    it and of its own start after it, so the file is periodic around the
    loop and a decoder's priming never reaches the seam; AAC at 192 kbit/s,
@@ -64,6 +66,26 @@ not always keep the tempo asked: techno came out at 130 (132 asked),
 house at 125 (124), cumbia at 97.5 (96), afrobeats at 113 (110).
 `make_loops.py` keeps each master's separation beside it (`stems.npy`), so
 cutting again needs no second hour of Demucs.
+
+**31 October: the beat on the drum hits, the fade at the end.** Four
+generated tracks (polynesian, electroswing, hardstyle, country) kept
+missing at the join by 18 to 37 ms against under 11 ms inside. Their tempo
+was steady (in 16 s windows across each master, within 0.03 %), so drift
+was not it. A straight line through the drums' hits over each loop's own
+beats showed hardstyle's and country's loops 7 and 14 ms short: the
+self-likeness above is right to a few hundredths of a percent, and over 16
+bars that shows at the join. The cut now refines the beat on the hits,
+where most beats have one and the line stays within 0.2 % of the estimate.
+And the seam's fade sat at the loop's start, mixing its first downbeat with
+what followed the loop: where a new section began there, every repeat
+started on a kick faded in from nothing. The fade is now at the loop's end,
+into what led up to its start. Hardstyle's join went from 23.5 to 4.6 ms
+(inside, 4 to 6 ms) and it was added; electroswing's join matches what the
+beat tracker misses inside the loop on that swing (36 against 35 ms), its
+length within 5 ms of its hits, and it was added. Polynesian (21 ms against
+8) and country (16 ms against 11) still miss at the join although their
+lengths now match their hits, and stay out. The loops already on the site
+were not cut again.
 
 Nothing here can say whether it *sounds* right: it was measured (tempo,
 loudness, no clipping) and listened to by the owner, who chose to use it.

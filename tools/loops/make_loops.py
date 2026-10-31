@@ -3,8 +3,9 @@
 For each genre: separate the 48 kHz master with Demucs (htdemucs_ft) into
 drums, bass and the rest (other + vocals: the tracks are instrumentals);
 find the tempo the track really has (near the one it was made at) and the
-beat, from a line through its tracked beats; take the
-loudest 8 or 16 whole bars; make the seam continuous with a short
+beat, from how its onsets line up with themselves; take the loudest 8 or 16
+whole bars, the beat refined there by a line through the drum hits; make the
+seam continuous with a short
 equal-power crossfade into what follows; and write each stem as
 [the loop's last 0.25 s][the loop][its first 0.25 s], so the file is
 periodic around the loop and a decoder's few milliseconds of priming never
@@ -66,11 +67,37 @@ def tempo_and_beat(mono, sr, asked):
     return float(240 / (bar / fps)), float(phases[int(np.argmax(score))] / fps)
 
 
+def on_the_hits(drums, sr, start, beat, beats):
+    """The beat refined by the drum hits themselves over the loop's own beats (and two either side): the
+    drums stem's onsets nearest each beat of the grid, within 40 ms, and a straight line through them.
+    The onsets' self-likeness above is right to a few hundredths of a percent; over 16 bars that is up to
+    15 ms at the join, which a line through some sixty hits takes back (a hardstyle and a country loop
+    were 7 and 14 ms short). Kept only when most beats have a hit and the line stays near the estimate:
+    a groove with few clean hits keeps the estimate. Returns (start, beat)."""
+    y = librosa.resample(drums, orig_sr=sr, target_sr=22050)
+    hits = librosa.onset.onset_detect(y=y, sr=22050, hop_length=16, units="time")
+    ks, ts = [], []
+    for k in range(-2, beats + 3):
+        near = hits[np.abs(hits - (start + k * beat)) < 0.04]
+        if len(near):
+            ks.append(k)
+            ts.append(near[np.argmin(np.abs(near - (start + k * beat)))])
+    if len(ks) < 0.75 * (beats + 5):
+        return start, beat
+    fitted, at = np.polyfit(ks, ts, 1)
+    if abs(fitted / beat - 1) > 0.002:
+        return start, beat
+    return float(at), float(fitted)
+
+
 def seam(x, start, n, fade):
-    """x[start:start+n], its first `fade` samples crossfaded with what follows the loop, so its end runs into its start."""
+    """x[start:start+n], its last `fade` samples crossfaded into what led up to its start, so its end runs
+    into its start. The fade is at the end, not the beginning: a fade at the beginning faded the loop's own
+    first downbeat in from nothing wherever what followed the loop had no hit there (a new section), and
+    every repeat began on a soft, late kick."""
     loop = x[:, start:start + n].copy()
     t = np.linspace(0, math.pi / 2, fade)
-    loop[:, :fade] = loop[:, :fade] * np.sin(t) + x[:, start + n:start + n + fade] * np.cos(t)
+    loop[:, -fade:] = loop[:, -fade:] * np.cos(t) + x[:, start - fade:start] * np.sin(t)
     return loop
 
 
@@ -122,6 +149,8 @@ def main(jobs_path, masters, out):
         fps = sr / 512
         starts = [phase + k * beat for k in range(int(dur / beat)) if 3 <= phase + k * beat and phase + k * beat + length + FADE + POST <= dur - 3]
         start = max(starts, key=lambda s: rms[int(s * fps):int((s + length) * fps)].mean())
+        start, beat = on_the_hits(stems["drums"].mean(axis=0), sr, start, beat, bars * 4)
+        bpm, length = 60 / beat, bars * 4 * beat
         s0, n, fade, pre, post = int(round(start * sr)), int(round(length * sr)), int(FADE * sr), int(PRE * sr), int(POST * sr)
         os.makedirs(os.path.join(out, gid), exist_ok=True)
         info = {"bpm": round(bpm, 2), "key": job["key"], "camelot": CAMELOT.get(job["key"], ""), "bars": bars, "seconds": n / sr, "pre": pre / sr, "frames": pre + n + post, "sampleRate": sr, "stems": STEMS, "files": {}, "opus": {}}

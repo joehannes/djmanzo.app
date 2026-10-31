@@ -1323,5 +1323,55 @@
    "bass": "bass.webm",
    "rest": "rest.webm"
   }
+ },
+ "hardstyle": {
+  "bpm": 150.01,
+  "key": "A minor",
+  "camelot": "8A",
+  "bars": 16,
+  "seconds": 25.59845804988662,
+  "pre": 0.25,
+  "frames": 1150942,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "electroswing": {
+  "bpm": 123.0,
+  "key": "Bb major",
+  "camelot": "",
+  "bars": 16,
+  "seconds": 31.219297052154197,
+  "pre": 0.25,
+  "frames": 1398821,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
  }
 }
