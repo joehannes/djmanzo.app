@@ -111,6 +111,20 @@ body {
 }
 
 /*
+ * A file name, an address or a key inside a right-to-left sentence reads left
+ * to right as one piece, so `.djpack` keeps its dot in front of it.
+ */
+:root[dir="rtl"] :is(p, li, dd, td, label, small) :is(code, kbd) {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+/* What a visitor types reads in its own direction, a post in English left to right. */
+:root[dir="rtl"] :is(input[type="text"], input[type="search"], textarea) {
+  unicode-bidi: plaintext;
+}
+
+/*
  * Hebrew and Arabic have no monospaced face here: where the type is a
  * terminal's (labels, eyebrows, prices), their letters come from a
  * proportional face rather than a typewriter's, and the wide tracking meant

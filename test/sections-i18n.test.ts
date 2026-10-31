@@ -23,7 +23,8 @@ function leaves(v: unknown, path = ""): [string, string][] {
   if (Array.isArray(v)) return v.flatMap((x, i) => leaves(x, `${path}[${i}]`));
   return Object.entries(v as Record<string, unknown>).flatMap(([k, x]) => leaves(x, path ? `${path}.${k}` : k));
 }
-const tags = (s: string) => (s.match(/<\/?[a-z]+/g) ?? []).sort();
+// An isolate (`<bdi>`) is a right-to-left language's way of keeping a piece of English whole, not markup English lacks.
+const tags = (s: string) => (s.match(/<\/?[a-z]+/g) ?? []).filter((t) => !/^<\/?bdi$/.test(t)).sort();
 const holes = (s: string) => (s.match(/\{\w+\}/g) ?? []).sort();
 
 const DICTIONARIES = { sections: SECTIONS, account: ACCOUNT, featuresPage: FEATURES_PAGE, pages: PAGES, pricing: PRICING, bits: BITS, talkback: TALKBACK, outboard: OUTBOARD, compare: COMPARE, nights: NIGHTS, people: PEOPLE, status: STATUS, booth: BOOTH, mail: MAIL_WORDS };

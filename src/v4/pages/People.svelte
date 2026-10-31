@@ -152,7 +152,7 @@
     {#if comments.length}
       <ul class="comments">
         {#each comments as c (c.id)}
-          <li><b>{c.author}</b> <span class="dim small">{date(c.createdAt)}</span><p>{c.body}</p></li>
+          <li><b><bdi>{c.author}</bdi></b> <span class="dim small">{date(c.createdAt)}</span><p>{c.body}</p></li>
         {/each}
       </ul>
     {:else}

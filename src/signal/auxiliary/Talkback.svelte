@@ -267,7 +267,7 @@
         {#if thread?.post.answer === c.id}<p class="answered" data-answer>{w.answerMarked}</p>{/if}
         <div class="line">
           {@render votes("comment", c.id, c.score, thread?.votes[`comment:${c.id}`] ?? 0, c.uid === info?.standing.uid)}
-          <span class="by">{c.author} · {when(c.created)}{c.status === "held" ? w.waiting : ""}</span>
+          <span class="by"><bdi>{c.author}</bdi> · {when(c.created)}{c.status === "held" ? w.waiting : ""}</span>
         </div>
         {#if c.removed}
           <p class="note">{w.removed}</p>
@@ -335,7 +335,7 @@
         {#if thread.post.pinned}<span class="pin" title={w.pinnedTitle}>{w.pinned}</span>{/if}
         {#if thread.post.answer}<span class="solved">{w.answeredTag}</span>{/if}
         {#if flairName(thread.post.flair)}<span class="flair">{flairName(thread.post.flair)}</span>{/if}
-        {thread.post.author} · {when(thread.post.created)}{thread.post.status === "held" ? w.waitingOnlyYou : ""}
+        <bdi>{thread.post.author}</bdi> · {when(thread.post.created)}{thread.post.status === "held" ? w.waitingOnlyYou : ""}
         {#if thread.post.wish}· <a class="link" href="/wishes">{w.onWishlist}</a>{/if}
       </p>
       {#if thread.post.removed}
@@ -401,7 +401,7 @@
               <p class="note">{w.already}</p>
               <ul>
                 {#each similar as p (p.id)}
-                  <li><a class="link" href={`/talkback/${p.id}`}>{p.title}</a>{p.answer ? " ✓" : ""} <span class="note">{fill(w.inCommunity, { name: name(p.community) })}</span></li>
+                  <li><a class="link" href={`/talkback/${p.id}`}><bdi>{p.title}</bdi></a>{p.answer ? " ✓" : ""} <span class="note">{fill(w.inCommunity, { name: name(p.community) })}</span></li>
                 {/each}
               </ul>
             </div>
@@ -422,12 +422,12 @@
           <li data-post-row={p.id}>
             {@render votes("post", p.id, p.score, 0, p.uid === info?.standing.uid)}
             <div>
-              <a class="title" href={`/talkback/${p.id}`}>{p.title}</a>
+              <a class="title" href={`/talkback/${p.id}`}><bdi>{p.title}</bdi></a>
               <p class="by">
                 {#if p.pinned && community}<span class="pin" title={w.pinnedTitle}>{w.pinned}</span>{/if}
                 {#if p.answer}<span class="solved">{w.answeredTag}</span>{/if}
                 {#if flairName(p.flair)}<span class="flair">{flairName(p.flair)}</span>{/if}
-                <a class="link" href={`/talkback/c/${p.community}`}>{name(p.community)}</a> · {p.author} · {when(p.created)} · {count(w.comments, p.comments)}{p.status === "held" ? w.waiting : ""}
+                <a class="link" href={`/talkback/c/${p.community}`}>{name(p.community)}</a> · <bdi>{p.author}</bdi> · {when(p.created)} · {count(w.comments, p.comments)}{p.status === "held" ? w.waiting : ""}
               </p>
             </div>
           </li>

@@ -1624,6 +1624,30 @@ Hebrew and Arabic at 1440 px and 390 px and looked at beside English.
   and a waveform's time, which runs left to right in every language. The
   booth's sampler choices are words, and read right to left.
 
+The rest of the pages (community, account, comparison, kinds of nights,
+people, release notes, wishes, the marketplace) mirror as English lays them
+out. What they showed was in the words, where a piece of English sits in a
+right-to-left sentence:
+
+- **A file name.** `.djpack`, `.lrc`, `.deb` after a Hebrew or Arabic letter
+  read "djpack." with the dot at the wrong end. A left-to-right mark now
+  stands before the dot in the texts, and a `<code>` inside a sentence is a
+  left-to-right piece of its own.
+- **A menu path.** "Settings → From packs → Browse packs…" leading into the
+  sentence came out with its dots in front and its arrow pointing away from
+  what follows. The path is isolated, left to right as the application's
+  menus are, and the arrow into the Hebrew or Arabic points the way it is
+  read (`←`).
+- **What a visitor writes.** A post title in English showed its question
+  mark in front ("?Echo out or cut"). Titles, pack names, reviews and
+  names are isolated (`<bdi>`), so each reads in its own direction while
+  the row stays right to left; what is typed into a box does the same.
+- **The nights on a phone.** Nine flyers one a row were a page of scrolling
+  before the night itself, in every language; a phone shows two a row.
+
+`test/packs.test.ts` holds the file names and the menu path to this in both
+languages.
+
 ## A lifetime licence for every edition (31 October)
 
 The owner asked for a lifetime licence, then for it on every edition, at

@@ -185,10 +185,10 @@
               <b class="mono">{w.votes}</b>
             </button>
             <div class="main">
-              <button class="title" onclick={() => expand(w)} aria-expanded={open === w.id}>{titleOf(w)}</button>
+              <button class="title" onclick={() => expand(w)} aria-expanded={open === w.id}><bdi>{titleOf(w)}</bdi></button>
               {#if w.note}<p class="crew"><span class="mono">{pw.crew}</span> {seeded?.note ?? w.note}</p>{/if}
               {#if open === w.id && (seeded?.body || detail[w.id])}<p class="body">{seeded?.body ?? detail[w.id]}</p>{/if}
-              <p class="meta dim">{w.author} · {date(w.createdAt)}{w.tag ? ` · ${tagOf(w.tag)}` : ""}</p>
+              <p class="meta dim"><bdi>{w.author}</bdi> · {date(w.createdAt)}{w.tag ? ` · ${tagOf(w.tag)}` : ""}</p>
             </div>
             <span class="stamp mono">{s.label}</span>
           </li>

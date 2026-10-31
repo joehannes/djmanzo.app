@@ -168,7 +168,7 @@
       {/if}
       <div class="grid">
         {#each maker.items as c (c.id)}
-          <a class="card" href={`/outboard/${c.id}`}><Preview kind={c.kind} preview={c.preview} /><b>{c.name}</b><span class="note">{meanText(c.rating)}</span></a>
+          <a class="card" href={`/outboard/${c.id}`}><Preview kind={c.kind} preview={c.preview} /><b><bdi>{c.name}</bdi></b><span class="note">{meanText(c.rating)}</span></a>
         {:else}
           <p class="note">{w.nothingListed}</p>
         {/each}
@@ -240,7 +240,7 @@
       {/if}
       <ul class="reviews">
         {#each item.reviews as r (r.uid)}
-          <li><b>{"★".repeat(r.stars)}{"☆".repeat(5 - r.stars)}</b>{r.downloaded ? w.reviewDownloaded : ""} · {when(r.created)}{#if r.review}<br />{r.review}{/if}</li>
+          <li><b>{"★".repeat(r.stars)}{"☆".repeat(5 - r.stars)}</b>{r.downloaded ? w.reviewDownloaded : ""} · {when(r.created)}{#if r.review}<br /><bdi>{r.review}</bdi>{/if}</li>
         {:else}
           <li class="note">{w.noRatings}</li>
         {/each}
@@ -271,7 +271,7 @@
     {#each items ?? [] as c (c.id)}
       <a class="card" href={`/outboard/${c.id}`} data-card={c.id}>
         <Preview kind={c.kind} preview={c.preview} />
-        <b>{c.name}</b>
+        <b><bdi>{c.name}</bdi></b>
         <span>{fill(w.byAuthor, { kind: kindName(c.kind), author: c.author })}</span>
         <span class="note">{meanText(c.rating)} · {fill(w.downloaded, { n: c.downloads })}</span>
       </a>

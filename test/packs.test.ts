@@ -78,6 +78,20 @@ describe("the languages that come as packs", () => {
           // And nothing else is touched.
           expect(STRINGS[lang]!["nav.pricing"]!.startsWith("\u200f")).toBe(false);
         });
+
+        it("keeps a file name's dot in front of it, and an English menu path in one left-to-right piece", async () => {
+          const facts = (await import(`../src/v4/i18n/facts/${lang}.ts`)).default;
+          const all = [...leaves(pack), ...leaves(facts).map(([p, x]) => [`facts.${p}`, x] as [string, string])];
+          // ".djpack" after a right-to-left letter, a maqaf or a blank, or opening a phrase, would read "djpack."
+          const bare = /(?:^|[\s\u05be\p{Script=Hebrew}\p{Script=Arabic}])\.(?:djpack|lrc|deb|rpm|msi)\b/u;
+          const names = all.filter(([, x]) => /\.(?:djpack|lrc|deb|rpm|msi)\b/.test(x.replace(/<code>[^<]*<\/code>/g, "")));
+          expect(names.length).toBeGreaterThan(3);
+          for (const [path, x] of names) expect(x.replace(/<code>[^<]*<\/code>/g, ""), `${lang} ${path}`).not.toMatch(bare);
+          // A path of the application's menus that leads into the sentence is isolated, and points the way it is read.
+          const paths = all.filter(([, x]) => /→ [^→]*\p{Script=Latin}[^→]*<\/b> [←→] [\p{Script=Hebrew}\p{Script=Arabic}]/u.test(x) || x.includes("Browse packs"));
+          expect(paths.length).toBeGreaterThan(0);
+          for (const [path, x] of paths) expect(x, `${lang} ${path}`).toMatch(/<bdi dir="ltr">[^]*?<\/bdi> ← /);
+        });
       }
 
       it("has the words the server renders its pages with", () => {

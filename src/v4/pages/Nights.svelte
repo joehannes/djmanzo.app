@@ -150,6 +150,19 @@
       grid-template-columns: 1fr;
       gap: 2px;
     }
+    /* Two flyers a row on a phone: nine of them, one a row, are a page of scrolling before the night itself. */
+    .board {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 12px;
+    }
+    .flyer {
+      padding: 11px 12px;
+      gap: 4px;
+    }
+    .e {
+      font-size: 22px;
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .flyer {
