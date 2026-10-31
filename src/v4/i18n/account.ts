@@ -25,7 +25,7 @@ export interface AccountWords {
   signedIn: string;
   notFinished: string;
   lic: { title: string; fetching: string; until: string; forever: string; ended: string; demo: string; none: string; editions: string; download: string };
-  plan: { perpetual: string; trial: string; monthly: string; yearly: string };
+  plan: { perpetual: string; lifetime: string; trial: string; monthly: string; yearly: string };
   computers: { title: string; text: string; through: string; since: string; seen: string; removing: string; remove: string; confirm: string };
   inApp: { title: string; /** html */ step1: string; or: string; same: string; step2: string; step3: string; show: string; label: string; copied: string; copy: string; note: string };
   trial: { title: string; had: string; offer: string; choose: string; voucher: string; redeem: string; redeemed: string };
@@ -59,7 +59,7 @@ const en: AccountWords = {
   signedIn: "Signed in with {p}.",
   notFinished: "That did not finish.",
   lic: { title: "Your licences", fetching: "Fetching…", until: "until {date}", forever: "kept for ever", ended: "ended ({status})", demo: " · demo, unlocks nothing", none: "None yet. The Hobbyist edition needs none: it is free, for ever.", editions: "See the editions", download: "Download djmanzo" },
-  plan: { perpetual: "bought once", trial: "a free trial", monthly: "monthly", yearly: "yearly" },
+  plan: { perpetual: "bought once", lifetime: "for a lifetime", trial: "a free trial", monthly: "monthly", yearly: "yearly" },
   computers: {
     title: "Your computers",
     text: "djmanzo is activated on {n} of the {most} computers a licence can be on at once. Signing in again on one of them keeps its place. To activate another, remove one you no longer use: djmanzo there goes back to the free Hobbyist edition the next time it is online and started again. Offline, an activated djmanzo keeps working.",
@@ -149,7 +149,7 @@ const es: AccountWords = {
   signedIn: "Sesión iniciada con {p}.",
   notFinished: "No se completó.",
   lic: { title: "Tus licencias", fetching: "Cargando…", until: "hasta el {date}", forever: "para siempre", ended: "terminada ({status})", demo: " · demo, no desbloquea nada", none: "Aún ninguna. La edición Hobbyist no la necesita: es gratis, para siempre.", editions: "Ver las ediciones", download: "Descargar djmanzo" },
-  plan: { perpetual: "pago único", trial: "una prueba gratis", monthly: "mensual", yearly: "anual" },
+  plan: { perpetual: "pago único", lifetime: "de por vida", trial: "una prueba gratis", monthly: "mensual", yearly: "anual" },
   computers: {
     title: "Tus equipos",
     text: "djmanzo está activado en {n} de los {most} equipos en los que puede estar una licencia a la vez. Volver a iniciar sesión en uno de ellos mantiene su sitio. Para activar otro, quita uno que ya no uses: allí djmanzo vuelve a la edición gratuita Hobbyist la próxima vez que se conecte y se abra. Sin conexión, un djmanzo activado sigue funcionando.",
@@ -239,7 +239,7 @@ const pt: AccountWords = {
   signedIn: "Você entrou com {p}.",
   notFinished: "Não terminou.",
   lic: { title: "Suas licenças", fetching: "Carregando…", until: "até {date}", forever: "para sempre", ended: "encerrada ({status})", demo: " · demonstração, não desbloqueia nada", none: "Nenhuma ainda. A edição Hobbyist não precisa: é grátis, para sempre.", editions: "Ver as edições", download: "Baixar o djmanzo" },
-  plan: { perpetual: "compra única", trial: "um teste grátis", monthly: "mensal", yearly: "anual" },
+  plan: { perpetual: "compra única", lifetime: "vitalício", trial: "um teste grátis", monthly: "mensal", yearly: "anual" },
   computers: {
     title: "Seus computadores",
     text: "O djmanzo está ativado em {n} dos {most} computadores em que uma licença pode estar ao mesmo tempo. Entrar de novo em um deles mantém o lugar dele. Para ativar outro, remova um que você não usa mais: lá o djmanzo volta à edição gratuita Hobbyist na próxima vez que estiver online e for aberto. Offline, um djmanzo ativado continua funcionando.",
@@ -329,7 +329,7 @@ const de: AccountWords = {
   signedIn: "Angemeldet mit {p}.",
   notFinished: "Das hat nicht geklappt.",
   lic: { title: "Deine Lizenzen", fetching: "Wird geladen …", until: "bis {date}", forever: "für immer", ended: "beendet ({status})", demo: " · Demo, schaltet nichts frei", none: "Noch keine. Die Hobbyist-Edition braucht keine: Sie ist kostenlos, für immer.", editions: "Die Editionen ansehen", download: "djmanzo herunterladen" },
-  plan: { perpetual: "einmal gekauft", trial: "eine kostenlose Testphase", monthly: "monatlich", yearly: "jährlich" },
+  plan: { perpetual: "einmal gekauft", lifetime: "auf Lebenszeit", trial: "eine kostenlose Testphase", monthly: "monatlich", yearly: "jährlich" },
   computers: {
     title: "Deine Computer",
     text: "djmanzo ist auf {n} der {most} Computer aktiviert, auf denen eine Lizenz gleichzeitig sein kann. Erneutes Anmelden auf einem davon behält seinen Platz. Um einen weiteren zu aktivieren, entferne einen, den du nicht mehr nutzt: djmanzo wird dort wieder zur kostenlosen Hobbyist-Edition, sobald es das nächste Mal online ist und gestartet wird. Offline läuft ein aktiviertes djmanzo weiter.",
@@ -419,7 +419,7 @@ const fr: AccountWords = {
   signedIn: "Connecté avec {p}.",
   notFinished: "Cela n'a pas abouti.",
   lic: { title: "Vos licences", fetching: "Chargement…", until: "jusqu'au {date}", forever: "pour toujours", ended: "terminée ({status})", demo: " · démo, ne déverrouille rien", none: "Aucune pour l'instant. L'édition Hobbyist n'en a pas besoin : elle est gratuite, pour toujours.", editions: "Voir les éditions", download: "Télécharger djmanzo" },
-  plan: { perpetual: "achat unique", trial: "un essai gratuit", monthly: "mensuel", yearly: "annuel" },
+  plan: { perpetual: "achat unique", lifetime: "à vie", trial: "un essai gratuit", monthly: "mensuel", yearly: "annuel" },
   computers: {
     title: "Vos ordinateurs",
     text: "djmanzo est activé sur {n} des {most} ordinateurs sur lesquels une licence peut être à la fois. Se reconnecter sur l'un d'eux garde sa place. Pour en activer un autre, retirez-en un que vous n'utilisez plus : djmanzo y redevient l'édition gratuite Hobbyist la prochaine fois qu'il est en ligne et redémarré. Hors ligne, un djmanzo activé continue de fonctionner.",
@@ -509,7 +509,7 @@ const it: AccountWords = {
   signedIn: "Accesso effettuato con {p}.",
   notFinished: "Non è andato a buon fine.",
   lic: { title: "Le tue licenze", fetching: "Caricamento…", until: "fino al {date}", forever: "per sempre", ended: "terminata ({status})", demo: " · demo, non sblocca nulla", none: "Ancora nessuna. L'edizione Hobbyist non ne ha bisogno: è gratis, per sempre.", editions: "Vedi le edizioni", download: "Scarica djmanzo" },
-  plan: { perpetual: "acquisto unico", trial: "una prova gratuita", monthly: "mensile", yearly: "annuale" },
+  plan: { perpetual: "acquisto unico", lifetime: "a vita", trial: "una prova gratuita", monthly: "mensile", yearly: "annuale" },
   computers: {
     title: "I tuoi computer",
     text: "djmanzo è attivato su {n} dei {most} computer su cui una licenza può stare insieme. Accedere di nuovo su uno di questi mantiene il suo posto. Per attivarne un altro, rimuovine uno che non usi più: lì djmanzo torna all'edizione gratuita Hobbyist la prossima volta che è online e viene riavviato. Offline, un djmanzo attivato continua a funzionare.",
@@ -599,7 +599,7 @@ const ja: AccountWords = {
   signedIn: "{p} でサインインしました。",
   notFinished: "完了しませんでした。",
   lic: { title: "あなたのライセンス", fetching: "読み込み中…", until: "{date} まで", forever: "無期限", ended: "終了（{status}）", demo: " · デモ、何もアンロックしません", none: "まだありません。Hobbyist エディションには不要です。ずっと無料です。", editions: "エディションを見る", download: "djmanzo をダウンロード" },
-  plan: { perpetual: "買い切り", trial: "無料トライアル", monthly: "月額", yearly: "年額" },
+  plan: { perpetual: "買い切り", lifetime: "永久ライセンス", trial: "無料トライアル", monthly: "月額", yearly: "年額" },
   computers: {
     title: "あなたのコンピューター",
     text: "djmanzo は、1 つのライセンスで同時に使える {most} 台のうち {n} 台で有効になっています。そのうちの 1 台でもう一度サインインしても枠はそのままです。別の 1 台を有効にするには、もう使わないものを外してください。外したコンピューターの djmanzo は、次にオンラインで起動したときに無料の Hobbyist エディションに戻ります。オフラインでも、有効な djmanzo は動き続けます。",

@@ -10,7 +10,7 @@
   import Contact from "../../shop/Contact.svelte";
   import Status from "../../shop/Status.svelte";
   import { onMount } from "svelte";
-  import { EDITIONS, MODULES, MODULE_TITLE, NAMED, money, type Edition, type Module, type Plan } from "../../../shared/catalog";
+  import { EDITIONS, MODULES, MODULE_TITLE, NAMED, money, paidOnce, type Edition, type Module, type Plan } from "../../../shared/catalog";
   import { BAND_NAME, band as bandOf, currencyFor, regional, type Band } from "../../../shared/regions";
   import { catalog } from "../../lib/catalog.svelte";
   import { session } from "../../lib/session.svelte";
@@ -45,7 +45,7 @@
   let asGift = $state(false);
   let giftFor = $state("");
   let giftNote = $state("");
-  const gift = $derived(asGift && plan === "perpetual" ? { for: giftFor.trim() || null, note: giftNote.trim() || null } : null);
+  const gift = $derived(asGift && paidOnce(plan) ? { for: giftFor.trim() || null, note: giftNote.trim() || null } : null);
   let copied = $state<string | null>(null);
   let returnError = $state<string | null>(null);
   async function copy(what: string, text: string) {
@@ -169,12 +169,13 @@
       <h1 class="h1">{@html w.title}</h1>
       <p class="lead">{fill(w.lead, { days: c?.trialDays ?? 7 })}</p>
       <div class="plans" role="radiogroup" aria-label={w.plansAria}>
-        {#each ["perpetual", "monthly", "yearly"] as const as p (p)}
+        {#each ["perpetual", "lifetime", "monthly", "yearly"] as const as p (p)}
           <button role="radio" aria-checked={plan === p} onclick={() => (plan = p)} data-plan={p}>
             {w.plan[p]}{#if p === "yearly" && saving > 0}<span class="save mono">−{saving} %</span>{/if}
           </button>
         {/each}
       </div>
+      {#if plan === "lifetime"}<p class="lifetime" data-lifetime-about>{w.lifetimeAbout}</p>{/if}
       <p class="where mono" data-region-price>
         {flag(country)} {fill(w.pricesFor, { country: list.find((x) => x.code === country)?.name ?? country })}{b > 1 ? fill(w.band, { band: BAND_NAME[b] }) : ""} · {currency}
       </p>
@@ -279,8 +280,8 @@
             </div>
             {#if quote?.promo}<p class="hint" role="status">{quote.promo.ok ? "✓ " : ""}{quote.promo.reason}</p>{/if}
             <div class="gift" data-gift>
-              <label class="mod"><input type="checkbox" bind:checked={asGift} disabled={plan !== "perpetual"} data-gift-toggle /> 🎁 {t("gift.toggle")}</label>
-              {#if plan !== "perpetual"}
+              <label class="mod"><input type="checkbox" bind:checked={asGift} disabled={!paidOnce(plan)} data-gift-toggle /> 🎁 {t("gift.toggle")}</label>
+              {#if !paidOnce(plan)}
                 <p class="fine">{t("gift.onlyOnce")}</p>
               {:else if asGift}
                 <p class="fine">{t("gift.about")}</p>
@@ -363,6 +364,13 @@
 </div>
 
 <style>
+  /* What a lifetime licence adds, under the plans while it is chosen. */
+  .lifetime {
+    margin: 12px 0 0;
+    max-width: 62ch;
+    font-size: 14px;
+    color: var(--dim);
+  }
   .pricing {
     padding-bottom: 80px;
   }
@@ -383,6 +391,8 @@
   }
   .plans {
     display: inline-flex;
+    flex-wrap: wrap;
+    max-width: 100%;
     gap: 4px;
     padding: 4px;
     margin-top: 32px;

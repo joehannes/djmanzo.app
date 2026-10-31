@@ -132,7 +132,7 @@ function pricesSheet(): string {
   const named = EDITIONS.filter((e) => e !== "custom").map((e) => {
     const i = EDITION_INFO[e];
     if (listPrice(e, "perpetual") === 0) return `- ${e} "${i.name}": free, for ever, with no purchase; what every trial ends in. ${i.tagline} For: ${i.forWho}`;
-    return `- ${e} "${i.name}": ${usd(listPrice(e, "perpetual"))} once, or ${usd(listPrice(e, "monthly"))} a month, or ${usd(listPrice(e, "yearly"))} a year. ${i.tagline} For: ${i.forWho}`;
+    return `- ${e} "${i.name}": ${usd(listPrice(e, "perpetual"))} once (this major version), ${usd(listPrice(e, "lifetime"))} for a lifetime (every version, new major versions included), or ${usd(listPrice(e, "monthly"))} a month, or ${usd(listPrice(e, "yearly"))} a year. ${i.tagline} For: ${i.forWho}`;
   });
   const modules = MODULES.map((m) => `${MODULE_TITLE[m]} ${usd(MODULE_PRICE[m])}`).join(", ");
   const bands = Object.entries(BAND_SHARE)

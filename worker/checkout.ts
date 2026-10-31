@@ -22,6 +22,7 @@ import {
   isModule,
   modulesOf,
   money,
+  paidOnce,
   within,
   type Currency,
   type Edition,
@@ -86,7 +87,7 @@ export interface Quote {
 
 export function checkInput(input: Partial<QuoteInput>): QuoteInput {
   if (!EDITIONS.includes(input.edition as Edition)) fail(400, `Pick an edition: ${EDITIONS.join(", ")}.`);
-  if (!PLANS.includes(input.plan as Bought)) fail(400, "Pick a plan: buy once, monthly or yearly.");
+  if (!PLANS.includes(input.plan as Bought)) fail(400, "Pick a plan: buy once, for a lifetime, monthly or yearly.");
   if (input.edition === "hobbyist") fail(400, "The Hobbyist edition is free, for ever: download djmanzo and it is yours.");
   const country = input.country ? String(input.country).toUpperCase().slice(0, 2) : null;
   if (country && EMBARGOED.has(country)) fail(451, "We cannot take payment for this country.");
@@ -96,7 +97,7 @@ export function checkInput(input: Partial<QuoteInput>): QuoteInput {
   const line = input.voucher ? String(input.voucher) : voucher.isVoucherLine(input.promo) ? String(input.promo) : null;
   const promo = input.promo && !voucher.isVoucherLine(input.promo) ? String(input.promo) : null;
   const gift = input.gift ? giftOf(input.gift) : null;
-  if (gift && input.plan !== "perpetual") fail(400, "A gift is an edition bought once: a subscription would go on charging you.");
+  if (gift && !paidOnce(input.plan as Bought)) fail(400, "A gift is an edition bought once or for a lifetime: a subscription would go on charging you.");
   return { edition: input.edition as Edition, plan: input.plan as Bought, modules, promo, voucher: line ? line.slice(0, 4096) : null, country, gift };
 }
 
@@ -133,15 +134,19 @@ function discounted(edition: Edition, plan: Bought, b: Band, student: boolean, c
  */
 async function upgradeFrom(env: AppEnv, user: User | null, input: QuoteInput, b: Band, student: boolean): Promise<Quote["upgrade"]> {
   // A gift is a whole edition for someone else: the buyer's own licence is no credit towards it.
-  if (!user || input.plan !== "perpetual" || input.gift) return null;
+  if (!user || !paidOnce(input.plan) || input.gift) return null;
   const target = modulesOf(input.edition, input.modules);
   let best: Quote["upgrade"] = null;
   for (const l of await userLicences(env, user.id)) {
     // A demo licence is worth something only towards another demo licence.
-    if (l.plan !== "perpetual" || !inForce(l) || (l.demo && !user.demo)) continue;
+    if (!paidOnce(l.plan) || !inForce(l) || (l.demo && !user.demo)) continue;
+    // A lifetime licence is never traded for one that covers a single major version.
+    if (l.plan === "lifetime" && input.plan !== "lifetime") continue;
     const held = modulesOf(l.edition, l.modules);
-    if (!within(held, target) || held.length === target.length) continue;
-    const credit = discounted(l.edition, "perpetual", b, student, l.modules).price;
+    // The same edition is an upgrade only from buying once to a lifetime: from one major version to every one.
+    const same = within(held, target) && held.length === target.length;
+    if (!within(held, target) || (same && !(l.plan === "perpetual" && input.plan === "lifetime"))) continue;
+    const credit = discounted(l.edition, l.plan as Bought, b, student, l.modules).price;
     if (!best || credit > best.credit) best = { from: l.id, edition: l.edition, credit };
   }
   return best;
@@ -193,7 +198,7 @@ export async function quote(env: AppEnv, user: User | null, input: QuoteInput, a
     total: due - discount,
     promo,
     voucher: v,
-    renews: input.plan !== "perpetual",
+    renews: !paidOnce(input.plan),
     better: input.edition === "custom" ? betterThanCustom(chosen) : null,
   };
 }
@@ -217,7 +222,7 @@ async function judgeVoucher(env: AppEnv, user: User | null, input: QuoteInput): 
     if (!voucher.allows(p, { account: accountsOf(user), email: user.email })) return no("That voucher was made for somebody else — sign in with the account or address it was sent to.", p.id);
   }
   if (user && record.taken.some((t) => t.uid === user.id)) return no("You have already used that voucher.", p.id);
-  return { ok: true, discount: 0, reason: `${p.percent} % off the list price${input.plan === "perpetual" ? "" : ", on the first payment"}.`, id: p.id, percent: p.percent };
+  return { ok: true, discount: 0, reason: `${p.percent} % off the list price${paidOnce(input.plan) ? "" : ", on the first payment"}.`, id: p.id, percent: p.percent };
 }
 
 /** The accounts a person signs in to djmanzo as, the way a licence names them. */
@@ -411,7 +416,7 @@ export async function grant(env: AppEnv, who: string, spec: { edition?: string; 
   if (!user) fail(404, "No account by that id, e-mail address or sign-in. They need to sign in on the site once first.");
   if (!EDITIONS.includes(spec.edition as Edition) || spec.edition === "hobbyist") fail(400, `Grant one of: ${EDITIONS.filter((e) => e !== "hobbyist").join(", ")}.`);
   const plan = (spec.plan ?? "perpetual") as Plan;
-  if (!(["perpetual", "yearly", "monthly", "trial"] as string[]).includes(plan)) fail(400, "Grant it bought once, monthly, yearly or as a trial.");
+  if (!(["perpetual", "lifetime", "yearly", "monthly", "trial"] as string[]).includes(plan)) fail(400, "Grant it bought once, for a lifetime, monthly, yearly or as a trial.");
   const asked = Array.isArray(spec.modules) ? spec.modules : String(spec.modules ?? "").split(",");
   const modules = spec.edition === "custom" ? modulesOf("custom", asked.map((m) => m.trim()).filter(isModule)) : undefined;
   if (spec.edition === "custom" && !modules!.length) fail(400, "A Custom grant names its modules.");
@@ -585,7 +590,7 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
   if (!/^pm_[A-Za-z0-9]+$/.test(input.paymentMethod || "")) fail(400, "The card form did not finish.");
   const pm = await stripe(env, "GET", `payment_methods/${input.paymentMethod}`);
   const offered = await stripeMethods(env);
-  if (!(input.plan === "perpetual" ? offered.once : offered.renewing).includes(pm.type)) fail(400, "That way to pay is not offered here: choose another.");
+  if (!(paidOnce(input.plan) ? offered.once : offered.renewing).includes(pm.type)) fail(400, "That way to pay is not offered here: choose another.");
   // The paying instrument's country: a card's (Apple Pay and Google Pay carry one), PayPal's payer, or Austria for EPS, whose banks are all Austrian.
   const instrument: string | null = pm.card?.country ?? pm.sepa_debit?.country ?? pm.link?.country ?? pm.paypal?.country ?? (pm.type === "eps" ? "AT" : null);
   const billing: string | null = pm.billing_details?.address?.country ?? null;
@@ -598,14 +603,14 @@ export async function stripeConfirm(env: AppEnv, user: User, origin: string, inp
 
   const customer = await stripeCustomer(env, user);
   // Only what renews is kept on the customer: a way to pay that works once (EPS, Klarna…) cannot be, and Stripe refuses to.
-  if (q.plan !== "perpetual") await stripe(env, "POST", `payment_methods/${input.paymentMethod}/attach`, { customer });
-  const order = await newOrder(env, user, q, claimed, { instrument, billing, reason: proof.reason }, "stripe", q.plan !== "perpetual", input.gift, origin);
+  if (!paidOnce(q.plan)) await stripe(env, "POST", `payment_methods/${input.paymentMethod}/attach`, { customer });
+  const order = await newOrder(env, user, q, claimed, { instrument, billing, reason: proof.reason }, "stripe", !paidOnce(q.plan), input.gift, origin);
   order.method = methodName(pm);
   // Stripe's test mode moves no money: what it pays for is a rehearsal, whatever the card form looked like.
   if (!String(env.STRIPE_SECRET_KEY).includes("_live_")) order.test = true;
   const currency = q.currency.toLowerCase();
 
-  if (q.plan === "perpetual") {
+  if (paidOnce(q.plan)) {
     const pi = await stripe(
       env,
       "POST",
@@ -692,7 +697,7 @@ async function underway(env: AppEnv, order: Order, user: User): Promise<Order> {
 export async function stripeFinalize(env: AppEnv, user: User, orderId: string) {
   const order = await get<Order>(env.KV, `order:${orderId}`);
   if (!order || order.uid !== user.id || order.provider !== "stripe" || !order.providerRef) fail(404, "No such order.");
-  if (order.plan === "perpetual") {
+  if (paidOnce(order.plan)) {
     const pi = await stripe(env, "GET", `payment_intents/${order.providerRef}`);
     if (pi.status === "processing") return { order: await underway(env, order, user), processing: true };
     if (pi.status !== "succeeded") fail(402, "The payment has not gone through.");
@@ -743,7 +748,7 @@ export async function stripeWebhook(env: AppEnv, req: Request): Promise<Response
   } else if (event.type === "payment_intent.succeeded" && o.metadata?.order) {
     const order = await get<Order>(env.KV, `order:${o.metadata.order}`);
     const user = order && (await get<User>(env.KV, `user:${order.uid}`));
-    if (order && user && order.plan === "perpetual" && !order.licence && !order.gift?.voucher) {
+    if (order && user && paidOnce(order.plan) && !order.licence && !order.gift?.voucher) {
       order.origin ??= new URL(req.url).origin;
       await issue(env, order, user);
     }

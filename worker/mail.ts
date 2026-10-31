@@ -147,7 +147,7 @@ export function needContact(env: AppEnv, user: User): string {
 function common(env: AppEnv, order: Order, user: User, origin: string) {
   const lang = langOf(user);
   const w = wordsIn(lang);
-  const bought = order.plan === "perpetual" || order.plan === "monthly" || order.plan === "yearly" ? order.plan : "perpetual";
+  const bought = order.plan === "perpetual" || order.plan === "lifetime" || order.plan === "monthly" || order.plan === "yearly" ? order.plan : "perpetual";
   return {
     w,
     lang,

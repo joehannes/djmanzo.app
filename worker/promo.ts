@@ -12,7 +12,7 @@
  */
 
 import type { Edition, Plan } from "../shared/catalog";
-import { NAMED, PLANS } from "../shared/catalog";
+import { NAMED, PLANS, paidOnce } from "../shared/catalog";
 const EDITIONS: Edition[] = NAMED;
 import type { AppEnv } from "./env";
 import { fail, text } from "./http";
@@ -79,11 +79,11 @@ export function judge(promo: Promo | null, purchase: Purchase, who: { email: str
   if (promo.kind === "percent") {
     const pct = Math.max(0, Math.min(100, promo.value));
     const discount = Math.min(purchase.amount, Math.round((purchase.amount * pct) / 100));
-    const first = purchase.plan === "perpetual" ? "" : " on the first payment";
+    const first = paidOnce(purchase.plan) ? "" : " on the first payment";
     return { ok: true, discount, reason: `${pct} % off${first}.` };
   }
   const discount = Math.min(purchase.amount, Math.max(0, Math.round(promo.value)));
-  return { ok: true, discount, reason: `${(discount / 100).toFixed(2)} off${purchase.plan === "perpetual" ? "" : " the first payment"}.` };
+  return { ok: true, discount, reason: `${(discount / 100).toFixed(2)} off${paidOnce(purchase.plan) ? "" : " the first payment"}.` };
 }
 
 export async function lookup(env: AppEnv, code: string): Promise<Promo | null> {

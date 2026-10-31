@@ -37,8 +37,13 @@ export type Module =
   | "sources"
   | "events"
   | "replay";
-/** How a licence was had. A trial is given, never sold. */
-export type Plan = "perpetual" | "monthly" | "yearly" | "trial";
+/**
+ * How a licence was had. A trial is given, never sold. Buying once
+ * (`perpetual`) covers the major version it was bought in; `lifetime` is
+ * paid once too and covers every major version for ever, at twice the price
+ * (the owner's choice, 31 October).
+ */
+export type Plan = "perpetual" | "lifetime" | "monthly" | "yearly" | "trial";
 export type Currency = "USD" | "EUR";
 
 interface Parts {
@@ -52,7 +57,18 @@ export const EDITIONS = parts.editions.map((e) => e.slug as Edition);
 /** Every module, in the application's order. */
 export const MODULES = parts.modules.map((m) => m.slug as Module);
 /** What can be bought. */
-export const PLANS: Exclude<Plan, "trial">[] = ["perpetual", "monthly", "yearly"];
+export const PLANS: Exclude<Plan, "trial">[] = ["perpetual", "lifetime", "monthly", "yearly"];
+/** Paid once and kept: buying once, or for a lifetime. Everything else renews or ends. */
+export function paidOnce(plan: Plan | string): plan is "perpetual" | "lifetime" {
+  return plan === "perpetual" || plan === "lifetime";
+}
+/** What a lifetime licence costs against buying once (the owner's choice: twice). */
+export const LIFETIME_FACTOR = 2;
+/** Whether a licence covers a major version of djmanzo: a lifetime one covers every one; one bought once, its own. */
+export function coversMajor(licence: { plan: Plan; major: number }, major: number): boolean {
+  // Lifetime covers them all; a plan that renews or ends covers whatever runs while it lasts.
+  return licence.plan !== "perpetual" || licence.major === major;
+}
 /** Every edition but Custom, whose modules are the buyer's. */
 export const NAMED = EDITIONS.filter((e) => e !== "custom") as Exclude<Edition, "custom">[];
 
@@ -180,6 +196,7 @@ const MONTH_SHARE = PRO_MONTH / BUY_ONCE.pro;
 export function listPrice(edition: Edition, plan: Exclude<Plan, "trial">, chosen: readonly string[] = []): number {
   const once = edition === "custom" ? FOUNDATION + modulesOf("custom", chosen).reduce((sum, m) => sum + MODULE_PRICE[m], 0) : BUY_ONCE[edition];
   if (plan === "perpetual" || once === 0) return once;
+  if (plan === "lifetime") return once * LIFETIME_FACTOR;
   const month = psychological(Math.round(once * MONTH_SHARE));
   return plan === "monthly" ? month : psychological(month * 10);
 }
@@ -227,7 +244,8 @@ export const EDITION_INFO: Record<Edition, EditionInfo> = Object.fromEntries(
 ) as Record<Edition, EditionInfo>;
 
 export const PLAN_INFO: Record<Plan, { name: string; per: string; about: string }> = {
-  perpetual: { name: "Buy once", per: "once", about: "Paid once, and it keeps working — offline too." },
+  perpetual: { name: "Buy once", per: "once", about: "Paid once, and it keeps working — offline too. Covers this major version." },
+  lifetime: { name: "Lifetime", per: "once", about: "Paid once, for ever: every version, every new major version included." },
   monthly: { name: "Monthly", per: "/ month", about: "Every update while it runs. Cancel any time." },
   yearly: { name: "Yearly", per: "/ year", about: "Every update while it runs; ten months' price." },
   trial: { name: "Trial", per: "free", about: "Seven days of any edition, once per account; then the Hobbyist edition, free, for ever." },

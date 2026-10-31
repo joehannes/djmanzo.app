@@ -27,7 +27,7 @@
  * development key, so the three halves cannot drift apart unnoticed.
  */
 
-import { EDITIONS, MODULES, modulesOf as editionModules, type Edition, type Module } from "../shared/catalog";
+import { EDITIONS, MODULES, modulesOf as editionModules, paidOnce, type Edition, type Module } from "../shared/catalog";
 import type { AppEnv } from "./env";
 import { HttpError, b64url, body, fail, json, randomId, sha256 } from "./http";
 import { keys } from "./licence";
@@ -127,7 +127,7 @@ export function recordOf(licences: Licence[]): AccountRecord {
     .map((l) => ({
       edition: l.edition,
       ...(l.edition === "custom" ? { modules: (l.modules ?? []).join(",") } : {}),
-      ...(l.plan === "perpetual" ? {} : { until: s(l.expires) }),
+      ...(paidOnce(l.plan) ? {} : { until: s(l.expires) }),
     }));
   const t = licences.find((l) => l.plan === "trial" && l.status !== "revoked");
   return { purchases, ...(t ? { trial: { edition: t.edition, ends: s(t.expires) } } : {}) };

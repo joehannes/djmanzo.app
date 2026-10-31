@@ -120,6 +120,37 @@ describe("a visitor buys a licence and djmanzo picks it up", () => {
     expect(lics.data.find((l: { edition: string }) => l.edition === "karaoke").status).toBe("upgraded");
   });
 
+  it("a lifetime licence costs twice buying once, is paid once, credits buying once towards it, and is never traded down", async () => {
+    const env = testEnv();
+    const web = client(env);
+    await web("/api/auth/demo", { method: "POST", json: { name: "Rosa" } });
+    // Twice the price of buying once, paid once: nothing renews.
+    const q = await web("/api/quote", { method: "POST", json: { edition: "pro", plan: "lifetime", country: "US" } });
+    expect(q.data.total).toBe(2 * 11900);
+    expect(q.data.renews).toBe(false);
+    expect((await web("/api/quote", { method: "POST", json: { edition: "hobbyist", plan: "lifetime", country: "US" } })).data.error).toMatch(/free, for ever/);
+    // A gift may be one: it is paid once too.
+    expect((await web("/api/quote", { method: "POST", json: { edition: "full", plan: "lifetime", country: "US", gift: { for: null, note: null } } })).status).toBe(200);
+    // Bought once first, the same edition for a lifetime costs the difference: from one major version to every one.
+    await web("/api/checkout/demo", { method: "POST", json: { edition: "pro", plan: "perpetual", country: "US", instrument: "US", billing: "US" } });
+    const up = await web("/api/quote", { method: "POST", json: { edition: "pro", plan: "lifetime", country: "US" } });
+    expect(up.data.upgrade.edition).toBe("pro");
+    expect(up.data.total).toBe(2 * 11900 - 11900);
+    const bought = await web("/api/checkout/demo", { method: "POST", json: { edition: "pro", plan: "lifetime", country: "US", instrument: "US", billing: "US" } });
+    expect(bought.data.order.plan).toBe("lifetime");
+    const lics = (await web("/api/me/licences")).data as { edition: string; plan: string; status: string; expires: number | null }[];
+    const life = lics.find((l) => l.plan === "lifetime")!;
+    expect(life.status).toBe("active");
+    expect(life.expires).toBeNull();
+    expect(lics.find((l) => l.plan === "perpetual")!.status).toBe("upgraded");
+    // A lifetime licence is no credit towards one that covers a single major version.
+    expect((await web("/api/quote", { method: "POST", json: { edition: "full", plan: "perpetual", country: "US" } })).data.upgrade).toBeNull();
+    // Towards a bigger lifetime licence, it is: Full for a lifetime costs the difference.
+    const fullLife = await web("/api/quote", { method: "POST", json: { edition: "full", plan: "lifetime", country: "US" } });
+    expect(fullLife.data.upgrade.credit).toBe(2 * 11900);
+    expect(fullLife.data.total).toBe(2 * 14900 - 2 * 11900);
+  });
+
   it("Custom is priced by its modules alone and points at an edition that costs no more", async () => {
     const env = testEnv();
     const web = client(env);

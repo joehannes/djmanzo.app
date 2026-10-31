@@ -10,7 +10,7 @@
 import type { Edition, Module } from "../../../shared/catalog";
 import { carried, type Lang } from "./strings";
 
-type Bought = "perpetual" | "monthly" | "yearly";
+type Bought = "perpetual" | "lifetime" | "monthly" | "yearly";
 
 export interface PricingWords {
   eyebrow: string;
@@ -20,6 +20,8 @@ export interface PricingWords {
   plansAria: string;
   plan: Record<Bought, string>;
   per: Record<Bought, string>;
+  /** What a lifetime licence adds over buying once, under the plans. */
+  lifetimeAbout: string;
   from: string;
   forever: string;
   free: string;
@@ -121,8 +123,9 @@ const en: PricingWords = {
   title: "One download.<br />Seven editions.",
   lead: "Every edition is the same application, unlocked by signing in. Start free with the Hobbyist edition, try any other for {days} days, and pay only for what you use.",
   plansAria: "How to pay",
-  plan: { perpetual: "Buy once", monthly: "Monthly", yearly: "Yearly" },
-  per: { perpetual: "once", monthly: "a month", yearly: "a year" },
+  plan: { perpetual: "Buy once", lifetime: "Lifetime", monthly: "Monthly", yearly: "Yearly" },
+  per: { perpetual: "once", lifetime: "for life", monthly: "a month", yearly: "a year" },
+  lifetimeAbout: "Paid once, for ever: every version of djmanzo, new major versions included. Buying once covers the major version it was bought in.",
   from: "from, {per}",
   forever: "for ever",
   free: "Free",
@@ -225,8 +228,9 @@ const es: PricingWords = {
   title: "Una descarga.<br />Siete ediciones.",
   lead: "Todas las ediciones son la misma aplicación, desbloqueada al iniciar sesión. Empieza gratis con la edición Hobbyist, prueba cualquier otra durante {days} días y paga solo por lo que usas.",
   plansAria: "Cómo pagar",
-  plan: { perpetual: "Pago único", monthly: "Mensual", yearly: "Anual" },
-  per: { perpetual: "una vez", monthly: "al mes", yearly: "al año" },
+  plan: { perpetual: "Pago único", lifetime: "De por vida", monthly: "Mensual", yearly: "Anual" },
+  per: { perpetual: "una vez", lifetime: "de por vida", monthly: "al mes", yearly: "al año" },
+  lifetimeAbout: "Un solo pago, para siempre: todas las versiones de djmanzo, también las nuevas versiones mayores. El pago único cubre la versión mayor en la que se compró.",
   from: "desde, {per}",
   forever: "para siempre",
   free: "Gratis",
@@ -329,8 +333,9 @@ const pt: PricingWords = {
   title: "Um download.<br />Sete edições.",
   lead: "Todas as edições são o mesmo aplicativo, desbloqueado ao entrar. Comece grátis com a edição Hobbyist, teste qualquer outra por {days} dias e pague só pelo que usar.",
   plansAria: "Como pagar",
-  plan: { perpetual: "Compra única", monthly: "Mensal", yearly: "Anual" },
-  per: { perpetual: "uma vez", monthly: "por mês", yearly: "por ano" },
+  plan: { perpetual: "Compra única", lifetime: "Vitalício", monthly: "Mensal", yearly: "Anual" },
+  per: { perpetual: "uma vez", lifetime: "vitalício", monthly: "por mês", yearly: "por ano" },
+  lifetimeAbout: "Pago uma vez, para sempre: todas as versões do djmanzo, inclusive as novas versões principais. A compra única cobre a versão principal em que foi comprada.",
   from: "a partir de, {per}",
   forever: "para sempre",
   free: "Grátis",
@@ -433,8 +438,9 @@ const de: PricingWords = {
   title: "Ein Download.<br />Sieben Editionen.",
   lead: "Jede Edition ist dieselbe Anwendung, freigeschaltet durch Anmelden. Fang kostenlos mit der Hobbyist-Edition an, teste jede andere {days} Tage lang und zahl nur für das, was du nutzt.",
   plansAria: "Wie bezahlen",
-  plan: { perpetual: "Einmal kaufen", monthly: "Monatlich", yearly: "Jährlich" },
-  per: { perpetual: "einmalig", monthly: "pro Monat", yearly: "pro Jahr" },
+  plan: { perpetual: "Einmal kaufen", lifetime: "Lebenslang", monthly: "Monatlich", yearly: "Jährlich" },
+  per: { perpetual: "einmalig", lifetime: "auf Lebenszeit", monthly: "pro Monat", yearly: "pro Jahr" },
+  lifetimeAbout: "Einmal bezahlt, für immer: jede Version von djmanzo, auch neue Hauptversionen. Einmal kaufen gilt für die Hauptversion, in der gekauft wurde.",
   from: "ab, {per}",
   forever: "für immer",
   free: "Kostenlos",
@@ -537,8 +543,9 @@ const fr: PricingWords = {
   title: "Un téléchargement.<br />Sept éditions.",
   lead: "Chaque édition est la même application, déverrouillée en vous connectant. Commencez gratuitement avec l'édition Hobbyist, essayez n'importe quelle autre pendant {days} jours, et ne payez que ce que vous utilisez.",
   plansAria: "Comment payer",
-  plan: { perpetual: "Achat unique", monthly: "Mensuel", yearly: "Annuel" },
-  per: { perpetual: "une fois", monthly: "par mois", yearly: "par an" },
+  plan: { perpetual: "Achat unique", lifetime: "À vie", monthly: "Mensuel", yearly: "Annuel" },
+  per: { perpetual: "une fois", lifetime: "à vie", monthly: "par mois", yearly: "par an" },
+  lifetimeAbout: "Payé une fois, pour toujours : toutes les versions de djmanzo, nouvelles versions majeures comprises. L'achat unique couvre la version majeure dans laquelle il a été fait.",
   from: "à partir de, {per}",
   forever: "pour toujours",
   free: "Gratuit",
@@ -641,8 +648,9 @@ const it: PricingWords = {
   title: "Un download.<br />Sette edizioni.",
   lead: "Ogni edizione è la stessa applicazione, sbloccata accedendo. Comincia gratis con l'edizione Hobbyist, prova qualsiasi altra per {days} giorni e paga solo ciò che usi.",
   plansAria: "Come pagare",
-  plan: { perpetual: "Acquisto unico", monthly: "Mensile", yearly: "Annuale" },
-  per: { perpetual: "una volta", monthly: "al mese", yearly: "all'anno" },
+  plan: { perpetual: "Acquisto unico", lifetime: "A vita", monthly: "Mensile", yearly: "Annuale" },
+  per: { perpetual: "una volta", lifetime: "a vita", monthly: "al mese", yearly: "all'anno" },
+  lifetimeAbout: "Pagato una volta, per sempre: ogni versione di djmanzo, comprese le nuove versioni principali. L'acquisto unico copre la versione principale in cui è stato fatto.",
   from: "da, {per}",
   forever: "per sempre",
   free: "Gratis",
@@ -745,8 +753,9 @@ const ja: PricingWords = {
   title: "ダウンロードはひとつ。<br />エディションは七つ。",
   lead: "どのエディションも同じアプリで、サインインでアンロックします。Hobbyist エディションで無料で始め、ほかのエディションを {days} 日間試し、使う分だけお支払いください。",
   plansAria: "支払い方法",
-  plan: { perpetual: "買い切り", monthly: "月額", yearly: "年額" },
-  per: { perpetual: "1 回", monthly: "月", yearly: "年" },
+  plan: { perpetual: "買い切り", lifetime: "永久ライセンス", monthly: "月額", yearly: "年額" },
+  per: { perpetual: "1 回", lifetime: "永久", monthly: "月", yearly: "年" },
+  lifetimeAbout: "一度の支払いで永久に：新しいメジャーバージョンを含む、djmanzo のすべてのバージョン。買い切りは購入時のメジャーバージョンが対象です。",
   from: "{per}・〜から",
   forever: "ずっと",
   free: "無料",

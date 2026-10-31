@@ -6,7 +6,7 @@
  * with and the arithmetic of terms.
  */
 
-import { TRIAL_DAYS, type Plan } from "../shared/catalog";
+import { TRIAL_DAYS, paidOnce, type Plan } from "../shared/catalog";
 import type { AppEnv } from "./env";
 import type { Licence } from "./store";
 
@@ -38,7 +38,7 @@ export function inForce(licence: Licence, now = Date.now()): boolean {
 
 /** When a term that starts now (or extends `from`) ends. */
 export function termEnd(plan: Plan, from: number, months?: number): number | null {
-  if (plan === "perpetual") return null;
+  if (paidOnce(plan)) return null;
   // A trial is seven days to the minute: no grace, it was never paid for.
   if (plan === "trial") return from + TRIAL_DAYS * 86400_000;
   const d = new Date(from);

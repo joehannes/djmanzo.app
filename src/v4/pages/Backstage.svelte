@@ -9,7 +9,7 @@
   import { onMount } from "svelte";
   import { api, post } from "../../lib/api";
   import { session } from "../../lib/session.svelte";
-  import { EDITIONS, EDITION_INFO, MODULES, PLANS, money, type Edition, type Plan } from "../../../shared/catalog";
+  import { EDITIONS, EDITION_INFO, MODULES, PLANS, money, paidOnce, type Edition, type Plan } from "../../../shared/catalog";
   import { GENRES } from "../../lib/genres";
   import { href } from "../router";
   import { VIDEO_PLACES } from "../videos";
@@ -67,7 +67,7 @@
       const r = await post("/api/admin/promos", {
         kind,
         value: kind === "fixed" ? Math.round(value * 100) : value,
-        grants: kind === "voucher" ? { edition: grantEdition, plan: grantPlan, months: grantPlan === "perpetual" ? undefined : months } : null,
+        grants: kind === "voucher" ? { edition: grantEdition, plan: grantPlan, months: paidOnce(grantPlan) ? undefined : months } : null,
         editions: edits,
         plans,
         maxUses: mode === "general" ? maxUses : 1,
@@ -185,7 +185,7 @@
   let gWho = $state("");
   let gEdition = $state<Edition>("pro");
   let gModules = $state<string[]>([]);
-  let gPlan = $state<"perpetual" | "yearly" | "monthly" | "trial">("perpetual");
+  let gPlan = $state<"perpetual" | "lifetime" | "yearly" | "monthly" | "trial">("perpetual");
   let gMonths = $state(12);
   let gWhy = $state("");
   let granted = $state<{ licence: { id: string; edition: string; plan: string; expires: number | null }; order: { name?: string; email?: string } } | null>(null);
@@ -786,7 +786,7 @@
           <label class="field"><span>Grants</span><select bind:value={grantEdition}>{#each EDITIONS as e (e)}<option value={e}>{e}</option>{/each}</select></label>
           <label class="field"><span>Plan</span><select bind:value={grantPlan}>{#each PLANS as p (p)}<option value={p}>{p}</option>{/each}</select></label>
         </div>
-        {#if grantPlan !== "perpetual"}<label class="field"><span>Months</span><input type="number" min="1" max="36" bind:value={months} /></label>{/if}
+        {#if !paidOnce(grantPlan)}<label class="field"><span>Months</span><input type="number" min="1" max="36" bind:value={months} /></label>{/if}
       {:else}
         <fieldset><legend>Only for editions (none = all)</legend><div class="chips">{#each EDITIONS as e (e)}<button type="button" class="chip" aria-pressed={edits.includes(e)} onclick={() => (edits = toggle(edits, e))}>{e}</button>{/each}</div></fieldset>
         <fieldset><legend>Only for plans (none = all)</legend><div class="chips">{#each PLANS as p (p)}<button type="button" class="chip" aria-pressed={plans.includes(p)} onclick={() => (plans = toggle(plans, p))}>{p}</button>{/each}</div></fieldset>
@@ -973,7 +973,7 @@
       <label class="field"><span>Account</span><input type="text" bind:value={gWho} placeholder="dj@example.org" required data-grant-who /></label>
       <div class="two">
         <label class="field"><span>Edition</span><select bind:value={gEdition} data-grant-edition>{#each EDITIONS.filter((e) => e !== "hobbyist") as e (e)}<option value={e}>{e}</option>{/each}</select></label>
-        <label class="field"><span>How</span><select bind:value={gPlan} data-grant-plan><option value="perpetual">bought once, to keep</option><option value="yearly">for a number of months (yearly)</option><option value="monthly">for a number of months (monthly)</option><option value="trial">as a 7-day trial</option></select></label>
+        <label class="field"><span>How</span><select bind:value={gPlan} data-grant-plan><option value="perpetual">bought once, to keep (this major version)</option><option value="lifetime">for a lifetime (every version)</option><option value="yearly">for a number of months (yearly)</option><option value="monthly">for a number of months (monthly)</option><option value="trial">as a 7-day trial</option></select></label>
       </div>
       {#if gEdition === "custom"}
         <fieldset><legend>Modules</legend><div class="chips">{#each MODULES as m (m)}<button type="button" class="chip" aria-pressed={gModules.includes(m)} onclick={() => (gModules = toggle(gModules, m))}>{m}</button>{/each}</div></fieldset>

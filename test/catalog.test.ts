@@ -158,3 +158,30 @@ describe("regional and student prices", () => {
     expect(proven({ instrument: "CU", billing: "CU" }, 2).refused).toBe(true);
   });
 });
+
+describe("the lifetime licence", () => {
+  it("costs twice buying once, for every edition and for Custom's modules, in every band; what is free stays free", async () => {
+    const { LIFETIME_FACTOR, listPrice: list } = await import("../shared/catalog");
+    const { regional: inBand } = await import("../shared/regions");
+    expect(LIFETIME_FACTOR).toBe(2);
+    for (const e of EDITIONS.filter((e) => e !== "custom")) {
+      expect(list(e, "lifetime"), e).toBe(2 * list(e, "perpetual"));
+      for (const b of [1, 2, 3, 4] as const) expect(inBand(e, "lifetime", b), `${e} band ${b}`).toBeGreaterThanOrEqual(inBand(e, "perpetual", b));
+    }
+    expect(list("hobbyist", "lifetime")).toBe(0);
+    expect(list("custom", "lifetime", ["dvs", "stems"])).toBe(2 * list("custom", "perpetual", ["dvs", "stems"]));
+  });
+
+  it("is paid once, and covers every major version; buying once covers its own; a plan that renews, whatever runs while it lasts", async () => {
+    const { paidOnce, coversMajor, PLANS } = await import("../shared/catalog");
+    expect(PLANS).toContain("lifetime");
+    expect(paidOnce("lifetime")).toBe(true);
+    expect(paidOnce("perpetual")).toBe(true);
+    expect(paidOnce("monthly")).toBe(false);
+    expect(paidOnce("trial")).toBe(false);
+    expect(coversMajor({ plan: "lifetime", major: 1 }, 2)).toBe(true);
+    expect(coversMajor({ plan: "perpetual", major: 1 }, 1)).toBe(true);
+    expect(coversMajor({ plan: "perpetual", major: 1 }, 2)).toBe(false);
+    expect(coversMajor({ plan: "yearly", major: 1 }, 2)).toBe(true);
+  });
+});

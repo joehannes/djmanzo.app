@@ -82,12 +82,15 @@ describe("the shop's licences, read as a record", () => {
       lic({ edition: "full", status: "revoked" }),
       lic({ edition: "karaoke", plan: "monthly", status: "cancelled", expires: (NOW + DAY) * 1000 }),
       lic({ edition: "custom", modules: ["dvs", "stems"] }),
+      lic({ edition: "pro", plan: "lifetime" }),
       lic({ edition: "full", plan: "trial", expires: (NOW + 3 * DAY) * 1000 }),
     ]);
     expect(r).toEqual({
       purchases: [
         { edition: "karaoke", until: NOW + DAY },
         { edition: "custom", modules: "dvs,stems" },
+        // A lifetime licence is paid once: djmanzo reads it as owned, with no date to end.
+        { edition: "pro" },
       ],
       trial: { edition: "full", ends: NOW + 3 * DAY },
     });

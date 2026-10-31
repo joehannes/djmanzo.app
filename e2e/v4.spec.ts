@@ -134,7 +134,12 @@ test("the shop: the finder, the plans, a live quote, and a trial started", async
   await expect(page.locator("[data-edition=pro] [data-price]")).toHaveText("$119");
   await page.click("[data-plan=monthly]");
   await expect(page.locator("[data-edition=pro] [data-price]")).not.toHaveText("$119");
+  // For a lifetime: twice the price, said what it adds, and gone again with buying once.
+  await page.click("[data-plan=lifetime]");
+  await expect(page.locator("[data-edition=pro] [data-price]")).toHaveText("$238");
+  await expect(page.locator("[data-lifetime-about]")).toContainText("every version");
   await page.click("[data-plan=perpetual]");
+  await expect(page.locator("[data-lifetime-about]")).toHaveCount(0);
   await page.click("[data-finder=karaoke]");
   await expect(page.locator("[data-edition=karaoke]")).toHaveClass(/chosen/);
   await expect(page.locator("[data-total]")).toHaveText("$55");

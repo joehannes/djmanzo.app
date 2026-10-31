@@ -14,7 +14,7 @@
   import { catalog } from "../lib/catalog.svelte";
   import { session } from "../lib/session.svelte";
   import { countries, flag } from "../lib/countries";
-  import type { Edition, Module, Plan } from "../../shared/catalog";
+  import { paidOnce, type Edition, type Module, type Plan } from "../../shared/catalog";
   import { i18n } from "../v4/i18n.svelte";
   import { PRICING } from "../v4/i18n/pricing";
 
@@ -135,11 +135,11 @@
         // Only the ways to pay the account has on that this checkout finishes (`worker/payments.ts`).
         const offered = pay.stripe!.methods ?? { once: ["card"], renewing: ["card"] };
         elements = stripe.elements({
-          mode: plan === "perpetual" ? "payment" : "subscription",
+          mode: paidOnce(plan) ? "payment" : "subscription",
           amount: total,
           currency,
           paymentMethodCreation: "manual",
-          paymentMethodTypes: plan === "perpetual" ? offered.once : offered.renewing,
+          paymentMethodTypes: paidOnce(plan) ? offered.once : offered.renewing,
           appearance: { theme: document.documentElement.dataset.day === "1" ? "stripe" : "night" },
         });
         // The wallets the crew allowed in Backstage; the rest of the methods are Stripe's dashboard's to turn on.

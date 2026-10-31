@@ -1623,3 +1623,27 @@ Hebrew and Arabic at 1440 px and 390 px and looked at beside English.
 - **What does not mirror.** Gear: the booth's turntable, mixer and pads,
   and a waveform's time, which runs left to right in every language. The
   booth's sampler choices are words, and read right to left.
+
+## A lifetime licence for every edition (31 October)
+
+The owner asked for a lifetime licence, then for it on every edition, at
+twice the price of buying once (`shared/catalog.ts`: `LIFETIME_FACTOR`).
+
+- **What it is.** Buying once covers the major version it was bought in
+  (`Licence.major`); a lifetime licence is paid once too and covers every
+  version for ever, new major versions included (`coversMajor`). It is a
+  plan of its own, `lifetime`, beside buy once, monthly and yearly, for every
+  edition and for Custom's modules; the Hobbyist edition stays free.
+- **Price.** Twice the buy-once list price, then the visitor's band and the
+  student price as for buying once. Bought once first, the same edition for
+  a lifetime costs the difference; a lifetime licence counts towards a
+  bigger lifetime licence, and is never traded for one that covers a single
+  major version.
+- **Paid once.** Everything that holds for buying once holds for it
+  (`paidOnce`): a Stripe payment rather than a subscription, the one-off
+  ways to pay, a licence with no end, a gift allowed. djmanzo's licence
+  line carries it as owned, with no date, exactly as it carries buying once,
+  so the application needs no change.
+- **Words.** The plan, its price line and what it adds are in all seventeen
+  languages on the pricing and account pages, and in the seven languages the
+  e-mails are written in; the crew can grant one, and a voucher can carry one.

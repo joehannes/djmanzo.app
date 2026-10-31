@@ -7,7 +7,7 @@
 import type { BuiltInLang, PackLang } from "../src/v4/i18n/strings";
 
 export interface MailWords {
-  plan: Record<"perpetual" | "monthly" | "yearly", string>;
+  plan: Record<"perpetual" | "lifetime" | "monthly" | "yearly", string>;
   method: Record<"transfer" | "card", string>;
   /** One line on a receipt, with its own line break. */
   discount: string;
@@ -23,6 +23,8 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
   en: {
     plan: {
       perpetual: "bought once",
+
+      lifetime: "for a lifetime, every version",
       monthly: "monthly",
       yearly: "yearly",
     },
@@ -55,6 +57,8 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
   es: {
     plan: {
       perpetual: "compra única",
+
+      lifetime: "de por vida, todas las versiones",
       monthly: "mensual",
       yearly: "anual",
     },
@@ -87,6 +91,8 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
   pt: {
     plan: {
       perpetual: "compra única",
+
+      lifetime: "vitalício, todas as versões",
       monthly: "mensal",
       yearly: "anual",
     },
@@ -119,6 +125,8 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
   de: {
     plan: {
       perpetual: "einmalig gekauft",
+
+      lifetime: "auf Lebenszeit, jede Version",
       monthly: "monatlich",
       yearly: "jährlich",
     },
@@ -151,6 +159,8 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
   fr: {
     plan: {
       perpetual: "achat unique",
+
+      lifetime: "à vie, toutes les versions",
       monthly: "mensuel",
       yearly: "annuel",
     },
@@ -183,6 +193,8 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
   it: {
     plan: {
       perpetual: "acquisto unico",
+
+      lifetime: "a vita, ogni versione",
       monthly: "mensile",
       yearly: "annuale",
     },
@@ -215,6 +227,8 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
   ja: {
     plan: {
       perpetual: "買い切り",
+
+      lifetime: "永久ライセンス（すべてのバージョン）",
       monthly: "月額",
       yearly: "年額",
     },
