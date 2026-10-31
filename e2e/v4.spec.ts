@@ -244,6 +244,23 @@ test("older addresses land: the preview's, its hash pages, the retired sites and
   expect(errs).toEqual([]);
 });
 
+test("the site's own pages read in the visitor's language, a language that comes as a pack included, and keep it", async ({ page }) => {
+  const errs = errors(page);
+  // Hebrew comes as a pack: the page is built again when it arrives, and keeps the Worker's words.
+  await page.goto("/terms?lang=he");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.locator("[data-read] #static h1")).toHaveText("תנאי שימוש");
+  await expect(page.locator("[data-read] #static [data-applies]")).toBeVisible();
+  await expect(page.locator("footer.foot a[data-legal]").first()).toHaveAttribute("href", "/imprint?lang=he");
+  // A language kept from an earlier visit: the English address brings the page in that language.
+  await page.evaluate(() => localStorage.setItem("djmanzo:lang", "fr"));
+  await page.goto("/privacy");
+  await expect(page).toHaveURL(/\/privacy\?lang=fr$/);
+  await expect(page.locator("[data-read] #static h1")).toHaveText("Confidentialité");
+  await page.evaluate(() => localStorage.removeItem("djmanzo:lang"));
+  expect(errs).toEqual([]);
+});
+
 test("a page that is only words is shown in the site's frame, and the site's own links stay in place", async ({ page }) => {
   const errs = errors(page);
   await page.goto("/terms");

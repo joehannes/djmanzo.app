@@ -1650,6 +1650,33 @@ right-to-left sentence:
 `test/packs.test.ts` holds the file names and the menu path to this in both
 languages.
 
+## The site's own pages in every language (31 October)
+
+The imprint, the terms, the community rules and the privacy notice were in
+English whatever language the site was read in. They are now in all
+seventeen (`shared/legalwords.ts`), written by the Worker for the address's
+`?lang=` as the home and features pages are.
+
+- **English applies.** `shared/legal.ts` stays the text that applies; every
+  translation says so first, linking the English page. The rules' trust
+  levels use Talkback's own words for them.
+- **The language kept.** The footer's links, the links inside the pages and
+  the frame's carry `?lang=`; a page in Hebrew or Arabic is `<html
+  dir="rtl">` from the Worker. Choosing another language on one of these
+  pages loads it in that language; a language kept from an earlier visit
+  does the same on arrival. Each language's version has its own address,
+  with the others beside it for search engines and in the sitemap.
+- **A rebuild kept its words.** The page is built again when the language
+  changes, and a language that comes as a pack changes it once its words
+  arrive: the second build found the Worker's words already taken and said
+  the page could not be found. The words are kept and handed to the new
+  build (`src/v4/pages/Read.svelte`).
+- **What the privacy notice said about the browser.** It still described the
+  retired Signal Path (a rough location kept in the browser, a *Forget me*
+  button). It now says what the site keeps there: the language, the look and
+  whether its sounds are on; and that a sample recorded with the booth's
+  microphone stays in the page and is never sent.
+
 ## A lifetime licence for every edition (31 October)
 
 The owner asked for a lifetime licence, then for it on every edition, at

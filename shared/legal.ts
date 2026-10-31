@@ -1,9 +1,10 @@
 /**
  * The words of the site's own pages (Austria's ECG §5 and MedienG §25, the
- * GDPR, the EU's Digital Services Act), held once: the Signal Path shows them
- * (`src/signal/auxiliary/Legal.svelte`) and the Worker renders them for whoever
- * reads the page without running it (`worker/seo.ts`). Written for the owner
- * to read over: they say what this site actually does.
+ * GDPR, the EU's Digital Services Act), held once: the Worker writes the pages
+ * (`worker/seo.ts`) and the site shows them inside its frame
+ * (`src/v4/pages/Read.svelte`). Written for the owner to read over: they say
+ * what this site actually does. This English text is the one that applies;
+ * the other languages' (`shared/legalwords.ts`) are translations to read by.
  *
  * A line may name `{contact}`, link one of the site's own pages as
  * `[words](/path)`, and set words in *italics*; `legalHtml` makes that HTML.
@@ -39,7 +40,7 @@ export const PRIVACY: Clause[] = [
   { head: "Your address on the internet:", text: "used, scrambled, to count requests so the site cannot be flooded. Not kept beyond that." },
   { head: "What you look at here:", text: "the pages you open and how long, how far down the home page you scroll, what you search for and ask the assistant, and what you press, so the crew can make what people look for easier to find. Kept without knowing who you are: no cookie and nothing stored in your browser; your visit is a scrambled key made from that day's secret, your address and your browser's name, which cannot be turned back into either and changes every day. Anything shaped like an e-mail address or a phone number is taken out of what you type. With your country, language and the kind of device, kept 90 days, read only by the crew. A browser set to Global Privacy Control or Do Not Track sends none of it." },
   { head: "The AI screen:", text: "a new account's post may be sent to Anthropic's Claude to be read before a person does. Under Anthropic's commercial terms, what is sent this way is not used to train its models." },
-  { head: "What you allowed on the Signal Path", text: "(roughly where you are, your own location) stays in your browser; *Forget me* removes it." },
+  { head: "In your browser:", text: "the language you chose, the look and whether the site's sounds are on, so the site is as you left it. A sample you record with the booth's microphone stays in the page and is gone when you leave it; it is never sent." },
   { head: "Purchases:", text: "handled by the payment provider; this site keeps the order and the licence." },
   { head: "The address we write to:", text: "the e-mail address you confirm before paying, for the code that confirms it, word of a payment under way, and your receipt and licence key. Sent through Resend, which delivers the message and keeps no more of it than delivering takes. Kept with your account; never used for anything else." },
 ];

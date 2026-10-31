@@ -9,6 +9,9 @@
   import { RELEASES } from "./download";
   import { i18n, t } from "./i18n.svelte";
   import { countryName, regionOf } from "./i18n/looks";
+
+  /** The site's own pages, which the Worker writes: in the language being read, which it is told by the address. */
+  const legal = (page: "imprint" | "terms" | "privacy" | "rules") => (i18n.lang === "en" ? `/${page}` : `/${page}?lang=${i18n.lang}`);
 </script>
 
 <footer class="foot">
@@ -44,10 +47,10 @@
     </nav>
     <nav aria-label={t("foot.legal")}>
       <h2>{t("foot.legal")}</h2>
-      <a href="/imprint">{t("foot.imprint")}</a>
-      <a href="/terms">{t("foot.terms")}</a>
-      <a href="/privacy">{t("foot.privacy")}</a>
-      <a href="/rules">{t("foot.rules")}</a>
+      <a href={legal("imprint")} data-legal>{t("foot.imprint")}</a>
+      <a href={legal("terms")} data-legal>{t("foot.terms")}</a>
+      <a href={legal("privacy")} data-legal>{t("foot.privacy")}</a>
+      <a href={legal("rules")} data-legal>{t("foot.rules")}</a>
     </nav>
   </div>
 </footer>

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { FACTS } from "../shared/facts";
 import { jsonForScript, plain, render } from "../worker/seo";
-import { escapeHtml } from "../shared/legal";
+import { escapeHtml, legalHtml } from "../shared/legal";
 import SPANISH from "../src/v4/i18n/facts/es";
 import { testEnv } from "./kv";
 import { browser, crew, openSite, person } from "./people";
@@ -215,11 +215,65 @@ describe("the site's own pages", () => {
     const terms = await read(env, "/terms");
     expect(terms.words).toContain('<a class="link" href="/rules">community rules</a>');
     expect(terms.words).toContain("Ask at owner@example.test");
-    expect((await read(env, "/privacy")).words).toContain("<i>Forget me</i>");
+    expect((await read(env, "/privacy")).words).toContain("<b>In your browser:</b>");
+    expect(legalHtml("*Forget me*, [the rules](/rules)", "x")).toBe('<i>Forget me</i>, <a class="link" href="/rules">the rules</a>');
 
     const unfinished = testEnv({ ASSETS });
     expect((await read(unfinished, "/imprint")).words).toContain("The imprint is being completed");
     expect((await read(unfinished, "/terms")).words).toContain("Ask at the address in the imprint, once it is filled in");
+  });
+});
+
+describe("the site's own pages in every language", () => {
+  it("read in the language asked for, say the English text applies, keep the language in their links, and right to left in Hebrew", async () => {
+    const env = site();
+    const he = await read(env, "/terms?lang=he");
+    expect(he.html).toMatch(/<html lang="he" dir="rtl">/);
+    expect(he.title).toBe("תנאי שימוש — djmanzo");
+    expect(he.canonical).toBe("https://djmanzo.test/terms?lang=he");
+    expect(he.words).toContain('<a class="link" href="/rules?lang=he">כללי הקהילה</a>');
+    expect(he.words).toContain("owner@example.test");
+    // The translation points to the English text, which applies.
+    expect(he.words).toMatch(/data-applies><i>[^<]*<a class="link" href="\/terms">/);
+    expect(he.words).toContain('<a href="/privacy?lang=he">');
+    const de = await read(env, "/rules?lang=de");
+    expect(de.html).toMatch(/<html lang="de">/);
+    expect(de.words).toContain("Sei freundlich.");
+    expect(de.words).toContain("<b>Neu.</b>");
+    expect((await read(env, "/imprint?lang=de")).words).toContain("<dt>Betrieben von</dt><dd>The Owner</dd>");
+    const privacy = await read(env, "/privacy?lang=ja");
+    expect(privacy.words).toContain("<b>あなたのブラウザーに:</b>");
+    expect(privacy.words).toContain("{contact} までご連絡ください".replace("{contact}", "owner@example.test"));
+    // English says nothing about applying: it is the text.
+    const en = await read(env, "/terms");
+    expect(en.html).toMatch(/<html lang="en">/);
+    expect(en.words).not.toContain("data-applies");
+    expect(en.words).toContain('<a class="link" href="/rules">community rules</a>');
+  });
+
+  it("has every page's words in every language, with the English one's links and blanks", async () => {
+    const { LEGAL_WORDS } = await import("../shared/legalwords");
+    const { LANGS } = await import("../src/v4/i18n/strings");
+    const { TITLE, SUBTITLE } = await import("../src/signal/auxiliary/routes");
+    const en = LEGAL_WORDS.en;
+    for (const id of ["imprint", "terms", "rules", "privacy"] as const) {
+      expect(en.title[id]).toBe(TITLE[id]);
+      expect(en.subtitle[id]).toBe(SUBTITLE[id]);
+    }
+    const marks = (s: string) => [...s.matchAll(/\{\w+\}|\]\(\/[a-z]+\)/g)].map((m) => m[0]).sort();
+    const lines = (w: typeof en) => [...w.terms.map((c) => c.text), ...w.privacy.map((c) => c.text), w.privacyOutro];
+    for (const lang of LANGS.filter((l) => l !== "en")) {
+      const w = LEGAL_WORDS[lang];
+      expect(w, lang).toBeDefined();
+      expect([w.terms.length, w.privacy.length, w.rules.length, w.trust.length], lang).toEqual([en.terms.length, en.privacy.length, en.rules.length, en.trust.length]);
+      expect(w.applies, lang).toContain("]({page})");
+      lines(w).forEach((t, i) => expect(marks(t), `${lang} line ${i}`).toEqual(marks(lines(en)[i])));
+      for (const t of [...Object.values(w.title), ...Object.values(w.subtitle), ...Object.values(w.labels), w.imprintWhat, w.imprintMissing, w.noContact, w.screening, w.termsIntro, w.privacyIntro, w.grows, ...w.rules, ...w.trust.flatMap((x) => [x.name, x.about]), ...w.terms.map((c) => c.head), ...w.privacy.map((c) => c.head)])
+        expect(t?.trim(), lang).toBeTruthy();
+      // Not English left in place.
+      expect(w.termsIntro, lang).not.toBe(en.termsIntro);
+      expect(w.privacy.map((c) => c.text), lang).not.toContain(en.privacy[3].text);
+    }
   });
 });
 

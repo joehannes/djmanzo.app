@@ -16,13 +16,15 @@
  */
 
 import { COMING_KINDS, LISTED_KINDS } from "../shared/outboard";
-import { COMMUNITIES, COMMUNITY_BY_ID, RULES, TRUST } from "../shared/talkback";
-import { IMPRINT_MISSING, IMPRINT_WHAT, NO_CONTACT, PRIVACY, PRIVACY_INTRO, PRIVACY_OUTRO, SCREENING, TERMS, TERMS_INTRO, escapeHtml as esc, legalHtml } from "../shared/legal";
+import { COMMUNITIES, COMMUNITY_BY_ID } from "../shared/talkback";
+import { escapeHtml as esc, legalHtml } from "../shared/legal";
+import { legalIn, type LegalPage } from "../shared/legalwords";
+import { LANG_INFO } from "../src/v4/i18n/strings";
 import { markdown as talkMarkdown } from "../shared/markdown";
 import { areaOf, carriedBy } from "../shared/facts";
 import { EDITION_INFO } from "../shared/catalog";
 import { markdown as blogMarkdown } from "../src/lib/markdown";
-import { SUBTITLE, TITLE } from "../src/signal/auxiliary/routes";
+import { SUBTITLE } from "../src/signal/auxiliary/routes";
 import { SEO_LANGS, factsIn, isLang, seoOf, type Lang } from "../src/v4/i18n/seo";
 import type { AppEnv } from "./env";
 import { HttpError, SECURITY_HEADERS } from "./http";
@@ -111,8 +113,9 @@ export function render(template: string, page: Page, origin: string): string {
   if (open < 0 || close < open) throw new Error("index.html has lost its <!--seo--> block");
   const withHead = template.slice(0, open) + head(page, origin) + template.slice(close + "<!--/seo-->".length);
   const lang = page.lang ?? "en";
+  const rtl = isLang(lang) && LANG_INFO[lang]?.rtl;
   return withHead
-    .replace(/<html lang="[^"]*">/, `<html lang="${esc(lang)}">`)
+    .replace(/<html lang="[^"]*">/, `<html lang="${esc(lang)}"${rtl ? ' dir="rtl"' : ""}>`)
     .replace(/<div id="(app|signal)"><\/div>/, (mount) => `<main id="static">\n${frame(page.body, isLang(lang) ? lang : "en")}\n</main>\n    ${mount}`);
 }
 
@@ -122,7 +125,7 @@ function frame(body: string, lang: Lang): string {
   return [
     `<nav aria-label="${esc(w.site)}"><a href="${inLang("/", lang)}">djmanzo</a> · <a href="/outboard">Outboard</a> · <a href="/talkback">Talkback</a> · <a href="/blog">Blog</a></nav>`,
     body,
-    `<footer><a href="/imprint">${esc(w.imprint)}</a> · <a href="/terms">${esc(w.terms)}</a> · <a href="/rules">${esc(w.rules)}</a> · <a href="/privacy">${esc(w.privacy)}</a></footer>`,
+    `<footer><a href="${inLang("/imprint", lang)}">${esc(w.imprint)}</a> · <a href="${inLang("/terms", lang)}">${esc(w.terms)}</a> · <a href="${inLang("/rules", lang)}">${esc(w.rules)}</a> · <a href="${inLang("/privacy", lang)}">${esc(w.privacy)}</a></footer>`,
   ].join("\n");
 }
 
@@ -407,25 +410,38 @@ async function talkbackPost(env: AppEnv, origin: string, id: string): Promise<Pa
   });
 }
 
-function legal(env: AppEnv, origin: string, id: "imprint" | "terms" | "rules" | "privacy"): Page {
+/**
+ * The imprint, the terms, the rules or the privacy notice, in the language
+ * asked for: English is the text that applies, and a translation says so
+ * first, with a link to it. A link to another of these pages keeps the
+ * language.
+ */
+function legal(env: AppEnv, origin: string, id: LegalPage, lang: Lang): Page {
+  const w = legalIn(lang);
   const imprint = people.imprint(env);
-  const contact = imprint ? imprint.email : NO_CONTACT;
-  const html = (t: string) => legalHtml(t, contact);
-  const words: Record<typeof id, string> = {
+  const contact = imprint ? imprint.email : w.noContact;
+  const keep = (h: string) => (lang === "en" ? h : h.replace(/href="(\/(?:imprint|terms|rules|privacy))"/g, (_m, p: string) => `href="${inLang(p, lang)}"`));
+  const html = (t: string) => keep(legalHtml(t, contact));
+  const words: Record<LegalPage, string> = {
     imprint: imprint
-      ? `<dl><dt>Run by</dt><dd>${esc(imprint.name)}</dd><dt>Address</dt><dd>${esc(imprint.address)}</dd><dt>E-mail</dt><dd><a href="mailto:${esc(imprint.email)}">${esc(imprint.email)}</a></dd><dt>What it is</dt><dd>${esc(IMPRINT_WHAT)}</dd></dl>`
-      : `<p>${esc(IMPRINT_MISSING)}</p>`,
-    rules: `<ol>${RULES.map((r) => `<li>${esc(r)}</li>`).join("")}</ol>\n<h2>How a new account grows in</h2>\n<ul>${TRUST.map((t) => `<li><b>${esc(t.name)}.</b> ${esc(t.about)}</li>`).join("")}</ul>\n<p>${esc(SCREENING)}</p>`,
-    terms: `<p>${esc(TERMS_INTRO)}</p>\n<ol>${TERMS.map((c) => `<li><b>${esc(c.head)}</b> ${html(c.text)}</li>`).join("")}</ol>`,
-    privacy: `<p>${esc(PRIVACY_INTRO)}</p>\n<ul>${PRIVACY.map((c) => `<li><b>${esc(c.head)}</b> ${html(c.text)}</li>`).join("")}</ul>\n<p>${html(PRIVACY_OUTRO)}</p>`,
+      ? `<dl><dt>${esc(w.labels.runBy)}</dt><dd>${esc(imprint.name)}</dd><dt>${esc(w.labels.address)}</dt><dd>${esc(imprint.address)}</dd><dt>${esc(w.labels.email)}</dt><dd><a href="mailto:${esc(imprint.email)}">${esc(imprint.email)}</a></dd><dt>${esc(w.labels.what)}</dt><dd>${esc(w.imprintWhat)}</dd></dl>`
+      : `<p>${esc(w.imprintMissing)}</p>`,
+    rules: `<ol>${w.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ol>\n<h2>${esc(w.grows)}</h2>\n<ul>${w.trust.map((t) => `<li><b>${esc(t.name)}.</b> ${esc(t.about)}</li>`).join("")}</ul>\n<p>${esc(w.screening)}</p>`,
+    terms: `<p>${esc(w.termsIntro)}</p>\n<ol>${w.terms.map((c) => `<li><b>${esc(c.head)}</b> ${html(c.text)}</li>`).join("")}</ol>`,
+    privacy: `<p>${esc(w.privacyIntro)}</p>\n<ul>${w.privacy.map((c) => `<li><b>${esc(c.head)}</b> ${html(c.text)}</li>`).join("")}</ul>\n<p>${html(w.privacyOutro)}</p>`,
   };
+  // A translation points to the English text it was made from, which is the one that applies.
+  const applies = lang === "en" ? "" : `<p class="applies" data-applies><i>${legalHtml(w.applies.replace("{page}", `/${id}`), contact)}</i></p>\n`;
+  const path = inLang(`/${id}`, lang);
   return {
     status: 200,
-    title: `${TITLE[id]} — ${SITE}`,
-    description: SUBTITLE[id],
-    path: `/${id}`,
-    jsonld: [{ "@type": "WebPage", name: TITLE[id], description: SUBTITLE[id], url: `${origin}/${id}` }],
-    body: `<h1>${esc(TITLE[id])}</h1>\n<p>${esc(SUBTITLE[id])}</p>\n${words[id]}`,
+    title: `${w.title[id]} — ${SITE}`,
+    description: w.subtitle[id],
+    path,
+    lang,
+    alternates: everyLanguage(`/${id}`),
+    jsonld: [{ "@type": "WebPage", name: w.title[id], description: w.subtitle[id], url: `${origin}${path}`, inLanguage: lang }],
+    body: `<h1>${esc(w.title[id])}</h1>\n<p>${esc(w.subtitle[id])}</p>\n${applies}${words[id]}`,
   };
 }
 
@@ -599,7 +615,7 @@ export async function pageFor(env: AppEnv, url: URL): Promise<Page | null> {
     if (parts.length === 2) return talkbackPost(env, origin, second);
     return notFound(url.pathname);
   }
-  if ((first === "imprint" || first === "terms" || first === "rules" || first === "privacy") && parts.length === 1) return legal(env, origin, first);
+  if ((first === "imprint" || first === "terms" || first === "rules" || first === "privacy") && parts.length === 1) return legal(env, origin, first, lang);
   if (first === "features" && parts.length === 1) return features(origin, lang);
   if (first === "wishes" && parts.length === 1) return wishesPage(env, origin);
   if (first === "releases" && parts.length === 1) return releasesPage(env, origin);
@@ -644,9 +660,9 @@ const xml = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 /** Everything anyone may read, with when it last changed where that is known. */
 export async function sitemap(env: AppEnv, origin: string): Promise<Response> {
   type Entry = { path: string; lastmod?: number; alternates?: { lang: string; path: string }[] };
-  const entries: Entry[] = ["/outboard", "/talkback", "/blog", "/imprint", "/terms", "/rules", "/privacy", "/wishes", "/releases"].map((path) => ({ path }));
+  const entries: Entry[] = ["/outboard", "/talkback", "/blog", "/wishes", "/releases"].map((path) => ({ path }));
   // The pages a search engine is given in every language, each with the others beside it.
-  for (const path of ["/", "/features"]) entries.unshift(...SEO_LANGS.map((l) => ({ path: inLang(path, l), alternates: everyLanguage(path) })));
+  for (const path of ["/", "/features", "/imprint", "/terms", "/rules", "/privacy"]) entries.unshift(...SEO_LANGS.map((l) => ({ path: inLang(path, l), alternates: everyLanguage(path) })));
   entries.push(...COMMUNITIES.map((c) => ({ path: `/talkback/c/${c.id}` })));
   if (env.DB) {
     const items = await market.listing(env);
