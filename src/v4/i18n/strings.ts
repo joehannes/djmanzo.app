@@ -950,7 +950,7 @@ const it: Partial<Record<Key, string>> = {
   "lang.partial": "Alcune parti del sito sono ancora in inglese; il resto arriva presto.",
   "lang.choose": "Lingua: {name}. Scegline un'altra",
   "nav.menu": "Menu",
-  "nav.home": "djmanzo, home",
+  "nav.home": "djmanzo, pagina iniziale",
   "bar.from": "Gratis · edizioni da {price}",
   "look.menu": "Stili",
   "look.follow": "Segui di nuovo la mia posizione",

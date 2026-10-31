@@ -24,6 +24,7 @@
   import { RELEASES } from "../download";
   import { i18n, t } from "../i18n.svelte";
   import { PRICING } from "../i18n/pricing";
+  import { RIVAL_NOTES, dataWord } from "../i18n/datawords";
 
   const w = $derived(PRICING[i18n.lang]);
   const fill = (s: string, vars: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
@@ -353,7 +354,7 @@
         <thead><tr>{#each w.marketCols as col (col)}<th scope="col">{col}</th>{/each}</tr></thead>
         <tbody>
           {#each c?.market ?? [] as r (r.product)}
-            <tr><th scope="row"><a href={r.source} rel="noopener noreferrer" target="_blank">{r.product}</a></th><td class="mono">{usd(r.perpetual)}</td><td class="mono">{usd(r.monthly)}</td><td class="mono">{usd(r.yearly)}</td><td class="dim">{r.note ?? ""}</td></tr>
+            <tr><th scope="row"><a href={r.source} rel="noopener noreferrer" target="_blank">{r.product}</a></th><td class="mono">{usd(r.perpetual)}</td><td class="mono">{usd(r.monthly)}</td><td class="mono">{usd(r.yearly)}</td><td class="dim">{dataWord(RIVAL_NOTES, r.note, i18n.lang)}</td></tr>
           {/each}
         </tbody>
       </table>

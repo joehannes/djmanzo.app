@@ -6,7 +6,7 @@
  * "wewe" for the reader, and the booth's English words (deck, cue, loop,
  * stem) where East African DJs say them. Edition names and djmanzo's own
  * interface labels stay as the application shows them. The feature
- * descriptions themselves still read in English.
+ * descriptions are in facts/sw.ts, fetched when the language is chosen.
  */
 
 import type { Pack } from "../packs";

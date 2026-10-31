@@ -70,9 +70,18 @@
     }
   }
 
+  // The crew's seeded wishes in the visitor's language, fetched only when it is not English.
+  let seed = $state<typeof import("../i18n/wishseed") | null>(null);
+  $effect(() => {
+    if (i18n.lang !== "en" && !seed) import("../i18n/wishseed").then((m) => (seed = m));
+  });
+  const words = (w: WishRow) => seed?.seededWish(w.title, i18n.lang) ?? null;
+  const titleOf = (w: WishRow) => words(w)?.title ?? w.title;
+  const tagOf = (tag: string) => seed?.wishTag(tag, i18n.lang) ?? tag;
+
   const shown = $derived.by(() => {
     const q = query.trim().toLowerCase();
-    const list = wishes.filter((w) => (filter === "all" || w.status === filter) && (!q || w.title.toLowerCase().includes(q)));
+    const list = wishes.filter((w) => (filter === "all" || w.status === filter) && (!q || w.title.toLowerCase().includes(q) || titleOf(w).toLowerCase().includes(q)));
     return sort === "top" ? list.toSorted((a, b) => b.votes - a.votes || b.createdAt - a.createdAt) : list.toSorted((a, b) => b.createdAt - a.createdAt);
   });
   const count = (s: string) => (s === "all" ? wishes.length : wishes.filter((w) => w.status === s).length);
@@ -169,16 +178,17 @@
       <ol class="list">
         {#each shown as w (w.id)}
           {@const s = STATUS[w.status] ?? STATUS.idea}
+          {@const seeded = words(w)}
           <li class="wish card" style:--tone={s.tone} data-wish>
-            <button class="vote" class:on={voted.has(w.id)} aria-pressed={voted.has(w.id)} onclick={() => vote(w)} aria-label={pw.vote.replace("{title}", w.title).replace("{votes}", String(w.votes))}>
+            <button class="vote" class:on={voted.has(w.id)} aria-pressed={voted.has(w.id)} onclick={() => vote(w)} aria-label={pw.vote.replace("{title}", titleOf(w)).replace("{votes}", String(w.votes))}>
               <svg viewBox="0 0 12 8" width="12" height="8" aria-hidden="true"><path d="M6 0l6 8H0z" fill="currentColor" /></svg>
               <b class="mono">{w.votes}</b>
             </button>
             <div class="main">
-              <button class="title" onclick={() => expand(w)} aria-expanded={open === w.id}>{w.title}</button>
-              {#if w.note}<p class="crew"><span class="mono">{pw.crew}</span> {w.note}</p>{/if}
-              {#if open === w.id && detail[w.id]}<p class="body">{detail[w.id]}</p>{/if}
-              <p class="meta dim">{w.author} · {date(w.createdAt)}{w.tag ? ` · ${w.tag}` : ""}</p>
+              <button class="title" onclick={() => expand(w)} aria-expanded={open === w.id}>{titleOf(w)}</button>
+              {#if w.note}<p class="crew"><span class="mono">{pw.crew}</span> {seeded?.note ?? w.note}</p>{/if}
+              {#if open === w.id && (seeded?.body || detail[w.id])}<p class="body">{seeded?.body ?? detail[w.id]}</p>{/if}
+              <p class="meta dim">{w.author} · {date(w.createdAt)}{w.tag ? ` · ${tagOf(w.tag)}` : ""}</p>
             </div>
             <span class="stamp mono">{s.label}</span>
           </li>

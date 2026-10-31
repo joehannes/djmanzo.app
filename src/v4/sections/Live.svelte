@@ -13,6 +13,7 @@
   import { shared } from "../region.svelte";
   import { LANG_INFO, i18n, t } from "../i18n.svelte";
   import { SECTIONS, fill } from "../i18n/sections";
+  import { OUTBOARD } from "../i18n/outboard";
 
   const w = $derived(SECTIONS[i18n.lang].live);
 
@@ -86,7 +87,7 @@
               <a class="item" href={href("market", [it.id])} data-pack>
                 <Preview kind={it.kind} preview={it.preview} />
                 <b>{it.name}</b>
-                <small class="mono">{it.kind} · {it.author}{it.rating.count ? ` · ★ ${it.rating.mean?.toFixed(1)} (${it.rating.count})` : ""} · ↓ {it.downloads}</small>
+                <small class="mono">{OUTBOARD[i18n.lang].kind[it.kind as keyof (typeof OUTBOARD)["en"]["kind"]] ?? it.kind} · {it.author}{it.rating.count ? ` · ★ ${it.rating.mean?.toFixed(1)} (${it.rating.count})` : ""} · ↓ {it.downloads}</small>
               </a>
             {/each}
           </div>

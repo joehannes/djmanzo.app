@@ -10,6 +10,7 @@
   import FactList from "./FactList.svelte";
   import { i18n } from "../i18n.svelte";
   import { SECTIONS, fill } from "../i18n/sections";
+  import { HARDWARE_NAMES, dataWord } from "../i18n/datawords";
   import { tf } from "../i18n/facts.svelte";
   import { FACT_BY_ID } from "../../../shared/facts";
 
@@ -52,8 +53,8 @@
         {#each found as d (d.maker + d.model)}
           <li class:planned={d.status === "planned"} data-device={d.model}>
             <span class="kind mono">{w.kinds[d.kind]}</span>
-            <b>{d.model}</b>
-            <span class="maker">{d.maker}</span>
+            <b>{dataWord(HARDWARE_NAMES, d.model, i18n.lang)}</b>
+            <span class="maker">{dataWord(HARDWARE_NAMES, d.maker, i18n.lang)}</span>
             <span class="status {d.status === 'mapped' ? 'shipped' : 'planned'}">{d.status === 'mapped' ? w.mapped : w.planned}</span>
           </li>
         {:else}

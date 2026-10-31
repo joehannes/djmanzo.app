@@ -5,8 +5,8 @@
  * marketplace. The friendly "sen" Turkish music apps use, and the booth's own
  * words (deck, cue, loop, stem) as Turkish DJs say them; read in Azerbaijan
  * too. Edition names and djmanzo's own interface labels stay as the
- * application shows them. The feature descriptions themselves still read in
- * English.
+ * application shows them. The feature descriptions are in facts/tr.ts,
+ * fetched when the language is chosen.
  */
 
 import type { Pack } from "../packs";
