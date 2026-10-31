@@ -1048,5 +1048,80 @@
    "bass": "bass.webm",
    "rest": "rest.webm"
   }
+ },
+ "edm": {
+  "bpm": 128.0,
+  "key": "F minor",
+  "camelot": "4A",
+  "bars": 16,
+  "seconds": 30.000249433106575,
+  "pre": 0.25,
+  "frames": 1345061,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "italodisco": {
+  "bpm": 120.01,
+  "key": "D minor",
+  "camelot": "7A",
+  "bars": 16,
+  "seconds": 31.997097505668933,
+  "pre": 0.25,
+  "frames": 1433122,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "jerseyclub": {
+  "bpm": 140.0,
+  "key": "F minor",
+  "camelot": "4A",
+  "bars": 16,
+  "seconds": 27.428571428571427,
+  "pre": 0.25,
+  "frames": 1231650,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
  }
 }
