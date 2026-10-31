@@ -75,10 +75,87 @@
     } else document.getElementById(id)?.scrollIntoView();
   }
 
+  /*
+   * The bar is two shapes, drawn from where its parts are. The wing holds the name and the
+   * places to go: it hangs from the top of the window at the start side, deepest under the
+   * name like a wing's leading edge, and thins toward its end, where it sweeps up to a point.
+   * The island holds the options and floats apart at the other end, its leading edge swept
+   * the same way, as if cut from the wing's tail. Both are measured in reading order and
+   * mirrored when the page reads right to left.
+   */
+  type Hull = { w: number; h: number; tip: number; wing: string; island: string; edge: string; belly: string; wake: string[]; rtl: boolean; marks: string };
+  let hull = $state<Hull | null>(null);
+  let barEl: HTMLElement | undefined = $state();
+  let wingEl: HTMLElement | undefined = $state();
+  let rightEl: HTMLElement | undefined = $state();
+
+  const K = 0.5523; // a quarter circle, as a cubic
+  const r1 = (n: number) => Math.round(n * 10) / 10;
+
+  /** T is the wing's swept end and Ti the island's swept start, both as the stylesheet pads them. */
+  function shapes(w: number, h: number, tip: number, i0: number, i1: number, T: number, Ti: number, rtl: boolean): Hull {
+    const X = (x: number) => r1(rtl ? w - x : x);
+    const P = (x: number, y: number) => `${X(x)} ${r1(y)}`;
+    const b = tip - T; // where the underside turns up into the swept end
+    const yb = h - 7; // the underside, thin at the end
+    const y0 = h + 7; // and deep at the start, under the name
+    const under = `C ${P(b * 0.2, y0)} ${P(b * 0.56, yb)} ${P(b, yb)}`;
+    const sweep = `C ${P(b + 0.46 * T, yb)} ${P(tip - 0.1 * T, 0.32 * h)} ${P(tip, 0)}`;
+    const wing = `M ${P(0, 0)} L ${P(tip, 0)} C ${P(tip - 0.1 * T, 0.32 * h)} ${P(b + 0.46 * T, yb)} ${P(b, yb)} C ${P(b * 0.56, yb)} ${P(b * 0.2, y0)} ${P(0, y0)} Z`;
+    const edge = `M ${P(0, y0)} ${under} ${sweep}`;
+    const top = 7;
+    const bot = h - 7;
+    const r = (bot - top) / 2;
+    const L = i1 - r - i0;
+    const island =
+      `M ${P(i0, bot)} C ${P(i0 + 0.46 * Ti, bot)} ${P(i0 + 0.9 * Ti, top + 0.32 * (bot - top))} ${P(i0 + Ti, top + 3)} ` +
+      `Q ${P(i0 + Ti + 1, top)} ${P(i0 + Ti + 7, top)} L ${P(i1 - r, top)} ` +
+      `C ${P(i1 - r + K * r, top)} ${P(i1, top + r - K * r)} ${P(i1, top + r)} ` +
+      `C ${P(i1, top + r + K * r)} ${P(i1 - r + K * r, bot)} ${P(i1 - r, bot)} ` +
+      `C ${P(i1 - r - 0.36 * L, bot + 2.5)} ${P(i0 + 0.3 * L, bot + 1.2)} ${P(i0, bot)} Z`;
+    const belly = `M ${P(i1 - r, bot)} C ${P(i1 - r - 0.36 * L, bot + 2.5)} ${P(i0 + 0.3 * L, bot + 1.2)} ${P(i0, bot)}`;
+    // The air leaving the wing's point, toward the island: two thin lines that fade.
+    const gap = Math.max(0, i0 - tip);
+    const reach = Math.min(150, gap * 0.7);
+    const wake = reach > 24 ? [`M ${P(tip - 4, 5)} L ${P(tip + reach, 5)}`, `M ${P(tip - 12, 12)} L ${P(tip + reach * 0.62, 12)}`] : [];
+    // Where the shapes lie across the window, for the tests: the swept end's start and point, the island's ends.
+    const marks = [b, tip, i0, i1].map(X).join(" ");
+    return { w, h, tip, wing, island, edge, belly, wake, rtl, marks };
+  }
+
+  function measure() {
+    if (!barEl || !wingEl || !rightEl) return;
+    const box = barEl.getBoundingClientRect();
+    const css = getComputedStyle(barEl);
+    const rtl = css.direction === "rtl";
+    const room = (name: string, or: number) => parseFloat(css.getPropertyValue(name)) || or;
+    const w = box.width;
+    const end = (r: DOMRect) => (rtl ? w - r.left : r.right);
+    const start = (r: DOMRect) => (rtl ? w - r.right : r.left);
+    const wr = wingEl.getBoundingClientRect();
+    const rr = rightEl.getBoundingClientRect();
+    hull = shapes(w, box.height, end(wr), start(rr), end(rr), room("--sweep", 58), room("--lead", 28), rtl);
+  }
+
+  /** The edge under the wing, for the stylesheet's mask: the visitor's country's colours run along it. */
+  const edgeMask = $derived(
+    hull
+      ? `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${hull.w}' height='${hull.h + 14}'><path d='${hull.edge}' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'/></svg>`)}")`
+      : undefined,
+  );
+
+  $effect(() => {
+    void i18n.lang;
+    requestAnimationFrame(measure);
+  });
+
   onMount(() => {
     restore();
     startChoice();
     startLanguage();
+    const watch = new ResizeObserver(() => measure());
+    for (const el of [barEl, wingEl, rightEl]) if (el) watch.observe(el);
+    document.fonts?.ready.then(measure);
     const scroll = () => (solid = scrollY > 40);
     scroll();
     addEventListener("scroll", scroll, { passive: true });
@@ -89,6 +166,7 @@
     };
     document.addEventListener("click", close);
     return () => {
+      watch.disconnect();
       removeEventListener("scroll", scroll);
       document.removeEventListener("click", close);
     };
@@ -96,33 +174,106 @@
 </script>
 
 <a class="skip" href="#main">{t("nav.skip")}</a>
-<header class="bar" class:solid={solid || route.page !== "home" || menu}>
+<!-- A speaker, with its waves while the site's sounds are on. -->
+{#snippet speaker(on: boolean)}
+  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4z" fill="currentColor" fill-opacity=".18" />
+    {#if on}<path class="wave1" d="M15.5 9.2a4 4 0 0 1 0 5.6" /><path class="wave2" d="M18.2 6.6a7.6 7.6 0 0 1 0 10.8" />{:else}<path d="m16 9.5 5 5m0-5-5 5" />{/if}
+  </svg>
+{/snippet}
+
+<!--
+  Each place has a sign that says what it is, a shape that echoes it and a type that suits it:
+  the machine in a panel's engraved capitals, the price on a ticket in a receipt's type, the
+  crates of the marketplace stencilled, the community in a rounded hand, the journal written,
+  and the journey in the visitor's own look.
+-->
+{#snippet icon(kind: string)}
+  <svg class="ico" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    {#if kind === "features"}
+      <path d="M6 3.5v17M12 3.5v17M18 3.5v17" opacity=".42" />
+      <rect class="cap c1" x="3.6" y="13" width="4.8" height="3.2" rx="1" fill="currentColor" />
+      <rect class="cap c2" x="9.6" y="6.5" width="4.8" height="3.2" rx="1" fill="currentColor" />
+      <rect class="cap c3" x="15.6" y="10.5" width="4.8" height="3.2" rx="1" fill="currentColor" />
+    {:else if kind === "hardware"}
+      <rect x="1.8" y="5.5" width="20.4" height="13" rx="3.2" />
+      <g class="jog"><circle cx="7.4" cy="12" r="3.3" /><circle cx="7.4" cy="9.6" r=".8" fill="currentColor" stroke="none" /></g>
+      <g class="jog"><circle cx="16.6" cy="12" r="3.3" /><circle cx="16.6" cy="9.6" r=".8" fill="currentColor" stroke="none" /></g>
+      <path d="M12 9.2v5.6" />
+    {:else if kind === "pricing"}
+      <g class="tag"><path d="M3.2 12.6V5.2a2 2 0 0 1 2-2h7.4l8.2 8.4-8.6 8.6z" fill="currentColor" fill-opacity=".14" /><circle cx="8" cy="8" r="1.6" /></g>
+    {:else if kind === "market"}
+      <g class="discs"><path d="M5.6 11.2a4.2 4.2 0 0 1 8.4 0" /><path d="M10.4 11.2a4.2 4.2 0 0 1 8.4 0" /></g>
+      <path d="M2.8 11.2h18.4l-1.7 9H4.5z" fill="currentColor" fill-opacity=".14" />
+      <path d="M8.5 15.4h7" />
+    {:else if kind === "community"}
+      <path class="b1" d="M4 4h9.5a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H8.6L5.4 15.8V13H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="currentColor" fill-opacity=".14" />
+      <path class="b2" d="M18 8.5h2a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-.8v2.8L16 17.5h-4a2 2 0 0 1-2-2v-.6" />
+    {:else if kind === "journal"}
+      <path d="M5 3h9.5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5z" fill="currentColor" fill-opacity=".14" /><path d="M8 3v18M10.6 8h3.4M10.6 11.4h2.6" />
+      <path class="pen" d="M20.2 6.4l1.2 1.2-5.6 5.6-1.8.6.6-1.8z" />
+    {:else}
+      <circle cx="4.6" cy="18.6" r="2" />
+      <path class="route" d="M6.8 18.6h5.4a3.4 3.4 0 0 0 0-6.8H9.6a3.4 3.4 0 0 1 0-6.8h5.2" />
+      <path class="spark" d="M19.4 1.6l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z" fill="currentColor" stroke="none" />
+    {/if}
+  </svg>
+{/snippet}
+
+<header class="bar" class:solid={solid || route.page !== "home" || menu} bind:this={barEl}>
+  <!-- The two shapes the bar is drawn as; nothing here can be pressed. -->
+  {#if hull}
+    <div class="hull" aria-hidden="true" data-hull={hull.marks}>
+      <svg class="shade" width={hull.w} height={hull.h + 14}><path d={hull.island} /></svg>
+      <div class="glass wingglass" style:clip-path={`path("${hull.wing}")`}></div>
+      <div class="glass islandglass" style:clip-path={`path("${hull.island}")`}></div>
+      <div class="edgewrap">
+        <div class="edge" style:mask-image={edgeMask} style:-webkit-mask-image={edgeMask} style:--tip={`${hull.tip}px`} class:rtl={hull.rtl}></div>
+      </div>
+      <svg class="lines" width={hull.w} height={hull.h + 14}>
+        <defs>
+          <linearGradient id="wake-fade" x1={hull.rtl ? "1" : "0"} x2={hull.rtl ? "0" : "1"} y1="0" y2="0">
+            <stop offset="0" style="stop-color: var(--accent)" stop-opacity=".55" />
+            <stop offset="1" style="stop-color: var(--accent)" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        <!-- A hairline in the look's colour runs under the edge, so a flag's dark stripe never loses the shape. -->
+        <path class="stripe" d={hull.edge} transform="translate(0 3.2)" />
+        <path class="rim" d={hull.island} />
+        <path class="belly" d={hull.belly} />
+        {#each hull.wake as d, i (i)}<path class="wake" d={d} stroke="url(#wake-fade)" style:animation-delay={`${0.25 + i * 0.12}s`} />{/each}
+        {#key route.page}<path class="glint" d={hull.edge} pathLength="1000" />{/key}
+      </svg>
+    </div>
+  {/if}
   <div class="inner wrap">
-    <a class="brand" href={href("home")} aria-label={t("nav.home")}>
-      <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="16" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="2" /><circle cx="16" cy="16" r="2.5" fill="currentColor" /></svg>
-      <b>djmanzo</b><span class="beta">beta</span>
-    </a>
+    <div class="wing" bind:this={wingEl}>
+      <a class="brand" href={href("home")} aria-label={t("nav.home")}>
+        <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="16" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="2" /><circle cx="16" cy="16" r="2.5" fill="currentColor" /></svg>
+        <b>djmanzo</b><span class="beta">beta</span>
+      </a>
 
-    <nav class="links" class:open={menu} aria-label={t("nav.site")}>
-      <a class="nav" class:on={route.page === "features"} href={href("features")} onclick={() => (menu = false)}>{t("nav.features")}</a>
-      <button class="nav" onclick={() => section("hardware")}>{t("nav.hardware")}</button>
-      <a class="nav" class:on={route.page === "pricing"} href={href("pricing")} onclick={() => (menu = false)}>{t("nav.pricing")}</a>
-      <a class="nav" class:on={route.page === "market"} href={href("market")} onclick={() => (menu = false)}>{t("nav.market")}</a>
-      <a class="nav" class:on={route.page === "community"} href={href("community")} onclick={() => (menu = false)}>{t("nav.community")}</a>
-      <a class="nav journal" href="/blog">{t("nav.journal")}</a>
-      <a class="nav journey" class:on={route.page === "journey"} href={href("journey")} onclick={() => (menu = false)} title={JOURNEY[i18n.lang].nav} data-journey-link>✦ <span class="jl">{JOURNEY[i18n.lang].nav}</span></a>
-      <!-- On a narrow phone the sound switch lives here, so the bar fits. -->
-      <button class="nav sound-row" aria-pressed={sounds.on} onclick={() => setSounds(!sounds.on)} data-sounds-row>{sounds.on ? "🔊" : "🔈"} {sounds.on ? t("sound.onLabel") : t("sound.offLabel")}</button>
-    </nav>
+      <nav class="links" class:open={menu} aria-label={t("nav.site")}>
+        <a class="nav pad" class:on={route.page === "features"} href={href("features")} onclick={() => (menu = false)}>{@render icon("features")}<span class="lbl">{t("nav.features")}</span></a>
+        <button class="nav capsule" onclick={() => section("hardware")}>{@render icon("hardware")}<span class="lbl">{t("nav.hardware")}</span></button>
+        <a class="nav ticket" class:on={route.page === "pricing"} href={href("pricing")} onclick={() => (menu = false)}>{@render icon("pricing")}<span class="lbl">{t("nav.pricing")}</span></a>
+        <a class="nav crate" class:on={route.page === "market"} href={href("market")} onclick={() => (menu = false)}>{@render icon("market")}<span class="lbl">{t("nav.market")}</span></a>
+        <a class="nav bubble" class:on={route.page === "community"} href={href("community")} onclick={() => (menu = false)}>{@render icon("community")}<span class="lbl">{t("nav.community")}</span></a>
+        <a class="nav journal" href="/blog">{@render icon("journal")}<span class="lbl">{t("nav.journal")}</span></a>
+        <a class="nav journey" class:on={route.page === "journey"} href={href("journey")} onclick={() => (menu = false)} title={JOURNEY[i18n.lang].nav} data-journey-link>{@render icon("journey")}<span class="lbl jl">{JOURNEY[i18n.lang].nav}</span></a>
+        <!-- On a narrow phone the sound switch lives here, so the bar fits. -->
+        <button class="nav sound-row" aria-pressed={sounds.on} onclick={() => setSounds(!sounds.on)} data-sounds-row>{@render speaker(sounds.on)} <span class="lbl">{sounds.on ? t("sound.onLabel") : t("sound.offLabel")}</span></button>
+      </nav>
+    </div>
 
-    <div class="right">
+    <div class="right" bind:this={rightEl}>
       <button
         class="sound-btn"
         aria-pressed={sounds.on}
         title={sounds.on ? t("sound.on") : t("sound.off")}
         aria-label={sounds.on ? t("sound.onLabel") : t("sound.offLabel")}
         onclick={() => setSounds(!sounds.on)}
-        data-sounds>{sounds.on ? "🔊" : "🔈"}</button>
+        data-sounds>{@render speaker(sounds.on)}</button>
       <div class="skins">
         <button class="skin-btn" aria-haspopup="true" aria-expanded={picker} onclick={() => (picker = !picker)} data-skin-picker>
           <span class="swatch" style:background={`linear-gradient(135deg, ${skin().tokens.accent}, ${skin().tokens.accent2})`}></span>
@@ -202,19 +353,31 @@
 </header>
 
 <style>
+  /* The island's round keys: the sound, the look and the language. */
   .sound-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 99px;
-    border: 1px solid var(--line);
-    background: transparent;
-    color: var(--text);
-    font-size: 16px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--text) 13%, transparent);
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+    color: color-mix(in srgb, var(--text) 78%, transparent);
     cursor: pointer;
+    transition:
+      border-color 0.2s,
+      color 0.2s,
+      box-shadow 0.2s;
+  }
+  .sound-btn:hover {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--text) 28%, transparent);
   }
   .sound-btn[aria-pressed="true"] {
+    color: var(--accent);
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
   }
   .swatch.tile {
     border: 1px solid var(--line);
@@ -263,39 +426,135 @@
     padding: 8px 12px;
     border-radius: 8px;
   }
-  /* The visitor's country's colours, a thin rule under the bar (App.svelte sets --flag). */
-  .bar::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: var(--flag, none);
-    opacity: 0.75;
-    pointer-events: none;
-  }
   .bar {
     position: fixed;
     inset: 0 0 auto 0;
     height: var(--bar);
     z-index: 50;
-    transition:
-      background-color 0.3s,
-      border-color 0.3s,
-      backdrop-filter 0.3s;
-    border-bottom: 1px solid transparent;
+    /* The wing's swept end and the island's swept start: the shapes are drawn into this room. */
+    --sweep: 58px;
+    --lead: 28px;
   }
-  .bar.solid {
-    background: color-mix(in srgb, var(--bg) 82%, transparent);
-    backdrop-filter: blur(14px) saturate(1.2);
-    border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent);
+  /* The drawn shapes, behind the bar's contents, a little deeper than the bar where the wing hangs. */
+  .hull {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: calc(100% + 14px);
+    pointer-events: none;
+    z-index: -1;
   }
+  .hull > * {
+    position: absolute;
+    inset: 0;
+  }
+  .glass {
+    transition: background-color 0.35s;
+    backdrop-filter: blur(14px) saturate(1.25);
+    -webkit-backdrop-filter: blur(14px) saturate(1.25);
+  }
+  /* At the top of the home page the wing is light over the picture; anywhere else, and once scrolled, it is solid. */
+  .wingglass {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 52%, transparent), color-mix(in srgb, var(--bg) 30%, transparent));
+  }
+  .bar.solid .wingglass {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg) 92%, transparent), color-mix(in srgb, var(--raised, var(--bg)) 84%, transparent));
+  }
+  .islandglass {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--raised, var(--bg)) 90%, transparent), color-mix(in srgb, var(--bg) 88%, transparent));
+  }
+  /* The island floats: its shadow falls a little below it. */
+  .shade {
+    filter: blur(9px);
+    transform: translateY(6px);
+    opacity: 0.55;
+  }
+  .shade path {
+    fill: rgb(0 0 0 / 0.6);
+  }
+  /* The wing's edge in the visitor's country's colours (App.svelte sets --flag), or the look's own, along the curve. */
+  .edgewrap {
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 45%, transparent));
+  }
+  .edge {
+    position: absolute;
+    inset: 0;
+    background-image: var(--flag), linear-gradient(90deg, var(--accent), var(--accent2, var(--accent)));
+    background-size: var(--tip) 100%;
+    background-repeat: no-repeat;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    opacity: 0.9;
+  }
+  .edge.rtl {
+    background-position: right top;
+  }
+  .lines {
+    overflow: visible;
+    fill: none;
+  }
+  .stripe {
+    stroke: color-mix(in srgb, var(--accent) 60%, transparent);
+    stroke-width: 1;
+  }
+  .rim {
+    stroke: color-mix(in srgb, var(--text) 15%, transparent);
+    stroke-width: 1;
+  }
+  .belly {
+    stroke: color-mix(in srgb, var(--accent) 55%, transparent);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+  }
+  .wake {
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-dasharray: 160;
+    stroke-dashoffset: 160;
+    animation: wake 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes wake {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  /* On every new page a glint runs along the wing's edge, from the name to the point. */
+  .glint {
+    stroke: color-mix(in srgb, #fff 85%, var(--accent));
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-dasharray: 70 1100;
+    stroke-dashoffset: 70;
+    opacity: 0;
+    animation: glint 1.25s cubic-bezier(0.45, 0, 0.2, 1) 0.15s;
+  }
+  @keyframes glint {
+    0% {
+      stroke-dashoffset: 70;
+      opacity: 0.95;
+    }
+    85% {
+      opacity: 0.85;
+    }
+    100% {
+      stroke-dashoffset: -1000;
+      opacity: 0;
+    }
+  }
+  /* The bar spans wider than the page's column: the wing and the island need the room. */
   .inner {
     height: 100%;
+    max-width: 1760px;
     display: flex;
     align-items: center;
-    gap: 22px;
+    gap: 14px;
+  }
+  .wing {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    height: 100%;
+    padding-inline-end: var(--sweep);
+    flex: none;
   }
   .brand {
     display: inline-flex;
@@ -319,38 +578,276 @@
   }
   .links {
     display: flex;
-    gap: 4px;
+    align-items: center;
+    gap: 6px;
   }
+  /*
+   * The places to go: a sign and a word on a plate of its own shape. The plate is faint at rest,
+   * clear under the pointer, and lit in the look's colour on the page the visitor is on.
+   */
   .nav {
-    font: 500 14px/1 var(--body);
-    color: color-mix(in srgb, var(--text) 82%, transparent);
+    --plate: color-mix(in srgb, var(--text) 4.5%, transparent);
+    --rim: color-mix(in srgb, var(--text) 9%, transparent);
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 36px;
+    font: 600 13.5px/1 "Barlow Semi Condensed", var(--body);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: color-mix(in srgb, var(--text) 80%, transparent);
     background: none;
     border: 0;
-    padding: 10px 12px;
-    border-radius: 8px;
+    padding: 0 12px;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
+    transition:
+      color 0.2s,
+      transform 0.2s cubic-bezier(0.3, 0.7, 0.3, 1.4);
   }
-  .nav:hover,
-  .nav.on {
+  .nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 9px;
+    background: var(--plate);
+    border: 1px solid var(--rim);
+    transition:
+      background-color 0.2s,
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .nav:hover {
+    --plate: color-mix(in srgb, var(--text) 9%, transparent);
+    --rim: color-mix(in srgb, var(--text) 18%, transparent);
     color: var(--text);
-    background: color-mix(in srgb, var(--text) 7%, transparent);
+    transform: translateY(-1px);
   }
-  /* The journey: the one link that asks about the visitor, lit a little. */
-  .nav.journey {
+  .nav.on {
+    --plate: color-mix(in srgb, var(--accent) 16%, transparent);
+    --rim: color-mix(in srgb, var(--accent) 55%, transparent);
+    color: var(--text);
+  }
+  .nav.on::before {
+    box-shadow: 0 0 14px -4px color-mix(in srgb, var(--accent) 70%, transparent);
+  }
+  .nav:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .ico {
+    flex: none;
+    color: color-mix(in srgb, var(--accent) 70%, var(--text));
+    overflow: visible;
+  }
+  .nav.on .ico,
+  .nav:hover .ico {
     color: var(--accent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  .ico * {
+    transition: transform 0.35s cubic-bezier(0.3, 0.7, 0.3, 1.3);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  /* Features: a performance pad, its light on when lit; the faders move under the pointer. */
+  .nav.pad::before {
+    border-radius: 6px;
+  }
+  .nav.pad::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    inset-inline-end: 5px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--text) 22%, transparent);
+    transition:
+      background-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .nav.pad:hover::after,
+  .nav.pad.on::after {
+    background: var(--accent);
+    box-shadow: 0 0 6px var(--accent);
+  }
+  .nav:hover .c1 {
+    transform: translateY(-6px);
+  }
+  .nav:hover .c2 {
+    transform: translateY(7px);
+  }
+  .nav:hover .c3 {
+    transform: translateY(-3px);
+  }
+  /* Hardware: a controller's round shape; its platters turn. */
+  .nav.capsule::before {
+    border-radius: 999px;
+  }
+  .nav:hover .jog {
+    transform: rotate(160deg);
+  }
+  /* Pricing: a ticket, notched at both ends and edged in dashes, in a receipt's type; the tag swings. */
+  .nav.ticket {
+    font: 500 12.5px/1 var(--mono);
+    letter-spacing: 0.04em;
+    padding-inline: 14px;
+  }
+  .nav.ticket::before {
+    border-radius: 5px;
+    border-style: dashed;
+    -webkit-mask:
+      radial-gradient(circle 5px at 0 50%, #0000 96%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle 5px at 100% 50%, #0000 96%, #000) right / 51% 100% no-repeat;
+    mask:
+      radial-gradient(circle 5px at 0 50%, #0000 96%, #000) left / 51% 100% no-repeat,
+      radial-gradient(circle 5px at 100% 50%, #0000 96%, #000) right / 51% 100% no-repeat;
+  }
+  .nav .tag {
+    transform-origin: 33% 33%;
+  }
+  .nav:hover .tag {
+    transform: rotate(-16deg);
+  }
+  /* The marketplace: a record crate's cut corners and stencilled letters; the records lift out. */
+  .nav.crate {
+    font: 400 14px/1 "Saira Stencil One", var(--body);
+    letter-spacing: 0.06em;
+  }
+  /* A clipped corner loses its border, so the crate's rim is a layer of its own and its face sits inside it. */
+  .nav.crate::before,
+  .nav.crate::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    border: 0;
+    border-radius: 0;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+  .nav.crate::before {
+    inset: 0;
+    background: var(--rim);
+  }
+  .nav.crate::after {
+    inset: 1px;
+    clip-path: polygon(7.6px 0, 100% 0, 100% calc(100% - 7.6px), calc(100% - 7.6px) 100%, 0 100%, 0 7.6px);
+    background: var(--face);
+    transition: background-color 0.2s;
+  }
+  .nav.crate {
+    --face: color-mix(in srgb, var(--text) 5%, var(--bg));
+  }
+  .nav.crate:hover {
+    --face: color-mix(in srgb, var(--text) 10%, var(--bg));
+  }
+  .nav.crate.on {
+    --face: color-mix(in srgb, var(--accent) 16%, var(--bg));
+  }
+  .nav:hover .discs {
+    transform: translateY(-3px);
+  }
+  /* The community: a speech bubble, in a rounded, friendly hand; the second bubble answers. */
+  .nav.bubble {
+    font: 600 15px/1 "Fredoka", var(--body);
+    text-transform: none;
+    letter-spacing: 0.01em;
+  }
+  .nav.bubble::before {
+    border-radius: 15px 15px 15px 4px;
+  }
+  :global([dir="rtl"]) .nav.bubble::before {
+    border-radius: 15px 15px 4px 15px;
+  }
+  .nav:hover .b2 {
+    transform: translate(1px, -2px);
+  }
+  .nav:hover .b1 {
+    transform: translate(-1px, 1px);
+  }
+  /* The journal: a notebook's page, bound at the start, in handwriting; the pen writes. */
+  .nav.journal {
+    font: 700 19px/1 "Caveat", var(--body);
+    text-transform: none;
+    letter-spacing: 0.01em;
+  }
+  .nav.journal::before {
+    border-radius: 2px 10px 10px 2px;
+    border-inline-start: 3px solid color-mix(in srgb, var(--accent) 45%, transparent);
+    transform: rotate(-1.2deg);
+  }
+  .nav:hover .pen {
+    transform: translate(-2px, 2px) rotate(-12deg);
+  }
+  /* The journey: the one place that asks about the visitor, in their look's own type, its route drawn in dashes that walk. */
+  .nav.journey {
+    font: var(--display-bold, 700) 14px/1 var(--display);
+    text-transform: none;
+    letter-spacing: var(--display-track, -0.01em);
+    color: var(--accent);
+    --plate: color-mix(in srgb, var(--accent) 9%, transparent);
+    --rim: color-mix(in srgb, var(--accent) 50%, transparent);
+  }
+  .nav.journey::before {
+    border-radius: 999px 999px 999px 999px;
+    border-style: dashed;
   }
   .nav.journey:hover,
   .nav.journey.on {
-    background: color-mix(in srgb, var(--accent) 14%, transparent);
+    --plate: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent);
   }
+  .nav.journey .ico {
+    color: var(--accent);
+  }
+  .nav.journey .route {
+    stroke-dasharray: 2.4 2.6;
+  }
+  .nav.journey:hover .route {
+    animation: walk 0.9s linear infinite;
+  }
+  .nav.journey:hover .spark {
+    transform: scale(1.35) rotate(45deg);
+  }
+  @keyframes walk {
+    to {
+      stroke-dashoffset: -10;
+    }
+  }
+  /* The options float on their island, apart from the places to go. */
   .right {
-    margin-left: auto;
+    margin-inline-start: auto;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    padding-inline: var(--lead) 9px;
+  }
+  .wave2 {
+    animation: speaker 1.6s ease-in-out infinite;
+  }
+  @keyframes speaker {
+    50% {
+      opacity: 0.35;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .wake,
+    .glint,
+    .wave2,
+    .nav:hover .route {
+      animation: none;
+    }
+    .wake {
+      stroke-dashoffset: 0;
+    }
+    .nav,
+    .nav:hover,
+    .nav:hover .ico * {
+      transform: none;
+    }
   }
   .price {
     font-size: 12px;
@@ -362,7 +859,7 @@
     color: var(--text);
   }
   /* The price line only where the bar has room for it beside every link. */
-  @media (max-width: 1500px) {
+  @media (max-width: 1799px) {
     .price {
       display: none;
     }
@@ -378,8 +875,8 @@
     height: 34px;
     padding: 0;
     border-radius: 50%;
-    border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
-    background: color-mix(in srgb, var(--bg) 40%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text) 13%, transparent);
+    background: color-mix(in srgb, var(--text) 4%, transparent);
     cursor: pointer;
   }
   .lang-btn[aria-expanded="true"] {
@@ -405,8 +902,8 @@
     height: 34px;
     padding: 0 12px 0 8px;
     border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
-    background: color-mix(in srgb, var(--bg) 40%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text) 13%, transparent);
+    background: color-mix(in srgb, var(--text) 4%, transparent);
     color: var(--text);
     font: 500 13px/1 var(--body);
     cursor: pointer;
@@ -515,10 +1012,50 @@
       display: none;
     }
   }
-  /* Between the full bar and the menu, the journal gives its place to the journey: it is in the footer, and in the menu. */
-  @media (min-width: 1081px) and (max-width: 1500px) {
+  /* Where every word is shown but the room runs short, the journal gives its place: it is in the footer, and in the menu. */
+  @media (min-width: 1600px) and (max-width: 1799px) {
     .nav.journal {
       display: none;
+    }
+  }
+  /*
+   * Narrower, the places become a dock of signs: each word waits under its sign, in its own type,
+   * and shows when the pointer or the keyboard comes to it. The journey keeps its words while it can.
+   */
+  @media (min-width: 1081px) and (max-width: 1599px) {
+    .links {
+      gap: 5px;
+    }
+    .links .nav:not(.journey) {
+      width: 40px;
+      padding: 0;
+      justify-content: center;
+    }
+    .links .nav:not(.journey) .lbl {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 50%;
+      translate: -50% -4px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: var(--raised, var(--bg));
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 24px rgb(0 0 0 / 0.4);
+      color: var(--text);
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity 0.18s,
+        translate 0.22s cubic-bezier(0.3, 0.7, 0.3, 1.3);
+    }
+    .links .nav:not(.journey):hover .lbl,
+    .links .nav:not(.journey):focus-visible .lbl {
+      opacity: 1;
+      translate: -50% 0;
+    }
+    .nav.pad::after {
+      top: 4px;
+      inset-inline-end: 4px;
     }
   }
   /* Narrower still, the journey is its star alone, its name in its title. */
@@ -531,26 +1068,33 @@
       clip-path: inset(50%);
     }
   }
+  /* Folded, the places open as a card of plates under the bar, two to a row. */
   @media (max-width: 1080px) {
     .links {
       display: none;
       position: fixed;
-      top: var(--bar);
-      left: 0;
-      right: 0;
-      flex-direction: column;
-      padding: 12px var(--gutter) 20px;
-      background: color-mix(in srgb, var(--bg) 96%, transparent);
+      top: calc(var(--bar) + 14px);
+      inset-inline: 10px;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 14px;
+      border-radius: 18px 18px 22px 22px;
+      background: color-mix(in srgb, var(--bg) 95%, transparent);
       backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--line);
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 60px rgb(0 0 0 / 0.5);
     }
     .links.open {
-      display: flex;
+      display: grid;
     }
     .links .nav {
-      font-size: 17px;
-      padding: 14px 8px;
-      text-align: left;
+      height: 48px;
+      padding-inline: 14px;
+      justify-content: flex-start;
+    }
+    .links .nav .ico {
+      width: 20px;
+      height: 20px;
     }
     .burger {
       display: inline-flex;
@@ -563,6 +1107,13 @@
     display: none;
   }
   @media (max-width: 640px) {
+    .bar {
+      --sweep: 34px;
+      --lead: 18px;
+    }
+    .wing {
+      gap: 10px;
+    }
     .skin-name,
     .account:not(.signed),
     .beta {
@@ -600,11 +1151,29 @@
   }
   /* A narrow phone: the sound switch moves into the folded menu, the avatar shrinks a little. */
   @media (max-width: 420px) {
+    /* The shapes draw in less room; the download key keeps its arrow, its system is named in its label and its menu. */
+    .bar {
+      --sweep: 24px;
+      --lead: 13px;
+    }
+    .inner {
+      gap: 6px;
+    }
+    .right {
+      gap: 4px;
+      padding-inline-end: 5px;
+    }
+    .dl :global(.os-icon) {
+      display: none;
+    }
     .sound-btn {
       display: none;
     }
     .links .sound-row {
-      display: block;
+      display: inline-flex;
+    }
+    .links {
+      grid-template-columns: 1fr;
     }
     .account img,
     .account .initial {

@@ -1557,3 +1557,40 @@ the language most probably read where the visitor is.
   turns a little. All of it stays still for whoever asks for less motion.
   The highlights carry the way to the journey beside the way to every
   feature.
+
+## The bar: a wing and an island (31 October)
+
+The owner asked for a bar with an aerodynamic edge instead of a straight
+rule, its options apart from its places, and places that are signs of their
+own (`SiteBar.svelte`).
+
+- **Two shapes.** The places hang from the top of the window on a wing:
+  deepest under the name, thinning toward its end, where it sweeps up to a
+  point. The options (sound, look, language, account, download) float on an
+  island at the other end, its leading edge swept the same way, as if cut
+  from the wing's tail, with a shadow under it. Both are drawn from where
+  the bar's parts are (measured on every resize, language and font change)
+  and mirrored when the page reads right to left. The visitor's country's
+  colours run along the wing's edge, over a hairline in the look's colour;
+  a glint runs along it on every new page, and two thin lines of air leave
+  its point toward the island.
+- **Signs.** Each place has a drawn sign that says what it is and moves a
+  little under the pointer (the faders slide, the platters turn, the tag
+  swings, the records lift out of the crate, the second bubble answers, the
+  pen writes, the route's dashes walk), on a plate of a shape that echoes
+  it: a pad with its light, a controller's capsule, a ticket notched and
+  edged in dashes, a crate's cut corners, a speech bubble, a notebook's
+  page, the journey's dashed pill.
+- **Type.** The machine in a panel's engraved capitals (Barlow Semi
+  Condensed), the price in a receipt's type (JetBrains Mono), the
+  marketplace stencilled like a record crate (Saira Stencil One), the
+  community in a rounded hand (Fredoka), the journal written (Caveat), and
+  the journey in the visitor's own look. All from Google Fonts under the SIL
+  Open Font License, linked rather than bundled, like the site's others.
+- **Room.** From 1600 px every place shows its word; from 1800 px the
+  journal and the price line join them. Between the folded menu (≤ 1080 px)
+  and 1600 px the places are a dock of signs, each word shown under its
+  sign, in its type, when the pointer or the keyboard comes to it; the
+  journey keeps its words while it can. Folded, the places open as a card
+  of plates. A browser test holds every place on the wing before its swept
+  end and every option on the island, at seven widths and right to left.

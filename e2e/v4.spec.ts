@@ -777,3 +777,49 @@ test("the trail: where the visitor is on a long page, what comes next, a jump to
   await page.locator("[data-trail-ask=journey]").click();
   await expect(page).toHaveURL(/\/journey$/);
 });
+
+test("the bar is a wing and an island: every place on the wing before its swept end, every option on the island, and the two never meet", async ({ page }) => {
+  const errs = errors(page);
+  const check = async (where: string) => {
+    const hull = page.locator("[data-hull]");
+    await expect(hull).toHaveCount(1);
+    // The fonts and the shapes settle; then the shapes are read where they were drawn.
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(150);
+    const r = await page.evaluate(() => {
+      const [tail, tip, i0, i1] = document.querySelector<HTMLElement>("[data-hull]")!.dataset.hull!.split(" ").map(Number);
+      const rtl = document.documentElement.dir === "rtl";
+      const box = (e: Element) => e.getBoundingClientRect();
+      // In reading order: how far from the start each thing begins and ends.
+      const from = (x: number) => (rtl ? innerWidth - x : x);
+      const span = (e: Element) => (rtl ? [from(box(e).right), from(box(e).left)] : [box(e).left, box(e).right]);
+      const shown = (e: Element) => (e as HTMLElement).offsetParent !== null && getComputedStyle(e).position !== "fixed";
+      return {
+        tail: from(tail),
+        tip: from(tip),
+        island: [from(i0), from(i1)].sort((a, b) => a - b),
+        places: [document.querySelector(".brand")!, ...document.querySelectorAll(".links .nav")].filter(shown).map(span),
+        options: [...document.querySelectorAll(".right > *")].filter(shown).map(span),
+      };
+    });
+    expect(r.places.length, `${where}: something on the wing`).toBeGreaterThan(0);
+    for (const [, end] of r.places) expect(end, `${where}: a place ends before the wing sweeps up`).toBeLessThanOrEqual(r.tail + 0.5);
+    expect(r.tip, `${where}: the wing's point is past its places`).toBeGreaterThan(r.tail);
+    expect(r.island[0], `${where}: the island starts after the wing's point`).toBeGreaterThanOrEqual(r.tip);
+    for (const [start, end] of r.options) {
+      expect(start, `${where}: an option starts inside the island`).toBeGreaterThanOrEqual(r.island[0]);
+      expect(end, `${where}: an option ends inside the island`).toBeLessThanOrEqual(r.island[1] + 0.5);
+    }
+  };
+  for (const width of [1920, 1700, 1440, 1280, 1100, 900, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/pricing?country=DE&lang=fr");
+    await check(`${width}px`);
+  }
+  // Read right to left, the same shapes, mirrored.
+  await page.setViewportSize({ width: 1440, height: 800 });
+  await page.goto("/?country=IL");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await check("Hebrew");
+  expect(errs).toEqual([]);
+});
