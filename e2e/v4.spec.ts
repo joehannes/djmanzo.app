@@ -31,17 +31,24 @@ test.beforeEach(async ({ page }) => {
 
 const skinOf = (page: Page) => page.locator("html").getAttribute("data-skin");
 
+/** The hero's grooves sit in a picker that opens from the track's name: open it, if it is not open already. */
+async function grooves(page: Page): Promise<void> {
+  if (!(await page.locator("[data-genre-picker]").isVisible())) await page.locator("[data-genre-trigger]").click();
+}
+
 test("the look follows where the visitor is, and the deck plays that place's music", async ({ page }) => {
   const errs = errors(page);
   await page.goto("/?country=DE&lang=en");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "club");
   await expect(page.locator("[data-hero-photo]")).toHaveAttribute("style", /club-hero\.webp/);
+  await grooves(page);
   await expect(page.locator("[data-groove=techno]")).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-look]")).toContainText("Club · Europe · Germany");
 
   await page.goto("/?country=DO");
   await expect(page.locator("html")).toHaveAttribute("data-skin", "tropical");
   // A Dominican visitor hears merengue first, and sees the app in its Caribbean theme.
+  await grooves(page);
   await expect(page.locator("[data-groove=merengue]")).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-tab=perform]")).toHaveAttribute("aria-selected", "true");
   await expect(page.locator("#tour-panel img[data-shot]")).toHaveAttribute("data-shot", "Caribbean");
@@ -62,6 +69,8 @@ test("the visitor can change the look, it stays, and the waveforms follow it", a
   await expect(page.locator("canvas[data-wave=lanes]")).toHaveAttribute("data-colours", "#ff4fd8 #4fd2ff #7c3aed #f7e8ff");
   await expect(page.locator("canvas[data-wave=bands]")).toHaveAttribute("data-colours", "#4fd2ff #ff4fd8 #f7e8ff");
   // A new look brings its own music: the first of its grooves, not the club's techno.
+  await page.locator("#top").scrollIntoViewIfNeeded();
+  await grooves(page);
   await expect(page.locator("[data-groove]").first()).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-groove=techno]")).not.toHaveAttribute("aria-pressed", "true");
 
@@ -80,6 +89,7 @@ test("the deck plays, changes groove in time, and its stems switch one by one", 
   await page.click("[data-play]");
   await expect(page.locator("[data-play]")).toHaveAttribute("aria-label", "Stop the deck");
   await expect(page.locator("[data-bpm]")).toHaveText(LOOP_INDEX.hiphop.bpm.toFixed(1));
+  await grooves(page);
   await page.click("[data-groove=house]");
   // The recorded loop's own tempo, as it was made, not the middle of house's range.
   await expect(page.locator("[data-bpm]")).toHaveText(LOOP_INDEX.house.bpm.toFixed(1));
@@ -492,10 +502,10 @@ test("Backstage: the crew sets a password, comes in with it, and grants a licenc
   await page.locator("[data-crew-password]").fill("crew-secret");
   await page.getByRole("button", { name: "Come in" }).click();
   // Who the overview's people are: the token signed in as the "Owner" account.
-  await page.locator("[data-people] summary").click();
+  await page.locator("[data-panel=people]").click();
   await expect(page.locator("[data-people] [data-person]").first()).toBeVisible();
   await expect(page.locator("[data-people]")).toContainText("Owner: the crew's password or token");
-  await page.locator("[data-password] summary").click();
+  await page.locator("[data-panel=password]").click();
   // The local store outlives a run, so a password may be set already; the unit tests hold a fresh site to having none.
   await expect(page.locator("[data-password]")).toContainText("There is no default password.");
   await expect(page.locator("[data-password]")).toContainText(/None is set yet|One is set/);
@@ -512,7 +522,7 @@ test("Backstage: the crew sets a password, comes in with it, and grants a licenc
   await expect(page).toHaveURL(/\/backstage$/);
   await page.locator("[data-crew-password]").fill("a long crew password");
   await page.getByRole("button", { name: "Come in" }).click();
-  await page.locator("[data-grant] summary").click();
+  await page.locator("[data-panel=grant]").click();
   await page.locator("[data-grant-who]").fill(uid);
   await page.locator("[data-grant-edition]").selectOption("karaoke");
   await page.getByRole("button", { name: "Grant it" }).click();
@@ -538,7 +548,7 @@ test("Insights: a visitor's pages and search reach Backstage, with no cookie and
   await page.goto("/backstage");
   await page.locator("[data-crew-password]").fill("crew-secret");
   await page.getByRole("button", { name: "Come in" }).click();
-  await page.locator("[data-insights] summary").click();
+  await page.locator("[data-panel=insights]").click();
   await page.locator("[data-insights-days='7']").click();
   await expect(page.locator("[data-insights-searches]")).toContainText(words);
   await expect(page.locator("[data-insights-pages]")).toContainText("/features");
@@ -596,7 +606,7 @@ test("Backstage: payments are set without a deploy, shown back only by their end
     await page.goto("/backstage");
     await page.locator("[data-crew-password]").fill("crew-secret");
     await page.getByRole("button", { name: "Come in" }).click();
-    await page.locator("[data-payments] summary").click();
+    await page.locator("[data-panel=payments]").click();
     await expect(page.locator("[data-pay-mode]")).toContainText("Card form: off");
     await page.locator("[data-pay-field=STRIPE_PUBLISHABLE_KEY]").fill("pk_test_51E2eTestKeyPublishable");
     await page.locator("[data-pay-field=STRIPE_SECRET_KEY]").fill("sk_test_51E2eTestKeySecretWXYZ");
@@ -624,7 +634,7 @@ test("Backstage: a sign-in provider is switched on with its keys, and the sign-i
     await expect(page).toHaveURL(/\/backstage$/);
     await page.locator("[data-crew-password]").fill("crew-secret");
     await page.getByRole("button", { name: "Come in" }).click();
-    await page.locator("[data-signin-keys] summary").click();
+    await page.locator("[data-panel=signin]").click();
     const google = page.locator("[data-signin-provider=google]");
     await expect(google).toContainText("— off");
     await expect(google.locator("[data-signin-register]")).toHaveText(/\/callback\/google$/);
@@ -655,6 +665,7 @@ test("the deck plays the genre's recorded loop: three parts that switch off and 
     if (r.url().includes("/v4/loops/")) fetched.push(`${r.status()} ${new URL(r.url()).pathname}`);
   });
   await page.goto("/?country=DE&lang=en");
+  await grooves(page);
   await page.locator("[data-groove=house]").click();
   await expect(page.locator("[data-bpm]")).toHaveText(index.house.bpm.toFixed(1));
   await expect(page.locator("[data-deck]")).toContainText(index.house.camelot);
@@ -664,6 +675,7 @@ test("the deck plays the genre's recorded loop: three parts that switch off and 
   // AAC where the browser plays it; this test's Chromium has no AAC, so Opus.
   for (const stem of ["drums", "bass", "rest"]) expect(fetched.some((f) => new RegExp(`^200 /v4/loops/house/${stem}\\.(m4a|webm)$`).test(f)), stem).toBe(true);
   // Another genre: its own loop.
+  await grooves(page);
   await page.locator("[data-groove=techno]").click();
   await expect(page.locator("[data-bpm]")).toHaveText(index.techno.bpm.toFixed(1));
   await expect.poll(() => fetched.filter((f) => f.startsWith("200 /v4/loops/techno/")).length, { timeout: 20_000 }).toBeGreaterThanOrEqual(3);

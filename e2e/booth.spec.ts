@@ -49,8 +49,11 @@ test("the booth: the loop plays through the knobs and faders, the moves and the 
   await page.locator("[data-booth-toggle]").click();
   const booth = page.locator("[data-booth]");
   await expect(booth).toBeVisible();
-  // The genre buttons come in their groups.
+  // The genre buttons come in their groups, in the picker that opens from the track's name.
+  await page.locator("[data-genre-trigger]").click();
   await expect(page.locator("[data-groove-group=local] [data-groove]").first()).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-genre-picker]")).toHaveCount(0);
   await page.locator("[data-play]").click();
   await expect(page.locator("[data-deck-source=loop]")).toBeVisible();
   // A knob turned with the keyboard, a fader moved, a stem off and on.

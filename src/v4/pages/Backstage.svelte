@@ -628,7 +628,7 @@
 
   <nav class="backstage-nav" aria-label="Backstage sections">
     {#each BACKSTAGE_PANELS as item (item.id)}
-      <button class:active={backstagePanel === item.id} aria-current={backstagePanel === item.id ? "page" : undefined} aria-label={`${item.label}: ${item.description}`} onclick={() => (backstagePanel = item.id)}>
+      <button class:active={backstagePanel === item.id} aria-current={backstagePanel === item.id ? "page" : undefined} aria-label={`${item.label}: ${item.description}`} onclick={() => (backstagePanel = item.id)} data-panel={item.id}>
         <span aria-hidden="true">{item.icon}</span><span class="nav-tip"><b>{item.label}</b><small>{item.description}</small></span>
       </button>
     {/each}
