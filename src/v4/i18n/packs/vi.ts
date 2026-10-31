@@ -452,7 +452,7 @@ const pack: Pack = {
       pad: "Bạn",
     },
     platter: "Kéo đĩa để scratch",
-    hw: { cue: "Cue: khi đang phát, về đầu; khi dừng, giữ để nghe từ đó", arm: "Cần đĩa: hạ xuống để phát, nhấc lên để dừng", jog: "xoay vành để đẩy nhịp một chút", fx: "Hiệu ứng theo nhịp", fxOn: "Bật hoặc tắt hiệu ứng nhịp", pitch: "Fader pitch, ±8%: nhấp đúp để về 0" },
+    hw: { cue: "Cue: khi đang phát, về đầu; khi dừng, giữ để nghe từ đó", arm: "Cần đĩa: hạ xuống để phát, nhấc lên để dừng", jog: "xoay vành để đẩy nhịp một chút", fx: "Hiệu ứng theo nhịp", fxOn: "Bật hoặc tắt hiệu ứng nhịp", pitch: "Fader pitch, ±8%: nhấp đúp để về 0", track: "Bài", pick: "Chọn một groove", closePick: "Đóng phần chọn thể loại", topics: "Chủ đề FX", topicsHint: "chọn bảng âm thanh", voiceMc: "Giọng / MC", voiceHint: "thu và thả câu của riêng bạn", playMode: "Chế độ chơi", playModeHint: "cách pad bám theo nhịp", separation: "Tách stem", channels: "{n} kênh", pause: "Tạm dừng deck", playShort: "Phát", pauseShort: "Dừng" },
     groups: { local: "Ở đây", common: "Mọi nơi", special: "Đặc biệt" },
     sounds: {
       airhorn: "Còi hơi",

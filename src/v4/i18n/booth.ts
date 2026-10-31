@@ -18,7 +18,7 @@ export interface BoothWords {
   voice: Record<"record" | "recording" | "ready" | "denied" | "unsupported" | "private" | "pitch" | "pad", string>;
   platter: string;
   /** The gear's own controls: the deck's cue button, the tonearm, the jog's rim, the beat effects, the pitch fader. */
-  hw: Record<"cue" | "arm" | "jog" | "fx" | "fxOn" | "pitch", string>;
+  hw: Record<"cue" | "arm" | "jog" | "fx" | "fxOn" | "pitch" | "track" | "pick" | "closePick" | "topics" | "topicsHint" | "voiceMc" | "voiceHint" | "playMode" | "playModeHint" | "separation" | "channels" | "pause" | "playShort" | "pauseShort", string>;
   groups: Record<"local" | "common" | "special", string>;
   /** Each sampler sound's name (`booth/sounds.ts`). */
   sounds: Record<string, string>;
@@ -51,7 +51,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "You",
     },
     platter: "Drag the record to scratch",
-    hw: { cue: "Cue: while playing, back to the top; stopped, hold to listen from it", arm: "Tonearm: lower it to play, lift it to stop", jog: "turn the rim to nudge the tempo", fx: "Beat effects", fxOn: "Beat effect on or off", pitch: "Pitch fader, ±8%: double-click for zero" },
+    hw: { cue: "Cue: while playing, back to the top; stopped, hold to listen from it", arm: "Tonearm: lower it to play, lift it to stop", jog: "turn the rim to nudge the tempo", fx: "Beat effects", fxOn: "Beat effect on or off", pitch: "Pitch fader, ±8%: double-click for zero", track: "Track", pick: "Select a groove", closePick: "Close genre selection", topics: "FX topics", topicsHint: "choose the sound palette", voiceMc: "Voice / MC", voiceHint: "record and throw in your own line", playMode: "Play mode", playModeHint: "how the pad follows the beat", separation: "Stem separation", channels: "{n} channels", pause: "Pause the deck", playShort: "Play", pauseShort: "Pause" },
     groups: { local: "Here", common: "Everywhere", special: "Special" },
     sounds: {
       airhorn: "Air horn",
@@ -134,7 +134,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Tú",
     },
     platter: "Arrastra el disco para hacer scratch",
-    hw: { cue: "Cue: sonando, vuelve al principio; parado, mantenlo para escuchar desde ahí", arm: "Brazo: bájalo para que suene, levántalo para parar", jog: "gira el borde para empujar el tempo", fx: "Efectos al compás", fxOn: "Efecto al compás, encendido o apagado", pitch: "Fader de pitch, ±8 %: doble clic para el cero" },
+    hw: { cue: "Cue: sonando, vuelve al principio; parado, mantenlo para escuchar desde ahí", arm: "Brazo: bájalo para que suene, levántalo para parar", jog: "gira el borde para empujar el tempo", fx: "Efectos al compás", fxOn: "Efecto al compás, encendido o apagado", pitch: "Fader de pitch, ±8 %: doble clic para el cero", track: "Pista", pick: "Elige un groove", closePick: "Cerrar la selección de género", topics: "Temas de FX", topicsHint: "elige la paleta de sonidos", voiceMc: "Voz / MC", voiceHint: "graba y lanza tu propia frase", playMode: "Modo de toque", playModeHint: "cómo sigue el pad al beat", separation: "Separación de stems", channels: "{n} canales", pause: "Pausar el deck", playShort: "Play", pauseShort: "Pausa" },
     groups: { local: "De aquí", common: "De todas partes", special: "Especial" },
     sounds: {
       airhorn: "Bocina de aire",
@@ -217,7 +217,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Você",
     },
     platter: "Arraste o disco para fazer scratch",
-    hw: { cue: "Cue: tocando, volta ao início; parado, segure para ouvir dali", arm: "Braço: abaixe para tocar, levante para parar", jog: "gire a borda para empurrar o andamento", fx: "Efeitos no tempo", fxOn: "Efeito no tempo ligado ou desligado", pitch: "Fader de pitch, ±8%: clique duplo para o zero" },
+    hw: { cue: "Cue: tocando, volta ao início; parado, segure para ouvir dali", arm: "Braço: abaixe para tocar, levante para parar", jog: "gire a borda para empurrar o andamento", fx: "Efeitos no tempo", fxOn: "Efeito no tempo ligado ou desligado", pitch: "Fader de pitch, ±8%: clique duplo para o zero", track: "Faixa", pick: "Escolha um groove", closePick: "Fechar a escolha de gênero", topics: "Temas de FX", topicsHint: "escolha a paleta de sons", voiceMc: "Voz / MC", voiceHint: "grave e solte a sua própria frase", playMode: "Modo de toque", playModeHint: "como o pad segue a batida", separation: "Separação de stems", channels: "{n} canais", pause: "Pausar o deck", playShort: "Tocar", pauseShort: "Pausar" },
     groups: { local: "Daqui", common: "De todo lugar", special: "Especial" },
     sounds: {
       airhorn: "Buzina de ar",
@@ -300,7 +300,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Du",
     },
     platter: "Zieh an der Platte zum Scratchen",
-    hw: { cue: "Cue: läuft er, zurück an den Anfang; steht er, gedrückt halten und von dort hören", arm: "Tonarm: absenken zum Abspielen, anheben zum Stoppen", jog: "am Rand drehen, um das Tempo anzuschieben", fx: "Beat-Effekte", fxOn: "Beat-Effekt an oder aus", pitch: "Pitch-Fader, ±8 %: Doppelklick für null" },
+    hw: { cue: "Cue: läuft er, zurück an den Anfang; steht er, gedrückt halten und von dort hören", arm: "Tonarm: absenken zum Abspielen, anheben zum Stoppen", jog: "am Rand drehen, um das Tempo anzuschieben", fx: "Beat-Effekte", fxOn: "Beat-Effekt an oder aus", pitch: "Pitch-Fader, ±8 %: Doppelklick für null", track: "Track", pick: "Groove wählen", closePick: "Genre-Auswahl schließen", topics: "FX-Themen", topicsHint: "die Klangpalette wählen", voiceMc: "Stimme / MC", voiceHint: "eigene Zeile aufnehmen und einwerfen", playMode: "Spielmodus", playModeHint: "wie das Pad dem Beat folgt", separation: "Stem-Trennung", channels: "{n} Kanäle", pause: "Deck anhalten", playShort: "Play", pauseShort: "Pause" },
     groups: { local: "Von hier", common: "Überall", special: "Spezial" },
     sounds: {
       airhorn: "Druckluftfanfare",
@@ -383,7 +383,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Vous",
     },
     platter: "Faites glisser le disque pour scratcher",
-    hw: { cue: "Cue : en lecture, retour au début ; à l’arrêt, maintenez pour écouter depuis là", arm: "Bras : abaissez-le pour jouer, relevez-le pour arrêter", jog: "tournez le bord pour pousser le tempo", fx: "Effets en rythme", fxOn: "Effet en rythme, allumé ou éteint", pitch: "Fader de pitch, ±8 % : double-clic pour le zéro" },
+    hw: { cue: "Cue : en lecture, retour au début ; à l’arrêt, maintenez pour écouter depuis là", arm: "Bras : abaissez-le pour jouer, relevez-le pour arrêter", jog: "tournez le bord pour pousser le tempo", fx: "Effets en rythme", fxOn: "Effet en rythme, allumé ou éteint", pitch: "Fader de pitch, ±8 % : double-clic pour le zéro", track: "Piste", pick: "Choisir un groove", closePick: "Fermer le choix du genre", topics: "Thèmes FX", topicsHint: "choisissez la palette de sons", voiceMc: "Voix / MC", voiceHint: "enregistrez et lancez votre propre phrase", playMode: "Mode de jeu", playModeHint: "comment le pad suit le beat", separation: "Séparation des stems", channels: "{n} canaux", pause: "Mettre le deck en pause", playShort: "Lecture", pauseShort: "Pause" },
     groups: { local: "D'ici", common: "De partout", special: "Spécial" },
     sounds: {
       airhorn: "Trompe à air",
@@ -466,7 +466,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "Tu",
     },
     platter: "Trascina il disco per fare scratch",
-    hw: { cue: "Cue: in riproduzione, torna all’inizio; fermo, tienilo premuto per ascoltare da lì", arm: "Braccio: abbassalo per suonare, alzalo per fermare", jog: "gira il bordo per spingere il tempo", fx: "Effetti a tempo", fxOn: "Effetto a tempo acceso o spento", pitch: "Fader del pitch, ±8%: doppio clic per lo zero" },
+    hw: { cue: "Cue: in riproduzione, torna all’inizio; fermo, tienilo premuto per ascoltare da lì", arm: "Braccio: abbassalo per suonare, alzalo per fermare", jog: "gira il bordo per spingere il tempo", fx: "Effetti a tempo", fxOn: "Effetto a tempo acceso o spento", pitch: "Fader del pitch, ±8%: doppio clic per lo zero", track: "Traccia", pick: "Scegli un groove", closePick: "Chiudi la scelta del genere", topics: "Temi FX", topicsHint: "scegli la tavolozza dei suoni", voiceMc: "Voce / MC", voiceHint: "registra e lancia la tua frase", playMode: "Modalità di suono", playModeHint: "come il pad segue il beat", separation: "Separazione degli stem", channels: "{n} canali", pause: "Metti in pausa il deck", playShort: "Play", pauseShort: "Pausa" },
     groups: { local: "Di qui", common: "Di ovunque", special: "Speciale" },
     sounds: {
       airhorn: "Trombetta",
@@ -549,7 +549,7 @@ export const BOOTH: Record<Lang, BoothWords> = carried({
       pad: "あなた",
     },
     platter: "レコードをドラッグしてスクラッチ",
-    hw: { cue: "キュー：再生中は頭に戻る。停止中は押している間そこから再生", arm: "トーンアーム：下ろすと再生、上げると停止", jog: "縁を回してテンポを微調整", fx: "ビートエフェクト", fxOn: "ビートエフェクトのオン／オフ", pitch: "ピッチフェーダー ±8%：ダブルクリックでゼロ" },
+    hw: { cue: "キュー：再生中は頭に戻る。停止中は押している間そこから再生", arm: "トーンアーム：下ろすと再生、上げると停止", jog: "縁を回してテンポを微調整", fx: "ビートエフェクト", fxOn: "ビートエフェクトのオン／オフ", pitch: "ピッチフェーダー ±8%：ダブルクリックでゼロ", track: "トラック", pick: "グルーヴを選ぶ", closePick: "ジャンル選択を閉じる", topics: "FXテーマ", topicsHint: "サウンドのパレットを選ぶ", voiceMc: "ボイス / MC", voiceHint: "自分のひと言を録音して差し込む", playMode: "プレイモード", playModeHint: "パッドがビートにどう合わせるか", separation: "ステム分離", channels: "{n}チャンネル", pause: "デッキを一時停止", playShort: "再生", pauseShort: "一時停止" },
     groups: { local: "この地域", common: "世界中", special: "スペシャル" },
     sounds: {
       airhorn: "エアホーン",

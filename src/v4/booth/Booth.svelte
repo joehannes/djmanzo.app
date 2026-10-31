@@ -22,6 +22,8 @@
   import Fader from "./Fader.svelte";
 
   const w = $derived(BOOTH[i18n.lang]);
+  /** A label in capitals, as the hardware prints them, by the language's own rules. */
+  const caps = (s: string) => s.toLocaleUpperCase(i18n.lang);
   const names = $derived(HOME[i18n.lang].stems.names);
   const BANKS: (BankId | "voice")[] = ["region", "everywhere", "wedding", "anniversary", "colmado", "usparty", "voice"];
   const pads = $derived(booth.bank === "voice" ? [VOICE] : bankOf(booth.bank, region.skin));
@@ -229,7 +231,7 @@
     <!-- The sampler -->
     <div class="unit sampler">
       <div class="sampler-control topics-control">
-        <div class="sampler-label"><span class="sampler-index">01</span><span>FX TOPICS</span><small>choose the sound palette</small></div>
+        <div class="sampler-label"><span class="sampler-index">01</span><span>{caps(w.hw.topics)}</span><small>{w.hw.topicsHint}</small></div>
         <div class="tabs" role="tablist" aria-label={w.sampler}>
         {#each BANKS.filter((b) => b !== "voice") as b (b)}
           <button role="tab" class="hw tab" aria-selected={booth.bank === b} onclick={() => (booth.bank = b)} data-bank={b}><i class="led"></i>{b === "region" ? w.banks.region.replace("{region}", skin().name) : w.banks[b]}</button>
@@ -238,7 +240,7 @@
       </div>
 
       <div class="sampler-control voice-control">
-        <div class="sampler-label"><span class="sampler-index">02</span><span>VOICE / MC</span><small>record and throw in your own line</small></div>
+        <div class="sampler-label"><span class="sampler-index">02</span><span>{caps(w.hw.voiceMc)}</span><small>{w.hw.voiceHint}</small></div>
         <button role="tab" class="hw voice-tab" aria-selected={booth.bank === "voice"} onclick={() => (booth.bank = "voice")} data-bank="voice"><i class="led"></i>{w.banks.voice}</button>
         {#if booth.bank === "voice"}
           <div class="voice">
@@ -258,7 +260,7 @@
       </div>
 
       <div class="sampler-control mode-control">
-        <div class="sampler-label"><span class="sampler-index">03</span><span>PLAY MODE</span><small>how the pad follows the beat</small></div>
+        <div class="sampler-label"><span class="sampler-index">03</span><span>{caps(w.hw.playMode)}</span><small>{w.hw.playModeHint}</small></div>
         <div class="modes">
         {#each ["tap", "repeat", "loop"] as const as m (m)}
           <button class="hw mode" aria-pressed={booth.mode === m} onclick={() => (booth.mode = m)} data-mode={m}><i class="led"></i>{w.modes[m]}</button>

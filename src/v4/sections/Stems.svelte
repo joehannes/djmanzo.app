@@ -15,8 +15,11 @@
   import FactList from "./FactList.svelte";
   import { i18n } from "../i18n.svelte";
   import { HOME } from "../i18n/home";
+  import { BOOTH } from "../i18n/booth";
 
   const w = $derived(HOME[i18n.lang].stems);
+  const bw = $derived(BOOTH[i18n.lang]);
+  const caps = (s: string) => s.toLocaleUpperCase(i18n.lang);
   const genre = $derived(GENRE_BY_ID[deck.genre] ?? GENRE_BY_ID.house);
   const grooves = $derived(bankOfGenres(skin(), region.country));
   let genreMenu = $state(false);
@@ -52,17 +55,17 @@
     </div>
     <div class="panel card" data-reveal data-stems>
       <div class="panel-top">
-        <div><span class="mono machine-label">STEM SEPARATION</span><b class="machine-readout">4 CHANNELS</b></div>
+        <div><span class="mono machine-label">{caps(bw.hw.separation)}</span><b class="machine-readout">{caps(bw.hw.channels.replace("{n}", "4"))}</b></div>
         <div class="stem-genre" bind:this={genrePicker}>
           <button class="genre-trigger" aria-haspopup="dialog" aria-expanded={genreMenu} onclick={() => (genreMenu = !genreMenu)} data-stem-genre-trigger>
             <span class="mono">{genre.emoji} {genre.name}</span><span aria-hidden="true">⌄</span>
           </button>
           {#if genreMenu}
-            <div class="genre-picker" role="dialog" aria-label="Select a groove" data-stem-genre-picker>
-              <div class="picker-head"><span class="mono">SELECT A GROOVE</span><button onclick={() => (genreMenu = false)} aria-label="Close genre selection">×</button></div>
+            <div class="genre-picker" role="dialog" aria-label={bw.hw.pick} data-stem-genre-picker>
+              <div class="picker-head"><span class="mono">{caps(bw.hw.pick)}</span><button onclick={() => (genreMenu = false)} aria-label={bw.hw.closePick}>×</button></div>
               {#each (["local", "common", "special"] as const).filter((k) => grooves[k].length) as k (k)}
                 <div class="picker-group">
-                  <span class="mono">{k === "local" ? "FROM HERE" : k === "common" ? "EVERYWHERE" : "SPECIAL"}</span>
+                  <span class="mono">{caps(bw.groups[k])}</span>
                   <div>{#each grooves[k] as id (id)}<button class="genre-chip" aria-pressed={deck.genre === id} onclick={() => chooseGenre(id)}>{GENRE_BY_ID[id].emoji} {GENRE_BY_ID[id].name}</button>{/each}</div>
                 </div>
               {/each}
@@ -83,11 +86,11 @@
         </div>
       </div>
       <div class="foot">
-        <button class="stem-play" class:playing={deck.playing} onclick={toggle} aria-label={deck.playing ? "Pause the deck" : w.play} data-stem-play>
+        <button class="stem-play" class:playing={deck.playing} onclick={toggle} aria-label={deck.playing ? bw.hw.pause : w.play} data-stem-play>
           {#if deck.playing}
-            <span class="pause-bars" aria-hidden="true"><i></i><i></i></span><span>PAUSE</span>
+            <span class="pause-bars" aria-hidden="true"><i></i><i></i></span><span>{caps(bw.hw.pauseShort)}</span>
           {:else}
-            <span class="play-triangle" aria-hidden="true"></span><span>PLAY</span>
+            <span class="play-triangle" aria-hidden="true"></span><span>{caps(bw.hw.playShort)}</span>
           {/if}
         </button>
         <span class="mono dim small">{w.on.replace("{n}", String(STEMS.filter((s) => deck.on[s]).length))}</span>

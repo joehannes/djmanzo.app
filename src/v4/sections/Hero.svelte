@@ -53,6 +53,7 @@
   const genre = $derived(GENRE_BY_ID[deck.genre] ?? GENRE_BY_ID.house);
   const key = $derived(keyOf(genre));
   const bw = $derived(BOOTH[i18n.lang]);
+  const caps = (s: string) => s.toLocaleUpperCase(i18n.lang);
   /** The look's grooves in three groups — the region's own (the visitor's country's first), the world's, and specials — those with a loop. */
   const grooves = $derived(bankOfGenres(skin(), region.country));
   let genreMenu = $state(false);
@@ -197,13 +198,13 @@
           <div class="cell"><span class="k">TEMPO</span><b data-tempo-shown>{tempoText}</b></div>
           <div class="cell" aria-hidden="true"><span class="k">BEAT</span><span class="count">{#each [0, 1, 2, 3] as b (b)}<i class:on={beatNo === b} class:one={b === 0}></i>{/each}</span></div>
           <div class="cell track" bind:this={genrePicker}>
-            <span class="k">TRACK</span>
+            <span class="k">{caps(bw.hw.track)}</span>
             <button class="genre-trigger" aria-haspopup="dialog" aria-expanded={genreMenu} onclick={() => (genreMenu = !genreMenu)} data-genre-trigger>
               <span>{genre.emoji} {genre.name}</span><span class="genre-caret" aria-hidden="true">⌄</span>
             </button>
             {#if genreMenu}
               <div class="genre-picker card" role="dialog" aria-label={t("hero.grooves")} data-genre-picker>
-                <div class="picker-head"><span class="mono">SELECT A GROOVE</span><button class="picker-close" onclick={() => (genreMenu = false)} aria-label="Close genre selection">×</button></div>
+                <div class="picker-head"><span class="mono">{caps(bw.hw.pick)}</span><button class="picker-close" onclick={() => (genreMenu = false)} aria-label={bw.hw.closePick}>×</button></div>
                 <div class="picker-groups">
                   {#each (["local", "common", "special"] as const).filter((k) => grooves[k].length) as k (k)}
                     <div class="picker-group" data-groove-group={k}>

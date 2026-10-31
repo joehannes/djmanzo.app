@@ -453,7 +453,7 @@ const pack: Pack = {
       pad: "Sen",
     },
     platter: "Scratch için plağı sürükle",
-    hw: { cue: "Cue: çalarken başa döner; dururken basılı tut, oradan dinle", arm: "Ton kolu: çalmak için indir, durdurmak için kaldır", jog: "tempoyu dürtmek için kenarı çevir", fx: "Beat efektleri", fxOn: "Beat efekti açık ya da kapalı", pitch: "Pitch fader'ı, ±%8: sıfır için çift tıkla" },
+    hw: { cue: "Cue: çalarken başa döner; dururken basılı tut, oradan dinle", arm: "Ton kolu: çalmak için indir, durdurmak için kaldır", jog: "tempoyu dürtmek için kenarı çevir", fx: "Beat efektleri", fxOn: "Beat efekti açık ya da kapalı", pitch: "Pitch fader'ı, ±%8: sıfır için çift tıkla", track: "Parça", pick: "Bir groove seç", closePick: "Tür seçimini kapat", topics: "FX temaları", topicsHint: "ses paletini seç", voiceMc: "Ses / MC", voiceHint: "kendi cümleni kaydet ve araya at", playMode: "Çalma modu", playModeHint: "pad'in ritmi nasıl izlediği", separation: "Stem ayırma", channels: "{n} kanal", pause: "Deck'i duraklat", playShort: "Çal", pauseShort: "Duraklat" },
     groups: { local: "Buradan", common: "Her yerden", special: "Özel" },
     sounds: {
       airhorn: "Hava kornası",

@@ -451,7 +451,7 @@ const pack: Pack = {
       pad: "你",
     },
     platter: "拖动唱片来搓碟",
-    hw: { cue: "Cue：播放中回到开头；停止时按住从那里试听", arm: "唱臂：放下即播放，抬起即停止", jog: "转动边缘微调速度", fx: "节拍效果", fxOn: "节拍效果开或关", pitch: "音调推子 ±8%：双击归零" },
+    hw: { cue: "Cue：播放中回到开头；停止时按住从那里试听", arm: "唱臂：放下即播放，抬起即停止", jog: "转动边缘微调速度", fx: "节拍效果", fxOn: "节拍效果开或关", pitch: "音调推子 ±8%：双击归零", track: "曲目", pick: "选择一个律动", closePick: "关闭风格选择", topics: "FX 主题", topicsHint: "选择声音调色板", voiceMc: "人声 / MC", voiceHint: "录下你自己的一句，抛进去", playMode: "演奏模式", playModeHint: "打击垫如何跟随节拍", separation: "分轨分离", channels: "{n} 个声道", pause: "暂停唱盘", playShort: "播放", pauseShort: "暂停" },
     groups: { local: "本地", common: "通用", special: "特别" },
     sounds: {
       airhorn: "气笛",

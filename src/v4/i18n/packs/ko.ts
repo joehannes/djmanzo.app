@@ -452,7 +452,7 @@ const pack: Pack = {
       pad: "나",
     },
     platter: "레코드를 드래그해 스크래치",
-    hw: { cue: "큐: 재생 중이면 처음으로, 멈춰 있으면 누르고 있는 동안 거기서부터 재생", arm: "톤암: 내리면 재생, 올리면 정지", jog: "가장자리를 돌려 템포를 살짝 밀기", fx: "비트 이펙트", fxOn: "비트 이펙트 켜기/끄기", pitch: "피치 페이더 ±8%: 더블클릭하면 0" },
+    hw: { cue: "큐: 재생 중이면 처음으로, 멈춰 있으면 누르고 있는 동안 거기서부터 재생", arm: "톤암: 내리면 재생, 올리면 정지", jog: "가장자리를 돌려 템포를 살짝 밀기", fx: "비트 이펙트", fxOn: "비트 이펙트 켜기/끄기", pitch: "피치 페이더 ±8%: 더블클릭하면 0", track: "트랙", pick: "그루브 고르기", closePick: "장르 선택 닫기", topics: "FX 테마", topicsHint: "사운드 팔레트를 고르세요", voiceMc: "보이스 / MC", voiceHint: "내 한마디를 녹음해 던져 넣기", playMode: "플레이 모드", playModeHint: "패드가 비트를 따르는 방식", separation: "스템 분리", channels: "{n}채널", pause: "덱 일시정지", playShort: "재생", pauseShort: "일시정지" },
     groups: { local: "이곳", common: "어디서나", special: "스페셜" },
     sounds: {
       airhorn: "에어혼",
