@@ -255,7 +255,7 @@
     background: none;
     color: var(--text);
     font: 400 14px/1.3 var(--body);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
   .k:hover:not(:disabled) {

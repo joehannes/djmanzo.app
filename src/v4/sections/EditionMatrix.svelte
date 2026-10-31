@@ -177,7 +177,7 @@
     background: color-mix(in srgb, var(--accent) 9%, transparent);
   }
   .feat {
-    text-align: left;
+    text-align: start;
     width: 34%;
   }
   .row th button {
@@ -186,7 +186,7 @@
     padding: 0;
     color: var(--text);
     font: 500 14px/1.35 var(--body);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     text-decoration: underline dotted color-mix(in srgb, var(--dim) 60%, transparent);
     text-underline-offset: 4px;
@@ -207,7 +207,7 @@
     border-bottom-color: transparent;
   }
   .group th {
-    text-align: left;
+    text-align: start;
     padding: 18px 12px 8px;
     background: color-mix(in srgb, var(--accent) 5%, transparent);
     border-bottom: 1px solid var(--line);

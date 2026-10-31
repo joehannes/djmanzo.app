@@ -319,7 +319,7 @@
     gap: 16px;
     align-items: start;
     padding: 14px 16px;
-    border-left: 3px solid var(--tone);
+    border-inline-start: 3px solid var(--tone);
   }
   .vote {
     display: grid;
@@ -344,7 +344,7 @@
   }
   .title {
     font: 600 16px/1.35 var(--body);
-    text-align: left;
+    text-align: start;
     background: none;
     border: 0;
     padding: 0;

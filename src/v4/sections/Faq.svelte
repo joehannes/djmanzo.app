@@ -89,7 +89,8 @@
   summary {
     list-style: none;
     cursor: pointer;
-    padding: 18px 36px 18px 0;
+    padding-block: 18px;
+    padding-inline: 0 36px;
     font: 600 17px/1.35 var(--body);
     position: relative;
   }
@@ -99,7 +100,7 @@
   summary::after {
     content: "+";
     position: absolute;
-    right: 6px;
+    inset-inline-end: 6px;
     top: 14px;
     font: 300 24px/1 var(--body);
     color: var(--accent);

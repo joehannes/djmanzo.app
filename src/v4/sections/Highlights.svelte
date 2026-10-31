@@ -174,12 +174,12 @@
   }
   .more ul {
     margin: 8px 0;
-    padding-left: 16px;
+    padding-inline-start: 16px;
     display: grid;
     gap: 3px;
   }
   .st {
-    margin-left: 6px;
+    margin-inline-start: 6px;
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.06em;

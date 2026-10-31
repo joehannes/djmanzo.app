@@ -1594,3 +1594,32 @@ own (`SiteBar.svelte`).
   journey keeps its words while it can. Folded, the places open as a card
   of plates. A browser test holds every place on the wing before its swept
   end and every option on the island, at seven widths and right to left.
+
+## Right to left, the whole page (31 October)
+
+The owner asked that Hebrew and Arabic use the whole layout, its space and its
+separations, as the left-to-right languages do. Every page was laid out in
+Hebrew and Arabic at 1440 px and 390 px and looked at beside English.
+
+- **The start side.** A margin, padding, border or alignment that meant
+  "the start of the line" was written as left; it is now logical
+  (`margin-inline-start`, `padding-inline`, `border-inline-start`,
+  `text-align: start`), so it reads the same in English and mirrors in
+  Hebrew and Arabic. Menus open from their button's start edge, the FAQ's
+  plus and the room kept for it sit at the end of the question, the
+  trail's progress fills from the side the page is read from, and the
+  assistant waits in the end corner.
+- **The hero.** The look's motif and its glow sit opposite the words, at
+  the end of the line, so right to left they no longer pile up behind the
+  headline while the other half stays empty.
+- **Drawings.** SVG text takes the page's direction, so the karaoke
+  night's two-deck drawing anchored every label at the wrong edge; it is
+  now drawn mirrored, deck 1 on the right. A chevron that only turns down
+  and up stays as it is.
+- **Type.** Hebrew and Arabic have no monospaced face here; where the
+  type is a terminal's (eyebrows, labels, prices) their letters now come
+  from a proportional face, and the eyebrows' wide tracking is tightened,
+  so a word stays one word.
+- **What does not mirror.** Gear: the booth's turntable, mixer and pads,
+  and a waveform's time, which runs left to right in every language. The
+  booth's sampler choices are words, and read right to left.

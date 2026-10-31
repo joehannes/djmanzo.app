@@ -134,7 +134,7 @@
     border-bottom-right-radius: 0;
   }
   .kind {
-    margin-left: 8px;
+    margin-inline-start: 8px;
     padding: 1px 8px;
     border-radius: 99px;
     background: color-mix(in srgb, var(--bg) 22%, transparent);
@@ -143,7 +143,7 @@
   }
   .caret {
     padding-inline: 12px;
-    border-left: 1px solid color-mix(in srgb, var(--bg) 35%, transparent);
+    border-inline-start: 1px solid color-mix(in srgb, var(--bg) 35%, transparent);
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
   }
@@ -155,7 +155,7 @@
     backdrop-filter: blur(18px) saturate(0.6);
     box-shadow: 0 24px 60px rgb(0 0 0 / 0.55);
     top: calc(100% + 8px);
-    left: 0;
+    inset-inline-start: 0;
     width: min(340px, calc(100vw - 32px));
     padding: 10px;
     display: grid;
@@ -205,7 +205,7 @@
     background: transparent;
     color: var(--text);
     font: inherit;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
   }
   .file:hover,
@@ -213,7 +213,7 @@
     background: color-mix(in srgb, var(--accent) 14%, transparent);
   }
   .tag {
-    margin-left: 8px;
+    margin-inline-start: 8px;
     padding: 0 7px;
     border-radius: 99px;
     border: 1px solid var(--accent);

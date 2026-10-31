@@ -146,7 +146,7 @@
   }
   .inline {
     vertical-align: -1px;
-    margin-right: 3px;
+    margin-inline-end: 3px;
   }
   .verified {
     display: flex;

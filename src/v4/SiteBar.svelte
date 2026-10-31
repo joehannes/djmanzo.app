@@ -900,7 +900,8 @@
     align-items: center;
     gap: 8px;
     height: 34px;
-    padding: 0 12px 0 8px;
+    padding-block: 0;
+    padding-inline: 8px 12px;
     border-radius: 999px;
     border: 1px solid color-mix(in srgb, var(--text) 13%, transparent);
     background: color-mix(in srgb, var(--text) 4%, transparent);
@@ -992,7 +993,7 @@
     padding-inline: 12px;
   }
   .dl .caret {
-    margin-left: -2px;
+    margin-inline-start: -2px;
     opacity: 0.8;
   }
   .dlmenu {

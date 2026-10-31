@@ -103,7 +103,7 @@
     border-bottom: 0;
   }
   th[scope="row"] {
-    text-align: left;
+    text-align: start;
     font-weight: 500;
   }
   .us {
@@ -144,7 +144,7 @@
   .gaps {
     display: grid;
     gap: 8px;
-    padding-left: 1.2em;
+    padding-inline-start: 1.2em;
   }
   .closing {
     margin-top: 24px;

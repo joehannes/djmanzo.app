@@ -79,7 +79,7 @@
     background: var(--accent);
     color: var(--on-accent);
     font-size: 24px;
-    padding-left: 4px;
+    padding-inline-start: 4px;
   }
   .poster:hover .play,
   .poster:focus-visible .play {

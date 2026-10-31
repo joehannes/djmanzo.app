@@ -98,7 +98,7 @@
     border-radius: 10px;
     background: var(--raised);
     color: var(--text);
-    text-align: left;
+    text-align: start;
     rotate: var(--tilt);
     box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.6);
     cursor: pointer;

@@ -795,6 +795,10 @@
   .sampler {
     gap: 9px;
   }
+  /* The sampler's choices are words, not gear: they read in the page's own direction. */
+  :global([dir="rtl"]) .sampler-control {
+    direction: rtl;
+  }
   .sampler-control {
     display: grid;
     gap: 8px;

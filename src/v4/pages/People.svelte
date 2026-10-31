@@ -260,7 +260,7 @@
     border-radius: 50%;
     background: var(--accent);
     color: var(--on-accent);
-    padding-left: 4px;
+    padding-inline-start: 4px;
   }
   figcaption {
     padding: 10px 14px;

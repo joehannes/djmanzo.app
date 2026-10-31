@@ -175,7 +175,7 @@
   }
   .tag {
     display: inline-block;
-    margin-right: 6px;
+    margin-inline-end: 6px;
     padding: 1px 8px;
     border-radius: 99px;
     font-size: 11px;

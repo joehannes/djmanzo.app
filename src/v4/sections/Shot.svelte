@@ -135,7 +135,7 @@
     background: var(--line);
   }
   .chrome span {
-    margin-left: 8px;
+    margin-inline-start: 8px;
     font-size: 12px;
     color: var(--dim);
   }

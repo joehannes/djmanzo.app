@@ -111,11 +111,11 @@
     display: grid;
     gap: 6px;
     align-content: start;
-    border-left: 1px solid var(--line);
+    border-inline-start: 1px solid var(--line);
   }
   .proof li:first-child {
-    border-left: 0;
-    padding-left: 0;
+    border-inline-start: 0;
+    padding-inline-start: 0;
   }
   .proof b {
     font-size: 12px;
@@ -140,8 +140,8 @@
       border-top: 1px solid var(--line);
     }
     .proof li:nth-child(4) {
-      border-left: 0;
-      padding-left: 0;
+      border-inline-start: 0;
+      padding-inline-start: 0;
     }
   }
   /* A phone: the platforms across, then two by two. */
@@ -150,8 +150,8 @@
       grid-template-columns: 1fr 1fr;
     }
     .proof li {
-      border-left: 0;
-      padding-left: 0;
+      border-inline-start: 0;
+      padding-inline-start: 0;
     }
     .proof li:nth-child(n + 2) {
       border-top: 1px solid var(--line);

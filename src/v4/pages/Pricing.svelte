@@ -475,7 +475,7 @@
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--accent);
-    margin-left: auto;
+    margin-inline-start: auto;
   }
   .tag,
   .for {
@@ -524,7 +524,7 @@
   th,
   td {
     padding: 12px 14px;
-    text-align: left;
+    text-align: start;
     border-bottom: 1px solid var(--line);
     white-space: nowrap;
   }
@@ -588,7 +588,7 @@
     font-size: 14px;
   }
   .mod span {
-    margin-left: auto;
+    margin-inline-start: auto;
     font-size: 12px;
   }
   .row {
@@ -674,7 +674,7 @@
     font-size: 13px;
   }
   .steps {
-    padding-left: 20px;
+    padding-inline-start: 20px;
     color: var(--dim);
   }
   .steps :global(a) {

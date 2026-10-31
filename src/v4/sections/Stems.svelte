@@ -191,7 +191,7 @@
     position: absolute;
     z-index: 10;
     top: calc(100% + 9px);
-    right: 0;
+    inset-inline-end: 0;
     width: min(420px, calc(100vw - 56px));
     display: grid;
     gap: 9px;
@@ -233,7 +233,7 @@
     color: var(--text);
     font: 600 13px var(--body);
     cursor: pointer;
-    text-align: left;
+    text-align: start;
     transition:
       opacity 0.2s,
       border-color 0.2s,

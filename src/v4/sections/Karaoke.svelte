@@ -13,10 +13,16 @@
   import { skin } from "../region.svelte";
   import { pick } from "../shots";
   import Shot from "./Shot.svelte";
-  import { i18n } from "../i18n.svelte";
+  import { i18n, LANG_INFO } from "../i18n.svelte";
   import { SECTIONS } from "../i18n/sections";
 
   const w = $derived(SECTIONS[i18n.lang].karaoke);
+  /*
+   * The two decks' drawing reads in the page's direction: right to left, deck 1 is on the right and
+   * every label starts at its right edge. X takes a place (and a width) on the 520-wide drawing to its mirror.
+   */
+  const rtl = $derived(LANG_INFO[i18n.lang].rtl);
+  const X = (x: number, width = 0) => (rtl ? 520 - x - width : x);
 
   const shot = $derived(pick("karaoke", skin().themes));
   const drawer = $derived(pick("playlist", skin().themes));
@@ -76,27 +82,27 @@
             <linearGradient id="kg" x1="0" x2="1"><stop offset="0" stop-color="var(--accent)" /><stop offset="1" stop-color="var(--accent-2)" /></linearGradient>
           </defs>
           <g font-family="var(--mono)" font-size="11" fill="var(--dim)">
-            <rect x="10" y="20" width="230" height="190" rx="14" fill="none" stroke="var(--line)" />
-            <text x="26" y="44" fill="var(--text)" font-size="13" font-weight="700">{w.deck1}</text>
-            <text x="26" y="64">{w.singerLine}</text>
+            <rect x={X(10, 230)} y="20" width="230" height="190" rx="14" fill="none" stroke="var(--line)" />
+            <text x={X(26)} y="44" fill="var(--text)" font-size="13" font-weight="700">{w.deck1}</text>
+            <text x={X(26)} y="64">{w.singerLine}</text>
             {#each ["As recorded", "Guide", "Out"] as label, i (label)}
-              <rect x={26 + i * 70} y="80" width="64" height="26" rx="7" fill={i === 1 ? "url(#kg)" : "none"} stroke={i === 1 ? "none" : "var(--line)"} />
-              <text x={58 + i * 70} y="97" text-anchor="middle" fill={i === 1 ? "var(--on-accent)" : "var(--dim)"}>{label}</text>
+              <rect x={X(26 + i * 70, 64)} y="80" width="64" height="26" rx="7" fill={i === 1 ? "url(#kg)" : "none"} stroke={i === 1 ? "none" : "var(--line)"} />
+              <text x={X(58 + i * 70)} y="97" text-anchor="middle" fill={i === 1 ? "var(--on-accent)" : "var(--dim)"}>{label}</text>
             {/each}
             {#each ["vocals", "drums", "bass", "other"] as stem, i (stem)}
-              <rect x="26" y={122 + i * 20} width={i === 0 ? 40 : 150} height="12" rx="3" fill="var(--accent)" opacity={i === 0 ? 0.35 : 0.75} />
-              <text x="230" y={132 + i * 20} text-anchor="end">{stem}</text>
+              <rect x={X(26, i === 0 ? 40 : 150)} y={122 + i * 20} width={i === 0 ? 40 : 150} height="12" rx="3" fill="var(--accent)" opacity={i === 0 ? 0.35 : 0.75} />
+              <text x={X(230)} y={132 + i * 20} text-anchor="end">{stem}</text>
             {/each}
-            <rect x="280" y="20" width="230" height="190" rx="14" fill="none" stroke="var(--line)" />
-            <text x="296" y="44" fill="var(--text)" font-size="13" font-weight="700">{w.deck2}</text>
-            <text x="296" y="64">{w.playlist}</text>
+            <rect x={X(280, 230)} y="20" width="230" height="190" rx="14" fill="none" stroke="var(--line)" />
+            <text x={X(296)} y="44" fill="var(--text)" font-size="13" font-weight="700">{w.deck2}</text>
+            <text x={X(296)} y="64">{w.playlist}</text>
             {#each w.fillers as item, i (item)}
-              <text x="296" y={92 + i * 20} fill={i === 1 ? "var(--accent)" : "var(--dim)"}>{i === 1 ? "▶" : "·"} {item}</text>
+              <text x={X(296)} y={92 + i * 20} fill={i === 1 ? "var(--accent)" : "var(--dim)"}>{i === 1 ? "▶" : "·"} {item}</text>
             {/each}
-            <rect x="296" y="174" width="96" height="22" rx="6" fill="none" stroke="var(--accent-2)" />
-            <text x="344" y="189" text-anchor="middle" fill="var(--accent-2)">Next when ends</text>
-            <rect x="400" y="174" width="60" height="22" rx="6" fill="none" stroke="var(--accent-2)" />
-            <text x="430" y="189" text-anchor="middle" fill="var(--accent-2)">Repeat</text>
+            <rect x={X(296, 96)} y="174" width="96" height="22" rx="6" fill="none" stroke="var(--accent-2)" />
+            <text x={X(344)} y="189" text-anchor="middle" fill="var(--accent-2)">Next when ends</text>
+            <rect x={X(400, 60)} y="174" width="60" height="22" rx="6" fill="none" stroke="var(--accent-2)" />
+            <text x={X(430)} y="189" text-anchor="middle" fill="var(--accent-2)">Repeat</text>
             <path d="M240 120 C 260 110, 260 110, 280 120" stroke="url(#kg)" stroke-width="2" fill="none" stroke-dasharray="4 4" />
           </g>
         </svg>
@@ -274,7 +280,7 @@
   .flow::before {
     content: "";
     position: absolute;
-    left: 15px;
+    inset-inline-start: 15px;
     top: 10px;
     bottom: 10px;
     width: 2px;

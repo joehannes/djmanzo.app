@@ -305,15 +305,19 @@
     background: var(--accent);
     box-shadow: 0 0 6px var(--accent);
   }
+  /* How far down the page: it fills from the side the page is read from. */
   .progress {
     position: absolute;
-    left: 0;
+    inset-inline-start: 0;
     bottom: -1px;
     height: 2px;
     width: 100%;
     background: var(--accent);
     transform-origin: left;
     transform: scaleX(var(--p));
+  }
+  :global([dir="rtl"]) .progress {
+    transform-origin: right;
   }
   :global([dir="rtl"]) .progress {
     transform-origin: right;

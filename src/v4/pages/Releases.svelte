@@ -202,7 +202,7 @@
   }
   .body ul {
     margin: 0;
-    padding-left: 1.1em;
+    padding-inline-start: 1.1em;
     display: grid;
     gap: 6px;
     color: color-mix(in srgb, var(--text) 86%, transparent);

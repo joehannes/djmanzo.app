@@ -227,7 +227,7 @@
 <style>
   .assistant {
     position: fixed;
-    right: 20px;
+    inset-inline-end: 20px;
     bottom: 20px;
     z-index: 60;
     display: grid;
@@ -286,7 +286,7 @@
     box-shadow: none;
   }
   .x {
-    margin-left: auto;
+    margin-inline-start: auto;
     border: 0;
     background: none;
     color: var(--dim);

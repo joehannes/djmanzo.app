@@ -281,7 +281,8 @@
     flex-wrap: wrap;
     gap: 8px;
     margin: 0 0 14px;
-    padding: 6px 12px 6px 8px;
+    padding-block: 6px;
+    padding-inline: 8px 12px;
     border-radius: 999px;
     border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
     background: color-mix(in srgb, var(--bg) 55%, transparent);
@@ -304,10 +305,10 @@
     width: 7px;
     height: 14px;
   }
-  /* The skin's symbol, large and slow, at the edge of the photograph (`looks.ts`). */
+  /* The skin's symbol, large and slow, at the edge of the photograph (`looks.ts`): at the end of the line, opposite the words. */
   .motif {
     position: absolute;
-    right: -6vw;
+    inset-inline-end: -6vw;
     top: 8vh;
     width: min(52vw, 640px);
     aspect-ratio: 1;
@@ -352,7 +353,7 @@
     position: absolute;
     width: 60vmax;
     height: 60vmax;
-    right: -20vmax;
+    inset-inline-end: -20vmax;
     top: -20vmax;
     background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%);
     mix-blend-mode: screen;
@@ -556,7 +557,8 @@
     align-items: center;
     gap: 8px;
     max-width: 100%;
-    padding: 3px 7px 3px 5px;
+    padding-block: 3px;
+    padding-inline: 5px 7px;
     border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
     border-radius: 5px;
     color: var(--accent);

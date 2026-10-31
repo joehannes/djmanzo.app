@@ -53,7 +53,8 @@
     align-items: flex-start;
     gap: 12px;
     max-width: min(560px, calc(100vw - 32px));
-    padding: 12px 14px 12px 16px;
+    padding-block: 12px;
+    padding-inline: 16px 14px;
     border-radius: 12px;
     background: color-mix(in srgb, var(--accent-2) 14%, var(--surface));
     border: 1px solid color-mix(in srgb, var(--accent-2) 50%, var(--line));

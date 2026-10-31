@@ -110,6 +110,19 @@ body {
   unicode-bidi: plaintext;
 }
 
+/*
+ * Hebrew and Arabic have no monospaced face here: where the type is a
+ * terminal's (labels, eyebrows, prices), their letters come from a
+ * proportional face rather than a typewriter's, and the wide tracking meant
+ * for Latin capitals is tightened, so a word stays one word.
+ */
+:root[dir="rtl"] {
+  --mono: "JetBrains Mono", system-ui, sans-serif;
+}
+:root[dir="rtl"] .eyebrow {
+  letter-spacing: 0.04em;
+}
+
 /* Korean breaks a line between words, never inside one. */
 :lang(ko) {
   word-break: keep-all;
@@ -330,8 +343,8 @@ li,
 .caveat {
   font-size: 13px;
   color: var(--dim);
-  border-left: 2px solid var(--line);
-  padding-left: 10px;
+  border-inline-start: 2px solid var(--line);
+  padding-inline-start: 10px;
   margin: 10px 0 0;
 }
 

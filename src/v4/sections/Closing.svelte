@@ -111,7 +111,7 @@
     border-color: var(--accent);
   }
   .you {
-    margin-left: 8px;
+    margin-inline-start: 8px;
     padding: 2px 8px;
     border-radius: 99px;
     background: var(--accent);

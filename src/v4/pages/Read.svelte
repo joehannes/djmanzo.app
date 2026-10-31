@@ -68,9 +68,9 @@
     font-size: 0.9em;
   }
   .read :global(blockquote) {
-    border-left: 2px solid var(--accent);
+    border-inline-start: 2px solid var(--accent);
     margin: 1em 0;
-    padding-left: 16px;
+    padding-inline-start: 16px;
     color: var(--dim);
   }
 </style>

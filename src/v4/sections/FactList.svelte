@@ -73,12 +73,12 @@
     outline-offset: 2px;
     border-radius: 4px;
   }
-  /* A chevron that turns as the fact opens. */
+  /* A chevron that turns as the fact opens: down, then up, the same in either reading direction. */
   .chev {
     flex: none;
     width: 8px;
     height: 8px;
-    border-inline-end: 2px solid var(--dim);
+    border-right: 2px solid var(--dim);
     border-bottom: 2px solid var(--dim);
     transform: rotate(45deg) translate(-2px, -2px);
     transition: transform 0.25s;

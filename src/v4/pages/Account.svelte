@@ -471,14 +471,14 @@
     margin: 6px 0 0;
   }
   .out {
-    margin-left: auto;
+    margin-inline-start: auto;
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
   .tag {
     display: inline-block;
-    margin-left: 8px;
+    margin-inline-start: 8px;
     padding: 2px 8px;
     border-radius: 999px;
     border: 1px solid var(--line);
@@ -570,7 +570,7 @@
   }
   .steps {
     margin: 0 0 14px;
-    padding-left: 20px;
+    padding-inline-start: 20px;
     color: var(--dim);
   }
   .steps :global(b) {
@@ -634,7 +634,7 @@
   }
   .orders th,
   .orders td {
-    text-align: left;
+    text-align: start;
     padding: 8px 10px;
     border-bottom: 1px solid var(--line);
   }

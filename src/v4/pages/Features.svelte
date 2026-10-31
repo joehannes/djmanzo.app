@@ -139,7 +139,7 @@
   .scene {
     margin: 8px 0 0;
     padding: 8px 10px;
-    border-left: 2px solid var(--accent);
+    border-inline-start: 2px solid var(--accent);
     background: color-mix(in srgb, var(--accent) 7%, transparent);
     border-radius: 0 8px 8px 0;
     font-style: italic;
