@@ -18,7 +18,7 @@ export interface MailWords {
   gift: { subject: string; body: string };
 }
 
-/** A packed language's e-mails are written in English until its words are here. */
+/** Every language the site speaks; a language added later is written to in English until its words are here. */
 export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLang, MailWords>> = {
   en: {
     plan: {
@@ -256,6 +256,336 @@ export const MAIL_WORDS: Record<BuiltInLang, MailWords> & Partial<Record<PackLan
     gift: {
       subject: "djmanzo: 領収書とギフト（ご注文 {order}）",
       body: "{name} 様、ありがとうございます。お支払いを確認しました。\n\n領収書\nご注文: {order}\n日付: {date}\n品目: djmanzo {edition}、{plan}\n{discount}お支払い合計: {amount}\nお支払い方法: {method}\n販売者: {seller}\n{note}\n\nギフト\ndjmanzo {edition} を贈る準備ができました。贈りたい方にこのリンクを送ってください:\n\n{link}\n\n開いてサインインすると、ライセンスはその方のものになります。",
+    },
+  },
+  zh: {
+    plan: {
+      perpetual: "一次买断",
+      lifetime: "终身，所有版本",
+      monthly: "按月",
+      yearly: "按年",
+    },
+    method: {
+      transfer: "银行转账",
+      card: "银行卡",
+    },
+    discount: "折扣：−{amount}\n",
+    code: {
+      subject: "你的 djmanzo 验证码：{code}",
+      body: "请在 {site} 输入这个验证码，确认 djmanzo 可以通过这个地址给你写信：\n\n{code}\n\n验证码 30 分钟内有效。如果不是你申请的，请忽略这封邮件，什么都不会改变。",
+    },
+    waiting: {
+      subject: "djmanzo：订单 {order} 正在等待你的转账",
+      body: "谢谢你，{name}。\n\n你的订单已下：djmanzo {edition}，{plan}，{amount}。目前还没有付款。\n\n付款时，请把 {amount} 转到下面的账户，并以 {order} 作为附言：\n\n{details}\n\n款项到账后（通常需要一到三个工作日），我们会确认，并再次写信给你，附上收据和许可证。许可证会同时出现在你的账户里，djmanzo 下次用同一个账户登录时会自动取回。\n\n你不必等待：现在就从 {download} 下载 djmanzo，开始任一版本的七天试用，或者先玩免费的 Hobbyist 版。\n\n你的账户：{account}",
+    },
+    processing: {
+      subject: "djmanzo：订单 {order} 的付款正在处理中",
+      body: "谢谢你，{name}。\n\n你为 djmanzo {edition}（{plan}）支付的 {amount} 已经付出，银行正在处理，可能需要几个工作日。确认之后，我们会再次写信给你，附上收据和许可证。许可证会同时出现在你的账户里，djmanzo 下次用同一个账户登录时会自动取回。\n\n你不必等待：现在就从 {download} 下载 djmanzo，开始任一版本的七天试用，或者先玩免费的 Hobbyist 版。\n\n你的账户：{account}",
+    },
+    receipt: {
+      subject: "djmanzo：你的收据和许可证，订单 {order}",
+      body: "谢谢你，{name}。你的付款已确认。\n\n收据\n订单：{order}\n日期：{date}\n商品：djmanzo {edition}，{plan}\n{discount}实付金额：{amount}\n付款方式：{method}\n销售方：{seller}\n{note}\n\n你的许可证\n它已经在你的账户里。用同一个账户（{via}）登录 djmanzo，许可证就会自动生效。如果 djmanzo 处于离线状态，也可以把这串许可证密钥粘贴到 djmanzo 的 Settings → Licence：\n\n{line}\n\n下载 djmanzo：{download}\n你的账户：{account}",
+    },
+    gift: {
+      subject: "djmanzo：你的收据和礼物，订单 {order}",
+      body: "谢谢你，{name}。你的付款已确认。\n\n收据\n订单：{order}\n日期：{date}\n商品：djmanzo {edition}，{plan}\n{discount}实付金额：{amount}\n付款方式：{method}\n销售方：{seller}\n{note}\n\n礼物\ndjmanzo {edition} 已经可以送出了。把这个链接发给你要送的人：\n\n{link}\n\n对方打开链接并登录，许可证就归对方所有。",
+    },
+  },
+  he: {
+    plan: {
+      perpetual: "קנייה חד־פעמית",
+      lifetime: "לכל החיים, כל גרסה",
+      monthly: "חודשי",
+      yearly: "שנתי",
+    },
+    method: {
+      transfer: "העברה בנקאית",
+      card: "כרטיס",
+    },
+    discount: "הנחה: −{amount}\n",
+    code: {
+      subject: "הקוד שלכם ב־djmanzo: {code}",
+      body: "הקלידו את הקוד הזה ב־{site} כדי לאשר שזו הכתובת ש־djmanzo כותבת אליכם בה:\n\n{code}\n\nהקוד תקף ל־30 דקות. אם לא ביקשתם אותו, התעלמו מההודעה; שום דבר לא משתנה.",
+    },
+    waiting: {
+      subject: "djmanzo: הזמנה {order} ממתינה להעברה שלכם",
+      body: "תודה, {name}.\n\nההזמנה שלכם נקלטה: djmanzo {edition}, {plan}, {amount}. עדיין לא שולם דבר.\n\nכדי לשלם, העבירו {amount} לחשבון שלהלן, עם {order} כאסמכתה:\n\n{details}\n\nכשהכסף יגיע, בדרך כלל תוך יום עד שלושה ימי עסקים, נאשר זאת ונכתוב לכם שוב עם הקבלה והרישיון. הרישיון מופיע בחשבון שלכם באותו רגע, ו־djmanzo לוקחת אותו מעצמה בפעם הבאה שהיא מתחברת עם אותו חשבון.\n\nאין צורך לחכות: הורידו את djmanzo עכשיו מ־{download}, התחילו ניסיון של שבעה ימים בכל מהדורה, או נגנו במהדורת Hobbyist החינמית.\n\nהחשבון שלכם: {account}",
+    },
+    processing: {
+      subject: "djmanzo: התשלום שלכם על הזמנה {order} בדרך",
+      body: "תודה, {name}.\n\nהתשלום שלכם על סך {amount} עבור djmanzo {edition}, {plan}, בוצע והבנק שלכם מעבד אותו, מה שעשוי לקחת כמה ימי עסקים. כשהוא יאושר נכתוב לכם שוב עם הקבלה והרישיון. הרישיון מופיע בחשבון שלכם באותו רגע, ו־djmanzo לוקחת אותו מעצמה בפעם הבאה שהיא מתחברת עם אותו חשבון.\n\nאין צורך לחכות: הורידו את djmanzo עכשיו מ־{download}, התחילו ניסיון של שבעה ימים בכל מהדורה, או נגנו במהדורת Hobbyist החינמית.\n\nהחשבון שלכם: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: הקבלה והרישיון שלכם, הזמנה {order}",
+      body: "תודה, {name}. התשלום שלכם אושר.\n\nקבלה\nהזמנה: {order}\nתאריך: {date}\nפריט: djmanzo {edition}, {plan}\n{discount}סך הכול שולם: {amount}\nאמצעי תשלום: {method}\nנמכר על ידי: {seller}\n{note}\n\nהרישיון שלכם\nהוא כבר בחשבון שלכם. התחברו ל־djmanzo עם אותו חשבון ({via}) והוא מוחל מעצמו. או, אם djmanzo לא מחוברת לאינטרנט, הדביקו את מפתח הרישיון הזה ב־djmanzo תחת Settings → Licence:\n\n{line}\n\nהורדת djmanzo: {download}\nהחשבון שלכם: {account}",
+    },
+    gift: {
+      subject: "djmanzo: הקבלה שלכם והמתנה, הזמנה {order}",
+      body: "תודה, {name}. התשלום שלכם אושר.\n\nקבלה\nהזמנה: {order}\nתאריך: {date}\nפריט: djmanzo {edition}, {plan}\n{discount}סך הכול שולם: {amount}\nאמצעי תשלום: {method}\nנמכר על ידי: {seller}\n{note}\n\nהמתנה\ndjmanzo {edition} מוכנה למסירה. שלחו את הקישור הזה למי שהיא מיועדת לו:\n\n{link}\n\nפותחים אותו, מתחברים, והרישיון שלהם.",
+    },
+  },
+  ar: {
+    plan: {
+      perpetual: "شراء مرة واحدة",
+      lifetime: "مدى الحياة، كل إصدار",
+      monthly: "شهري",
+      yearly: "سنوي",
+    },
+    method: {
+      transfer: "تحويل مصرفي",
+      card: "بطاقة",
+    },
+    discount: "الخصم: −{amount}\n",
+    code: {
+      subject: "رمزكم في djmanzo: {code}",
+      body: "اكتبوا هذا الرمز في {site} لتأكيد أن هذا هو العنوان الذي يراسلكم عليه djmanzo:\n\n{code}\n\nيصلح الرمز 30 دقيقة. إن لم تطلبوه، فتجاهلوا هذه الرسالة؛ لن يتغيّر شيء.",
+    },
+    waiting: {
+      subject: "djmanzo: الطلب {order} ينتظر تحويلكم",
+      body: "شكرًا لكم، {name}.\n\nتم تسجيل طلبكم: djmanzo {edition}، {plan}، {amount}. لم يُدفع شيء بعد.\n\nللدفع، حوّلوا {amount} إلى الحساب أدناه، مع كتابة {order} مرجعًا:\n\n{details}\n\nحين يصل المبلغ، عادةً خلال يوم إلى ثلاثة أيام عمل، نؤكّده ونراسلكم من جديد بالإيصال والترخيص. يظهر الترخيص في حسابكم في اللحظة نفسها، ويلتقطه djmanzo من تلقاء نفسه في المرة التالية التي يسجّل فيها الدخول بالحساب نفسه.\n\nلا داعي للانتظار: نزّلوا djmanzo الآن من {download}، وابدؤوا تجربة الأيام السبعة لأي نسخة، أو العبوا بنسخة Hobbyist المجانية.\n\nحسابكم: {account}",
+    },
+    processing: {
+      subject: "djmanzo: دفعتكم للطلب {order} في الطريق",
+      body: "شكرًا لكم، {name}.\n\nتمّت دفعتكم البالغة {amount} مقابل djmanzo {edition}، {plan}، ويعالجها مصرفكم الآن، وقد يستغرق ذلك بضعة أيام عمل. حين تُؤكَّد نراسلكم من جديد بالإيصال والترخيص. يظهر الترخيص في حسابكم في اللحظة نفسها، ويلتقطه djmanzo من تلقاء نفسه في المرة التالية التي يسجّل فيها الدخول بالحساب نفسه.\n\nلا داعي للانتظار: نزّلوا djmanzo الآن من {download}، وابدؤوا تجربة الأيام السبعة لأي نسخة، أو العبوا بنسخة Hobbyist المجانية.\n\nحسابكم: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: إيصالكم وترخيصكم، الطلب {order}",
+      body: "شكرًا لكم، {name}. تم تأكيد دفعتكم.\n\nالإيصال\nالطلب: {order}\nالتاريخ: {date}\nالبند: djmanzo {edition}، {plan}\n{discount}المبلغ المدفوع: {amount}\nطريقة الدفع: {method}\nالبائع: {seller}\n{note}\n\nترخيصكم\nإنه في حسابكم الآن. سجّلوا الدخول إلى djmanzo بالحساب نفسه ({via}) فيُطبَّق من تلقاء نفسه. أو، إن كان djmanzo دون اتصال، الصقوا مفتاح الترخيص هذا في djmanzo ضمن Settings → Licence:\n\n{line}\n\nتنزيل djmanzo: {download}\nحسابكم: {account}",
+    },
+    gift: {
+      subject: "djmanzo: إيصالكم والهدية، الطلب {order}",
+      body: "شكرًا لكم، {name}. تم تأكيد دفعتكم.\n\nالإيصال\nالطلب: {order}\nالتاريخ: {date}\nالبند: djmanzo {edition}، {plan}\n{discount}المبلغ المدفوع: {amount}\nطريقة الدفع: {method}\nالبائع: {seller}\n{note}\n\nالهدية\ndjmanzo {edition} جاهز للإهداء. أرسلوا هذا الرابط إلى من هو له:\n\n{link}\n\nيفتحه، ويسجّل الدخول، فيصبح الترخيص له.",
+    },
+  },
+  hi: {
+    plan: {
+      perpetual: "एक बार ख़रीदा",
+      lifetime: "आजीवन, हर संस्करण",
+      monthly: "मासिक",
+      yearly: "वार्षिक",
+    },
+    method: {
+      transfer: "बैंक ट्रांसफ़र",
+      card: "कार्ड",
+    },
+    discount: "छूट: −{amount}\n",
+    code: {
+      subject: "आपका djmanzo कोड: {code}",
+      body: "यह पुष्टि करने के लिए कि djmanzo आपको इसी पते पर लिखे, {site} पर यह कोड डालें:\n\n{code}\n\nयह 30 मिनट तक चलता है। अगर आपने यह नहीं माँगा था, तो इस संदेश को अनदेखा करें; कुछ नहीं बदलेगा।",
+    },
+    waiting: {
+      subject: "djmanzo: ऑर्डर {order} आपके ट्रांसफ़र की प्रतीक्षा में है",
+      body: "धन्यवाद, {name}।\n\nआपका ऑर्डर दर्ज हो गया है: djmanzo {edition}, {plan}, {amount}। अभी तक कोई भुगतान नहीं हुआ है।\n\nभुगतान के लिए, {amount} नीचे दिए खाते में ट्रांसफ़र करें, संदर्भ में {order} लिखें:\n\n{details}\n\nपैसा पहुँचने पर, आमतौर पर एक से तीन कार्यदिवसों में, हम उसकी पुष्टि करेंगे और आपकी रसीद और लाइसेंस के साथ फिर लिखेंगे। लाइसेंस उसी पल आपके खाते में दिखता है, और अगली बार जब djmanzo उसी खाते से साइन इन करता है, तो वह उसे अपने-आप ले लेता है।\n\nइंतज़ार की ज़रूरत नहीं: djmanzo अभी {download} से डाउनलोड करें, किसी भी संस्करण का सात दिन का ट्रायल शुरू करें, या मुफ़्त Hobbyist संस्करण से बजाएँ।\n\nआपका खाता: {account}",
+    },
+    processing: {
+      subject: "djmanzo: ऑर्डर {order} के लिए आपका भुगतान रास्ते में है",
+      body: "धन्यवाद, {name}।\n\ndjmanzo {edition}, {plan}, के लिए {amount} का आपका भुगतान हो गया है और आपका बैंक उसे प्रोसेस कर रहा है, जिसमें कुछ कार्यदिवस लग सकते हैं। पुष्टि होते ही हम आपकी रसीद और लाइसेंस के साथ फिर लिखेंगे। लाइसेंस उसी पल आपके खाते में दिखता है, और अगली बार जब djmanzo उसी खाते से साइन इन करता है, तो वह उसे अपने-आप ले लेता है।\n\nइंतज़ार की ज़रूरत नहीं: djmanzo अभी {download} से डाउनलोड करें, किसी भी संस्करण का सात दिन का ट्रायल शुरू करें, या मुफ़्त Hobbyist संस्करण से बजाएँ।\n\nआपका खाता: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: आपकी रसीद और लाइसेंस, ऑर्डर {order}",
+      body: "धन्यवाद, {name}। आपके भुगतान की पुष्टि हो गई है।\n\nरसीद\nऑर्डर: {order}\nतारीख़: {date}\nआइटम: djmanzo {edition}, {plan}\n{discount}कुल भुगतान: {amount}\nभुगतान का तरीका: {method}\nविक्रेता: {seller}\n{note}\n\nआपका लाइसेंस\nयह अब आपके खाते में है। उसी खाते ({via}) से djmanzo में साइन इन करें और यह अपने-आप लग जाता है। या, अगर djmanzo ऑफ़लाइन है, तो यह लाइसेंस कुंजी djmanzo में Settings → Licence के अंदर पेस्ट करें:\n\n{line}\n\ndjmanzo डाउनलोड करें: {download}\nआपका खाता: {account}",
+    },
+    gift: {
+      subject: "djmanzo: आपकी रसीद और उपहार, ऑर्डर {order}",
+      body: "धन्यवाद, {name}। आपके भुगतान की पुष्टि हो गई है।\n\nरसीद\nऑर्डर: {order}\nतारीख़: {date}\nआइटम: djmanzo {edition}, {plan}\n{discount}कुल भुगतान: {amount}\nभुगतान का तरीका: {method}\nविक्रेता: {seller}\n{note}\n\nउपहार\ndjmanzo {edition} देने के लिए तैयार है। यह लिंक उस व्यक्ति को भेजें जिसके लिए यह है:\n\n{link}\n\nवे इसे खोलें, साइन इन करें, और लाइसेंस उनका हो जाता है।",
+    },
+  },
+  ko: {
+    plan: {
+      perpetual: "한 번 구매",
+      lifetime: "평생, 모든 버전",
+      monthly: "월간",
+      yearly: "연간",
+    },
+    method: {
+      transfer: "계좌 이체",
+      card: "카드",
+    },
+    discount: "할인: −{amount}\n",
+    code: {
+      subject: "djmanzo 인증 코드: {code}",
+      body: "djmanzo가 이 주소로 연락드려도 되는지 확인하려면 {site}에 이 코드를 입력하세요:\n\n{code}\n\n코드는 30분 동안 유효합니다. 요청하지 않으셨다면 이 메일은 무시하셔도 됩니다. 아무것도 바뀌지 않습니다.",
+    },
+    waiting: {
+      subject: "djmanzo: 주문 {order}이(가) 이체를 기다리고 있습니다",
+      body: "{name} 님, 감사합니다.\n\n주문이 접수되었습니다: djmanzo {edition}, {plan}, {amount}. 아직 결제된 금액은 없습니다.\n\n결제하시려면 아래 계좌로 {amount}을(를) 이체하시고, 받는 분 메모에 {order}을(를) 적어 주세요:\n\n{details}\n\n입금이 확인되면(보통 영업일 기준 1~3일) 영수증과 라이선스를 담아 다시 메일을 드립니다. 라이선스는 같은 순간 계정에 나타나고, djmanzo가 다음에 같은 계정으로 로그인할 때 알아서 가져갑니다.\n\n기다리실 필요는 없습니다. 지금 {download}에서 djmanzo를 내려받아 어느 에디션이든 7일 체험을 시작하거나, 무료 Hobbyist 에디션으로 플레이해 보세요.\n\n내 계정: {account}",
+    },
+    processing: {
+      subject: "djmanzo: 주문 {order}의 결제가 처리 중입니다",
+      body: "{name} 님, 감사합니다.\n\ndjmanzo {edition}, {plan}에 대한 {amount} 결제가 이루어졌고 은행에서 처리 중입니다. 영업일 기준 며칠이 걸릴 수 있습니다. 확인되면 영수증과 라이선스를 담아 다시 메일을 드립니다. 라이선스는 같은 순간 계정에 나타나고, djmanzo가 다음에 같은 계정으로 로그인할 때 알아서 가져갑니다.\n\n기다리실 필요는 없습니다. 지금 {download}에서 djmanzo를 내려받아 어느 에디션이든 7일 체험을 시작하거나, 무료 Hobbyist 에디션으로 플레이해 보세요.\n\n내 계정: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: 영수증과 라이선스, 주문 {order}",
+      body: "{name} 님, 감사합니다. 결제가 확인되었습니다.\n\n영수증\n주문: {order}\n날짜: {date}\n품목: djmanzo {edition}, {plan}\n{discount}결제 금액: {amount}\n결제 수단: {method}\n판매자: {seller}\n{note}\n\n라이선스\n이미 계정에 들어 있습니다. 같은 계정({via})으로 djmanzo에 로그인하면 자동으로 적용됩니다. djmanzo가 오프라인이라면 이 라이선스 키를 djmanzo의 Settings → Licence에 붙여 넣으세요:\n\n{line}\n\ndjmanzo 내려받기: {download}\n내 계정: {account}",
+    },
+    gift: {
+      subject: "djmanzo: 영수증과 선물, 주문 {order}",
+      body: "{name} 님, 감사합니다. 결제가 확인되었습니다.\n\n영수증\n주문: {order}\n날짜: {date}\n품목: djmanzo {edition}, {plan}\n{discount}결제 금액: {amount}\n결제 수단: {method}\n판매자: {seller}\n{note}\n\n선물\ndjmanzo {edition}을(를) 건넬 준비가 되었습니다. 선물받을 분께 이 링크를 보내 주세요:\n\n{link}\n\n링크를 열고 로그인하면 라이선스는 그분의 것이 됩니다.",
+    },
+  },
+  id: {
+    plan: {
+      perpetual: "beli sekali",
+      lifetime: "seumur hidup, semua versi",
+      monthly: "bulanan",
+      yearly: "tahunan",
+    },
+    method: {
+      transfer: "transfer bank",
+      card: "kartu",
+    },
+    discount: "Diskon: −{amount}\n",
+    code: {
+      subject: "Kode djmanzo Anda: {code}",
+      body: "Ketik kode ini di {site} untuk memastikan bahwa ini alamat yang dipakai djmanzo untuk menulis kepada Anda:\n\n{code}\n\nKode berlaku 30 menit. Jika Anda tidak memintanya, abaikan pesan ini; tidak ada yang berubah.",
+    },
+    waiting: {
+      subject: "djmanzo: pesanan {order} menunggu transfer Anda",
+      body: "Terima kasih, {name}.\n\nPesanan Anda sudah tercatat: djmanzo {edition}, {plan}, {amount}. Belum ada yang dibayar.\n\nUntuk membayar, transfer {amount} ke rekening di bawah ini, dengan {order} sebagai berita/referensi:\n\n{details}\n\nSaat dananya masuk, biasanya dalam satu sampai tiga hari kerja, kami mengonfirmasinya dan menulis lagi kepada Anda dengan kuitansi dan lisensi. Lisensinya muncul di akun Anda pada saat yang sama, dan djmanzo mengambilnya sendiri saat berikutnya masuk dengan akun yang sama.\n\nTidak perlu menunggu: unduh djmanzo sekarang di {download}, mulai uji coba tujuh hari untuk edisi mana pun, atau bermain dengan edisi Hobbyist yang gratis.\n\nAkun Anda: {account}",
+    },
+    processing: {
+      subject: "djmanzo: pembayaran Anda untuk pesanan {order} sedang diproses",
+      body: "Terima kasih, {name}.\n\nPembayaran Anda sebesar {amount} untuk djmanzo {edition}, {plan}, sudah dilakukan dan bank Anda sedang memprosesnya, yang bisa memakan beberapa hari kerja. Begitu dikonfirmasi, kami menulis lagi kepada Anda dengan kuitansi dan lisensi. Lisensinya muncul di akun Anda pada saat yang sama, dan djmanzo mengambilnya sendiri saat berikutnya masuk dengan akun yang sama.\n\nTidak perlu menunggu: unduh djmanzo sekarang di {download}, mulai uji coba tujuh hari untuk edisi mana pun, atau bermain dengan edisi Hobbyist yang gratis.\n\nAkun Anda: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: kuitansi dan lisensi Anda, pesanan {order}",
+      body: "Terima kasih, {name}. Pembayaran Anda sudah dikonfirmasi.\n\nKUITANSI\nPesanan: {order}\nTanggal: {date}\nItem: djmanzo {edition}, {plan}\n{discount}Total dibayar: {amount}\nDibayar dengan: {method}\nDijual oleh: {seller}\n{note}\n\nLISENSI ANDA\nLisensinya sudah ada di akun Anda. Masuk ke djmanzo dengan akun yang sama ({via}) dan lisensi terpasang sendiri. Atau, jika djmanzo sedang offline, tempel kunci lisensi ini di djmanzo pada Settings → Licence:\n\n{line}\n\nUnduh djmanzo: {download}\nAkun Anda: {account}",
+    },
+    gift: {
+      subject: "djmanzo: kuitansi Anda dan hadiahnya, pesanan {order}",
+      body: "Terima kasih, {name}. Pembayaran Anda sudah dikonfirmasi.\n\nKUITANSI\nPesanan: {order}\nTanggal: {date}\nItem: djmanzo {edition}, {plan}\n{discount}Total dibayar: {amount}\nDibayar dengan: {method}\nDijual oleh: {seller}\n{note}\n\nHADIAHNYA\ndjmanzo {edition} siap diberikan. Kirim tautan ini kepada orang yang akan menerimanya:\n\n{link}\n\nMereka membukanya, masuk, dan lisensinya menjadi milik mereka.",
+    },
+  },
+  vi: {
+    plan: {
+      perpetual: "mua một lần",
+      lifetime: "trọn đời, mọi phiên bản",
+      monthly: "hằng tháng",
+      yearly: "hằng năm",
+    },
+    method: {
+      transfer: "chuyển khoản ngân hàng",
+      card: "thẻ",
+    },
+    discount: "Giảm giá: −{amount}\n",
+    code: {
+      subject: "Mã djmanzo của bạn: {code}",
+      body: "Nhập mã này trên {site} để xác nhận đây là địa chỉ djmanzo dùng để viết cho bạn:\n\n{code}\n\nMã có hiệu lực trong 30 phút. Nếu bạn không yêu cầu, hãy bỏ qua thư này; không có gì thay đổi.",
+    },
+    waiting: {
+      subject: "djmanzo: đơn hàng {order} đang chờ bạn chuyển khoản",
+      body: "Cảm ơn bạn, {name}.\n\nĐơn hàng của bạn đã được ghi nhận: djmanzo {edition}, {plan}, {amount}. Chưa có khoản nào được thanh toán.\n\nĐể thanh toán, hãy chuyển {amount} vào tài khoản dưới đây, ghi {order} làm nội dung chuyển khoản:\n\n{details}\n\nKhi tiền đến, thường trong một đến ba ngày làm việc, chúng tôi sẽ xác nhận và viết lại cho bạn kèm biên nhận và giấy phép. Giấy phép xuất hiện trong tài khoản của bạn cùng lúc đó, và djmanzo sẽ tự nhận nó vào lần tới đăng nhập bằng cùng tài khoản.\n\nBạn không cần chờ: tải djmanzo ngay tại {download}, bắt đầu dùng thử bảy ngày bất kỳ phiên bản nào, hoặc chơi với phiên bản Hobbyist miễn phí.\n\nTài khoản của bạn: {account}",
+    },
+    processing: {
+      subject: "djmanzo: khoản thanh toán cho đơn hàng {order} đang được xử lý",
+      body: "Cảm ơn bạn, {name}.\n\nKhoản thanh toán {amount} của bạn cho djmanzo {edition}, {plan}, đã được thực hiện và ngân hàng đang xử lý, việc này có thể mất vài ngày làm việc. Khi được xác nhận, chúng tôi sẽ viết lại cho bạn kèm biên nhận và giấy phép. Giấy phép xuất hiện trong tài khoản của bạn cùng lúc đó, và djmanzo sẽ tự nhận nó vào lần tới đăng nhập bằng cùng tài khoản.\n\nBạn không cần chờ: tải djmanzo ngay tại {download}, bắt đầu dùng thử bảy ngày bất kỳ phiên bản nào, hoặc chơi với phiên bản Hobbyist miễn phí.\n\nTài khoản của bạn: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: biên nhận và giấy phép của bạn, đơn hàng {order}",
+      body: "Cảm ơn bạn, {name}. Khoản thanh toán của bạn đã được xác nhận.\n\nBIÊN NHẬN\nĐơn hàng: {order}\nNgày: {date}\nMặt hàng: djmanzo {edition}, {plan}\n{discount}Tổng đã trả: {amount}\nThanh toán bằng: {method}\nNgười bán: {seller}\n{note}\n\nGIẤY PHÉP CỦA BẠN\nGiấy phép đã có trong tài khoản của bạn. Đăng nhập djmanzo bằng cùng tài khoản ({via}) và nó sẽ tự được áp dụng. Hoặc, nếu djmanzo đang ngoại tuyến, hãy dán khóa giấy phép này vào djmanzo ở Settings → Licence:\n\n{line}\n\nTải djmanzo: {download}\nTài khoản của bạn: {account}",
+    },
+    gift: {
+      subject: "djmanzo: biên nhận của bạn và món quà, đơn hàng {order}",
+      body: "Cảm ơn bạn, {name}. Khoản thanh toán của bạn đã được xác nhận.\n\nBIÊN NHẬN\nĐơn hàng: {order}\nNgày: {date}\nMặt hàng: djmanzo {edition}, {plan}\n{discount}Tổng đã trả: {amount}\nThanh toán bằng: {method}\nNgười bán: {seller}\n{note}\n\nMÓN QUÀ\ndjmanzo {edition} đã sẵn sàng để trao tặng. Hãy gửi liên kết này cho người nhận:\n\n{link}\n\nHọ mở liên kết, đăng nhập, và giấy phép thuộc về họ.",
+    },
+  },
+  th: {
+    plan: {
+      perpetual: "ซื้อครั้งเดียว",
+      lifetime: "ตลอดชีพ ทุกเวอร์ชัน",
+      monthly: "รายเดือน",
+      yearly: "รายปี",
+    },
+    method: {
+      transfer: "โอนเงินผ่านธนาคาร",
+      card: "บัตร",
+    },
+    discount: "ส่วนลด: −{amount}\n",
+    code: {
+      subject: "รหัส djmanzo ของคุณ: {code}",
+      body: "พิมพ์รหัสนี้ที่ {site} เพื่อยืนยันว่านี่คือที่อยู่ที่ djmanzo ใช้เขียนถึงคุณ:\n\n{code}\n\nรหัสใช้ได้ 30 นาที หากคุณไม่ได้ขอ ไม่ต้องสนใจข้อความนี้ ไม่มีอะไรเปลี่ยนแปลง",
+    },
+    waiting: {
+      subject: "djmanzo: คำสั่งซื้อ {order} รอการโอนเงินจากคุณ",
+      body: "ขอบคุณ {name}\n\nคำสั่งซื้อของคุณได้รับแล้ว: djmanzo {edition}, {plan}, {amount} ยังไม่มีการชำระเงินใด ๆ\n\nหากต้องการชำระ ให้โอน {amount} เข้าบัญชีด้านล่าง โดยใส่ {order} เป็นข้อมูลอ้างอิง:\n\n{details}\n\nเมื่อเงินเข้า ซึ่งปกติใช้เวลาหนึ่งถึงสามวันทำการ เราจะยืนยันและเขียนถึงคุณอีกครั้งพร้อมใบเสร็จและไลเซนส์ ไลเซนส์จะปรากฏในบัญชีของคุณในเวลาเดียวกัน และ djmanzo จะดึงไปเองในครั้งถัดไปที่เข้าสู่ระบบด้วยบัญชีเดียวกัน\n\nไม่ต้องรอ: ดาวน์โหลด djmanzo ได้เลยที่ {download} เริ่มทดลองใช้เจ็ดวันกับรุ่นใดก็ได้ หรือเล่นกับรุ่น Hobbyist ที่ฟรี\n\nบัญชีของคุณ: {account}",
+    },
+    processing: {
+      subject: "djmanzo: การชำระเงินสำหรับคำสั่งซื้อ {order} กำลังดำเนินการ",
+      body: "ขอบคุณ {name}\n\nการชำระเงิน {amount} ของคุณสำหรับ djmanzo {edition}, {plan} ได้ทำแล้ว และธนาคารของคุณกำลังดำเนินการ ซึ่งอาจใช้เวลาสองสามวันทำการ เมื่อยืนยันแล้ว เราจะเขียนถึงคุณอีกครั้งพร้อมใบเสร็จและไลเซนส์ ไลเซนส์จะปรากฏในบัญชีของคุณในเวลาเดียวกัน และ djmanzo จะดึงไปเองในครั้งถัดไปที่เข้าสู่ระบบด้วยบัญชีเดียวกัน\n\nไม่ต้องรอ: ดาวน์โหลด djmanzo ได้เลยที่ {download} เริ่มทดลองใช้เจ็ดวันกับรุ่นใดก็ได้ หรือเล่นกับรุ่น Hobbyist ที่ฟรี\n\nบัญชีของคุณ: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: ใบเสร็จและไลเซนส์ของคุณ คำสั่งซื้อ {order}",
+      body: "ขอบคุณ {name} การชำระเงินของคุณได้รับการยืนยันแล้ว\n\nใบเสร็จ\nคำสั่งซื้อ: {order}\nวันที่: {date}\nรายการ: djmanzo {edition}, {plan}\n{discount}ยอดชำระทั้งหมด: {amount}\nชำระด้วย: {method}\nผู้ขาย: {seller}\n{note}\n\nไลเซนส์ของคุณ\nอยู่ในบัญชีของคุณแล้ว เข้าสู่ระบบ djmanzo ด้วยบัญชีเดียวกัน ({via}) แล้วไลเซนส์จะถูกนำไปใช้เอง หรือหาก djmanzo ออฟไลน์อยู่ ให้วางคีย์ไลเซนส์นี้ใน djmanzo ที่ Settings → Licence:\n\n{line}\n\nดาวน์โหลด djmanzo: {download}\nบัญชีของคุณ: {account}",
+    },
+    gift: {
+      subject: "djmanzo: ใบเสร็จของคุณและของขวัญ คำสั่งซื้อ {order}",
+      body: "ขอบคุณ {name} การชำระเงินของคุณได้รับการยืนยันแล้ว\n\nใบเสร็จ\nคำสั่งซื้อ: {order}\nวันที่: {date}\nรายการ: djmanzo {edition}, {plan}\n{discount}ยอดชำระทั้งหมด: {amount}\nชำระด้วย: {method}\nผู้ขาย: {seller}\n{note}\n\nของขวัญ\ndjmanzo {edition} พร้อมมอบให้แล้ว ส่งลิงก์นี้ให้คนที่คุณจะมอบให้:\n\n{link}\n\nเขาเปิดลิงก์ เข้าสู่ระบบ แล้วไลเซนส์ก็เป็นของเขา",
+    },
+  },
+  tr: {
+    plan: {
+      perpetual: "bir kez satın alındı",
+      lifetime: "ömür boyu, her sürüm",
+      monthly: "aylık",
+      yearly: "yıllık",
+    },
+    method: {
+      transfer: "banka havalesi",
+      card: "kart",
+    },
+    discount: "İndirim: −{amount}\n",
+    code: {
+      subject: "djmanzo kodun: {code}",
+      body: "djmanzo'nun sana bu adresten yazdığını onaylamak için bu kodu {site} üzerinde gir:\n\n{code}\n\nKod 30 dakika geçerlidir. İstemediysen bu mesajı yok say; hiçbir şey değişmez.",
+    },
+    waiting: {
+      subject: "djmanzo: {order} numaralı sipariş havaleni bekliyor",
+      body: "Teşekkürler, {name}.\n\nSiparişin alındı: djmanzo {edition}, {plan}, {amount}. Henüz bir ödeme yapılmadı.\n\nÖdemek için {amount} tutarını aşağıdaki hesaba, açıklamaya {order} yazarak gönder:\n\n{details}\n\nPara ulaştığında, genellikle bir ile üç iş günü içinde, bunu onaylar ve makbuzun ile lisansınla sana yeniden yazarız. Lisans aynı anda hesabında görünür ve djmanzo aynı hesapla bir sonraki girişinde onu kendiliğinden alır.\n\nBeklemene gerek yok: djmanzo'yu şimdi {download} adresinden indir, herhangi bir sürümün yedi günlük denemesini başlat ya da ücretsiz Hobbyist sürümüyle çal.\n\nHesabın: {account}",
+    },
+    processing: {
+      subject: "djmanzo: {order} numaralı sipariş için ödemen yolda",
+      body: "Teşekkürler, {name}.\n\ndjmanzo {edition}, {plan} için {amount} tutarındaki ödemen yapıldı ve bankan işliyor; bu birkaç iş günü sürebilir. Onaylandığında makbuzun ve lisansınla sana yeniden yazarız. Lisans aynı anda hesabında görünür ve djmanzo aynı hesapla bir sonraki girişinde onu kendiliğinden alır.\n\nBeklemene gerek yok: djmanzo'yu şimdi {download} adresinden indir, herhangi bir sürümün yedi günlük denemesini başlat ya da ücretsiz Hobbyist sürümüyle çal.\n\nHesabın: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: makbuzun ve lisansın, sipariş {order}",
+      body: "Teşekkürler, {name}. Ödemen onaylandı.\n\nMAKBUZ\nSipariş: {order}\nTarih: {date}\nÜrün: djmanzo {edition}, {plan}\n{discount}Ödenen toplam: {amount}\nÖdeme yöntemi: {method}\nSatıcı: {seller}\n{note}\n\nLİSANSIN\nŞu an hesabında. djmanzo'ya aynı hesapla ({via}) giriş yap, lisans kendiliğinden uygulanır. Ya da djmanzo çevrimdışıysa bu lisans anahtarını djmanzo'da Settings → Licence altına yapıştır:\n\n{line}\n\ndjmanzo'yu indir: {download}\nHesabın: {account}",
+    },
+    gift: {
+      subject: "djmanzo: makbuzun ve hediye, sipariş {order}",
+      body: "Teşekkürler, {name}. Ödemen onaylandı.\n\nMAKBUZ\nSipariş: {order}\nTarih: {date}\nÜrün: djmanzo {edition}, {plan}\n{discount}Ödenen toplam: {amount}\nÖdeme yöntemi: {method}\nSatıcı: {seller}\n{note}\n\nHEDİYE\ndjmanzo {edition} vermeye hazır. Bu bağlantıyı hediyenin sahibine gönder:\n\n{link}\n\nAçar, giriş yapar ve lisans onun olur.",
+    },
+  },
+  sw: {
+    plan: {
+      perpetual: "nunua mara moja",
+      lifetime: "maisha yote, kila toleo",
+      monthly: "kila mwezi",
+      yearly: "kila mwaka",
+    },
+    method: {
+      transfer: "uhamisho wa benki",
+      card: "kadi",
+    },
+    discount: "Punguzo: −{amount}\n",
+    code: {
+      subject: "Msimbo wako wa djmanzo: {code}",
+      body: "Andika msimbo huu kwenye {site} kuthibitisha kwamba hii ndiyo anwani ambayo djmanzo inakuandikia:\n\n{code}\n\nUnafanya kazi kwa dakika 30. Kama hukuuomba, puuza ujumbe huu; hakuna kinachobadilika.",
+    },
+    waiting: {
+      subject: "djmanzo: oda {order} inasubiri uhamisho wako",
+      body: "Asante, {name}.\n\nOda yako imewekwa: djmanzo {edition}, {plan}, {amount}. Bado hakuna kilicholipwa.\n\nKulipa, hamisha {amount} kwenda akaunti iliyo hapa chini, ukiandika {order} kama kumbukumbu:\n\n{details}\n\nPesa zikifika, kwa kawaida ndani ya siku moja hadi tatu za kazi, tunazithibitisha na kukuandikia tena pamoja na risiti na leseni yako. Leseni inaonekana kwenye akaunti yako wakati huo huo, na djmanzo inaichukua yenyewe mara ijayo inapoingia kwa akaunti ile ile.\n\nHuna haja ya kusubiri: pakua djmanzo sasa kwenye {download}, anza jaribio la siku saba la toleo lolote, au cheza na toleo la Hobbyist lisilo na malipo.\n\nAkaunti yako: {account}",
+    },
+    processing: {
+      subject: "djmanzo: malipo yako ya oda {order} yako njiani",
+      body: "Asante, {name}.\n\nMalipo yako ya {amount} kwa djmanzo {edition}, {plan}, yamefanyika na benki yako inayashughulikia, jambo linaloweza kuchukua siku chache za kazi. Yakithibitishwa tunakuandikia tena pamoja na risiti na leseni yako. Leseni inaonekana kwenye akaunti yako wakati huo huo, na djmanzo inaichukua yenyewe mara ijayo inapoingia kwa akaunti ile ile.\n\nHuna haja ya kusubiri: pakua djmanzo sasa kwenye {download}, anza jaribio la siku saba la toleo lolote, au cheza na toleo la Hobbyist lisilo na malipo.\n\nAkaunti yako: {account}",
+    },
+    receipt: {
+      subject: "djmanzo: risiti na leseni yako, oda {order}",
+      body: "Asante, {name}. Malipo yako yamethibitishwa.\n\nRISITI\nOda: {order}\nTarehe: {date}\nBidhaa: djmanzo {edition}, {plan}\n{discount}Jumla iliyolipwa: {amount}\nImelipwa kwa: {method}\nMuuzaji: {seller}\n{note}\n\nLESENI YAKO\nIko kwenye akaunti yako sasa. Ingia kwenye djmanzo kwa akaunti ile ile ({via}) nayo inawekwa yenyewe. Au, kama djmanzo haiko mtandaoni, bandika ufunguo huu wa leseni kwenye djmanzo chini ya Settings → Licence:\n\n{line}\n\nPakua djmanzo: {download}\nAkaunti yako: {account}",
+    },
+    gift: {
+      subject: "djmanzo: risiti yako na zawadi, oda {order}",
+      body: "Asante, {name}. Malipo yako yamethibitishwa.\n\nRISITI\nOda: {order}\nTarehe: {date}\nBidhaa: djmanzo {edition}, {plan}\n{discount}Jumla iliyolipwa: {amount}\nImelipwa kwa: {method}\nMuuzaji: {seller}\n{note}\n\nZAWADI\ndjmanzo {edition} iko tayari kukabidhiwa. Tuma kiungo hiki kwa mtu anayepewa:\n\n{link}\n\nAnakifungua, anaingia, na leseni inakuwa yake.",
     },
   },
 };

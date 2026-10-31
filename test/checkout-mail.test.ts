@@ -131,6 +131,28 @@ describe("a bank transfer", () => {
     expect((await crew(env)("/api/admin/orders")).data.orders[0].mailed).toMatchObject({ waiting: expect.any(Number), receipt: expect.any(Number) });
   });
 
+  it("writes to a buyer in their language, every one the site speaks, and right to left in Hebrew and Arabic", async () => {
+    const { mails } = world();
+    const env = openSite({ ...MAIL, BANK_TRANSFER_DETAILS: "IBAN AT00 1234 5678 9012" });
+    const noa = await person(env, "Noa");
+    await noa.call("/api/me/contact", { method: "POST", json: { email: "noa@elsewhere.org", lang: "he" } });
+    expect(mails[0].subject).toMatch(/^הקוד שלכם ב־djmanzo: \d{6}$/);
+    expect(mails[0].html).toMatch(/^<div dir="rtl"/);
+    await noa.call("/api/me/contact/confirm", { method: "POST", json: { code: mails[0].subject.slice(-6) } });
+    const placed = await noa.call("/api/checkout/transfer", { method: "POST", json: { ...buyOnce, billing: "AT" } });
+    expect(mails[1].subject).toBe(`djmanzo: הזמנה ${placed.data.order.id} ממתינה להעברה שלכם`);
+    expect(mails[1].text).toContain("קנייה חד־פעמית");
+    expect(mails[1].html).toMatch(/^<div dir="rtl"/);
+    await crew(env)(`/api/admin/orders/${placed.data.order.id}/paid`, { method: "POST", json: { bankCountry: "AT" } });
+    for (const words of ["קבלה", "הרישיון שלכם", "Settings → Licence", "העברה בנקאית"]) expect(mails[2].text).toContain(words);
+    expect(mails[2].html).toMatch(/^<div dir="rtl"/);
+    // Korean reads left to right.
+    const min = await person(env, "Min");
+    await min.call("/api/me/contact", { method: "POST", json: { email: "min@elsewhere.org", lang: "ko" } });
+    expect(mails[3].subject).toMatch(/^djmanzo 인증 코드: \d{6}$/);
+    expect(mails[3].html).toMatch(/^<div style=/);
+  });
+
   it("without e-mail set up, still takes the order and says nothing went out", async () => {
     const { mails } = world();
     const env = openSite({ BANK_TRANSFER_DETAILS: "IBAN AT00 0000, the owner" });

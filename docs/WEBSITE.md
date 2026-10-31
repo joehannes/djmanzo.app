@@ -1397,7 +1397,9 @@ the language most probably read where the visitor is.
   written, and the tests hold every pack to exactly that list, so it can
   only shrink. The server-rendered pages (`?lang=zh`), the hreflang
   alternates and the sitemap cover a pack's language once its words are in
-  `seo.ts`; e-mails stay in English until `worker/mailwords.ts` has them.
+  `seo.ts`. The e-mails (`worker/mailwords.ts`) are in all seventeen since
+  31 October, Hebrew and Arabic laid out right to left; a language added
+  later is written to in English until its words are there.
 - **Right to left** (Hebrew, Arabic): `<html dir="rtl">`, the bar and its
   menus on logical sides, the skip link moved off the start side (off the
   left it made a right-to-left page 9 999 px wide and blank — the browser

@@ -18,7 +18,7 @@
  */
 
 import type { Lang } from "../src/v4/i18n/strings";
-import { LANGS } from "../src/v4/i18n/strings";
+import { LANGS, LANG_INFO } from "../src/v4/i18n/strings";
 import { EDITION_INFO, money } from "../shared/catalog";
 import type { AppEnv } from "./env";
 import { fail } from "./http";
@@ -32,6 +32,8 @@ export function mailOn(env: AppEnv): boolean {
 export interface Mail {
   subject: string;
   text: string;
+  /** Written in a language read right to left (Hebrew, Arabic). */
+  rtl?: boolean;
 }
 
 /** Send one message. Whether it went. */
@@ -40,7 +42,7 @@ export async function send(env: AppEnv, to: string, mail: Mail): Promise<boolean
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
-    body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject: mail.subject, text: mail.text, html: html(mail.text), ...(env.IMPRINT_EMAIL ? { reply_to: env.IMPRINT_EMAIL } : {}) }),
+    body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject: mail.subject, text: mail.text, html: html(mail.text, mail.rtl), ...(env.IMPRINT_EMAIL ? { reply_to: env.IMPRINT_EMAIL } : {}) }),
   }).catch(() => null);
   if (r?.ok) return true;
   console.error(JSON.stringify({ at: "mail", status: r?.status ?? null, said: r ? (await r.text().catch(() => "")).slice(0, 300) : "unreachable" }));
@@ -49,8 +51,8 @@ export async function send(env: AppEnv, to: string, mail: Mail): Promise<boolean
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-/** The same words as HTML: paragraphs, line breaks, links, and a licence key or a code set apart. */
-export function html(text: string): string {
+/** The same words as HTML: paragraphs, line breaks, links, and a licence key or a code set apart; right to left where the language reads so. */
+export function html(text: string, rtl = false): string {
   const paragraphs = text.split(/\n{2,}/).map((p) => {
     const lone = !p.includes("\n") && !p.includes(" ") && p.length > 6;
     const body = esc(p)
@@ -58,7 +60,7 @@ export function html(text: string): string {
       .replace(/\n/g, "<br>");
     return lone ? `<p style="font-family:ui-monospace,Menlo,monospace;font-size:13px;word-break:break-all;background:#f4f4f5;padding:10px;border-radius:6px">${body}</p>` : `<p>${body}</p>`;
   });
-  return `<div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:15px;line-height:1.5;color:#18181b;max-width:560px">${paragraphs.join("")}</div>`;
+  return `<div${rtl ? ' dir="rtl"' : ""} style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;font-size:15px;line-height:1.5;color:#18181b;max-width:560px">${paragraphs.join("")}</div>`;
 }
 
 /** The blanks filled. */
@@ -69,6 +71,8 @@ export function fill(s: string, vars: Record<string, string>): string {
 /** The language a buyer is written to: theirs where the e-mails have words for it, else English. */
 export const langOf = (user: User | null): Lang => (user?.lang && user.lang in MAIL_WORDS ? (user.lang as Lang) : "en");
 const wordsIn = (lang: Lang): MailWords => MAIL_WORDS[lang] ?? MAIL_WORDS.en;
+/** Whether a message in this language reads right to left. */
+const rtlIn = (lang: Lang): boolean => !!LANG_INFO[lang]?.rtl && lang in MAIL_WORDS;
 const site = (origin: string) => new URL(origin).host;
 const download = (origin: string) => `${origin}/#download`;
 const accountUrl = (origin: string) => `${origin}/account`;
@@ -108,8 +112,9 @@ export async function ask(env: AppEnv, user: User, raw: string, lang: string | n
   const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 1_000_000).padStart(6, "0");
   await put(env.KV, `contact-code:${user.id}`, { email, hash: await hash(`${user.id}:${code}`), tries: 0 }, CODE_MINUTES * 60);
   await put(env.KV, `user:${user.id}`, user);
-  const w = wordsIn(langOf(user)).code;
-  const went = await send(env, email, { subject: fill(w.subject, { code }), text: fill(w.body, { code, site: site(origin) }) });
+  const writeIn = langOf(user);
+  const w = wordsIn(writeIn).code;
+  const went = await send(env, email, { subject: fill(w.subject, { code }), text: fill(w.body, { code, site: site(origin) }), rtl: rtlIn(writeIn) });
   if (!went) fail(502, "The code could not be sent just now. Try again in a minute.");
   // The address kept stays as it was until the code comes back.
   return { contact: user.contact ?? null, sent: true, mail: true, pending: email };
@@ -166,14 +171,14 @@ function common(env: AppEnv, order: Order, user: User, origin: string) {
 
 /** A bank transfer to make: what, how much, where to, and what happens after. */
 export function waiting(env: AppEnv, order: Order, user: User, origin: string, details: string): Mail {
-  const { w, vars } = common(env, order, user, origin);
-  return { subject: fill(w.waiting.subject, vars), text: fill(w.waiting.body, { ...vars, details }) };
+  const { w, lang, vars } = common(env, order, user, origin);
+  return { subject: fill(w.waiting.subject, vars), text: fill(w.waiting.body, { ...vars, details }), rtl: rtlIn(lang) };
 }
 
 /** A payment made that the bank is still clearing. */
 export function processing(env: AppEnv, order: Order, user: User, origin: string): Mail {
-  const { w, vars } = common(env, order, user, origin);
-  return { subject: fill(w.processing.subject, vars), text: fill(w.processing.body, vars) };
+  const { w, lang, vars } = common(env, order, user, origin);
+  return { subject: fill(w.processing.subject, vars), text: fill(w.processing.body, vars), rtl: rtlIn(lang) };
 }
 
 /** The receipt, with the licence key, or with the gift to hand over. */
@@ -195,9 +200,9 @@ export function receipt(env: AppEnv, order: Order, user: User, origin: string, g
   const test = order.test ? "[test] " : "";
   if (order.gift) {
     const link = `${origin}/redeem?voucher=${encodeURIComponent(got.giftLine ?? "")}`;
-    return { subject: test + fill(w.gift.subject, all), text: tidy(fill(w.gift.body, { ...all, link })) };
+    return { subject: test + fill(w.gift.subject, all), text: tidy(fill(w.gift.body, { ...all, link })), rtl: rtlIn(lang) };
   }
-  return { subject: test + fill(w.receipt.subject, all), text: tidy(fill(w.receipt.body, { ...all, line: got.line ?? accountUrl(origin) })) };
+  return { subject: test + fill(w.receipt.subject, all), text: tidy(fill(w.receipt.body, { ...all, line: got.line ?? accountUrl(origin) })), rtl: rtlIn(lang) };
 }
 
 /** No empty line where a note or a discount was left out. */
