@@ -1223,5 +1223,105 @@
    "bass": "bass.webm",
    "rest": "rest.webm"
   }
+ },
+ "kuthu": {
+  "bpm": 103.26,
+  "key": "C minor",
+  "camelot": "5A",
+  "bars": 8,
+  "seconds": 18.593378684807256,
+  "pre": 0.25,
+  "frames": 842018,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "goa": {
+  "bpm": 140.01,
+  "key": "E minor",
+  "camelot": "9A",
+  "bars": 16,
+  "seconds": 27.426666666666666,
+  "pre": 0.25,
+  "frames": 1231566,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "chiptune": {
+  "bpm": 140.0,
+  "key": "C major",
+  "camelot": "8B",
+  "bars": 16,
+  "seconds": 27.428571428571427,
+  "pre": 0.25,
+  "frames": 1231650,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
+ },
+ "gnawa": {
+  "bpm": 118.0,
+  "key": "D minor",
+  "camelot": "7A",
+  "bars": 16,
+  "seconds": 32.542857142857144,
+  "pre": 0.25,
+  "frames": 1457190,
+  "sampleRate": 44100,
+  "stems": [
+   "drums",
+   "bass",
+   "rest"
+  ],
+  "files": {
+   "drums": "drums.m4a",
+   "bass": "bass.m4a",
+   "rest": "rest.m4a"
+  },
+  "opus": {
+   "drums": "drums.webm",
+   "bass": "bass.webm",
+   "rest": "rest.webm"
+  }
  }
 }
