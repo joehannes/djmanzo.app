@@ -1684,6 +1684,25 @@ first question offered on pricing is the wrong one), the fold (the welcome
 does not unfold). The matcher has its own cases in seventeen languages, and
 words about nothing claim nothing.
 
+## Every feature on a phone; the assistant a key away (2 November, second pass)
+
+- **A filter a thumb can press.** On a phone the features page's status
+  filter (all, ships, partly built, planned) wrapped onto its own row and its
+  buttons shrank to 28 pixels; they are 40 now, share the row, and each says
+  how many it holds.
+- **A search that finds nothing has a way out.** It offers to clear the
+  filters, or to ask the assistant: the words are handed over (`asking.ts`),
+  the assistant opens with them asked, and answers from the AI or the facts.
+  Any page can hand words over the same way.
+- **"?" opens the assistant** from anywhere but a field being typed in
+  (`aria-keyshortcuts`, and said in the key's title).
+- **On a phone the assistant steps aside** after one of its buttons takes the
+  visitor somewhere, so they see the place rather than the panel over it.
+
+Each is checked in a real browser and fails when broken: the buttons at 28
+pixels, a hand-off nobody listens to, a shortcut on another key, a panel
+that stays over the page.
+
 ## Ready for Suno's loops and sounds (1 November)
 
 The owner is remaking the deck's loops and the booth's sounds with Suno, and

@@ -1211,6 +1211,8 @@ const pack: Pack = {
     areasAria: "หมวด",
     compare: "เปรียบเทียบรุ่น →",
     nothing: "ไม่พบรายการที่ตรงกัน ลองคำอื่น หรือรุ่นอื่น",
+    clear: "ล้างตัวกรอง",
+    askAbout: "ถาม djmanzo: “{q}”",
     noEdition: "ยังไม่มีในรุ่นใด",
     every: "ทุกรุ่น รวมถึงรุ่น Hobbyist ที่ฟรี",
     orCustom: "· หรือ Custom",

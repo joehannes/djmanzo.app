@@ -1135,6 +1135,8 @@ const pack: Pack = {
     areasAria: "领域",
     compare: "比较各个版本 →",
     nothing: "没有匹配的结果。换个词或换个版本试试。",
+    clear: "清除筛选",
+    askAbout: "问 djmanzo：“{q}”",
     noEdition: "目前还不在任何版本中。",
     every: "所有版本，包括免费的 Hobbyist 版",
     orCustom: "· 或 Custom",

@@ -1247,6 +1247,8 @@ const pack: Pack = {
     areasAria: "Maeneo",
     compare: "Linganisha matoleo →",
     nothing: "Hakuna kinacholingana. Jaribu neno lingine, au toleo lingine.",
+    clear: "Futa vichujio",
+    askAbout: "Muulize djmanzo: “{q}”",
     noEdition: "Bado hakipo kwenye toleo lolote.",
     every: "Kila toleo, pamoja na Hobbyist ya bure",
     orCustom: "· au Custom",

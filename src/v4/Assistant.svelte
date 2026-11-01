@@ -23,6 +23,7 @@
   import { LANG_INFO, i18n, t } from "./i18n.svelte";
   import { CANNED, CANNED_BY_ID, answerOf, questionOf } from "./i18n/assistant";
   import { closest } from "./askmatch";
+  import { ASK_EVENT } from "./asking";
   import type { Key } from "./i18n/strings";
 
   let { route }: { route: Route } = $props();
@@ -203,6 +204,8 @@
   }
 
   function act(a: Action) {
+    // On a phone the panel covers the page: it steps aside, so the visitor sees where it took them.
+    if (matchMedia("(max-width: 640px)").matches) open = false;
     if (a.kind === "go_to" || a.kind === "show") {
       const to = a.kind === "show" ? { page: "home" as const, section: "tour" } : STAGE_TO[a.value];
       if (!to) return;
@@ -232,9 +235,27 @@
 
   onMount(() => {
     api<{ on: boolean }>("/api/guide").then((r) => (on = r.on), () => (on = false));
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && open && (open = false);
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) open = false;
+      // "?" opens it from anywhere but a field being typed in.
+      const typing = e.target instanceof HTMLElement && (e.target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName));
+      if (e.key === "?" && !open && !typing && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        void toggle();
+      }
+    };
+    // Words handed over by a page (`asking.ts`): opened, and asked.
+    const handed = async (e: Event) => {
+      const text = (e as CustomEvent<string>).detail;
+      if (!open) await toggle();
+      void say(text);
+    };
     addEventListener("keydown", esc);
-    return () => removeEventListener("keydown", esc);
+    addEventListener(ASK_EVENT, handed);
+    return () => {
+      removeEventListener("keydown", esc);
+      removeEventListener(ASK_EVENT, handed);
+    };
   });
 </script>
 
@@ -273,7 +294,7 @@
       </form>
     </div>
   {/if}
-  <button class="fab" onclick={toggle} aria-expanded={open} data-ask>
+  <button class="fab" onclick={toggle} aria-expanded={open} aria-keyshortcuts="?" title={open ? undefined : `${t("ask.title")} (?)`} data-ask>
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 11v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>
     <span>{open ? t("ask.close") : t("ask.title")}</span>
   </button>

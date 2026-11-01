@@ -1231,6 +1231,8 @@ const pack: Pack = {
     areasAria: "Bidang",
     compare: "Bandingkan edisi →",
     nothing: "Tidak ada yang cocok. Coba kata lain, atau edisi lain.",
+    clear: "Hapus filter",
+    askAbout: "Tanya djmanzo: “{q}”",
     noEdition: "Belum ada di edisi mana pun.",
     every: "Semua edisi, termasuk Hobbyist yang gratis",
     orCustom: "· atau Custom",

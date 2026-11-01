@@ -1187,6 +1187,8 @@ const pack: Pack = {
     areasAria: "תחומים",
     compare: "השוואת המהדורות ←",
     nothing: "שום דבר לא תואם. נסו מילה אחרת, או מהדורה אחרת.",
+    clear: "ניקוי הסינון",
+    askAbout: "לשאול את djmanzo: \"{q}\"",
     noEdition: "עוד לא בשום מהדורה.",
     every: "כל מהדורה, כולל Hobbyist החינמית",
     orCustom: "· או Custom",

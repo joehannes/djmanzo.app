@@ -1201,6 +1201,8 @@ const pack: Pack = {
     areasAria: "क्षेत्र",
     compare: "एडिशन की तुलना करें →",
     nothing: "कुछ मेल नहीं खाता। कोई और शब्द या कोई और एडिशन आज़माएँ।",
+    clear: "फ़िल्टर हटाएँ",
+    askAbout: "djmanzo से पूछें: “{q}”",
     noEdition: "अभी किसी एडिशन में नहीं।",
     every: "हर एडिशन, मुफ़्त Hobbyist समेत",
     orCustom: "· या Custom",

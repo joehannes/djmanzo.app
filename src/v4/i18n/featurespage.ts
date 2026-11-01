@@ -20,6 +20,10 @@ export interface FeaturesPageWords {
   areasAria: string;
   compare: string;
   nothing: string;
+  /** The way back when nothing matches. */
+  clear: string;
+  /** Hand the search to the assistant; {q} is what was searched. */
+  askAbout: string;
   noEdition: string;
   every: string;
   orCustom: string;
@@ -39,6 +43,8 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
     areasAria: "Areas",
     compare: "Compare the editions →",
     nothing: "Nothing matches. Try another word, or another edition.",
+    clear: "Clear the filters",
+    askAbout: "Ask djmanzo: “{q}”",
     noEdition: "In no edition yet.",
     every: "Every edition, the free Hobbyist one included",
     orCustom: "· or Custom",
@@ -56,6 +62,8 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
     areasAria: "Áreas",
     compare: "Comparar las ediciones →",
     nothing: "Nada coincide. Prueba otra palabra u otra edición.",
+    clear: "Quitar los filtros",
+    askAbout: "Pregunta a djmanzo: «{q}»",
     noEdition: "Aún en ninguna edición.",
     every: "En todas las ediciones, también la Hobbyist gratuita",
     orCustom: "· o Custom",
@@ -73,6 +81,8 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
     areasAria: "Áreas",
     compare: "Comparar as edições →",
     nothing: "Nada encontrado. Tente outra palavra ou outra edição.",
+    clear: "Limpar os filtros",
+    askAbout: "Pergunte ao djmanzo: “{q}”",
     noEdition: "Ainda em nenhuma edição.",
     every: "Em todas as edições, inclusive a Hobbyist gratuita",
     orCustom: "· ou Custom",
@@ -90,6 +100,8 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
     areasAria: "Bereiche",
     compare: "Die Editionen vergleichen →",
     nothing: "Nichts passt. Versuch ein anderes Wort oder eine andere Edition.",
+    clear: "Filter zurücksetzen",
+    askAbout: "Frag djmanzo: „{q}“",
     noEdition: "Noch in keiner Edition.",
     every: "In jeder Edition, auch der kostenlosen Hobbyist",
     orCustom: "· oder Custom",
@@ -107,6 +119,8 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
     areasAria: "Domaines",
     compare: "Comparer les éditions →",
     nothing: "Rien ne correspond. Essayez un autre mot ou une autre édition.",
+    clear: "Effacer les filtres",
+    askAbout: "Demander à djmanzo : « {q} »",
     noEdition: "Dans aucune édition pour l'instant.",
     every: "Dans toutes les éditions, la Hobbyist gratuite comprise",
     orCustom: "· ou Custom",
@@ -124,6 +138,8 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
     areasAria: "Aree",
     compare: "Confronta le edizioni →",
     nothing: "Nessun risultato. Prova un'altra parola o un'altra edizione.",
+    clear: "Togli i filtri",
+    askAbout: "Chiedi a djmanzo: «{q}»",
     noEdition: "Ancora in nessuna edizione.",
     every: "In ogni edizione, anche la Hobbyist gratuita",
     orCustom: "· o Custom",
@@ -141,6 +157,8 @@ export const FEATURES_PAGE: Record<Lang, FeaturesPageWords> = carried({
     areasAria: "分野",
     compare: "エディションを比較 →",
     nothing: "一致するものがありません。別の言葉か、別のエディションでお試しください。",
+    clear: "絞り込みを解除",
+    askAbout: "djmanzoに聞く：「{q}」",
     noEdition: "まだどのエディションにもありません。",
     every: "すべてのエディション（無料の Hobbyist を含む）",
     orCustom: "· または Custom",

@@ -1198,6 +1198,8 @@ const pack: Pack = {
     areasAria: "المجالات",
     compare: "قارنوا الإصدارات ←",
     nothing: "لا شيء يطابق. جرّبوا كلمة أخرى، أو إصدارًا آخر.",
+    clear: "مسح عوامل التصفية",
+    askAbout: "اسألوا djmanzo: «{q}»",
     noEdition: "ليست في أي إصدار بعد.",
     every: "كل الإصدارات، ومنها Hobbyist المجاني",
     orCustom: "· أو Custom",

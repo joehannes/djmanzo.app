@@ -7,6 +7,7 @@
 -->
 <script lang="ts">
   import { searched } from "../insights";
+  import { askAbout } from "../asking";
   import { onMount } from "svelte";
   import { EDITION_INFO, type Edition } from "../../../shared/catalog";
   import { AREAS, FACTS, areaOf, carriedBy, type Area, type Fact } from "../../../shared/facts";
@@ -32,6 +33,12 @@
   let query = $state("");
   let edition = $state<Edition | null>(null);
   let status = $state<"all" | "shipped" | "part" | "planned">("all");
+  /** Nothing matched: back to every feature. */
+  function clearAll() {
+    query = "";
+    status = "all";
+    edition = null;
+  }
 
   const editionsOf = (f: Fact) => NAMED.filter((e) => carriedBy(f, EDITION_INFO[e].modules));
   const matches = (f: Fact) => {
@@ -65,7 +72,7 @@
         <input type="search" bind:value={query} placeholder={w.search} aria-label={w.searchAria} data-feature-search />
         <div class="seg" role="radiogroup" aria-label={w.statusAria}>
           {#each ["all", "shipped", "part", "planned"] as const as s (s)}
-            <button role="radio" aria-checked={status === s} onclick={() => (status = s)}>{s === "all" ? w.all : WORD[s]}</button>
+            <button role="radio" aria-checked={status === s} onclick={() => (status = s)} data-status-filter={s}>{s === "all" ? w.all : WORD[s]} <span class="n mono">{s === "all" ? FACTS.length : counts[s]}</span></button>
           {/each}
         </div>
       </div>
@@ -88,7 +95,13 @@
 
     <div class="areas">
       {#if !shown}
-        <p class="dim">{w.nothing}</p>
+        <div class="none" data-feature-none>
+          <p class="dim">{w.nothing}</p>
+          <div class="none-acts">
+            <button class="btn ghost small" onclick={clearAll} data-feature-clear>{w.clear}</button>
+            {#if query.trim()}<button class="btn primary small" onclick={() => askAbout(query.trim())} data-feature-ask>{w.askAbout.replace("{q}", query.trim())}</button>{/if}
+          </div>
+        </div>
       {/if}
       {#each groups as g (g.id)}
         {@const screen = SCREEN[g.id]}
@@ -182,6 +195,7 @@
     overflow: hidden;
   }
   .seg button {
+    min-height: 40px;
     font: 500 14px/1 var(--body);
     padding: 0 14px;
     background: none;
@@ -192,6 +206,32 @@
   .seg button[aria-checked="true"] {
     background: color-mix(in srgb, var(--accent) 18%, transparent);
     color: var(--text);
+  }
+  .seg .n {
+    margin-inline-start: 4px;
+    font-size: 11px;
+    opacity: 0.7;
+  }
+  /* On a phone the statuses take the whole row, each a button a thumb can find. */
+  @media (max-width: 640px) {
+    .seg {
+      display: flex;
+      width: 100%;
+    }
+    .seg button {
+      flex: 1;
+      padding: 0 6px;
+    }
+  }
+  .none {
+    display: grid;
+    gap: 12px;
+    justify-items: start;
+  }
+  .none-acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .eds {
     display: flex;

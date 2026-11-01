@@ -1235,6 +1235,8 @@ const pack: Pack = {
     areasAria: "Alanlar",
     compare: "Sürümleri karşılaştır →",
     nothing: "Eşleşen bir şey yok. Başka bir kelime ya da başka bir sürüm dene.",
+    clear: "Filtreleri temizle",
+    askAbout: "djmanzo'ya sor: “{q}”",
     noEdition: "Henüz hiçbir sürümde yok.",
     every: "Her sürüm, ücretsiz Hobbyist dahil",
     orCustom: "· ya da Custom",

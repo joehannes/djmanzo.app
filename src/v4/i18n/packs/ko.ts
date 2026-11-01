@@ -1143,6 +1143,8 @@ const pack: Pack = {
     areasAria: "분야",
     compare: "에디션 비교 →",
     nothing: "일치하는 것이 없습니다. 다른 단어나 다른 에디션으로 시도해 보세요.",
+    clear: "필터 지우기",
+    askAbout: "djmanzo에게 묻기: “{q}”",
     noEdition: "아직 어떤 에디션에도 없습니다.",
     every: "모든 에디션, 무료 Hobbyist 포함",
     orCustom: "· 또는 Custom",

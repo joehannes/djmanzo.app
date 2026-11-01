@@ -244,6 +244,29 @@ test("the assistant without the AI answers the visitor's own words from the fact
   expect(errs).toEqual([]);
 });
 
+test("the assistant opens with ?, and on a phone it steps aside after taking the visitor somewhere", async ({ page }) => {
+  const errs = errors(page);
+  await page.route("**/api/guide", (r) => r.fulfill({ json: { on: false } }));
+  await page.goto("/?country=US&lang=en");
+  await page.keyboard.press("Shift+?");
+  await expect(page.locator("[data-assistant]")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("[data-assistant]")).toHaveCount(0);
+  // Typed into a field, "?" is a question mark.
+  await page.locator("[data-ask]").click();
+  await page.locator("[data-assistant] input").fill("is it free?");
+  await expect(page.locator("[data-assistant] input")).toHaveValue("is it free?");
+  await page.keyboard.press("Escape");
+  // A phone: an answer's button closes the panel, and the place it names is in view.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator("[data-ask]").click();
+  await page.locator("[data-ask-canned=karaoke]").click();
+  await page.locator("[data-assistant] [data-canned=karaoke][data-line=guide] [data-act]").first().click();
+  await expect(page.locator("[data-assistant]")).toHaveCount(0);
+  await expect(page.locator("#karaoke")).toBeInViewport();
+  expect(errs).toEqual([]);
+});
+
 test("on a phone the welcome folds, so the Download key is on the first screen, and More unfolds it", async ({ page }) => {
   const errs = errors(page);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -262,6 +285,28 @@ test("on a phone the welcome folds, so the Download key is on the first screen, 
   // A wide screen has room for it all: nothing to unfold.
   await page.setViewportSize({ width: 1400, height: 900 });
   await expect(more).toBeHidden();
+  expect(errs).toEqual([]);
+});
+
+test("every feature: a status filter a thumb can press, and a search that finds nothing offers to clear it or to ask the assistant", async ({ page }) => {
+  const errs = errors(page);
+  await page.route("**/api/guide", (r) => (r.request().method() === "POST" ? r.fulfill({ json: { fallback: "off" } }) : r.fulfill({ json: { on: false } })));
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/features?country=DE&lang=de");
+  for (const s of ["all", "shipped", "part", "planned"]) expect((await page.locator(`[data-status-filter=${s}]`).boundingBox())!.height, s).toBeGreaterThanOrEqual(36);
+  await expect(page.locator("[data-status-filter=all]")).toContainText(/\d+/);
+  const search = page.locator("[data-feature-search]");
+  await search.fill("xyzzy");
+  await expect(page.locator("[data-feature-none]")).toBeVisible();
+  // Handed to the assistant: it opens with the words asked, and answers.
+  await page.locator("[data-feature-ask]").click();
+  await expect(page.locator("[data-assistant] [data-line=visitor]").last()).toHaveText("xyzzy");
+  await expect(page.locator("[data-assistant] [data-line=guide]").last()).toContainText("Das kann ich aus den Fakten allein nicht beantworten");
+  await page.keyboard.press("Escape");
+  // Or every feature again.
+  await page.locator("[data-feature-clear]").click();
+  await expect(search).toHaveValue("");
+  expect(await page.locator("section.area").count()).toBeGreaterThan(5);
   expect(errs).toEqual([]);
 });
 

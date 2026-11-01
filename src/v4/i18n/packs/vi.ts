@@ -1219,6 +1219,8 @@ const pack: Pack = {
     areasAria: "Mảng",
     compare: "So sánh các phiên bản →",
     nothing: "Không có kết quả. Thử từ khác, hoặc phiên bản khác.",
+    clear: "Xóa bộ lọc",
+    askAbout: "Hỏi djmanzo: “{q}”",
     noEdition: "Chưa có trong phiên bản nào.",
     every: "Mọi phiên bản, kể cả bản Hobbyist miễn phí",
     orCustom: "· hoặc Custom",
