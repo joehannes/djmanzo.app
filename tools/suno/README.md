@@ -14,6 +14,14 @@ needs no listening and no analysis:
   silence, fades both ends so it never clicks, evens the loudness and writes
   `sampler/<id>.m4a` and `sampler/<id>.webm`, named by the booth's own ids.
 
+**Or one loop at a time, with Suno Sounds** (`SOUNDS.md`, Pro or Premier): Create →
+Custom → Sounds → Loop, with each genre's own BPM and key set (and said again in the
+prompt), downloaded as `<genre>.wav`. `cut-sounds.sh` keeps the longest whole run of 1,
+2, 4, 8 or 16 bars from the start (a bar is 240/BPM seconds), pads a file a few
+milliseconds short to its last bar, writes `loops/<genre>.wav`, and plays it over and over
+into `masters/<genre>/<genre>.flac` for the parts. Each genre at its own tempo and key, the
+ones its loop on the site has now, so the deck keeps the keys it shows.
+
 If Suno put anything before the first section or bar, that song's `OFFSET` in the
 script's table moves its whole grid. Both scripts were run on stand-in audio with a
 different tone in every section and slot: every cut came from its own section or slot,
