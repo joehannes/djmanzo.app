@@ -203,6 +203,68 @@ test("the assistant answers its own questions from the facts, in the visitor's l
   expect(errs).toEqual([]);
 });
 
+test("the assistant without the AI answers the visitor's own words from the facts, nearest questions first, and points the way in when it has nothing", async ({ page }) => {
+  const errs = errors(page);
+  let posts = 0;
+  let on = false;
+  await page.route("**/api/guide", async (r) => {
+    if (r.request().method() !== "POST") return r.fulfill({ json: { on } });
+    posts++;
+    return r.fulfill({ json: { fallback: "limit" } });
+  });
+  // On the pricing page, the questions about the editions and the price come first.
+  await page.goto("/pricing?country=ES&lang=es");
+  await page.click("[data-ask]");
+  await expect(page.locator("[data-ask-canned]").first()).toHaveAttribute("data-ask-canned", "edition");
+  const box = page.locator("[data-assistant] input");
+  // The AI off: the closest question's answer, at once, and the server never asked.
+  await box.fill("¿funciona con mi controladora Pioneer?");
+  await box.press("Enter");
+  const answer = page.locator("[data-assistant] [data-line=guide][data-about=controller]");
+  await expect(answer).toContainText("Lo más cercano que tengo");
+  await expect(answer).toContainText("ninguno se ha tocado aún");
+  await expect(answer.locator("[data-act]")).toHaveCount(1);
+  expect(posts).toBe(0);
+  // Words about none of them: said so, and the seven questions offered.
+  await box.fill("xyzzy");
+  await box.press("Enter");
+  await expect(page.locator("[data-assistant]")).toContainText("Eso no puedo responderlo solo con los hechos");
+  await page.locator("[data-assistant] [data-act=go_to]").last().click();
+  await expect(page).toHaveURL(/\/journey$/);
+  // The AI on, but its day spent: the same answer from the facts, the reason said first.
+  on = true;
+  await page.goto("/?country=US&lang=en");
+  await page.click("[data-ask]");
+  await page.locator("[data-assistant] input").fill("Which edition do I need for weddings?");
+  await page.locator("[data-assistant] input").press("Enter");
+  const spent = page.locator("[data-assistant] [data-line=guide][data-about=edition]");
+  await expect(spent).toContainText("Today's free AI is used up.");
+  await expect(spent.locator("[data-act]")).toHaveCount(2);
+  expect(posts).toBe(1);
+  expect(errs).toEqual([]);
+});
+
+test("on a phone the welcome folds, so the Download key is on the first screen, and More unfolds it", async ({ page }) => {
+  const errs = errors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/?country=US&lang=en");
+  const lead = page.locator("#hero-lead");
+  const more = page.locator("[data-hero-more]");
+  await expect(more).toBeVisible();
+  await expect(more).toHaveAttribute("aria-expanded", "false");
+  await page.waitForTimeout(1600);
+  const folded = (await lead.boundingBox())!.height;
+  const key = (await page.locator("#get").boundingBox())!;
+  expect(key.y + key.height).toBeLessThan(844);
+  await more.click();
+  await expect(more).toHaveAttribute("aria-expanded", "true");
+  expect((await lead.boundingBox())!.height).toBeGreaterThan(folded * 1.5);
+  // A wide screen has room for it all: nothing to unfold.
+  await page.setViewportSize({ width: 1400, height: 900 });
+  await expect(more).toBeHidden();
+  expect(errs).toEqual([]);
+});
+
 test("on a phone nothing goes sideways, and the menu opens", async ({ page }) => {
   const errs = errors(page);
   await page.setViewportSize({ width: 390, height: 844 });

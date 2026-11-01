@@ -22,6 +22,7 @@
   import { gsap, reduced } from "./motion";
   import { LANG_INFO, i18n, t } from "./i18n.svelte";
   import { CANNED, CANNED_BY_ID, answerOf, questionOf } from "./i18n/assistant";
+  import { closest } from "./askmatch";
   import type { Key } from "./i18n/strings";
 
   let { route }: { route: Route } = $props();
@@ -42,6 +43,10 @@
     offer?: string[];
     /** The AI's suggested replies, sent to it as written. */
     options?: string[];
+    /** Answered from the facts: the visitor's words were closest to this question. */
+    about?: string;
+    /** Why the AI did not answer, said before the answer from the facts. */
+    why?: Key;
     actions?: Action[];
   }
 
@@ -55,7 +60,33 @@
 
   const ALL = CANNED.map((c) => c.id);
   /** The canned questions not yet asked. */
-  const unasked = () => ALL.filter((id) => !lines.some((l) => l.from === "visitor" && l.canned === id));
+  const unasked = () => ALL.filter((id) => !lines.some((l) => l.from === "visitor" && (l.canned === id || l.about === id)) && !lines.some((l) => l.from === "guide" && l.about === id));
+
+  /** The questions nearest to where the visitor is, by page or by the home page's section in view. */
+  const NEAR: Record<string, string[]> = {
+    pricing: ["edition", "free"],
+    journey: ["edition", "free"],
+    account: ["free", "edition"],
+    features: ["different", "controller", "library"],
+    compare: ["different", "library", "free"],
+    nights: ["gig", "karaoke", "edition"],
+    releases: ["systems", "gig"],
+    top: ["different", "free"],
+    stems: ["different"],
+    tour: ["different", "library"],
+    keys: ["controller", "library"],
+    karaoke: ["karaoke"],
+    hardware: ["controller", "systems"],
+    learn: ["library", "different"],
+    faq: ["free", "edition"],
+    download: ["systems", "free"],
+  };
+
+  /** `ids`, the ones nearest to where the visitor is first. */
+  function ranked(ids: string[]): string[] {
+    const near = NEAR[route.page === "home" ? (sectionInView() ?? "top") : route.page] ?? [];
+    return [...near.filter((id) => ids.includes(id)), ...ids.filter((id) => !near.includes(id))];
+  }
 
   /** A line in the visitor's language, as it reads now. */
   function words(l: Line): string {
@@ -66,7 +97,7 @@
 
   function hello() {
     if (lines.length) return;
-    lines.push({ from: "guide", say: on === false ? [{ key: "ask.hello" }, { key: "ask.resting" }] : [{ key: "ask.hello" }], offer: ALL });
+    lines.push({ from: "guide", say: on === false ? [{ key: "ask.hello" }, { key: "ask.resting" }] : [{ key: "ask.hello" }], offer: ranked(ALL) });
   }
 
   /** A question offered as a button: answered from what djmanzo does, without the AI. */
@@ -74,7 +105,7 @@
     if (busy) return;
     track("click", `assistant:${id}`);
     lines.push({ from: "visitor", canned: id });
-    const left = unasked();
+    const left = ranked(unasked());
     lines.push({ from: "guide", canned: id, actions: CANNED_BY_ID[id].actions, offer: left.length ? left : undefined });
     void scroll();
   }
@@ -104,6 +135,8 @@
     if (!typed) track("ask", text);
     if (typed) return ask(typed.id);
     lines.push({ from: "visitor", text });
+    // The AI off: answered from the facts at once, without asking the server.
+    if (on === false) return answerHere(text);
     busy = true;
     void scroll();
     const turns: Turn[] = lines.slice(-12).map((l) => ({ from: l.from, text: words(l) }));
@@ -113,19 +146,32 @@
         turns,
         context: { stage: stageOf(route, sectionInView()), style: skin().family, lang: LANG_INFO[i18n.lang].tag, time: `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}` },
       });
-      if ("fallback" in answer) {
-        const why: Key = answer.fallback === "limit" ? "ask.limit" : answer.fallback === "off" ? "ask.off" : "ask.silent";
-        lines.push({ from: "guide", say: [{ key: "ask.fallback", vars: { why: t(why) } }], offer: ALL });
-      } else {
+      if ("fallback" in answer) answerHere(text, answer.fallback === "limit" ? "ask.limit" : answer.fallback === "off" ? "ask.off" : "ask.silent");
+      else {
         for (const a of answer.actions) if (a.kind === "set_style") applyStyle(a.value);
         lines.push({ from: "guide", text: answer.say, options: answer.options, actions: answer.actions.filter((a) => a.kind !== "set_style" && a.kind !== "set_role" && a.kind !== "ask") });
       }
     } catch {
-      lines.push({ from: "guide", say: [{ key: "ask.unreachable" }], offer: ALL });
+      answerHere(text, "ask.silent");
     } finally {
       busy = false;
       void scroll();
     }
+  }
+
+  /**
+   * The visitor's words answered from the facts: the question they are
+   * closest to, with its buttons and the others nearest next; or, if they are
+   * about none of them, the way in through the journey and every question.
+   */
+  function answerHere(text: string, why?: Key) {
+    const found = closest(text, i18n.lang).map((f) => f.id);
+    if (found.length) {
+      const id = found[0];
+      const rest = ranked(unasked().filter((x) => x !== id));
+      lines.push({ from: "guide", about: id, why, canned: id, actions: CANNED_BY_ID[id].actions, offer: [...found.slice(1).filter((x) => rest.includes(x)), ...rest.filter((x) => !found.includes(x))] });
+    } else lines.push({ from: "guide", why, say: [{ key: "ask.nomatch" }], actions: [{ kind: "go_to", value: "journey" }], offer: ranked(ALL) });
+    void scroll();
   }
 
   /** The guide heard what the visitor plays: dress the site in it. */
@@ -141,6 +187,7 @@
     const ed = (v: string) => catalog.data?.editions[v as Edition]?.name ?? v;
     switch (a.kind) {
       case "go_to":
+        if (a.value === "journey") return t("ask.act.journey");
         return a.value === "amp" ? t("ask.act.shop") : t("ask.act.show", { place: a.value in STAGE_TO ? t(`ask.place.${a.value}` as Key) : a.value });
       case "show":
         return t("ask.act.screen");
@@ -171,9 +218,16 @@
     }
   }
 
+  /**
+   * To the newest: while the guide is thinking, the end, where it shows; once
+   * it has answered, the visitor's question, so the answer is read from its start.
+   */
   async function scroll() {
     await tick();
-    log?.scrollTo({ top: log.scrollHeight, behavior: reduced() ? "auto" : "smooth" });
+    if (!log) return;
+    const asked = [...log.querySelectorAll<HTMLElement>(".line.visitor")].at(-1);
+    const top = !busy && asked ? asked.getBoundingClientRect().top - log.getBoundingClientRect().top + log.scrollTop - 12 : log.scrollHeight;
+    log.scrollTo({ top, behavior: reduced() ? "auto" : "smooth" });
   }
 
   onMount(() => {
@@ -195,7 +249,8 @@
       </header>
       <div class="log" bind:this={log} aria-live="polite">
         {#each lines as l, i (i)}
-          <div class="line {l.from}" data-line={l.from} data-canned={l.canned}>
+          <div class="line {l.from}" data-line={l.from} data-canned={l.canned} data-about={l.about}>
+            {#if l.why || l.about}<p class="about">{l.why ? `${t(l.why)}.` : ""} {l.about ? t("ask.closest", { q: questionOf(CANNED_BY_ID[l.about], i18n.lang) }) : ""}</p>{/if}
             <p>{words(l)}</p>
             {#if l.actions?.length}
               <div class="acts">
@@ -269,7 +324,14 @@
     padding: 14px 16px;
     border-bottom: 1px solid var(--line);
   }
+  header b {
+    white-space: nowrap;
+  }
   header .mono {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: 10px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -313,6 +375,13 @@
   .line.guide p {
     background: var(--raised);
     border-start-start-radius: 4px;
+  }
+  /* Above an answer from the facts: why the AI did not answer, and which question it answers. */
+  .line.guide p.about {
+    padding: 0 2px 2px;
+    background: none;
+    color: var(--dim);
+    font-size: 12px;
   }
   .line.visitor {
     justify-items: end;

@@ -68,7 +68,10 @@ export const CANNED: Canned[] = [
   },
   {
     id: "edition",
-    actions: [{ kind: "go_to", value: "amp" }],
+    actions: [
+      { kind: "go_to", value: "amp" },
+      { kind: "go_to", value: "journey" },
+    ],
     q: {
       en: "Which edition fits me?",
       es: "¿Qué edición me conviene?",

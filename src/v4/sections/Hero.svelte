@@ -57,6 +57,8 @@
   /** The look's grooves in three groups — the region's own (the visitor's country's first), the world's, and specials — those with a loop. */
   const grooves = $derived(bankOfGenres(skin(), region.country));
   let genreMenu = $state(false);
+  /** On a phone the welcome is folded to a few lines, so the Download key is on the first screen; "More" unfolds it. */
+  let whole = $state(false);
   let genrePicker: HTMLElement;
 
   function chooseGenre(id: string) {
@@ -168,7 +170,8 @@
       <span class="line"><span>{welcome.l1}</span></span>
       <span class="line"><span class="accent">{welcome.l2}</span></span>
     </h1>
-    <p class="lead" data-hero-rise data-welcome={`${region.skin}.${i18n.lang}`}>{welcome.lead}</p>
+    <p class="lead" class:full={whole} id="hero-lead" data-hero-rise data-welcome={`${region.skin}.${i18n.lang}`}>{welcome.lead}</p>
+    <button class="more" aria-expanded={whole} aria-controls="hero-lead" onclick={() => (whole = !whole)} data-hero-more>{whole ? t("hero.less") : t("hero.more")}</button>
     </div>
     <div class="ctas" data-hero-rise>
       <DownloadButton id="get" />
@@ -724,5 +727,34 @@
   @media (prefers-reduced-motion: reduce) {
     .genre-picker { animation: none; }
     .booth-toggle, .booth-toggle::before, .booth-toggle-caret { transition: none; }
+  }
+  .more {
+    display: none;
+  }
+  @media (max-width: 640px) {
+    .lead:not(.full) {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+      overflow: hidden;
+    }
+    .more {
+      display: inline-block;
+      margin: -6px 0 14px;
+      padding: 4px 0;
+      border: 0;
+      background: none;
+      color: var(--accent);
+      font: 600 14px var(--body);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+  }
+  /* The small print over the photograph: a shade behind it, whatever the photograph has there. */
+  .eyebrow,
+  .note {
+    text-shadow: 0 1px 10px rgb(0 0 0 / 0.85);
   }
 </style>

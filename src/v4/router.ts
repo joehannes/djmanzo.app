@@ -115,6 +115,8 @@ export const STAGE_TO: Record<string, { page: PageId; section?: string }> = {
   cone: { page: "home", section: "visuals" },
   floor: { page: "home", section: "hardware" },
   afterglow: { page: "home", section: "download" },
+  // Not one of the Signal Path's: the seven questions that find the visitor's way in.
+  journey: { page: "journey" },
 };
 
 /** The stage the guide is told the visitor is at, from where they are here. */

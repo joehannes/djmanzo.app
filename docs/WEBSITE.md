@@ -1650,6 +1650,40 @@ right-to-left sentence:
 `test/packs.test.ts` holds the file names and the menu path to this in both
 languages.
 
+## The assistant answers from the facts; the phone's first screen (2 November)
+
+The owner asked for a whole iteration over the site: its usability, its
+interactivity, the visitor's path and the assistant. Driven on a desktop and
+a phone first, three things stood in the way.
+
+- **A typed question met a list.** With the AI off, unreachable or its day
+  spent, words the visitor wrote got "The AI is off" and the eight questions.
+  Now they are answered from the facts at once (`askmatch.ts`): each of the
+  assistant's own questions has the words people use for it in all
+  seventeen languages (as words where words have spaces, anywhere in
+  Chinese, Japanese and Thai, and through the particles of Korean, Arabic
+  and Hebrew), and the closest one's answer comes with its buttons, under a
+  line saying which question it answers and, when the AI was asked, why it
+  did not. Words about none of them say so and offer the journey's seven
+  questions. With the AI off, the server is never asked.
+- **The questions follow the visitor.** Those offered first are the ones
+  nearest the page or the home page's section in view: the editions and the
+  price on the pricing page, the controller in the hardware, karaoke at
+  karaoke. "Which edition fits me?" now also offers the journey.
+- **An answer is read from its start.** Once answered, the conversation
+  scrolls to the visitor's question rather than past the answer to its
+  buttons. The header no longer wraps in the longer languages.
+- **The phone's first screen.** The welcome ran to eleven lines on a phone,
+  pushing the Download key to the bottom edge. It is folded to four, with
+  "More" (in every language) to unfold it, and the key now sits in the first
+  screen. The small print over the hero's photograph has a shade behind it.
+
+Each is covered in a real browser (`e2e/v4.spec.ts`), and fails when its
+code is broken: the local answer (the server is asked), the ranking (the
+first question offered on pricing is the wrong one), the fold (the welcome
+does not unfold). The matcher has its own cases in seventeen languages, and
+words about nothing claim nothing.
+
 ## Ready for Suno's loops and sounds (1 November)
 
 The owner is remaking the deck's loops and the booth's sounds with Suno, and
