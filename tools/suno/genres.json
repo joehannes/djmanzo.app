@@ -1,0 +1,230 @@
+{
+ "rnb": {
+  "bpm": 92,
+  "key": "G minor"
+ },
+ "hiphop": {
+  "bpm": 92,
+  "key": "G minor"
+ },
+ "islandreggae": {
+  "bpm": 92,
+  "key": "G minor"
+ },
+ "reggaeton": {
+  "bpm": 92,
+  "key": "G minor"
+ },
+ "dancehall": {
+  "bpm": 92,
+  "key": "G minor"
+ },
+ "lounge": {
+  "bpm": 92,
+  "key": "G minor"
+ },
+ "cumbia": {
+  "bpm": 100,
+  "key": "D minor"
+ },
+ "bhangra": {
+  "bpm": 100,
+  "key": "D minor"
+ },
+ "khaleeji": {
+  "bpm": 100,
+  "key": "D minor"
+ },
+ "rai": {
+  "bpm": 100,
+  "key": "D minor"
+ },
+ "kuthu": {
+  "bpm": 100,
+  "key": "D minor"
+ },
+ "afrobeats": {
+  "bpm": 112,
+  "key": "F minor"
+ },
+ "amapiano": {
+  "bpm": 112,
+  "key": "F minor"
+ },
+ "tropicalhouse": {
+  "bpm": 112,
+  "key": "F minor"
+ },
+ "citypop": {
+  "bpm": 112,
+  "key": "F minor"
+ },
+ "highlife": {
+  "bpm": 112,
+  "key": "F minor"
+ },
+ "kompa": {
+  "bpm": 112,
+  "key": "F minor"
+ },
+ "disco": {
+  "bpm": 120,
+  "key": "A minor"
+ },
+ "italodisco": {
+  "bpm": 120,
+  "key": "A minor"
+ },
+ "pop": {
+  "bpm": 120,
+  "key": "A minor"
+ },
+ "country": {
+  "bpm": 120,
+  "key": "A minor"
+ },
+ "electroswing": {
+  "bpm": 120,
+  "key": "A minor"
+ },
+ "bollywood": {
+  "bpm": 120,
+  "key": "A minor"
+ },
+ "house": {
+  "bpm": 124,
+  "key": "A minor"
+ },
+ "afrohouse": {
+  "bpm": 124,
+  "key": "A minor"
+ },
+ "orientalhouse": {
+  "bpm": 124,
+  "key": "A minor"
+ },
+ "gnawa": {
+  "bpm": 124,
+  "key": "A minor"
+ },
+ "kpop": {
+  "bpm": 124,
+  "key": "A minor"
+ },
+ "gqom": {
+  "bpm": 124,
+  "key": "A minor"
+ },
+ "edm": {
+  "bpm": 128,
+  "key": "F minor"
+ },
+ "melbournebounce": {
+  "bpm": 128,
+  "key": "F minor"
+ },
+ "rock": {
+  "bpm": 128,
+  "key": "F minor"
+ },
+ "dembow": {
+  "bpm": 128,
+  "key": "F minor"
+ },
+ "bachata": {
+  "bpm": 128,
+  "key": "F minor"
+ },
+ "mahraganat": {
+  "bpm": 128,
+  "key": "F minor"
+ },
+ "garba": {
+  "bpm": 130,
+  "key": "G minor"
+ },
+ "dabke": {
+  "bpm": 130,
+  "key": "G minor"
+ },
+ "polynesian": {
+  "bpm": 130,
+  "key": "G minor"
+ },
+ "baile": {
+  "bpm": 130,
+  "key": "G minor"
+ },
+ "kuduro": {
+  "bpm": 130,
+  "key": "G minor"
+ },
+ "techno": {
+  "bpm": 136,
+  "key": "A minor"
+ },
+ "ukgarage": {
+  "bpm": 136,
+  "key": "A minor"
+ },
+ "molam": {
+  "bpm": 136,
+  "key": "A minor"
+ },
+ "trance": {
+  "bpm": 136,
+  "key": "A minor"
+ },
+ "goa": {
+  "bpm": 136,
+  "key": "A minor"
+ },
+ "trap": {
+  "bpm": 136,
+  "key": "A minor"
+ },
+ "merengue": {
+  "bpm": 150,
+  "key": "B minor"
+ },
+ "eurobeat": {
+  "bpm": 150,
+  "key": "B minor"
+ },
+ "futurebass": {
+  "bpm": 150,
+  "key": "B minor"
+ },
+ "hardstyle": {
+  "bpm": 150,
+  "key": "B minor"
+ },
+ "soca": {
+  "bpm": 150,
+  "key": "B minor"
+ },
+ "jerseyclub": {
+  "bpm": 150,
+  "key": "B minor"
+ },
+ "dnb": {
+  "bpm": 174,
+  "key": "D minor"
+ },
+ "asianunderground": {
+  "bpm": 174,
+  "key": "D minor"
+ },
+ "funkot": {
+  "bpm": 174,
+  "key": "D minor"
+ },
+ "salsa": {
+  "bpm": 174,
+  "key": "D minor"
+ },
+ "chiptune": {
+  "bpm": 174,
+  "key": "D minor"
+ }
+}
