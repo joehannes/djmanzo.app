@@ -22,6 +22,13 @@ milliseconds short to its last bar, writes `loops/<genre>.wav`, and plays it ove
 into `masters/<genre>/<genre>.flac` for the parts. Each genre at its own tempo and key, the
 ones its loop on the site has now, so the deck keeps the keys it shows.
 
+**Or ten genres a song** (`BLOCKS.md`): seven songs in Suno's song mode carry all 63
+genres, ten loops of 21 seconds each (the last song three), and each loop's tag in the
+Lyrics box names its time, genre, BPM and key. `cut-blocks.sh` cuts loop *k* from
+21·(k−1) s by arithmetic: at the genre's own tempo, the most whole bars (4 below about
+115 BPM, 8 from there) that leave a bar clear of the cut on either side, played over and
+over into `masters/<genre>/<genre>.flac`. `SLOT` and `OFFSET` move one song's grid.
+
 If Suno put anything before the first section or bar, that song's `OFFSET` in the
 script's table moves its whole grid. Both scripts were run on stand-in audio with a
 different tone in every section and slot: every cut came from its own section or slot,
