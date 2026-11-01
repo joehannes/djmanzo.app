@@ -271,7 +271,10 @@
       <div class="log" bind:this={log} aria-live="polite">
         {#each lines as l, i (i)}
           <div class="line {l.from}" data-line={l.from} data-canned={l.canned} data-about={l.about}>
-            {#if l.why || l.about}<p class="about">{l.why ? `${t(l.why)}.` : ""} {l.about ? t("ask.closest", { q: questionOf(CANNED_BY_ID[l.about], i18n.lang) }) : ""}</p>{/if}
+            {#if l.why || l.about}
+              {@const [pre, post] = t("ask.closest", { q: "{q}" }).split("{q}")}
+              <p class="about">{l.why ? `${t(l.why)}. ` : ""}{#if l.about}{pre}<bdi>{questionOf(CANNED_BY_ID[l.about], i18n.lang)}</bdi>{post}{/if}</p>
+            {/if}
             <p>{words(l)}</p>
             {#if l.actions?.length}
               <div class="acts">

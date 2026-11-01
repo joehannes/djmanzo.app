@@ -1703,6 +1703,10 @@ Each is checked in a real browser and fails when broken: the buttons at 28
 pixels, a hand-off nobody listens to, a shortcut on another key, a panel
 that stays over the page.
 
+Read right to left (Hebrew, on a phone), everything mirrors; the visitor's
+own words inside a phrase are isolated (`<bdi>`), so a Latin search in a
+Hebrew button keeps its quotes around it.
+
 ## Ready for Suno's loops and sounds (1 November)
 
 The owner is remaking the deck's loops and the booth's sounds with Suno, and

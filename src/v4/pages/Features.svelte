@@ -99,7 +99,7 @@
           <p class="dim">{w.nothing}</p>
           <div class="none-acts">
             <button class="btn ghost small" onclick={clearAll} data-feature-clear>{w.clear}</button>
-            {#if query.trim()}<button class="btn primary small" onclick={() => askAbout(query.trim())} data-feature-ask>{w.askAbout.replace("{q}", query.trim())}</button>{/if}
+            {#if query.trim()}{@const [pre, post] = w.askAbout.split("{q}")}<button class="btn primary small" onclick={() => askAbout(query.trim())} data-feature-ask>{pre}<bdi>{query.trim()}</bdi>{post}</button>{/if}
           </div>
         </div>
       {/if}
