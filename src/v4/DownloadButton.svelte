@@ -30,7 +30,10 @@
   /** A file: downloaded. None (the list not fetched, or nothing for this system): the menu, which says why. */
   function get(f: File | null) {
     open = !f;
-    if (f) location.assign(f.href);
+    if (!f) return;
+    location.assign(f.href);
+    // The file is on its way: the page says so, and what comes with it (`Enjoy.svelte`).
+    choice.downloaded = performance.now();
   }
 
   function setSystem(os: System) {
@@ -125,13 +128,16 @@
   .face {
     display: inline-flex;
     border-radius: 12px;
+    /* Lifted off the photograph, so the one thing to press reads at a glance. */
+    box-shadow: 0 10px 28px -10px rgb(0 0 0 / 0.7);
   }
   .go {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    /* The halves meet square on the inside, whichever way the page reads. */
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
   }
   .kind {
     margin-inline-start: 8px;
@@ -144,8 +150,8 @@
   .caret {
     padding-inline: 12px;
     border-inline-start: 1px solid color-mix(in srgb, var(--bg) 35%, transparent);
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
   }
   .menu {
     position: absolute;

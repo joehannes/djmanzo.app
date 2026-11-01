@@ -312,7 +312,7 @@
   }
   .line.guide p {
     background: var(--raised);
-    border-top-left-radius: 4px;
+    border-start-start-radius: 4px;
   }
   .line.visitor {
     justify-items: end;
@@ -321,7 +321,7 @@
   .line.visitor p {
     background: var(--accent);
     color: var(--on-accent);
-    border-top-right-radius: 4px;
+    border-start-end-radius: 4px;
   }
   .acts,
   .opts {

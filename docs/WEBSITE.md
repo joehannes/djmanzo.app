@@ -1650,6 +1650,28 @@ right-to-left sentence:
 `test/packs.test.ts` holds the file names and the menu path to this in both
 languages.
 
+## The Download key, solid; and "have fun" after a download (1 November)
+
+The owner saw the Download menu as a veil over the deck. It was not the
+menu: the hero's words drift up and fade as the page scrolls, and the
+Download row was one of them, so a little way down the key and the menu it
+opened were partly see-through. The words now fade in wrappers of their own
+(`data-hero-fade`); the Download row moves with them and stays solid, and
+the key is lifted off the photograph by a shadow.
+
+After a file is asked for, a card floats at the foot of the page
+(`src/v4/Enjoy.svelte`): "Have fun, enjoy!", any edition free for 7 days,
+the Hobbyist edition free for ever, the features beyond it locked after the
+trial until a licence is bought, where in djmanzo to start the trial, and a
+link to the editions. It goes after 20 seconds unless the pointer or the
+keyboard is on it, or with × or Escape; on a phone it sits above the
+assistant's key. Its words are in all seventeen languages. The trial is
+worded as the catalogue has it: any edition, seven days, once per account.
+
+The split key's corners were physical, so in Hebrew and Arabic its square
+corners were on the outside; they are logical now, as are the assistant's
+speech bubbles' tails.
+
 ## The site's own pages in every language (31 October)
 
 The imprint, the terms, the community rules and the privacy notice were in

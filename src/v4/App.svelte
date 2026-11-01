@@ -36,6 +36,7 @@
   import People from "./pages/People.svelte";
   import Journey from "./pages/Journey.svelte";
   import Toast from "./Toast.svelte";
+  import Enjoy from "./Enjoy.svelte";
   import { flavourOf } from "../../shared/flavours";
   import { i18n } from "./i18n.svelte";
   import { describe, track, view } from "./insights";
@@ -199,3 +200,4 @@
 <Footer />
 <Assistant {route} />
 <Toast {route} />
+<Enjoy />

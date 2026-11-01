@@ -6,8 +6,11 @@
 
 import { osOf, systemOf, type System } from "./download";
 
-/** `pulse`: when the bar last called the main button to attention (`performance.now()`), 0 for never. */
-export const choice = $state<{ os: System; pulse: number }>({ os: "mac", pulse: 0 });
+/**
+ * `pulse`: when the bar last called the main button to attention (`performance.now()`), 0 for never.
+ * `downloaded`: when a file was last asked for (`performance.now()`), 0 for never: the page says "have fun".
+ */
+export const choice = $state<{ os: System; pulse: number; downloaded: number }>({ os: "mac", pulse: 0, downloaded: 0 });
 
 let started = false;
 

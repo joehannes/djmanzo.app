@@ -131,7 +131,10 @@
       gsap.from(title.querySelectorAll(".line > span"), { yPercent: 110, duration: 1.1, ease: "power4.out", stagger: 0.09, delay: 0.1 });
       gsap.from("[data-hero-rise]", { y: 24, opacity: 0, duration: 0.9, ease: "power3.out", stagger: 0.08, delay: 0.45 });
       gsap.to(photo, { yPercent: 14, scale: 1.08, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
-      gsap.to("[data-hero-copy]", { yPercent: -18, opacity: 0.2, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
+      // The words drift up and fade as the page scrolls; the Download key and its menu move with them but
+      // stay solid, so the menu is never a veil over the deck behind it.
+      gsap.to("[data-hero-copy]", { yPercent: -18, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
+      gsap.to("[data-hero-fade]", { opacity: 0.2, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
     }, hero);
     return () => {
       undoLean();
@@ -152,6 +155,8 @@
   </div>
 
   <div class="wrap copy" data-hero-copy>
+    <!-- The words fade as the page scrolls (their own wrappers, apart from their entrance); the Download row does not. -->
+    <div data-hero-fade>
     {#if flavour}
       <p class="local" data-hero-rise data-local={region.country}>
         <span class="flag" aria-hidden="true">{#each flavour.colours as c (c)}<i style:background={c}></i>{/each}</span>
@@ -164,11 +169,12 @@
       <span class="line"><span class="accent">{welcome.l2}</span></span>
     </h1>
     <p class="lead" data-hero-rise data-welcome={`${region.skin}.${i18n.lang}`}>{welcome.lead}</p>
+    </div>
     <div class="ctas" data-hero-rise>
       <DownloadButton id="get" />
       <a class="btn ghost" href={href("pricing")}>{t("hero.pricing")}</a>
     </div>
-    <p class="note mono" data-hero-rise>{t(`note.${choice.os}`)} {t("hero.free")}</p>
+    <div data-hero-fade><p class="note mono" data-hero-rise>{t(`note.${choice.os}`)} {t("hero.free")}</p></div>
   </div>
 
   <div class="wrap deckwrap" data-hero-rise>

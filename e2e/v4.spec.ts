@@ -679,6 +679,46 @@ test("Backstage: a sign-in provider is switched on with its keys, and the sign-i
   expect(errs).toEqual([]);
 });
 
+test("the Download key stays solid as the page scrolls, its menu over the deck; a download says have fun, and how the trial goes", async ({ page }) => {
+  const errs = errors(page);
+  await page.route("**/api/download", (r) =>
+    r.fulfill({
+      json: {
+        version: "0.51.0",
+        page: null,
+        files: [
+          { name: "djmanzo-setup.exe", size: 17e6, os: "windows", key: "windows-exe", label: "Windows installer", href: "/download/latest/windows-exe" },
+          { name: "djmanzo.msi", size: 23e6, os: "windows", key: "windows-msi", label: "Windows .msi", href: "/download/latest/windows-msi" },
+        ],
+      },
+    }),
+  );
+  // The file itself: a stand-in that the browser keeps rather than shows.
+  await page.route("**/download/latest/**", (r) => r.fulfill({ body: "x", headers: { "content-type": "application/octet-stream", "content-disposition": "attachment; filename=djmanzo-setup.exe" } }));
+  await page.goto("/?country=ES&lang=es");
+  await expect(page.locator("#get [data-download-more]")).toBeVisible();
+  await page.waitForTimeout(1600);
+  await page.evaluate(() => scrollTo(0, 300));
+  // The words fade as the page scrolls; the Download row, and the menu it opens, do not.
+  const opacity = (sel: string) => page.locator(sel).first().evaluate((e) => { let o = 1; for (let n: Element | null = e; n; n = n.parentElement) o *= +getComputedStyle(n).opacity; return o; });
+  await expect.poll(() => opacity("[data-hero-fade]")).toBeLessThan(0.95);
+  expect(await opacity("#get")).toBe(1);
+  await page.locator("#get [data-download-more]").click();
+  await page.locator("#get [data-system=windows]").click();
+  expect(await opacity("#get [role=menu]")).toBe(1);
+  // A download: the card, in the visitor's language, with the trial's terms.
+  await page.locator("#get [data-download-kind=windows-exe]").click();
+  const card = page.locator("[data-enjoy]");
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("¡Diviértete y disfruta!");
+  await expect(card).toContainText("7 días");
+  await expect(card).toContainText("Hobbyist");
+  await expect(card.locator("[data-enjoy-editions]")).toHaveAttribute("href", "/pricing");
+  await page.keyboard.press("Escape");
+  await expect(card).toBeHidden();
+  expect(errs).toEqual([]);
+});
+
 test("the deck plays the genre's recorded loop: three parts that switch off and on, its own tempo and key, and the music's making credited", async ({ page }) => {
   const errs = errors(page);
   const index = JSON.parse(readFileSync("src/v4/loops/index.json", "utf8")) as Record<string, { bpm: number; camelot: string }>;
