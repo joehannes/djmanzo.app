@@ -8,7 +8,7 @@
   import { GENRE_BY_ID } from "../../lib/genres";
   import { shared, skin, region } from "../region.svelte";
   import { deck, setGenre, setStem, toggle } from "../sound.svelte";
-  import { hasLoop } from "../loops";
+  import { hasLoop, makerOf } from "../loops";
   import { bankOfGenres } from "../skins";
   import { STEMS, type Stem } from "../wave/model";
   import Wave from "../wave/Wave.svelte";
@@ -95,7 +95,7 @@
         </button>
         <span class="mono dim small">{w.on.replace("{n}", String(STEMS.filter((s) => deck.on[s]).length))}</span>
       </div>
-      {#if hasLoop(deck.genre)}<p class="credit dim small" data-credit>{w.credit}</p>{/if}
+      {#if hasLoop(deck.genre)}<p class="credit dim small" data-credit>{w.credit.replace("{maker}", makerOf(deck.genre))}</p>{/if}
     </div>
   </div>
 </section>

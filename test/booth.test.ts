@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { BANKS, REGION_BANK, SOUNDS } from "../src/v4/booth/sounds";
+import { existsSync, readFileSync } from "node:fs";
+import { BANKS, OCCASIONS, RECORDED, REGION_BANK, SOUNDS, bankReady, playable } from "../src/v4/booth/sounds";
 import { trimmed } from "../src/v4/booth/booth.svelte";
 import { BOOTH } from "../src/v4/i18n/booth";
 import { installAll, translated } from "./packs";
@@ -10,13 +10,38 @@ import { GENRE_BY_ID } from "../src/lib/genres";
 import { SKINS } from "../src/v4/skins";
 
 describe("the booth's sampler", () => {
-  it("has every sound its banks name, and every sound has a name in every language", () => {
+  it("has every sound its banks name, made here or among those recorded for it, and every pad has a name in every language", () => {
+    // The sounds the effects songs record, one a 4 s slot (tools/suno/cut-fx.sh), by the booth's own ids.
+    const fx = readFileSync(new URL("../tools/suno/cut-fx.sh", import.meta.url), "utf8");
+    const recordable = new Set([...fx.matchAll(/^ {2}"fx0\d\.wav \d+ ([^"]+)"$/gm)].flatMap((m) => m[1].split(" ")));
+    expect(recordable.size).toBe(89);
     const named = new Set([...Object.values(BANKS).flat(), ...Object.values(REGION_BANK).flat()]);
-    for (const id of named) expect(SOUNDS[id], id).toBeTypeOf("function");
-    for (const lang of ["en" as const, ...translated("booth")]) for (const id of Object.keys(SOUNDS)) expect(BOOTH[lang].sounds[id], `${lang} ${id}`).toBeTruthy();
+    for (const id of named) expect(id in SOUNDS || recordable.has(id), id).toBe(true);
+    for (const lang of ["en" as const, ...translated("booth")]) for (const id of new Set([...Object.keys(SOUNDS), ...named])) expect(BOOTH[lang].sounds[id], `${lang} ${id}`).toBeTruthy();
+    for (const lang of ["en" as const, ...translated("booth")]) for (const b of OCCASIONS) expect(BOOTH[lang].banks[b], `${lang} ${b}`).toBeTruthy();
     // Every bank fills the eight pads, and every region has its own.
     for (const bank of [...Object.values(BANKS), ...Object.values(REGION_BANK)]) expect(bank).toHaveLength(8);
     expect(Object.keys(REGION_BANK).sort()).toEqual(SKINS.map((s) => s.id).sort());
+  });
+
+  it("offers an occasion once every pad can play: the sounds made here at once, a recorded one once its files are in", () => {
+    const none = new Set<string>();
+    for (const b of ["everywhere", "wedding", "anniversary", "colmado", "usparty"] as const) expect(bankReady(b, "club", none), b).toBe(true);
+    for (const s of SKINS) expect(bankReady("region", s.id, none), s.id).toBe(true);
+    const fresh = ["birthday", "newyear", "carnival", "stadium", "karaoke", "halloween", "lunarnewyear"] as const;
+    expect(OCCASIONS).toEqual(expect.arrayContaining([...fresh]));
+    for (const b of fresh) expect(bankReady(b, "club", none), b).toBe(false);
+    const all = new Set(Object.values(BANKS).flat());
+    for (const b of fresh) expect(bankReady(b, "club", all), b).toBe(true);
+    // One pad short keeps the occasion back; a sound made here needs no file.
+    expect(bankReady("lunarnewyear", "club", new Set([...all].filter((id) => id !== "guzheng")))).toBe(false);
+    expect(playable("airhorn", none)).toBe(true);
+    expect(playable("guzheng", none)).toBe(false);
+    expect(playable("guzheng", new Set(["guzheng"]))).toBe(true);
+  });
+
+  it("lists only the recorded sounds whose files the site serves, AAC and Opus both", () => {
+    for (const id of RECORDED) for (const ext of ["m4a", "webm"]) expect(existsSync(new URL(`../public/v4/sampler/${id}.${ext}`, import.meta.url)), `${id}.${ext}`).toBe(true);
   });
 
   it("trims the visitor's recording to what was said, as loud as it can be without clipping", () => {

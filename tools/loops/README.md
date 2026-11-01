@@ -51,8 +51,11 @@ cp public/v4/loops/index.json src/v4/loops/index.json
 ```
 
 The site discloses the music's making beside the deck ("Music made for
-djmanzo with ACE-Step 1.5; its parts separated with Demucs"), as ACE-Step
-asks of its users.
+djmanzo with ACE-Step 1.5 XL; its parts separated with Demucs"), as ACE-Step
+asks of its users. A loop made from another maker's master names it: run
+`make_loops.py` with `MAKER=Suno` (as `tools/suno/import.sh` does), and the
+line says Suno for that genre. A job whose master is not in `masters/` is
+passed over, so one genre can be made again alone.
 
 **How well the loops join themselves.** A loop that is a whole number of
 true bars joins itself wherever it starts, so what is measured is the bar:

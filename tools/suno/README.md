@@ -29,6 +29,12 @@ Lyrics box names its time, genre, BPM and key. `cut-blocks.sh` cuts loop *k* fro
 115 BPM, 8 from there) that leave a bar clear of the cut on either side, played over and
 over into `masters/<genre>/<genre>.flac`. `SLOT` and `OFFSET` move one song's grid.
 
+**Onto the site, in one go**: `tools/suno/import.sh <folder>` with the medleys and
+the two effects songs saved there (either may be missing). It cuts them, makes each
+loop's parts with Demucs (`PYTHON` names the Python that has it) credited to Suno,
+puts the sounds in `public/v4/sampler/` and lists them in `src/v4/booth/sampler.json`.
+A genre shows in its look, and an occasion in the booth, once its files are in.
+
 If Suno put anything before the first section or bar, that song's `OFFSET` in the
 script's table moves its whole grid. Both scripts were run on stand-in audio with a
 different tone in every section and slot: every cut came from its own section or slot,

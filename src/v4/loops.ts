@@ -1,6 +1,7 @@
 /**
- * The deck's music: for each genre a loop made for this site with ACE-Step
- * 1.5, an open music model, and taken apart with Demucs into drums, bass and
+ * The deck's music: for each genre a loop made for this site (with ACE-Step
+ * 1.5, an open music model, or with Suno: each loop names its maker), and
+ * taken apart with Demucs into drums, bass and
  * the rest — as djmanzo takes a record apart — each part its own file, so a
  * visitor switches parts off and on as a DJ would. `tools/loops/` makes them
  * and says how; a genre without one plays the synthesiser's sketch.
@@ -32,6 +33,8 @@ export interface LoopInfo {
   files: Record<Stem, string>;
   /** The same in Opus, for a browser that cannot decode AAC. */
   opus?: Record<Stem, string>;
+  /** What made the music, for the credit under the deck; the loops made before it was kept, ACE-Step. */
+  maker?: string;
 }
 
 /** The loop's waveform over one period, `rate` points a second, each 0..255. */
@@ -46,6 +49,9 @@ export const LOOPS = INDEX as unknown as Record<string, LoopInfo>;
 export const BASE = "/v4/loops";
 
 export const hasLoop = (genre: string): boolean => genre in LOOPS;
+
+/** What made a genre's loop, as the credit names it. */
+export const makerOf = (genre: string): string => LOOPS[genre]?.maker ?? "ACE-Step 1.5 XL";
 
 /**
  * Whether this browser decodes AAC. Chromium built without its proprietary

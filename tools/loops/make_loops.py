@@ -12,7 +12,10 @@ periodic around the loop and a decoder's few milliseconds of priming never
 reach the seam. Each stem is AAC at 192 kbit/s, 44.1 kHz stereo; beside
 them, the loop's waveform (per stem and per band, 100 a second) for drawing.
 
-usage: python -I make_loops.py jobs.json masters_dir out_dir
+usage: [MAKER=Suno] python -I make_loops.py jobs.json masters_dir out_dir
+A genre with no master in masters_dir is passed over, its loop kept as it is.
+MAKER names what made the music, for the credit under the deck (unset: the
+entry says nothing, and the site credits ACE-Step, which made the first).
 """
 
 import base64, json, math, os, subprocess, sys
@@ -35,6 +38,11 @@ CAMELOT = {  # key -> Camelot code
     "C major": "8B", "G major": "9B", "D major": "10B", "A major": "11B", "E major": "12B", "B major": "1B",
     "F# major": "2B", "C# major": "3B", "G# major": "4B", "D# major": "5B", "A# major": "6B", "F major": "7B",
 }
+
+# The same keys spelt with flats, as the jobs may name them ("Bb minor").
+for sharp, flat in (("A#", "Bb"), ("C#", "Db"), ("D#", "Eb"), ("F#", "Gb"), ("G#", "Ab")):
+    for mode in ("minor", "major"):
+        CAMELOT[f"{flat} {mode}"] = CAMELOT[f"{sharp} {mode}"]
 
 torch.set_num_threads(os.cpu_count() or 4)
 
@@ -123,6 +131,8 @@ def main(jobs_path, masters, out):
     for job in jobs:
         gid, asked = job["genre"], job["bpm"]
         src = os.path.join(masters, job["id"])
+        if not os.path.isdir(src) or not any(f.endswith(".flac") for f in os.listdir(src)):
+            continue
         flac = next(os.path.join(src, f) for f in os.listdir(src) if f.endswith(".flac"))
         # The separation, kept beside the master: cutting the loop again needs no second hour of Demucs.
         kept = os.path.join(src, "stems.npy")
@@ -154,6 +164,8 @@ def main(jobs_path, masters, out):
         s0, n, fade, pre, post = int(round(start * sr)), int(round(length * sr)), int(FADE * sr), int(PRE * sr), int(POST * sr)
         os.makedirs(os.path.join(out, gid), exist_ok=True)
         info = {"bpm": round(bpm, 2), "key": job["key"], "camelot": CAMELOT.get(job["key"], ""), "bars": bars, "seconds": n / sr, "pre": pre / sr, "frames": pre + n + post, "sampleRate": sr, "stems": STEMS, "files": {}, "opus": {}}
+        if os.environ.get("MAKER"):
+            info["maker"] = os.environ["MAKER"]
         peaks = {"rate": RATE, "stems": {}, "bands": {}}
         loops = {}
         for name in STEMS:

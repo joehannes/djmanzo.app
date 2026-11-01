@@ -1,7 +1,7 @@
 /**
  * The site's one deck. A genre with a recorded loop (`loops.ts`: made for
- * this site with an open music model and taken apart into drums, bass and
- * the rest) plays it, each part its own source through the deck's EQ and
+ * this site with a music model, which each loop names, and taken apart into
+ * drums, bass and the rest) plays it, each part its own source through the deck's EQ and
  * fader; a genre without one plays the island's synthesiser
  * (`lib/audio/engine.ts`). Either way the stems switch one by one, and
  * nothing plays until the visitor presses play.

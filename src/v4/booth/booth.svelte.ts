@@ -12,7 +12,8 @@
 
 import { getEngine, hasEngine } from "../../lib/audio/engine";
 import { beatClock, deck, roll, setRate, stop as stopDeck, tempoOf } from "../sound.svelte";
-import { SOUNDS, VOICE, type BankId } from "./sounds";
+import { RECORDED, SAMPLER_BASE, SOUNDS, VOICE, type BankId } from "./sounds";
+import { aacPlays } from "../loops";
 
 export type Knob = "low" | "mid" | "high" | "filter" | "pitch";
 export type Mode = "tap" | "repeat" | "loop";
@@ -120,6 +121,45 @@ function output(): GainNode {
 
 let voiceBuffer: AudioBuffer | null = null;
 
+// The recorded sounds: fetched when their bank is shown, decoded once there is an engine to decode in.
+const fetched = new Map<string, Promise<ArrayBuffer | null>>();
+const decoded = new Map<string, AudioBuffer>();
+const decoding = new Set<string>();
+
+function fetchOf(id: string): Promise<ArrayBuffer | null> {
+  let p = fetched.get(id);
+  if (!p) {
+    p = fetch(`${SAMPLER_BASE}/${id}.${aacPlays() ? "m4a" : "webm"}`)
+      .then((r) => (r.ok ? r.arrayBuffer() : null))
+      .catch(() => null);
+    fetched.set(id, p);
+  }
+  return p;
+}
+
+function decode(id: string) {
+  if (decoded.has(id) || decoding.has(id) || !hasEngine()) return;
+  decoding.add(id);
+  const ctx = getEngine().ctx;
+  void fetchOf(id)
+    .then((b) => (b ? ctx.decodeAudioData(b.slice(0)) : null))
+    .then((buf) => buf && decoded.set(id, buf))
+    .catch(() => undefined)
+    .finally(() => decoding.delete(id));
+}
+
+/** Gets the recorded sounds among `ids` ready, so a pad pressed soon plays the recording. */
+export function preload(ids: readonly string[]) {
+  for (const id of ids)
+    if (RECORDED.has(id)) {
+      void fetchOf(id);
+      decode(id);
+    }
+}
+
+/** Whether `id` will play its recording now (rather than the sound made here). */
+export const recordedReady = (id: string): boolean => decoded.has(id);
+
 /** Sound `id` at audio time `t`. */
 export function play(id: string, t = hasEngine() ? getEngine().ctx.currentTime : 0) {
   const e = getEngine();
@@ -130,7 +170,16 @@ export function play(id: string, t = hasEngine() ? getEngine().ctx.currentTime :
     src.playbackRate.value = Math.pow(2, booth.voice.pitch / 12);
     src.connect(output());
     src.start(Math.max(t, e.ctx.currentTime));
-  } else SOUNDS[id]?.(e.ctx, output(), Math.max(t, e.ctx.currentTime));
+  } else if (decoded.has(id)) {
+    const src = e.ctx.createBufferSource();
+    src.buffer = decoded.get(id)!;
+    src.connect(output());
+    src.start(Math.max(t, e.ctx.currentTime));
+  } else {
+    // Not decoded yet: the sound made here this once, where there is one, and the recording next time.
+    if (RECORDED.has(id)) decode(id);
+    SOUNDS[id]?.(e.ctx, output(), Math.max(t, e.ctx.currentTime));
+  }
   // The pad lights when it sounds, not when it is scheduled.
   const delay = Math.max(0, (t - e.ctx.currentTime) * 1000);
   setTimeout(() => (booth.hit = { id, at: performance.now() }), delay);

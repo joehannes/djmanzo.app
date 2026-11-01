@@ -527,7 +527,7 @@
  "rnb": {
   "bpm": 90.0,
   "key": "Bb minor",
-  "camelot": "",
+  "camelot": "3A",
   "bars": 8,
   "seconds": 21.333333333333332,
   "pre": 0.25,
@@ -1352,7 +1352,7 @@
  "electroswing": {
   "bpm": 123.0,
   "key": "Bb major",
-  "camelot": "",
+  "camelot": "6B",
   "bars": 16,
   "seconds": 31.219297052154197,
   "pre": 0.25,

@@ -1650,6 +1650,56 @@ right-to-left sentence:
 `test/packs.test.ts` holds the file names and the menu path to this in both
 languages.
 
+## Ready for Suno's loops and sounds (1 November)
+
+The owner is remaking the deck's loops and the booth's sounds with Suno, and
+asked for them, with the new genres' and occasions' names and descriptions,
+on the site. Suno's files are not here yet; everything they need is, so one
+command puts them in place (`tools/suno/import.sh <folder>`).
+
+- **Six more genres.** Tech house, drift phonk, samba, kizomba, dangdut and
+  halay (`lib/genres.ts`, `tools/loops/jobs.json`), each a special of its
+  look: tech house in Europe's (in place of lounge, which the studio look
+  keeps among its own), samba in Latin America's (in place of soca, which
+  Trinidad and Barbados still hear first), phonk in North America's, kizomba
+  in Africa's, dangdut in Asia's, halay in the Middle East's, and Turkey's
+  own first. A look offers a genre only once its loop is made, so they
+  appear with their music.
+- **The credit follows the loop.** Each loop's entry may name its maker
+  (`make_loops.py` writes `maker` when run with `MAKER=Suno`); the line under
+  the deck says Suno for those, ACE-Step for the loops made before, in all
+  seventeen languages (`{maker}`). The two loops whose keys are written with
+  flats (R&B, electro swing) had no Camelot code; the table now knows flats.
+- **Recorded sounds in the booth.** A sound listed in
+  `src/v4/booth/sampler.json` plays its recording from `/v4/sampler/`
+  (AAC, or Opus where AAC does not play), fetched when its bank is shown;
+  until it is decoded, the sound made in the browser plays. Seven occasions
+  join the booth (birthday, New Year's Eve, carnival, stadium night, karaoke
+  night, Halloween, Lunar New Year), with thirty new pads named in every
+  language; an occasion is offered once all eight pads can play
+  (`bankReady`), so they appear when their recordings are in.
+- **The site's own small sounds** (needle, scratch, click, rewind, riser,
+  microphone tap, cheer) play their `ui-…` recordings too, quietly, once
+  fetched; the ones made in the browser until then.
+- **Words that hold for both makers.** The deck's lead said its track was
+  made "with an open music model"; Suno is not one, so it now says "with a
+  music model", in all seventeen languages, and the credit names which.
+- **Pad names fit their pad.** A name is set so its longest word, or the part
+  of one between hyphens, fits the pad on one line (container units); the
+  three longest compounds carry soft hyphens (Hochzeits-glocken). German's
+  new midnight pad is "Glocken um zwölf".
+- **The import** cuts the medleys and the effects songs, takes each loop
+  apart with Demucs and loops it, writes the sampler list from the files
+  actually served, and says what is on the site. A master cut again keeps
+  its separation only if its bytes are unchanged, so a song made again is
+  never parted from the old one. Run on stand-in songs in a copy of the
+  site, it made the three loops of the last medley (tempo found at 170, 174
+  and 180 BPM, as asked), credited to Suno, and placed and listed 89 sounds;
+  that run found two faults in the script itself, fixed before this commit.
+  With those files in a build, the booth offered the seven occasions and
+  fetched their recordings, and the deck credited Suno for a Suno loop and
+  ACE-Step for the others. Nothing here can say how Suno's music sounds.
+
 ## The Download key, solid; and "have fun" after a download (1 November)
 
 The owner saw the Download menu as a veil over the deck. It was not the

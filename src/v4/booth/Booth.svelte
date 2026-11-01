@@ -16,8 +16,8 @@
   import { i18n } from "../i18n.svelte";
   import { BOOTH } from "../i18n/booth";
   import { HOME } from "../i18n/home";
-  import { bankOf, VOICE, type BankId } from "./sounds";
-  import { booth, turn, centre, press, hush, buildAndDrop, record, play, fold, bend, effect, FX_KINDS, type FxKind } from "./booth.svelte";
+  import { bankOf, bankReady, OCCASIONS, VOICE, type BankId } from "./sounds";
+  import { booth, turn, centre, press, hush, buildAndDrop, record, play, fold, bend, effect as beatEffect, preload, FX_KINDS, type FxKind } from "./booth.svelte";
   import Knob from "./Knob.svelte";
   import Fader from "./Fader.svelte";
 
@@ -25,8 +25,12 @@
   /** A label in capitals, as the hardware prints them, by the language's own rules. */
   const caps = (s: string) => s.toLocaleUpperCase(i18n.lang);
   const names = $derived(HOME[i18n.lang].stems.names);
-  const BANKS: (BankId | "voice")[] = ["region", "everywhere", "wedding", "anniversary", "colmado", "usparty", "voice"];
+  /** The region's sounds, then each occasion whose pads can all play (a recorded one once its file is in). */
+  const BANKS = $derived<BankId[]>((["region", ...OCCASIONS] as BankId[]).filter((b) => bankReady(b, region.skin)));
   const pads = $derived(booth.bank === "voice" ? [VOICE] : bankOf(booth.bank, region.skin));
+  $effect(() => preload(pads));
+  /** The length of a pad name's longest word (or part of one, between hyphens soft or hard): set so it fits the pad on one line. */
+  const longest = (name = "") => Math.max(0, ...name.split(/[\s\u00ad-]+/).map((w) => w.length));
   const genre = $derived(GENRE_BY_ID[deck.genre]);
   /** As a mixer's display spells them, in every language. */
   const FX_NAME: Record<FxKind, string> = { echo: "ECHO", space: "SPACE", flanger: "FLANGER", crush: "CRUSH", gate: "TRANS" };
@@ -135,7 +139,7 @@
   const ensurePlaying = () => {
     if (!deck.playing) playDeck();
   };
-  const nextFx = (step: number) => effect({ kind: FX_KINDS[(FX_KINDS.indexOf(booth.fx.kind) + step + FX_KINDS.length) % FX_KINDS.length] });
+  const nextFx = (step: number) => beatEffect({ kind: FX_KINDS[(FX_KINDS.indexOf(booth.fx.kind) + step + FX_KINDS.length) % FX_KINDS.length] });
 </script>
 
 <section class="booth" id="booth-console" data-booth style:--pulse={pulse} style:--beat={`${beatLength}s`} aria-label={w.open.replace(/^\S+\s/, "")}>
@@ -222,8 +226,8 @@
           <span class="dim">{Math.round(booth.fx.depth * 100)}</span>
           <button class="fxsel" onclick={() => nextFx(1)} aria-label={`${w.hw.fx} ▶`} data-fx-next>▶</button>
         </div>
-        <Knob label={`${w.hw.fx}: ${FX_NAME[booth.fx.kind]}`} print="LEVEL/DEPTH" min={0} value={booth.fx.depth} hint={w.knobHint} onturn={(v) => effect({ depth: v })} data="depth" />
-        <button class="hw fxon" class:beat={booth.fx.on && beat >= 0} aria-pressed={booth.fx.on} onclick={() => effect({ on: !booth.fx.on })} title={w.hw.fxOn} aria-label={w.hw.fxOn} data-fx-on>ON</button>
+        <Knob label={`${w.hw.fx}: ${FX_NAME[booth.fx.kind]}`} print="LEVEL/DEPTH" min={0} value={booth.fx.depth} hint={w.knobHint} onturn={(v) => beatEffect({ depth: v })} data="depth" />
+        <button class="hw fxon" class:beat={booth.fx.on && beat >= 0} aria-pressed={booth.fx.on} onclick={() => beatEffect({ on: !booth.fx.on })} title={w.hw.fxOn} aria-label={w.hw.fxOn} data-fx-on>ON</button>
       </div>
       <button class="hw small centre" onclick={centre}>{w.centre}</button>
     </div>
@@ -233,7 +237,7 @@
       <div class="sampler-control topics-control">
         <div class="sampler-label"><span class="sampler-index">01</span><span>{caps(w.hw.topics)}</span><small>{w.hw.topicsHint}</small></div>
         <div class="tabs" role="tablist" aria-label={w.sampler}>
-        {#each BANKS.filter((b) => b !== "voice") as b (b)}
+        {#each BANKS as b (b)}
           <button role="tab" class="hw tab" aria-selected={booth.bank === b} onclick={() => (booth.bank = b)} data-bank={b}><i class="led"></i>{b === "region" ? w.banks.region.replace("{region}", skin().name) : w.banks[b]}</button>
         {/each}
         </div>
@@ -292,7 +296,7 @@
             data-track={`pad:${id}`}
           >
             {#key booth.hit.at}<span class="flash" class:on={booth.hit.id === id}></span>{/key}
-            <span class="name">{id === VOICE ? w.voice.pad : w.sounds[id]}</span>
+            <span class="name" style:--chars={longest(id === VOICE ? w.voice.pad : w.sounds[id])}>{id === VOICE ? w.voice.pad : w.sounds[id]}</span>
             {#if booth.going[id]}<span class="mono tiny">{booth.going[id] === "loop" ? "⟳ 1" : `⟳ ${booth.every === 0.25 ? "1/16" : booth.every === 0.5 ? "1/8" : "1/4"}`}</span>{/if}
           </button>
         {/each}
@@ -960,6 +964,13 @@
     overflow-wrap: anywhere;
     hyphens: auto;
     text-shadow: 0 1px 2px #000;
+  }
+  /* Its longest word on one line, whatever the pad's width and the language: smaller only as it must be. */
+  .pad {
+    container-type: inline-size;
+  }
+  .name {
+    font-size: max(9px, min(1em, calc((100cqi - 12px) / (var(--chars, 6) * 0.62))));
   }
   .pad .tiny {
     font-size: 10px;

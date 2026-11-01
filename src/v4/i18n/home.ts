@@ -44,12 +44,12 @@ const en = {
   stems: {
     eyebrow: "Stems",
     title: "Take any record apart. While it plays.",
-    lead: "This track was made for this site with an open music model, then taken apart by a separation model into drums, bass and the rest — as djmanzo takes your own records apart, ahead of the playhead. Switch a part off and on: the rest keeps playing, in time and in key.",
+    lead: "This track was made for this site with a music model, then taken apart by a separation model into drums, bass and the rest — as djmanzo takes your own records apart, ahead of the playhead. Switch a part off and on: the rest keeps playing, in time and in key.",
     names: { drums: "Drums", bass: "Bass", rest: "The rest" },
     wave: "The deck's three stems, each in its own lane",
     play: "Play the deck",
     on: "{n} of 3 parts on",
-    credit: "Music made for djmanzo with ACE-Step 1.5 XL; its parts separated with Demucs.",
+    credit: "Music made for djmanzo with {maker}; its parts separated with Demucs.",
   },
   tour: {
     eyebrow: "The application",
@@ -129,12 +129,12 @@ const es: HomeWords = {
   stems: {
     eyebrow: "Stems",
     title: "Desarma cualquier tema. Mientras suena.",
-    lead: "Este tema se hizo para esta web con un modelo musical abierto y luego un modelo de separación lo desarmó en batería, bajo y el resto, como djmanzo desarma tus propios temas, por delante del cabezal. Apaga y enciende una parte: lo demás sigue sonando, a tiempo y en tono.",
+    lead: "Este tema se hizo para esta web con un modelo musical y luego un modelo de separación lo desarmó en batería, bajo y el resto, como djmanzo desarma tus propios temas, por delante del cabezal. Apaga y enciende una parte: lo demás sigue sonando, a tiempo y en tono.",
     names: { drums: "Batería", bass: "Bajo", rest: "El resto" },
     wave: "Los tres stems del plato, cada uno en su carril",
     play: "Reproducir el plato",
     on: "{n} de 3 partes encendidas",
-    credit: "Música hecha para djmanzo con ACE-Step 1.5 XL; sus partes, separadas con Demucs.",
+    credit: "Música hecha para djmanzo con {maker}; sus partes, separadas con Demucs.",
   },
   tour: {
     eyebrow: "La aplicación",
@@ -212,12 +212,12 @@ const pt: HomeWords = {
   stems: {
     eyebrow: "Stems",
     title: "Desmonte qualquer faixa. Enquanto ela toca.",
-    lead: "Esta faixa foi feita para este site com um modelo musical aberto e depois desmontada por um modelo de separação em bateria, baixo e o resto — como o djmanzo desmonta as suas próprias faixas, à frente do cursor. Desligue e ligue uma parte: o resto continua tocando, no tempo e no tom.",
+    lead: "Esta faixa foi feita para este site com um modelo musical e depois desmontada por um modelo de separação em bateria, baixo e o resto — como o djmanzo desmonta as suas próprias faixas, à frente do cursor. Desligue e ligue uma parte: o resto continua tocando, no tempo e no tom.",
     names: { drums: "Bateria", bass: "Baixo", rest: "O resto" },
     wave: "Os três stems do deck, cada um na sua faixa",
     play: "Tocar o deck",
     on: "{n} de 3 partes ligadas",
-    credit: "Música feita para o djmanzo com ACE-Step 1.5 XL; as partes separadas com Demucs.",
+    credit: "Música feita para o djmanzo com {maker}; as partes separadas com Demucs.",
   },
   tour: {
     eyebrow: "O aplicativo",
@@ -295,12 +295,12 @@ const de: HomeWords = {
   stems: {
     eyebrow: "Stems",
     title: "Nimm jeden Track auseinander. Während er läuft.",
-    lead: "Dieser Track wurde für diese Seite mit einem offenen Musikmodell gemacht und dann von einem Trennmodell in Drums, Bass und den Rest zerlegt — so wie djmanzo deine eigenen Tracks zerlegt, vor dem Abspielkopf. Schalte einen Teil aus und wieder an: Der Rest spielt weiter, im Takt und in der Tonart.",
+    lead: "Dieser Track wurde für diese Seite mit einem Musikmodell gemacht und dann von einem Trennmodell in Drums, Bass und den Rest zerlegt — so wie djmanzo deine eigenen Tracks zerlegt, vor dem Abspielkopf. Schalte einen Teil aus und wieder an: Der Rest spielt weiter, im Takt und in der Tonart.",
     names: { drums: "Drums", bass: "Bass", rest: "Der Rest" },
     wave: "Die drei Stems des Decks, jeder in seiner Spur",
     play: "Deck starten",
     on: "{n} von 3 Teilen an",
-    credit: "Musik für djmanzo mit ACE-Step 1.5 XL gemacht; ihre Teile mit Demucs getrennt.",
+    credit: "Musik für djmanzo mit {maker} gemacht; ihre Teile mit Demucs getrennt.",
   },
   tour: {
     eyebrow: "Die Anwendung",
@@ -378,12 +378,12 @@ const fr: HomeWords = {
   stems: {
     eyebrow: "Stems",
     title: "Démontez n'importe quel morceau. Pendant qu'il joue.",
-    lead: "Ce morceau a été fait pour ce site avec un modèle musical ouvert, puis démonté par un modèle de séparation en batterie, basse et le reste — comme djmanzo démonte vos propres morceaux, devant la tête de lecture. Coupez une partie et remettez-la : le reste continue de jouer, en rythme et dans le ton.",
+    lead: "Ce morceau a été fait pour ce site avec un modèle musical, puis démonté par un modèle de séparation en batterie, basse et le reste — comme djmanzo démonte vos propres morceaux, devant la tête de lecture. Coupez une partie et remettez-la : le reste continue de jouer, en rythme et dans le ton.",
     names: { drums: "Batterie", bass: "Basse", rest: "Le reste" },
     wave: "Les trois stems de la platine, chacun sur sa piste",
     play: "Lancer la platine",
     on: "{n} parties sur 3 actives",
-    credit: "Musique faite pour djmanzo avec ACE-Step 1.5 XL ; ses parties séparées avec Demucs.",
+    credit: "Musique faite pour djmanzo avec {maker} ; ses parties séparées avec Demucs.",
   },
   tour: {
     eyebrow: "L'application",
@@ -461,12 +461,12 @@ const it: HomeWords = {
   stems: {
     eyebrow: "Stem",
     title: "Smonta qualsiasi brano. Mentre suona.",
-    lead: "Questo brano è stato fatto per questo sito con un modello musicale aperto, poi smontato da un modello di separazione in batteria, basso e il resto — come djmanzo smonta i tuoi brani, prima della testina. Spegni e riaccendi una parte: il resto continua a suonare, a tempo e in tonalità.",
+    lead: "Questo brano è stato fatto per questo sito con un modello musicale, poi smontato da un modello di separazione in batteria, basso e il resto — come djmanzo smonta i tuoi brani, prima della testina. Spegni e riaccendi una parte: il resto continua a suonare, a tempo e in tonalità.",
     names: { drums: "Batteria", bass: "Basso", rest: "Il resto" },
     wave: "I tre stem del deck, ognuno nella sua corsia",
     play: "Avvia il deck",
     on: "{n} parti su 3 accese",
-    credit: "Musica fatta per djmanzo con ACE-Step 1.5 XL; le parti separate con Demucs.",
+    credit: "Musica fatta per djmanzo con {maker}; le parti separate con Demucs.",
   },
   tour: {
     eyebrow: "L'applicazione",
@@ -544,12 +544,12 @@ const ja: HomeWords = {
   stems: {
     eyebrow: "ステム",
     title: "どの曲も分解。再生しながら。",
-    lead: "この曲はオープンな音楽モデルでこのサイトのために作り、分離モデルでドラム、ベース、その他に分解しました。djmanzo があなた自身の曲を再生位置の先で分解するのと同じです。パートをオフにして、またオンに。残りはテンポもキーも崩れずに鳴り続けます。",
+    lead: "この曲は音楽モデルでこのサイトのために作り、分離モデルでドラム、ベース、その他に分解しました。djmanzo があなた自身の曲を再生位置の先で分解するのと同じです。パートをオフにして、またオンに。残りはテンポもキーも崩れずに鳴り続けます。",
     names: { drums: "ドラム", bass: "ベース", rest: "その他" },
     wave: "デッキの3つのステム、それぞれ別のレーンに",
     play: "デッキを再生",
     on: "3パート中{n}パートがオン",
-    credit: "音楽は ACE-Step 1.5 XL で djmanzo のために制作し、パートは Demucs で分離しました。",
+    credit: "音楽は {maker} で djmanzo のために制作し、パートは Demucs で分離しました。",
   },
   tour: {
     eyebrow: "アプリケーション",

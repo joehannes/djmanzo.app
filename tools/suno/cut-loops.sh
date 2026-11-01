@@ -25,6 +25,11 @@ songs=(
   "song09.wav 150 24 16 0 merengue eurobeat futurebass hardstyle soca jerseyclub"
   "song10.wav 174 24 16 0 dnb asianunderground funkot salsa chiptune"
 )
+# A master written again: the same bytes keep the separation made from it (make_loops.py's stems.npy);
+# new ones put it away, so the parts are made from what is there now.
+settle() {
+  if cmp -s "$1/new.tmp" "$1/$2.flac"; then rm "$1/new.tmp"; else mv "$1/new.tmp" "$1/$2.flac" && rm -f "$1/stems.npy"; fi
+}
 mkdir -p masters loops
 for line in "${songs[@]}"; do
   set -- $line
@@ -36,7 +41,8 @@ for line in "${songs[@]}"; do
     read -r start len lstart llen < <(awk -v b="$bpm" -v s="$sec" -v l="$loop" -v o="$off" -v k="$k" \
       'BEGIN { bar = 240 / b; st = o + k * s * bar; printf "%.4f %.4f %.4f %.4f\n", st, s * bar, st + 4 * bar, l * bar }')
     mkdir -p "masters/$genre"
-    ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$start" -t "$len" -i "$file" -c:a flac "masters/$genre/$genre.flac"
+    ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$start" -t "$len" -i "$file" -c:a flac -f flac "masters/$genre/new.tmp"
+    settle "masters/$genre" "$genre"
     ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$lstart" -t "$llen" -i "$file" -c:a pcm_s24le "loops/$genre.wav"
     printf '%-17s %s  %3s BPM  section %8.3f s + %7.3f s   loop %2s bars = %7.3f s\n' "$genre" "$file" "$bpm" "$start" "$len" "$loop" "$llen"
     k=$((k + 1))

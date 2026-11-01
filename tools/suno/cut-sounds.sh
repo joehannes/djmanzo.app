@@ -77,6 +77,11 @@ genres=(
   "chiptune 140"
   "electroswing 124"
 )
+# A master written again: the same bytes keep the separation made from it (make_loops.py's stems.npy);
+# new ones put it away, so the parts are made from what is there now.
+settle() {
+  if cmp -s "$1/new.tmp" "$1/$2.flac"; then rm "$1/new.tmp"; else mv "$1/new.tmp" "$1/$2.flac" && rm -f "$1/stems.npy"; fi
+}
 mkdir -p loops masters
 for line in "${genres[@]}"; do
   set -- $line
@@ -93,6 +98,7 @@ for line in "${genres[@]}"; do
   if [ "$bars" -eq 0 ]; then echo "skipped: $file is shorter than one bar at $bpm BPM"; continue; fi
   mkdir -p "masters/$genre"
   ffmpeg -nostdin -hide_banner -loglevel error -y -i "$file" -af apad -t "$len" -c:a pcm_s24le "loops/$genre.wav"
-  ffmpeg -nostdin -hide_banner -loglevel error -y -stream_loop "$((reps - 1))" -i "loops/$genre.wav" -c:a flac "masters/$genre/$genre.flac"
+  ffmpeg -nostdin -hide_banner -loglevel error -y -stream_loop "$((reps - 1))" -i "loops/$genre.wav" -c:a flac -f flac "masters/$genre/new.tmp"
+  settle "masters/$genre" "$genre"
   printf '%-17s %3s BPM  %7.3f s in  ->  %2d bars = %7.3f s, played %d times for the parts\n' "$genre" "$bpm" "$dur" "$bars" "$len" "$reps"
 done

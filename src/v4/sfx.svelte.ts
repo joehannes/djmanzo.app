@@ -1,13 +1,17 @@
 /**
  * The site's small sounds: what a booth sounds like, made in the browser —
  * a needle set down, a scratch, a cue button's click, a rewind, a riser, a
- * microphone tapped, a room cheering. Each is a few lines of Web Audio, so
- * there is no recording to license and nothing to download.
+ * microphone tapped, a room cheering. Each is a few lines of Web Audio; where
+ * the site has a recording of it (`ui-…` in `sampler.ts`), that plays instead,
+ * quietly, once it has been fetched.
  *
  * Off until the visitor switches them on (the 🔊 in the site bar); the choice
  * is kept in this browser. Quiet, short, and never on a timer: only ever in
  * answer to something the visitor did or scrolled to.
  */
+
+import { RECORDED, SAMPLER_BASE } from "./sampler";
+import { aacPlays } from "./loops";
 
 const KEY = "djmanzo:sounds";
 
@@ -63,10 +67,37 @@ function envelope(a: AudioContext, at: number, peak: number, attack: number, dec
   return g;
 }
 
+// The recordings: fetched the first time each is asked for; the sound made here until one is decoded.
+const tapes = new Map<string, AudioBuffer | null>();
+
+/** Plays the recording of `name` if it is in, quietly as the site's sounds are; false if not (yet). */
+function tape(a: AudioContext, name: string, level = 0.25): boolean {
+  const id = `ui-${name}`;
+  if (!RECORDED.has(id)) return false;
+  if (!tapes.has(id)) {
+    tapes.set(id, null);
+    void fetch(`${SAMPLER_BASE}/${id}.${aacPlays() ? "m4a" : "webm"}`)
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(r.statusText))))
+      .then((b) => a.decodeAudioData(b))
+      .then((buf) => tapes.set(id, buf))
+      .catch(() => undefined);
+  }
+  const buf = tapes.get(id);
+  if (!buf) return false;
+  const src = a.createBufferSource();
+  src.buffer = buf;
+  const g = a.createGain();
+  g.gain.value = level;
+  src.connect(g).connect(a.destination);
+  src.start();
+  return true;
+}
+
 /** The needle set down: a soft thump and a little crackle. */
 export function needle() {
   const a = audio();
   if (!a) return;
+  if (tape(a, "needle")) return;
   const t = a.currentTime;
   const thump = a.createOscillator();
   thump.frequency.setValueAtTime(90, t);
@@ -87,6 +118,7 @@ export function needle() {
 export function scratch() {
   const a = audio();
   if (!a) return;
+  if (tape(a, "scratch")) return;
   const t = a.currentTime;
   const src = a.createBufferSource();
   src.buffer = noise(a, 0.3);
@@ -104,6 +136,7 @@ export function scratch() {
 export function tick() {
   const a = audio();
   if (!a) return;
+  if (tape(a, "tick")) return;
   const t = a.currentTime;
   const o = a.createOscillator();
   o.type = "triangle";
@@ -117,6 +150,7 @@ export function tick() {
 export function rewind() {
   const a = audio();
   if (!a) return;
+  if (tape(a, "rewind")) return;
   const t = a.currentTime;
   const o = a.createOscillator();
   o.type = "sawtooth";
@@ -134,6 +168,8 @@ export function rewind() {
 export function riser(seconds = 0.8) {
   const a = audio();
   if (!a) return;
+  // The recording is the one length: it stands in only for the usual riser.
+  if (seconds === 0.8 && tape(a, "riser")) return;
   const t = a.currentTime;
   const src = a.createBufferSource();
   src.buffer = noise(a, seconds);
@@ -154,6 +190,7 @@ export function riser(seconds = 0.8) {
 export function micTap() {
   const a = audio();
   if (!a) return;
+  if (tape(a, "mictap")) return;
   for (const dt of [0, 0.18]) {
     const t = a.currentTime + dt;
     const o = a.createOscillator();
@@ -169,6 +206,7 @@ export function micTap() {
 export function cheer() {
   const a = audio();
   if (!a) return;
+  if (tape(a, "cheer")) return;
   const t = a.currentTime;
   const src = a.createBufferSource();
   src.buffer = noise(a, 1.2);

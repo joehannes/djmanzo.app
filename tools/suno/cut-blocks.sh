@@ -24,6 +24,11 @@ blocks=(
   "medley06.wav chiptune:140 jerseyclub:140 trap:140 goa:142 futurebass:150 hardstyle:150 merengue:150 eurobeat:155 soca:156 asianunderground:170"
   "medley07.wav funkot:170 dnb:174 salsa:180"
 )
+# A master written again: the same bytes keep the separation made from it (make_loops.py's stems.npy);
+# new ones put it away, so the parts are made from what is there now.
+settle() {
+  if cmp -s "$1/new.tmp" "$1/$2.flac"; then rm "$1/new.tmp"; else mv "$1/new.tmp" "$1/$2.flac" && rm -f "$1/stems.npy"; fi
+}
 mkdir -p loops masters
 for line in "${blocks[@]}"; do
   set -- $line
@@ -47,7 +52,8 @@ for line in "${blocks[@]}"; do
       printf "%.4f %.6f %d %d\n", o + k * s + m * bar, len, n, int((16 * bar + 8) / len) + 1 }')
     mkdir -p "masters/$genre"
     ffmpeg -nostdin -hide_banner -loglevel error -y -ss "$start" -t "$len" -i "$file" -af apad -t "$len" -c:a pcm_s24le "loops/$genre.wav"
-    ffmpeg -nostdin -hide_banner -loglevel error -y -stream_loop "$((reps - 1))" -i "loops/$genre.wav" -c:a flac "masters/$genre/$genre.flac"
+    ffmpeg -nostdin -hide_banner -loglevel error -y -stream_loop "$((reps - 1))" -i "loops/$genre.wav" -c:a flac -f flac "masters/$genre/new.tmp"
+    settle "masters/$genre" "$genre"
     printf '%-17s %s  loop %2d  %3s BPM  from %8.3f s, %d bars = %7.3f s\n' "$genre" "$file" "$((k + 1))" "$bpm" "$start" "$bars" "$len"
     k=$((k + 1))
   done

@@ -7,10 +7,19 @@
  *
  * `BANKS` groups them as a DJ reaches for them: what works everywhere, the
  * occasion (a wedding, an anniversary in a club, a colmado party, a US
- * party) and the region of the look the visitor is in.
+ * party, a birthday, New Year's Eve, carnival, a stadium night, karaoke,
+ * Halloween, Lunar New Year) and the region of the look the visitor is in.
+ *
+ * A sound recorded for the site (`tools/suno/`, listed in `sampler.json`
+ * and served from `/v4/sampler/`) plays in place of the one made here; a
+ * sound only recorded plays once its file is in. So an occasion whose pads
+ * are not all playable yet is not offered (`bankReady`).
  */
 
 import type { SkinId } from "../skins";
+import { RECORDED } from "../sampler";
+
+export { RECORDED, SAMPLER_BASE } from "../sampler";
 
 type Play = (ctx: BaseAudioContext, out: AudioNode, t: number) => void;
 
@@ -392,7 +401,10 @@ export const SOUNDS: Record<string, Play> = {
 /** The voice the visitor recorded: the one sound not made here. */
 export const VOICE = "voice";
 
-export type BankId = "everywhere" | "region" | "wedding" | "anniversary" | "colmado" | "usparty";
+export type BankId = "everywhere" | "region" | "wedding" | "anniversary" | "colmado" | "usparty" | "birthday" | "newyear" | "carnival" | "stadium" | "karaoke" | "halloween" | "lunarnewyear";
+
+/** The occasions, in the order the booth offers them. */
+export const OCCASIONS: Exclude<BankId, "region">[] = ["everywhere", "wedding", "anniversary", "colmado", "usparty", "birthday", "newyear", "carnival", "stadium", "karaoke", "halloween", "lunarnewyear"];
 
 export const BANKS: Record<Exclude<BankId, "region">, string[]> = {
   everywhere: ["airhorn", "siren", "riser", "boom", "laser", "scratch", "clap", "crash"],
@@ -400,6 +412,13 @@ export const BANKS: Record<Exclude<BankId, "region">, string[]> = {
   anniversary: ["airhorn", "confetti", "drumroll", "crash", "riser", "champagne", "applause", "laser"],
   colmado: ["guira", "cencerro", "timbal", "bocina", "domino", "botella", "clave", "airhorn"],
   usparty: ["boom", "airhorn", "siren", "cowbell", "scratch", "hatroll", "clap", "snap"],
+  birthday: ["partyhorn", "balloonpop", "candleblow", "kazoo", "cheer", "confetti", "drumroll", "applause"],
+  newyear: ["countdown", "midnight", "fireworks", "champagne", "partyhorn", "cheer", "gong", "sparkle"],
+  carnival: ["apito", "surdo", "repinique", "cuica", "steelpan", "agogo", "cowbell", "airhorn"],
+  stadium: ["stadiumhorn", "buzzer", "organcharge", "crowdchant", "whistle", "drumroll", "clap", "boom"],
+  karaoke: ["rimshot", "ding", "wrong", "ooh", "applause", "drumroll", "kazoo", "sparkle"],
+  halloween: ["thunder", "creak", "howl", "organhit", "chains", "heartbeat", "gong", "riser"],
+  lunarnewyear: ["firecrackers", "liondrum", "chacymbal", "guzheng", "gong", "coin", "sparkle", "fireworks"],
 };
 
 /** Each region's own sounds, as the look the visitor is in. */
@@ -416,3 +435,9 @@ export const REGION_BANK: Record<SkinId, string[]> = {
 };
 
 export const bankOf = (bank: BankId, skin: SkinId): string[] => (bank === "region" ? REGION_BANK[skin] : BANKS[bank]);
+
+/** Whether a sound can play: made here, or recorded and listed. */
+export const playable = (id: string, recorded: ReadonlySet<string> = RECORDED): boolean => id in SOUNDS || recorded.has(id);
+
+/** Whether every pad of a bank can play, so the booth offers it. */
+export const bankReady = (bank: BankId, skin: SkinId, recorded: ReadonlySet<string> = RECORDED): boolean => bankOf(bank, skin).every((id) => playable(id, recorded));

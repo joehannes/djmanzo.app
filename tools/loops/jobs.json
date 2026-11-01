@@ -511,5 +511,59 @@
   "key": "Bb major",
   "duration": 40,
   "seed": 74
+ },
+ {
+  "genre": "techhouse",
+  "id": "techhouse",
+  "caption": "tech house, tight four-on-the-floor kick, shuffled hi-hats, rolling groovy bassline, percussive stabs, Ibiza terrace energy, polished professional club mastering, instrumental",
+  "bpm": 126,
+  "key": "G minor",
+  "duration": 40,
+  "seed": 75
+ },
+ {
+  "genre": "phonk",
+  "id": "phonk",
+  "caption": "drift phonk, distorted cowbell melody, heavy distorted 808 bass, punchy kick, Memphis-style hi-hats, dark and aggressive, polished professional mastering, instrumental",
+  "bpm": 130,
+  "key": "D minor",
+  "duration": 40,
+  "seed": 76
+ },
+ {
+  "genre": "samba",
+  "id": "samba",
+  "caption": "samba batucada, surdo bass drums, repinique calls, tamborim, caixa snare, ganzá shaker, apito whistle, Rio carnival energy, polished professional mastering, instrumental",
+  "bpm": 104,
+  "key": "D major",
+  "duration": 40,
+  "seed": 77
+ },
+ {
+  "genre": "kizomba",
+  "id": "kizomba",
+  "caption": "kizomba, slow sensual kick and rimshot pattern, rolling synth bass, soft warm pads, Luanda groove, polished professional mastering, instrumental",
+  "bpm": 90,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 78
+ },
+ {
+  "genre": "dangdut",
+  "id": "dangdut",
+  "caption": "dangdut koplo, kendang hand drums, suling bamboo flute riff, deep bass, organ stabs, Indonesian wedding stage energy, polished professional mastering, instrumental",
+  "bpm": 132,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 79
+ },
+ {
+  "genre": "halay",
+  "id": "halay",
+  "caption": "Turkish halay, davul drum, zurna lead in Hicaz, hand claps, stomping line-dance beat, wedding energy, polished professional mastering, instrumental",
+  "bpm": 120,
+  "key": "A minor",
+  "duration": 40,
+  "seed": 80
  }
 ]
