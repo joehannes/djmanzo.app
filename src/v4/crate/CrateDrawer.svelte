@@ -5,10 +5,12 @@
   player. The micro-screen shows the video; the list below is the crate.
 -->
 <script lang="ts">
+  import { onMount } from "svelte";
   import { crate } from "./crate.svelte";
   import { ERAS, ERA_LABELS, type Era } from "./curated";
   import { i18n } from "../i18n.svelte";
   import { skin } from "../region.svelte";
+  import { setYoutubeActive } from "../booth/booth.svelte";
 
   const s = $derived(skin());
   const labels = $derived(ERA_LABELS[i18n.lang] ?? ERA_LABELS.en);
@@ -16,49 +18,37 @@
   const filtered = $derived(crate.filtered);
   const genres = $derived(crate.availableGenres);
 
-  /** Auto-advance to next track when the current one ends. */
-  function onPlayerStateChange(event: { data: number }) {
-    // YT.PlayerState.ENDED === 0
-    if (event.data === 0) crate.next();
-  }
+  /**
+   * YouTube embed URL — rebuilt only when the playing video ID changes.
+   * Using a plain iframe avoids the YT.Player API race conditions where
+   * the DOM node gets replaced before the player object is ready.
+   */
+  const embedUrl = $derived(
+    crate.playing
+      ? `https://www.youtube.com/embed/${crate.playing}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin : "")}`
+      : ""
+  );
 
-  let player: any = null;
-
-  function initPlayer(videoId: string) {
-    const win = window as any;
-    if (!win.YT || !win.YT.Player) return;
-    if (player) {
-      player.loadVideoById(videoId);
-      return;
-    }
-    player = new win.YT.Player("crate-player", {
-      height: "100%",
-      width: "100%",
-      videoId,
-      playerVars: { autoplay: 1, modestbranding: 1, rel: 0, iv_load_policy: 3 },
-      events: { onStateChange: onPlayerStateChange },
-    });
-  }
-
+  // Mark YouTube as active source when playing, deactivate when stopped.
   $effect(() => {
-    if (!crate.playing) return;
-    // Load YT API if not present.
-    const win = window as any;
-    if (win.YT && win.YT.Player) {
-      initPlayer(crate.playing);
-    } else {
-      if (!document.getElementById("yt-api")) {
-        const tag = document.createElement("script");
-        tag.id = "yt-api";
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
+    setYoutubeActive(!!crate.playing);
+  });
+
+  // Listen for YouTube postMessage events for auto-advance.
+  onMount(() => {
+    function onMessage(e: MessageEvent) {
+      try {
+        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+        if (data?.event === "onStateChange" && data.info === 0) {
+          // Video ended — advance to next track.
+          crate.next();
+        }
+      } catch {
+        // Ignore non-JSON messages.
       }
-      const prev = win.onYouTubeIframeAPIReady;
-      win.onYouTubeIframeAPIReady = () => {
-        prev?.();
-        initPlayer(crate.playing!);
-      };
     }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
   });
 </script>
 
@@ -79,7 +69,14 @@
     <div class="top">
       <div class="player-wrap">
         {#if crate.playing}
-          <div id="crate-player"></div>
+          <iframe
+            class="yt-frame"
+            src={embedUrl}
+            title="YouTube player"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin"
+          ></iframe>
         {:else}
           <div class="player-empty">
             <span class="empty-icon">▶</span>
@@ -262,15 +259,16 @@
   .player-wrap {
     flex: 1;
     aspect-ratio: 16 / 9;
-    max-height: 200px;
+    max-height: 220px;
     background: #000;
     border-radius: 8px;
     overflow: hidden;
     position: relative;
   }
-  .player-wrap :global(#crate-player) {
+  .yt-frame {
     width: 100%;
     height: 100%;
+    border: none;
   }
   .player-empty {
     display: grid;

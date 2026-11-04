@@ -14,34 +14,50 @@
 
 <svg class="flag" viewBox="0 0 30 20" width={size} height={size} preserveAspectRatio="xMidYMid slice" aria-hidden="true" data-flag={lang}>
   {#if lang === "en"}
-    <!-- Left half: Union Jack -->
-    <clipPath id="en-left"><rect width="15" height="20" /></clipPath>
-    <g clip-path="url(#en-left)">
+    <!-- Dividing line between the two flags -->
+    <defs>
+      <clipPath id="uk-half"><rect width="15" height="20" /></clipPath>
+      <clipPath id="us-half"><rect x="15" width="15" height="20" /></clipPath>
+    </defs>
+
+    <!-- LEFT HALF: Union Jack — bold diagonals and cross, clearly readable at small sizes -->
+    <g clip-path="url(#uk-half)">
       <rect width="30" height="20" fill="#012169" />
-      <path d="M0 0 30 20M30 0 0 20" stroke="#fff" stroke-width="4" />
-      <path d="M0 0 30 20M30 0 0 20" stroke="#C8102E" stroke-width="1.4" />
-      <path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="6" />
-      <path d="M15 0v20M0 10h30" stroke="#C8102E" stroke-width="3.6" />
+      <!-- White diagonals (St Andrew + St Patrick background) -->
+      <path d="M0 0 30 20M30 0 0 20" stroke="#fff" stroke-width="5" />
+      <!-- Red diagonals (St Patrick) -->
+      <path d="M0 0 30 20M30 0 0 20" stroke="#C8102E" stroke-width="2" />
+      <!-- White cross (St George background) -->
+      <path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="7" />
+      <!-- Red cross (St George) -->
+      <path d="M15 0v20M0 10h30" stroke="#C8102E" stroke-width="4" />
     </g>
-    <!-- Right half: Stars and Stripes -->
-    <clipPath id="en-right"><rect x="15" width="15" height="20" /></clipPath>
-    <g clip-path="url(#en-right)">
+
+    <!-- RIGHT HALF: Stars and Stripes — 7 red stripes, white gaps, blue canton with visible stars -->
+    <g clip-path="url(#us-half)">
+      <!-- Red field (all 7 red stripes are this background) -->
       <rect width="30" height="20" fill="#B22234" />
+      <!-- 6 white stripes (stripes 2,4,6,8,10,12 of 13) -->
       <rect y="1.54" width="30" height="1.54" fill="#fff" />
       <rect y="4.62" width="30" height="1.54" fill="#fff" />
       <rect y="7.69" width="30" height="1.54" fill="#fff" />
       <rect y="10.77" width="30" height="1.54" fill="#fff" />
       <rect y="13.85" width="30" height="1.54" fill="#fff" />
       <rect y="16.92" width="30" height="1.54" fill="#fff" />
-      <rect width="12" height="10.77" fill="#3C3B6E" />
+      <!-- Blue canton — covers top 7 stripes worth of height -->
+      <rect x="15" width="15" height="10.77" fill="#3C3B6E" />
+      <!-- Stars: 4 rows, larger radius so they're visible at 20px icon size -->
       <g fill="#fff">
-        <circle cx="2" cy="1.8" r="0.7" /><circle cx="4.4" cy="1.8" r="0.7" /><circle cx="6.8" cy="1.8" r="0.7" /><circle cx="9.2" cy="1.8" r="0.7" />
-        <circle cx="3.2" cy="3.6" r="0.7" /><circle cx="5.6" cy="3.6" r="0.7" /><circle cx="8" cy="3.6" r="0.7" /><circle cx="10.4" cy="3.6" r="0.7" />
-        <circle cx="2" cy="5.4" r="0.7" /><circle cx="4.4" cy="5.4" r="0.7" /><circle cx="6.8" cy="5.4" r="0.7" /><circle cx="9.2" cy="5.4" r="0.7" />
-        <circle cx="3.2" cy="7.2" r="0.7" /><circle cx="5.6" cy="7.2" r="0.7" /><circle cx="8" cy="7.2" r="0.7" /><circle cx="10.4" cy="7.2" r="0.7" />
-        <circle cx="2" cy="9" r="0.7" /><circle cx="4.4" cy="9" r="0.7" /><circle cx="6.8" cy="9" r="0.7" /><circle cx="9.2" cy="9" r="0.7" />
+        <circle cx="17.5" cy="1.8" r="1" /><circle cx="20.5" cy="1.8" r="1" /><circle cx="23.5" cy="1.8" r="1" /><circle cx="26.5" cy="1.8" r="1" />
+        <circle cx="19" cy="3.9" r="1" /><circle cx="22" cy="3.9" r="1" /><circle cx="25" cy="3.9" r="1" />
+        <circle cx="17.5" cy="6" r="1" /><circle cx="20.5" cy="6" r="1" /><circle cx="23.5" cy="6" r="1" /><circle cx="26.5" cy="6" r="1" />
+        <circle cx="19" cy="8.1" r="1" /><circle cx="22" cy="8.1" r="1" /><circle cx="25" cy="8.1" r="1" />
       </g>
     </g>
+
+    <!-- Thin dividing line between the two halves -->
+    <line x1="15" y1="0" x2="15" y2="20" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" />
+
   {:else if lang === "es"}
     <rect width="30" height="20" fill="#AA151B" />
     <rect y="5" width="30" height="10" fill="#F1BF00" />
@@ -65,57 +81,23 @@
   {:else if lang === "ja"}
     <rect width="30" height="20" fill="#fff" />
     <circle cx="15" cy="10" r="6" fill="#BC002D" />
-  {:else if lang === "zh"}
-    <rect width="30" height="20" fill="#EE1C25" />
-    <path d="M5.00 2.00L5.67 4.07L7.85 4.07L6.09 5.35L6.76 7.43L5.00 6.15L3.24 7.43L3.91 5.35L2.15 4.07L4.33 4.07z" fill="#FFDE00" />
-    <path d="M10.55 1.05L10.38 1.83L11.08 2.23L10.28 2.31L10.11 3.09L9.79 2.36L9.00 2.45L9.59 1.91L9.26 1.18L9.96 1.58z" fill="#FFDE00" /><path d="M12.19 2.92L12.30 3.71L13.09 3.85L12.37 4.20L12.48 4.99L11.93 4.41L11.21 4.76L11.58 4.06L11.03 3.48L11.82 3.62z" fill="#FFDE00" /><path d="M11.81 5.92L12.18 6.62L12.97 6.48L12.42 7.06L12.79 7.76L12.07 7.41L11.52 7.99L11.63 7.20L10.91 6.85L11.70 6.71z" fill="#FFDE00" /><path d="M9.45 8.05L10.04 8.58L10.74 8.18L10.41 8.91L11.00 9.45L10.21 9.36L9.89 10.09L9.72 9.31L8.92 9.23L9.62 8.83z" fill="#FFDE00" />
-  {:else if lang === "hi"}
-    <rect width="30" height="20" fill="#fff" />
-    <rect width="30" height="6.67" fill="#FF9933" />
-    <rect y="13.33" width="30" height="6.67" fill="#138808" />
-    <circle cx="15" cy="10" r="2.6" fill="none" stroke="#000080" stroke-width="0.7" />
-    <circle cx="15" cy="10" r="0.6" fill="#000080" />
   {:else if lang === "ar"}
-    <rect width="30" height="20" fill="#0B6E4F" />
-    <text x="15" y="14.6" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" font-family="system-ui, sans-serif">ع</text>
-  {:else if lang === "id"}
     <rect width="30" height="20" fill="#fff" />
-    <rect width="30" height="10" fill="#CE1126" />
-  {:else if lang === "ko"}
-    <rect width="30" height="20" fill="#fff" />
-    <path d="M10.5 10a4.5 4.5 0 0 1 9 0z" fill="#CD2E3A" />
-    <path d="M10.5 10a4.5 4.5 0 0 0 9 0z" fill="#0047A0" />
-    <circle cx="12.75" cy="10" r="2.25" fill="#CD2E3A" />
-    <circle cx="17.25" cy="10" r="2.25" fill="#0047A0" />
-    <path d="M4 4.5 6.5 2M5 5.5 7.5 3M6 6.5 8.5 4M23.5 13.5 26 16M22.5 14.5 25 17M21.5 15.5 24 18M23.5 6.5 26 4M21.5 4.5 24 2M4 15.5 6.5 18M6 13.5 8.5 16" stroke="#000" stroke-width="0.8" />
-  {:else if lang === "vi"}
-    <rect width="30" height="20" fill="#DA251D" />
-    <path d="M15.00 5.40L16.17 8.99L19.95 8.99L16.89 11.21L18.06 14.81L15.00 12.59L11.94 14.81L13.11 11.21L10.05 8.99L13.83 8.99z" fill="#FFFF00" />
-  {:else if lang === "th"}
-    <rect width="30" height="20" fill="#A51931" />
-    <rect y="3.33" width="30" height="13.33" fill="#F4F5F8" />
-    <rect y="6.67" width="30" height="6.67" fill="#2D2A4A" />
-  {:else if lang === "tr"}
-    <rect width="30" height="20" fill="#E30A17" />
-    <circle cx="11.5" cy="10" r="5" fill="#fff" />
-    <circle cx="12.75" cy="10" r="4" fill="#E30A17" />
-    <path d="M16.00 10.00L17.52 9.51L17.52 7.91L18.46 9.20L19.98 8.71L19.04 10.00L19.98 11.29L18.46 10.80L17.52 12.09L17.52 10.49z" fill="#fff" />
+    <text x="15" y="15" text-anchor="middle" font-size="14" font-family="serif" fill="#006233">ع</text>
   {:else if lang === "sw"}
-    <rect width="30" height="20" fill="#1EB53A" />
-    <rect y="7" width="30" height="6" fill="#000" />
-    <text x="15" y="12.6" text-anchor="middle" font-size="7" font-weight="800" fill="#FCD116" font-family="system-ui, sans-serif">Sw</text>
-  {:else if lang === "he"}
     <rect width="30" height="20" fill="#fff" />
-    <rect y="2" width="30" height="2.6" fill="#0038B8" />
-    <rect y="15.4" width="30" height="2.6" fill="#0038B8" />
-    <path d="M15 6.4 18.3 12.1H11.7zM15 13.6 11.7 7.9H18.3z" fill="none" stroke="#0038B8" stroke-width="0.8" />
+    <text x="15" y="15" text-anchor="middle" font-size="14" font-family="sans-serif" fill="#00A551">S</text>
+  {:else}
+    <rect width="30" height="20" fill="#888" />
   {/if}
 </svg>
 
 <style>
   .flag {
     display: block;
+    border-radius: 3px;
+    overflow: hidden;
     flex: none;
-    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
   }
 </style>
