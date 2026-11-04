@@ -79,7 +79,7 @@
   <div class="face" bind:this={main}>
     <button class="btn primary go" onclick={() => get(best)} data-download-default={best?.key ?? ""}>
       <OsIcon os={choice.os} size={18} />
-      <span>{t("dl.for", { os: SYSTEM_NAME[choice.os] })}{#if best}<span class="kind">{short(best)}</span>{/if}</span>
+      <span>{t("dl.for", { os: SYSTEM_NAME[choice.os] })}{#if best}<span class="kind">{short(best)}</span>{/if}{#if release?.version}<span class="ver-badge mono">{release.version.replace(/^v/, "")}</span>{/if}</span>
     </button>
     <button class="btn primary caret" aria-haspopup="menu" aria-expanded={open} aria-label={t("dl.more")} onclick={() => (open = !open)} data-download-more>
       <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg>
@@ -229,5 +229,15 @@
   .ver {
     margin: 2px 4px 0;
     font-size: 12px;
+  }
+  .ver-badge {
+    margin-inline-start: 8px;
+    padding: 2px 7px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--bg) 30%, transparent);
+    font-size: 0.75em;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
   }
 </style>

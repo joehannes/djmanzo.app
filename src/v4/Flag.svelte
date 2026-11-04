@@ -1,9 +1,10 @@
 <!--
-  A language's flag, drawn small: the United Kingdom for English, Brazil for
-  Portuguese (the site speaks Brazilian Portuguese), and each language's own
-  country for the rest; Arabic and Swahili, read across many countries, a
-  letter of their own instead of one country's flag. Cropped to whatever box
-  it is put in.
+  A language's flag, drawn small: English shows the United Kingdom on the left
+  and the United States on the right — both halves of the language the site
+  speaks. Brazil for Portuguese (the site speaks Brazilian Portuguese), and
+  each language's own country for the rest; Arabic and Swahili, read across
+  many countries, a letter of their own instead of one country's flag. Cropped
+  to whatever box it is put in.
 -->
 <script lang="ts">
   import type { Lang } from "./i18n.svelte";
@@ -13,11 +14,34 @@
 
 <svg class="flag" viewBox="0 0 30 20" width={size} height={size} preserveAspectRatio="xMidYMid slice" aria-hidden="true" data-flag={lang}>
   {#if lang === "en"}
-    <rect width="30" height="20" fill="#012169" />
-    <path d="M0 0 30 20M30 0 0 20" stroke="#fff" stroke-width="4" />
-    <path d="M0 0 30 20M30 0 0 20" stroke="#C8102E" stroke-width="1.4" />
-    <path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="6" />
-    <path d="M15 0v20M0 10h30" stroke="#C8102E" stroke-width="3.6" />
+    <!-- Left half: Union Jack -->
+    <clipPath id="en-left"><rect width="15" height="20" /></clipPath>
+    <g clip-path="url(#en-left)">
+      <rect width="30" height="20" fill="#012169" />
+      <path d="M0 0 30 20M30 0 0 20" stroke="#fff" stroke-width="4" />
+      <path d="M0 0 30 20M30 0 0 20" stroke="#C8102E" stroke-width="1.4" />
+      <path d="M15 0v20M0 10h30" stroke="#fff" stroke-width="6" />
+      <path d="M15 0v20M0 10h30" stroke="#C8102E" stroke-width="3.6" />
+    </g>
+    <!-- Right half: Stars and Stripes -->
+    <clipPath id="en-right"><rect x="15" width="15" height="20" /></clipPath>
+    <g clip-path="url(#en-right)">
+      <rect width="30" height="20" fill="#B22234" />
+      <rect y="1.54" width="30" height="1.54" fill="#fff" />
+      <rect y="4.62" width="30" height="1.54" fill="#fff" />
+      <rect y="7.69" width="30" height="1.54" fill="#fff" />
+      <rect y="10.77" width="30" height="1.54" fill="#fff" />
+      <rect y="13.85" width="30" height="1.54" fill="#fff" />
+      <rect y="16.92" width="30" height="1.54" fill="#fff" />
+      <rect width="12" height="10.77" fill="#3C3B6E" />
+      <g fill="#fff">
+        <circle cx="2" cy="1.8" r="0.7" /><circle cx="4.4" cy="1.8" r="0.7" /><circle cx="6.8" cy="1.8" r="0.7" /><circle cx="9.2" cy="1.8" r="0.7" />
+        <circle cx="3.2" cy="3.6" r="0.7" /><circle cx="5.6" cy="3.6" r="0.7" /><circle cx="8" cy="3.6" r="0.7" /><circle cx="10.4" cy="3.6" r="0.7" />
+        <circle cx="2" cy="5.4" r="0.7" /><circle cx="4.4" cy="5.4" r="0.7" /><circle cx="6.8" cy="5.4" r="0.7" /><circle cx="9.2" cy="5.4" r="0.7" />
+        <circle cx="3.2" cy="7.2" r="0.7" /><circle cx="5.6" cy="7.2" r="0.7" /><circle cx="8" cy="7.2" r="0.7" /><circle cx="10.4" cy="7.2" r="0.7" />
+        <circle cx="2" cy="9" r="0.7" /><circle cx="4.4" cy="9" r="0.7" /><circle cx="6.8" cy="9" r="0.7" /><circle cx="9.2" cy="9" r="0.7" />
+      </g>
+    </g>
   {:else if lang === "es"}
     <rect width="30" height="20" fill="#AA151B" />
     <rect y="5" width="30" height="10" fill="#F1BF00" />

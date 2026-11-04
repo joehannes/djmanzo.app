@@ -24,6 +24,7 @@
   import Videos from "../sections/Videos.svelte";
   import ScenePractice from "../sections/ScenePractice.svelte";
   import WaveSeparator from "../sections/WaveSeparator.svelte";
+  import CrateDrawer from "../crate/CrateDrawer.svelte";
 
   let root: HTMLElement;
   onMount(() => animate(root));
@@ -97,6 +98,7 @@
   <Faq />
   <RoadAhead compact />
   <Closing />
+  <CrateDrawer />
 </div>
 
 <style>
