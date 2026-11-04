@@ -34,7 +34,7 @@ import { STAGES, STAGE_BY_ID } from "../src/stages/script";
 import { SHOTS } from "../src/signal/shots";
 import type { AppEnv } from "./env";
 import { HttpError, brake, clientIp, sha256, text } from "./http";
-import { OverBudget, anthropic, modelFor, provider, workersJson } from "./model";
+import { OverBudget, anthropic, modelFor, provider, providerAsync, workersJson } from "./model";
 import { where } from "./sense";
 
 export type { Action, GuideAnswer, GuideContext, Reply, Turn };
@@ -263,7 +263,7 @@ async function workers(env: AppEnv, system: string, msgs: Anthropic.MessageParam
 }
 
 export async function guide(env: AppEnv, req: Request, input: { turns?: Turn[]; context?: GuideContext }, speak?: Speak): Promise<GuideAnswer> {
-  const who = provider(env);
+  const who = await providerAsync(env);
   if (who === "off") return { fallback: "off" };
   speak ??= who === "claude" ? claude : workers;
   const turns = Array.isArray(input.turns) ? input.turns.filter((t) => t && (t.from === "visitor" || t.from === "guide")) : [];

@@ -549,6 +549,31 @@
     await loadBlog();
   }
 
+  // --- AI Provider ----------------------------------------------------------------
+  let aiProvider = $state<string>("off");
+  let aiHasKey = $state(false);
+  let aiSaving = $state(false);
+  async function loadAi() {
+    try {
+      const r = await api<{ provider: string; hasKey: boolean }>("/api/admin/ai");
+      aiProvider = r.provider;
+      aiHasKey = r.hasKey;
+    } catch (e) {
+      error = (e as Error).message;
+    }
+  }
+  async function saveAi(p: string) {
+    aiSaving = true;
+    try {
+      const r = await api<{ provider: string }>("/api/admin/ai", { method: "PUT", json: { provider: p } });
+      aiProvider = r.provider;
+    } catch (e) {
+      error = (e as Error).message;
+    } finally {
+      aiSaving = false;
+    }
+  }
+
   // --- Videos ---------------------------------------------------------------------
   type Video = { id: string; title: string; stage?: string | null; genre?: string | null };
   let videos = $state<Video[]>([]);
@@ -590,6 +615,7 @@
     { id: "orders", icon: "🧾", label: "Orders", description: "Sales and transfers" },
     { id: "blog", icon: "📻", label: "Blog desk", description: "Drafts and posts" },
     { id: "videos", icon: "🎬", label: "Videos", description: "Plaza programming" },
+    { id: "ai", icon: "🤖", label: "AI Assistant", description: "Claude / Workers AI" },
   ] as const;
   type BackstagePanel = (typeof BACKSTAGE_PANELS)[number]["id"];
   let backstagePanel = $state<BackstagePanel>("insights");
@@ -600,7 +626,7 @@
       insights: loadInsights, people: loadPeople, promos: loadPromos, vouchers: loadVouchers,
       signin: loadSignin, payments: loadPayments, password: loadPassword, wishes: loadWishes,
       pending: loadPending, outboard: loadOutboard, crew: loadCrew, orders: loadOrders,
-      blog: loadBlog, videos: loadVideos,
+      blog: loadBlog, videos: loadVideos, ai: loadAi,
     };
     void load[backstagePanel]?.();
   });
@@ -1199,6 +1225,30 @@
       </select>
       <button class="btn">Add</button>
     </form>
+  </details>
+
+  <details open class="case" class:active={backstagePanel === "ai"} data-ai-panel>
+    <summary>🤖 AI Assistant</summary>
+    <p class="small muted">Choose which AI powers the site's assistant and blog drafts. Claude requires an API key set as a Worker secret (<code>ANTHROPIC_API_KEY</code>). Workers AI uses Cloudflare's free daily allowance. Off disables AI features.</p>
+    <div class="inline" role="radiogroup" aria-label="AI provider">
+      {#each [{ id: "claude", label: "Claude (Anthropic)", note: "Best quality, costs tokens" }, { id: "workers-ai", label: "Workers AI", note: "Free tier, limited models" }, { id: "off", label: "Off", note: "Canned answers only" }] as opt (opt.id)}
+        <button
+          class="chip"
+          aria-pressed={aiProvider === opt.id}
+          onclick={() => saveAi(opt.id)}
+          disabled={aiSaving}
+          data-ai-provider={opt.id}
+        >
+          <b>{opt.label}</b>
+          <small>{opt.note}</small>
+        </button>
+      {/each}
+    </div>
+    <p class="small muted">
+      Current: <b>{aiProvider}</b>
+      {#if aiProvider === "claude"} · API key: {aiHasKey ? "✅ set" : "❌ missing — add ANTHROPIC_API_KEY secret"}{/if}
+      {#if aiSaving} · Saving…{/if}
+    </p>
   </details>
 {/if}
 </div>

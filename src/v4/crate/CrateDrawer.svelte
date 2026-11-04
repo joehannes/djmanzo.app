@@ -1,54 +1,38 @@
 <!--
-  The YouTube crate: a bottom-drawer playlist beside the booth. A DJ opens
-  it, picks genres from their region, filters by era, searches for tracks,
-  and builds a queue of real YouTube videos to play through an embedded
-  player. The micro-screen shows the video; the list below is the crate.
+  The YouTube crate: a pure playlist and search panel. The video player lives
+  in the booth's LCD area (see Booth.svelte); this drawer is exclusively for
+  browsing curated tracks by genre/era, searching, and building a queue.
+  Local deck sounds are replaced by YouTube music when a track is playing.
 -->
 <script lang="ts">
-  import { onMount } from "svelte";
   import { crate } from "./crate.svelte";
-  import { ERAS, ERA_LABELS, type Era } from "./curated";
+  import { ERAS, ERA_LABELS } from "./curated";
   import { i18n } from "../i18n.svelte";
   import { skin } from "../region.svelte";
   import { setYoutubeActive } from "../booth/booth.svelte";
 
-  const s = $derived(skin());
   const labels = $derived(ERA_LABELS[i18n.lang] ?? ERA_LABELS.en);
   const caps = (t: string) => t.toLocaleUpperCase(i18n.lang);
   const filtered = $derived(crate.filtered);
   const genres = $derived(crate.availableGenres);
-
-  /**
-   * YouTube embed URL — rebuilt only when the playing video ID changes.
-   * Using a plain iframe avoids the YT.Player API race conditions where
-   * the DOM node gets replaced before the player object is ready.
-   */
-  const embedUrl = $derived(
-    crate.playing
-      ? `https://www.youtube.com/embed/${crate.playing}?autoplay=1&modestbranding=1&rel=0&iv_load_policy=3&enablejsapi=1&origin=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin : "")}`
-      : ""
-  );
 
   // Mark YouTube as active source when playing, deactivate when stopped.
   $effect(() => {
     setYoutubeActive(!!crate.playing);
   });
 
-  // Listen for YouTube postMessage events for auto-advance.
-  onMount(() => {
-    function onMessage(e: MessageEvent) {
-      try {
-        const data = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
-        if (data?.event === "onStateChange" && data.info === 0) {
-          // Video ended — advance to next track.
-          crate.next();
-        }
-      } catch {
-        // Ignore non-JSON messages.
-      }
+  // Scroll behaviour: save position when crate opens, scroll to booth;
+  // restore saved position when crate closes.
+  let savedScrollY = $state<number | null>(null);
+  $effect(() => {
+    if (crate.open) {
+      savedScrollY = window.scrollY;
+      const booth = document.getElementById("booth-console");
+      if (booth) booth.scrollIntoView({ behavior: "smooth", block: "center" });
+    } else if (savedScrollY !== null) {
+      requestAnimationFrame(() => window.scrollTo({ top: savedScrollY!, behavior: "smooth" }));
+      savedScrollY = null;
     }
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
   });
 </script>
 
@@ -63,35 +47,23 @@
     <span class="chevron" class:up={crate.open}>▲</span>
   </button>
 
-  <!-- Drawer body -->
+  <!-- Drawer body: playlist and search only — video is in the booth -->
   <div class="drawer">
-    <!-- Top row: player + controls -->
-    <div class="top">
-      <div class="player-wrap">
-        {#if crate.playing}
-          <iframe
-            class="yt-frame"
-            src={embedUrl}
-            title="YouTube player"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin"
-          ></iframe>
-        {:else}
-          <div class="player-empty">
-            <span class="empty-icon">▶</span>
-            <span class="mono">{caps("Pick a track")}</span>
-          </div>
-        {/if}
+    <!-- Now playing indicator -->
+    {#if crate.playing}
+      <div class="now-playing">
+        <span class="eq"><span></span><span></span><span></span></span>
+        <span class="np-title">{crate.currentTrack?.title ?? ""}</span>
+        <span class="np-artist dim">{crate.currentTrack?.artist ?? ""}</span>
+        <div class="transport">
+          <button class="ctrl sm" onclick={() => crate.prev()} title="Previous">⏮</button>
+          <button class="ctrl sm" onclick={() => crate.stop()} title="Stop">⏹</button>
+          <button class="ctrl sm" onclick={() => crate.next()} title="Next">⏭</button>
+        </div>
       </div>
-      <div class="controls">
-        <button class="ctrl" onclick={() => crate.prev()} title="Previous">⏮</button>
-        <button class="ctrl" onclick={() => crate.stop()} title="Stop">⏹</button>
-        <button class="ctrl" onclick={() => crate.next()} title="Next">⏭</button>
-      </div>
-    </div>
+    {/if}
 
-    <!-- Search bar -->
+    <!-- Search bar with Christian music toggle -->
     <div class="search-row">
       <input
         type="search"
@@ -99,6 +71,10 @@
         placeholder="Search tracks…"
         bind:value={crate.query}
       />
+      <label class="christian-toggle mono" title="Prefer Christian/gospel music in results">
+        <input type="checkbox" bind:checked={crate.preferChristian} />
+        <span class="toggle-label">✝ Christian</span>
+      </label>
     </div>
 
     <!-- Genre chips -->
@@ -243,63 +219,62 @@
     border-top: 1px solid var(--line);
     transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
+  .christian-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    margin-top: 6px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--dim);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    flex: none;
+  }
+  .christian-toggle:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); color: var(--text); }
+  .christian-toggle input { display: none; }
+  .christian-toggle input:checked + .toggle-label { color: var(--accent); }
+  .christian-toggle:has(input:checked) {
+    background: color-mix(in srgb, var(--accent) 16%, transparent);
+    border-color: var(--accent);
+  }
+  .toggle-label { pointer-events: none; }
+
   .crate.open .drawer {
-    max-height: 70vh;
+    max-height: 60vh;
     overflow-y: auto;
   }
 
-  /* Top: player + transport */
-  .top {
+  /* Now playing bar */
+  .now-playing {
     display: flex;
-    gap: 12px;
-    padding: 16px var(--gutter);
-    align-items: stretch;
+    align-items: center;
+    gap: 10px;
+    padding: 10px var(--gutter);
     border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--accent) 6%, var(--surface));
   }
-  .player-wrap {
-    flex: 1;
-    aspect-ratio: 16 / 9;
-    max-height: 220px;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-  }
-  .yt-frame {
-    width: 100%;
-    height: 100%;
-    border: none;
-  }
-  .player-empty {
-    display: grid;
-    place-items: center;
-    gap: 8px;
-    height: 100%;
-    color: var(--dim);
-    font-size: 13px;
-  }
-  .empty-icon { font-size: 28px; opacity: 0.4; }
-  .controls {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 6px;
-  }
-  .ctrl {
-    width: 40px;
-    height: 40px;
+  .np-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .np-artist { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .transport { display: flex; gap: 4px; margin-left: auto; flex: none; }
+  .ctrl.sm {
+    width: 30px;
+    height: 30px;
     border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--surface);
     color: var(--text);
-    font-size: 16px;
+    font-size: 13px;
     cursor: pointer;
+    display: grid;
+    place-items: center;
     transition: background-color 0.15s, border-color 0.15s;
   }
-  .ctrl:hover {
-    background: var(--raised);
-    border-color: var(--accent);
-  }
+  .ctrl.sm:hover { background: var(--raised); border-color: var(--accent); }
 
   /* Search */
   .search-row { padding: 10px var(--gutter); }
@@ -456,6 +431,7 @@
     align-items: flex-end;
     gap: 2px;
     height: 14px;
+    flex: none;
   }
   .eq span {
     width: 3px;
@@ -470,6 +446,62 @@
     0% { height: 30%; }
     100% { height: 100%; }
   }
+  /* Mobile: compact layout for small viewports */
+  @media (max-width: 760px) {
+    .tab {
+      padding: 6px 14px 5px;
+      gap: 6px;
+    }
+    .tab-label { font-size: 10px; }
+    .badge { font-size: 9px; padding: 1px 5px; }
+    .crate.open .drawer { max-height: 55vh; }
+    .now-playing {
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px var(--gutter);
+    }
+    .np-title { font-size: 12px; }
+    .np-artist { font-size: 10px; }
+    .transport { gap: 3px; }
+    .ctrl.sm { width: 26px; height: 26px; font-size: 11px; }
+    .search-row { padding: 8px var(--gutter); }
+    .search { padding: 8px 10px; font-size: 13px; }
+    .filters { padding: 2px var(--gutter) 8px; gap: 6px; }
+    .chip { padding: 4px 9px; font-size: 11px; gap: 4px; }
+    .chip.era { font-size: 10px; }
+    .lists { grid-template-columns: 1fr; }
+    .pane { max-height: 220px; padding: 10px var(--gutter); }
+    .pane-label { font-size: 9px; margin-bottom: 6px; }
+    .track { padding: 6px 8px; gap: 8px; }
+    .play-btn { width: 26px; height: 26px; font-size: 10px; }
+    .title { font-size: 12px; }
+    .artist { font-size: 10px; }
+    .era-tag { font-size: 9px; }
+    .remove-btn { width: 20px; height: 20px; font-size: 10px; }
+    .empty-msg { font-size: 12px; padding: 14px 0; }
+    .eq { height: 12px; }
+    .eq span { width: 2px; }
+  }
+
+  /* Extra-small phones */
+  @media (max-width: 400px) {
+    .tab { padding: 5px 10px 4px; gap: 4px; }
+    .tab-icon { font-size: 14px; }
+    .tab-label { font-size: 9px; letter-spacing: 0.08em; }
+    .crate.open .drawer { max-height: 50vh; }
+    .now-playing { padding: 6px var(--gutter); }
+    .np-title { font-size: 11px; }
+    .np-artist { font-size: 9px; }
+    .ctrl.sm { width: 24px; height: 24px; font-size: 10px; border-radius: 4px; }
+    .search { padding: 7px 8px; font-size: 12px; border-radius: 6px; }
+    .chip { padding: 3px 7px; font-size: 10px; }
+    .pane { max-height: 180px; padding: 8px var(--gutter); }
+    .track { padding: 5px 6px; gap: 6px; }
+    .play-btn { width: 24px; height: 24px; font-size: 9px; }
+    .title { font-size: 11px; }
+    .artist { font-size: 9px; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .eq span { animation: none; height: 70%; }
     .drawer { transition: none; }

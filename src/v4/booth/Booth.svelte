@@ -16,12 +16,15 @@
   import { i18n } from "../i18n.svelte";
   import { BOOTH } from "../i18n/booth";
   import { boothSkin } from "./booth-skins";
+  import { crate } from "../crate/crate.svelte";
   import { HOME } from "../i18n/home";
   import { bankOf, bankReady, OCCASIONS, VOICE, type BankId } from "./sounds";
   import { booth, turn, centre, press, hush, buildAndDrop, record, play, fold, bend, effect as beatEffect, preload, FX_KINDS, type FxKind } from "./booth.svelte";
   import Knob from "./Knob.svelte";
   import Fader from "./Fader.svelte";
   import WaveformDisplay from "./WaveformDisplay.svelte";
+  import ShaderWaveform from "./ShaderWaveform.svelte";
+  import YoutubePlayer from "./YoutubePlayer.svelte";
 
   const w = $derived(BOOTH[i18n.lang]);
   /** The current skin's booth personality: shape, texture, knob style, LCD font, shadow. */
@@ -141,7 +144,9 @@
   }
 
   const ensurePlaying = () => {
-    if (!deck.playing) playDeck();
+    // Don't auto-start local deck loop when YouTube crate is driving playback.
+    // YouTube is now the primary audio source; local loops are secondary.
+    if (!deck.playing && !booth.youtubeActive) playDeck();
   };
   const nextFx = (step: number) => beatEffect({ kind: FX_KINDS[(FX_KINDS.indexOf(booth.fx.kind) + step + FX_KINDS.length) % FX_KINDS.length] });
 </script>
@@ -166,6 +171,9 @@
   aria-label={w.open.replace(/^\S+\s/, "")}
 >
   <p class="lead small">{w.lead}</p>
+
+  <!-- YouTube player bar: top-right of booth when crate is playing -->
+  <YoutubePlayer />
 
   <div class="console">
     <!-- The turntable -->
@@ -211,7 +219,7 @@
       <div class="beats" aria-hidden="true">
         {#each [0, 1, 2, 3] as b (b)}<span class:on={beat === b} class:one={b === 0}></span>{/each}
       </div>
-      <WaveformDisplay />
+      <ShaderWaveform />
       <div class="moves" role="group">
         <button class="hw move" onclick={() => (deck.playing ? brake() : ensurePlaying())} disabled={deck.source !== "loop" && deck.playing} data-move="brake"><i class="led"></i>{w.moves.brake}</button>
         <button class="hw move" onclick={() => (deck.playing ? rewind() : ensurePlaying())} disabled={deck.source !== "loop" && deck.playing} data-move="rewind"><i class="led"></i>{w.moves.rewind}</button>
@@ -608,6 +616,43 @@
   .beats span.one.on {
     background: var(--accent);
     box-shadow: 0 0 12px var(--accent);
+  }
+
+  /* --- YouTube embed in beatfx LCD area --- */
+  .yt-lcd {
+    flex: 1;
+    aspect-ratio: 16 / 9;
+    max-height: 140px;
+    background: #000;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .yt-embed {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+  .yt-info {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    padding: 4px 0 0;
+    min-width: 0;
+  }
+  .yt-title {
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--lcd-ink, var(--text));
+  }
+  .yt-artist {
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* --- Buttons of rubber, with their light --- */
@@ -1056,15 +1101,207 @@
     }
   }
   @media (max-width: 760px) {
+    .booth {
+      padding: 10px 8px 8px;
+      gap: 8px;
+    }
     .console {
       grid-template-columns: 1fr;
       padding: 6px;
+      gap: 8px;
     }
+    /* Turntable: smaller platter, tighter layout */
+    .tt {
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+    .plinth {
+      width: min(100%, 180px);
+      padding: 4px 20px 4px 0;
+    }
+    .arm {
+      width: 36px;
+    }
+    .pitch {
+      gap: 4px;
+    }
+    .print {
+      font-size: 8px;
+      letter-spacing: 0.1em;
+    }
+    .lcd {
+      font-size: 11px;
+      padding: 3px 6px;
+    }
+    .tiny {
+      font-size: 9px;
+    }
+    /* Mixer: stack EQ above channels horizontally */
+    .mixer {
+      grid-template-columns: 1fr;
+      grid-template-areas: "eq" "ch" "fx" "centre";
+      gap: 8px;
+    }
+    .eq {
+      grid-template-columns: repeat(4, 1fr);
+      border-inline-end: none;
+      border-bottom: 1px solid var(--hw-edge);
+      padding-inline-end: 0;
+      padding-bottom: 8px;
+      gap: 6px;
+    }
+    .channels {
+      gap: 4px;
+    }
+    .ch {
+      gap: 6px;
+    }
+    .kill {
+      font-size: 9px;
+      padding: 4px 5px;
+    }
+    .beatfx {
+      grid-template-columns: 1fr auto;
+      grid-template-areas: "name name" "lcd lcd" "depth on";
+      gap: 6px;
+      padding-top: 8px;
+    }
+    .fxlcd {
+      font-size: 11px;
+    }
+    .fxon {
+      width: 36px;
+      height: 36px;
+      font-size: 10px;
+    }
+    .centre {
+      font-size: 10px;
+      padding: 5px 8px;
+    }
+    /* YouTube embed in beatfx: responsive on mobile */
+    .yt-lcd {
+      max-height: 120px;
+    }
+    .yt-info {
+      flex-direction: column;
+      gap: 2px;
+    }
+    .yt-title {
+      font-size: 10px;
+    }
+    .yt-artist {
+      font-size: 9px;
+    }
+    /* Sampler: compact controls */
+    .sampler-control {
+      padding: 8px;
+      gap: 6px;
+    }
+    .sampler-label {
+      font-size: 9px;
+      gap: 5px;
+    }
+    .sampler-label small {
+      font-size: 8px;
+    }
+    .tab, .mode, .rate {
+      font-size: 10px;
+      padding: 5px 7px;
+    }
+    .stop {
+      font-size: 10px;
+      padding: 5px 7px;
+    }
+    .voice {
+      gap: 6px 8px;
+    }
+    .rec {
+      width: 32px;
+      height: 32px;
+    }
+    .rec .dot {
+      width: 12px;
+      height: 12px;
+    }
+    .small {
+      font-size: 11px;
+    }
+    /* Pads: 4 columns, smaller */
     .pads {
       grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      padding: 6px;
+    }
+    .pad {
+      font-size: 10px;
+      padding: 4px;
+      border-radius: 7px;
     }
     .moves {
       grid-template-columns: repeat(2, 1fr);
+      gap: 5px;
+    }
+    .move {
+      font-size: 10px;
+      padding: 8px 4px;
+    }
+    .beats span {
+      width: 18px;
+      height: 4px;
+    }
+    /* Waveform: shorter on mobile */
+    :global(.waveform-wrap) {
+      padding: 4px 0;
+    }
+    :global(.waveform) {
+      height: 48px;
+    }
+    :global(.wc-btn) {
+      font-size: 9px;
+      padding: 2px 6px;
+    }
+    :global(.wc-label) {
+      font-size: 9px;
+      min-width: 18px;
+    }
+  }
+
+  /* Extra-small phones: further reductions */
+  @media (max-width: 400px) {
+    .booth {
+      padding: 6px 4px 4px;
+    }
+    .console {
+      padding: 4px;
+    }
+    .plinth {
+      width: min(100%, 140px);
+      padding: 2px 14px 2px 0;
+    }
+    .arm {
+      width: 28px;
+    }
+    .eq {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    .pads {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 4px;
+    }
+    .pad {
+      font-size: 9px;
+      padding: 3px;
+      border-radius: 6px;
+    }
+    .yt-lcd {
+      max-height: 90px;
+    }
+    .fxon {
+      width: 30px;
+      height: 30px;
+      font-size: 9px;
     }
   }
   @media (prefers-reduced-motion: reduce) {

@@ -32,6 +32,8 @@ class CrateState {
   queue = $state<QueueItem[]>([]);
   /** Index in queue currently playing, -1 if none. */
   queueIndex = $state(-1);
+  /** Prefer Christian/gospel music in search results (on by default). */
+  preferChristian = $state(true);
 
   /** Toggle the drawer open/closed. */
   toggle() {
@@ -133,7 +135,25 @@ class CrateState {
       );
     }
 
+    // Christian music preference: boost/prioritize christian/gospel tracks when enabled.
+    // When on, christian tracks sort first; when off, they sort last but still appear.
+    if (this.preferChristian) {
+      tracks.sort((a, b) => {
+        const aChris = a.genres.includes("christian") || a.genres.includes("gospel");
+        const bChris = b.genres.includes("christian") || b.genres.includes("gospel");
+        if (aChris && !bChris) return -1;
+        if (!aChris && bChris) return 1;
+        return 0;
+      });
+    }
+
     return tracks;
+  }
+
+  /** The currently playing track object, or null. */
+  get currentTrack(): CrateTrack | null {
+    if (!this.playing) return null;
+    return this.queue.find((q) => q.id === this.playing) ?? CURATED.find((t) => t.id === this.playing) ?? null;
   }
 
   /** Available genres for the current skin, as display-ready objects. */

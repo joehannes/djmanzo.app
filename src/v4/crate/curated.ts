@@ -102,6 +102,23 @@ export const CURATED: CrateTrack[] = [
   { id: "b5h9kWpOaHM", title: "Metamorphosis", artist: "Interworld", era: "current", genres: ["phonk"] },
   // Electro Swing
   { id: "lYBUbBu4W08", title: "All Night", artist: "Parov Stelar", era: "10s", genres: ["electroswing"] },
+  // Christian / Gospel / Worship
+  { id: "WRbG67MfKjg", title: "Oceans (Where Feet May Fail)", artist: "Hillsong United", era: "10s", genres: ["christian", "worship"] },
+  { id: "EiL_yBqPvJw", title: "What A Beautiful Name", artist: "Hillsong Worship", era: "current", genres: ["christian", "worship"] },
+  { id: "dQVEjNnGcRQ", title: "Reckless Love", artist: "Cory Asbury", era: "current", genres: ["christian", "worship"] },
+  { id: "Zbnr3oGBXUk", title: "Good Good Father", artist: "Chris Tomlin", era: "10s", genres: ["christian", "worship"] },
+  { id: "4wrS9tr2Uas", title: "10,000 Reasons (Bless the Lord)", artist: "Matt Redman", era: "10s", genres: ["christian", "worship"] },
+  { id: "DkMzOFAMnVg", title: "Amazing Grace (My Chains Are Gone)", artist: "Chris Tomlin", era: "00s", genres: ["christian", "worship"] },
+  { id: "hFSPHkfCj5M", title: "How Great Is Our God", artist: "Chris Tomlin", era: "00s", genres: ["christian", "worship"] },
+  { id: "Jx6y3VKjP2I", title: "Mighty to Save", artist: "Hillsong Worship", era: "00s", genres: ["christian", "worship"] },
+  { id: "aX2OXDaJMpg", title: "This Is Amazing Grace", artist: "Phil Wickham", era: "10s", genres: ["christian", "worship"] },
+  { id: "GQp6bEfYdIo", title: "Great Are You Lord", artist: "All Sons & Daughters", era: "10s", genres: ["christian", "worship"] },
+  { id: "mNbAFj1IJUs", title: "King of Kings", artist: "Hillsong Worship", era: "current", genres: ["christian", "worship"] },
+  { id: "K4hXzEFs-CA", title: "Way Maker", artist: "Sinach", era: "current", genres: ["christian", "gospel", "worship"] },
+  { id: "PdkL9xsM7A0", title: "Yes I Will", artist: "Vertical Worship", era: "current", genres: ["christian", "worship"] },
+  { id: "X5RpDfnyZuE", title: "Break Every Chain", artist: "Tasha Cobbs Leonard", era: "10s", genres: ["christian", "gospel"] },
+  { id: "7V-eYMTfbnk", title: "Total Praise", artist: "Richard Smallwood", era: "evergreen", genres: ["christian", "gospel"] },
+  { id: "kYtPU18Jq-o", title: "Alabaster Heart", artist: "David Crowder", era: "current", genres: ["christian", "worship"] },
 ];
 
 export const ERAS: Era[] = ["80s", "90s", "00s", "10s", "current", "evergreen"];

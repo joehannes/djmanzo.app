@@ -26,7 +26,22 @@ import { fail } from "./http";
 
 export type Provider = "claude" | "workers-ai" | "off";
 
-/** Who speaks: Claude only when asked for and keyed, Workers AI when bound, else nobody. */
+/** Who speaks: Claude only when asked for and keyed, Workers AI when bound, else nobody.
+ *  Reads from KV first (set via admin panel), falls back to env var. */
+export async function providerAsync(env: AppEnv): Promise<Provider> {
+  try {
+    const kv = await env.KV.get("config:ai_provider");
+    if (kv) {
+      const p = kv.trim().toLowerCase();
+      if (p === "off") return "off";
+      if (p === "claude" && env.ANTHROPIC_API_KEY) return "claude";
+      if (p === "workers-ai" && env.AI) return "workers-ai";
+    }
+  } catch { /* KV unavailable, fall through to env */ }
+  return provider(env);
+}
+
+/** Synchronous fallback — use when async is not available. */
 export function provider(env: AppEnv): Provider {
   const asked = env.AI_PROVIDER?.trim();
   if (asked === "off") return "off";

@@ -622,6 +622,22 @@ route("POST", "/api/admin/payments/apple-pay", async (c) => {
   await needAdmin(c);
   return json(await payments.registerDomain(await payments.withPayments(c.env), c.url.origin));
 });
+// --- AI Provider configuration -------------------------------------------------
+route("GET", "/api/admin/ai", async (c) => {
+  await needAdmin(c);
+  const provider = model.provider(c.env);
+  const hasKey = !!c.env.ANTHROPIC_API_KEY;
+  return json({ provider, hasKey });
+});
+route("PUT", "/api/admin/ai", async (c) => {
+  await needAdmin(c);
+  const b = await body<{ provider?: string }>(c.req);
+  const p = String(b.provider ?? "off").toLowerCase();
+  if (!["claude", "workers-ai", "off"].includes(p)) fail(400, "provider must be claude, workers-ai or off");
+  // Store in KV so it persists across deploys without env var changes.
+  await c.env.KV.put("config:ai_provider", p);
+  return json({ provider: p });
+});
 route("GET", "/api/admin/password", async (c) => {
   await needAdmin(c);
   return json(await auth.adminPasswordSet(c.env));

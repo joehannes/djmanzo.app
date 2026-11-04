@@ -248,7 +248,7 @@
   {/if}
   <div class="inner wrap">
     <div class="wing" bind:this={wingEl}>
-      <a class="brand" href={href("home")} aria-label={t("nav.home")}>
+      <a class="brand" href={href("home")} aria-label={t("nav.home")} onclick={(e) => { e.preventDefault(); navigate("/"); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
         <svg viewBox="0 0 32 32" width="26" height="26" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="none" stroke="currentColor" stroke-width="2" /><circle cx="16" cy="16" r="9" fill="none" stroke="var(--accent)" stroke-width="2" /><circle cx="16" cy="16" r="2.5" fill="currentColor" /></svg>
         <b>djmanzo</b><span class="beta">beta</span>
       </a>

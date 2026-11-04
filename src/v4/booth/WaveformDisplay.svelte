@@ -16,6 +16,7 @@
   let container: HTMLDivElement;
   let ws: InstanceType<typeof WaveSurfer> | null = null;
   let regions: InstanceType<typeof RegionsPlugin> | null = null;
+  let audioLoaded = $state(false);
 
   const s = $derived(skin());
 
@@ -23,9 +24,12 @@
   function loadAudio(url?: string) {
     if (!ws) return;
     if (url) {
+      audioLoaded = false;
       ws.load(url);
+      ws.once("ready", () => { audioLoaded = true; });
     } else {
-      // YouTube mode: show a placeholder waveform that responds to crate state.
+      // YouTube mode: no waveform audio — just visual placeholder.
+      audioLoaded = false;
       ws.setOptions({ height: 64 });
     }
   }
@@ -84,16 +88,16 @@
       plugins: [regions, timeline, zoom],
     });
 
-    // Click to seek.
-    ws.on("interaction", () => ws?.play());
+    // Click to seek — only when audio is loaded.
+    ws.on("interaction", () => { if (audioLoaded) try { ws?.play(); } catch {} });
 
-    // Region click: jump to hot cue.
+    // Region click: jump to hot cue — guard against no audio.
     regions.on("region-clicked", (region: { id: string }, e: MouseEvent) => {
       e.stopPropagation();
-      if (region.id.startsWith("cue-")) {
+      if (region.id.startsWith("cue-") && audioLoaded) {
         const id = parseInt(region.id.replace("cue-", ""));
         const time = booth.hotCues.find((c) => c.id === id)?.time;
-        if (time !== undefined) ws?.seekTo(time / (ws.getDuration() || 1));
+        if (time !== undefined) try { ws?.seekTo(time / (ws.getDuration() || 1)); } catch {}
       }
     });
 
@@ -107,24 +111,30 @@
 
     // Double-click on waveform to set a hot cue at that position.
     ws.on("dblclick", () => {
-      const time = ws?.getCurrentTime() ?? 0;
-      setHotCue(time);
-      syncCues();
+      if (!audioLoaded) return;
+      try {
+        const time = ws?.getCurrentTime() ?? 0;
+        setHotCue(time);
+        syncCues();
+      } catch {}
     });
 
     // Right-click to set loop in-point.
     container.addEventListener("contextmenu", (e) => {
       e.preventDefault();
+      if (!audioLoaded) return;
       const rect = container.getBoundingClientRect();
       const x = e.clientX - rect.left;
-      const duration = ws?.getDuration() || 1;
-      const time = (x / rect.width) * duration;
-      if (e.shiftKey) {
-        setLoopOut(time);
-      } else {
-        setLoopIn(time);
-      }
-      syncLoop();
+      try {
+        const duration = ws?.getDuration() || 1;
+        const time = (x / rect.width) * duration;
+        if (e.shiftKey) {
+          setLoopOut(time);
+        } else {
+          setLoopIn(time);
+        }
+        syncLoop();
+      } catch {}
     });
 
     return () => {
@@ -146,9 +156,12 @@
     syncLoop();
   });
 
-  // React to zoom changes.
+  // React to zoom changes — guard: wavesurfer throws "No audio loaded" if
+  // zoom is called before any media has been loaded into the instance.
   $effect(() => {
-    if (ws) ws.zoom(50 * booth.waveZoom);
+    if (ws && audioLoaded) {
+      try { ws.zoom(50 * booth.waveZoom); } catch { /* no audio yet */ }
+    }
   });
 
   // React to skin changes — update colours.
