@@ -22,6 +22,8 @@
   import Keys from "../sections/Keys.svelte";
   import Karaoke from "../sections/Karaoke.svelte";
   import Videos from "../sections/Videos.svelte";
+  import ScenePractice from "../sections/ScenePractice.svelte";
+  import WaveSeparator from "../sections/WaveSeparator.svelte";
 
   let root: HTMLElement;
   onMount(() => animate(root));
@@ -41,10 +43,12 @@
   </div>
 
   <Highlights />
-  <div class="divider wrap" aria-hidden="true"></div>
+  <WaveSeparator />
+  <ScenePractice />
+  <WaveSeparator />
   <Stems />
   <Tour />
-  <div class="divider wrap" aria-hidden="true"></div>
+  <WaveSeparator />
   <Keys />
 
   <Feature
@@ -57,9 +61,9 @@
     alt={w.features.assistant.alt}
   />
 
-  <div class="divider wrap" aria-hidden="true"></div>
+  <WaveSeparator />
   <Karaoke />
-  <div class="divider wrap" aria-hidden="true"></div>
+  <WaveSeparator />
 
   <Feature
     id="visuals"

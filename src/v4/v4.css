@@ -489,3 +489,101 @@ li,
   word-break: auto-phrase;
   line-break: strict;
 }
+
+/* ─── Micro-animations & visual polish ─────────────────────────────── */
+
+/* Eyebrow motif symbol pulses gently on hover — a tactile hint that it is alive. */
+.eyebrow::before {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.eyebrow:hover::before {
+  transform: scale(1.15) rotate(8deg);
+  opacity: 1;
+}
+
+/* Cards lift with a subtle glow on hover — depth without weight. */
+.card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 30%, var(--line));
+}
+
+/* Chips breathe: a faint scale on press, a colour shift on hover. */
+.chip {
+  transition: border-color 0.2s, background-color 0.2s, transform 0.12s, box-shadow 0.2s;
+}
+.chip:hover {
+  box-shadow: 0 4px 14px -5px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Section headings get a faint underline accent that grows in on scroll-reveal. */
+[data-split] {
+  position: relative;
+}
+[data-split]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-split].revealed::after,
+.section [data-split]::after {
+  width: min(120px, 40%);
+}
+
+/* Proof bar numbers count-up feel: a staggered fade already handled by GSAP,
+   but the labels get a micro-glow on hover for tactile feedback. */
+.proof li {
+  transition: background-color 0.2s ease;
+}
+.proof li:hover {
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.proof b {
+  transition: text-shadow 0.2s ease;
+}
+.proof li:hover b {
+  text-shadow: 0 0 12px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* Status dots pulse when active — a living indicator. */
+.status.shipped::before {
+  animation: status-pulse 2s ease-in-out infinite;
+}
+@keyframes status-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent-2) 60%, transparent); }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-2) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .status.shipped::before { animation: none; }
+  .card:hover { transform: none; }
+  .chip:hover { box-shadow: none; }
+  .eyebrow:hover::before { transform: none; }
+  [data-split]::after { width: min(120px, 40%); transition: none; }
+}
+
+/* Smooth focus ring animation for keyboard navigation. */
+:focus-visible {
+  transition: outline-offset 0.15s ease;
+}
+
+/* Links in body text get an animated underline on hover. */
+.content a:not(.btn):not(.go):not(.quiet) {
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-size: 0% 1.5px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  transition: background-size 0.3s ease;
+  text-decoration: none;
+}
+.content a:not(.btn):not(.go):not(.quiet):hover {
+  background-size: 100% 1.5px;
+}
