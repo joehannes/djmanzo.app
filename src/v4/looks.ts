@@ -79,47 +79,56 @@ export const LOOKS: Record<SkinId, Look> = {
     glow: (a, b) => `radial-gradient(65% 55% at 88% 0%, ${a}2c, transparent 68%), radial-gradient(55% 48% at 0% 92%, ${b}26, transparent 68%), linear-gradient(170deg, transparent 50%, ${a}06 100%)`,
   },
   urban: {
-    about: "Block-party flyers and record sleeves: halftone dots, the equaliser's bars, a record on the turntable.",
+    about: "Block-party flyers and record sleeves: halftone print from the photocopier, the equaliser's bars dancing to the kick, vinyl grooves under the needle — the texture of a scene built from what was at hand.",
     font: { family: "Anton", weights: "400", stack: '"Anton", "Impact", "Inter", system-ui, sans-serif', weight: 400, track: "0.01em" },
+    // Halftone dots in two sizes, offset like newsprint — the DIY aesthetic of photocopied flyers taped to poles.
     pattern: {
-      size: 24,
-      opacity: 0.14,
-      svg: `<circle cx="6" cy="6" r="2.6" fill="${A}"/><circle cx="18" cy="18" r="1.4" fill="${B}"/><circle cx="18" cy="6" r=".8" fill="${A}"/><circle cx="6" cy="18" r=".8" fill="${A}"/>`,
+      size: 20,
+      opacity: 0.13,
+      svg: `<circle cx="5" cy="5" r="2.8" fill="${A}"/><circle cx="15" cy="15" r="1.6" fill="${B}"/><circle cx="15" cy="5" r=".9" fill="${A}" opacity=".6"/><circle cx="5" cy="15" r=".9" fill="${A}" opacity=".6"/>`,
     },
-    divider: Array.from({ length: 60 }, (_, i) => {
-      const h = 6 + Math.abs(Math.sin(i * 1.7) * 30 + Math.sin(i * 0.45) * 10);
-      return `<rect x="${i * 20 + 3}" y="${48 - h}" width="12" height="${h}" fill="${i % 7 === 0 ? B : A}" opacity=".8"/>`;
+    // Equaliser bars with a bass-heavy profile — the low end dominates, as it does in a car system or a block party PA.
+    divider: Array.from({ length: 48 }, (_, i) => {
+      const h = 4 + Math.abs(Math.sin(i * 1.3) * 28 + Math.sin(i * 0.35) * 14 + (i < 12 ? 10 : 0));
+      return `<rect x="${i * 25 + 2}" y="${48 - h}" width="16" rx="2" height="${h}" fill="${i % 8 === 0 ? B : A}" opacity=".75"/>`;
     }).join(""),
-    motif: `<circle cx="96" cy="104" r="80" fill="none" stroke="${A}" stroke-width="3"/>${[66, 56, 46].map((r) => `<circle cx="96" cy="104" r="${r}" fill="none" stroke="${A}" stroke-width="1" opacity=".55"/>`).join("")}<circle cx="96" cy="104" r="22" fill="${B}"/><circle cx="96" cy="104" r="3" fill="#000"/><path d="M176 18l10 14-62 76" fill="none" stroke="${A}" stroke-width="5" stroke-linecap="round"/>`,
-    glow: (a, b) => `radial-gradient(55% 45% at 100% 0%, ${a}26, transparent 70%), radial-gradient(45% 45% at 0% 100%, ${b}1f, transparent 70%)`,
+    // Vinyl record: concentric grooves with the label at centre and a tonearm entering from the upper right — the moment before the needle drops.
+    motif: `<circle cx="96" cy="104" r="78" fill="none" stroke="${A}" stroke-width="2.5"/>${[64, 54, 44, 34].map((r, i) => `<circle cx="96" cy="104" r="${r}" fill="none" stroke="${A}" stroke-width=".8" opacity="${0.4 + i * 0.08}"/>`).join("")}<circle cx="96" cy="104" r="24" fill="${B}" opacity=".9"/><circle cx="96" cy="104" r="4" fill="#000"/><path d="M174 22l8 12-58 72" fill="none" stroke="${A}" stroke-width="4.5" stroke-linecap="round"/><circle cx="174" cy="22" r="5" fill="${A}"/>`,
+    glow: (a, b) => `radial-gradient(50% 42% at 100% 0%, ${a}28, transparent 65%), radial-gradient(42% 42% at 0% 100%, ${b}22, transparent 65%), linear-gradient(180deg, transparent 70%, ${b}06 100%)`,
   },
   afro: {
-    about: "West African cloth and signs: bògòlanfini mud-cloth marks, the blocks of kente, and Nkyinkyim, the Adinkra zigzag of a journey that bends and goes on.",
+    about: "West African cloth and signs: bògòlanfini mud-cloth crosses painted by hand, kente strips woven in alternating rhythm, and Nkyinkyim — the Adinkra zigzag that says initiative bends but never breaks.",
     font: { family: "Syne", weights: "600;700;800", stack: '"Syne", "Inter", system-ui, sans-serif' },
+    // Mud-cloth crosses and dots in a staggered grid — each mark placed by hand on cotton, no two tiles identical.
     pattern: {
-      size: 48,
-      opacity: 0.16,
-      svg: `<path d="M4 6l6 6M10 6l-6 6M28 9h16" stroke="${A}" stroke-width="1.6"/><path d="M0 30l6-6 6 6 6-6 6 6 6-6 6 6 6-6 6 6" fill="none" stroke="${B}" stroke-width="1.4"/><circle cx="12" cy="42" r="1.8" fill="${A}"/><circle cx="24" cy="42" r="1.8" fill="${A}"/><circle cx="36" cy="42" r="1.8" fill="${A}"/>`,
+      size: 44,
+      opacity: 0.15,
+      svg: `<path d="M6 8l5 5M11 8l-5 5" stroke="${A}" stroke-width="1.8" stroke-linecap="round"/><path d="M28 10h12" stroke="${A}" stroke-width="1.8" stroke-linecap="round"/><path d="M0 30l5-5 5 5 5-5 5 5 5-5 5 5 5-5 5 5 5-5 5 5" fill="none" stroke="${B}" stroke-width="1.3" stroke-linecap="round"/><circle cx="11" cy="38" r="1.6" fill="${A}"/><circle cx="22" cy="38" r="1.6" fill="${A}"/><circle cx="33" cy="38" r="1.6" fill="${A}"/>`,
     },
-    divider: Array.from({ length: 30 }, (_, i) => {
-      const x = i * 40;
+    // Kente-inspired blocks in three colours, with cross-hatch texture — the strip-woven cloth where each band carries its own proverb.
+    divider: Array.from({ length: 24 }, (_, i) => {
+      const x = i * 50;
       const k = i % 3;
-      return `<rect x="${x}" y="8" width="40" height="32" fill="${k === 0 ? A : k === 1 ? B : "#000"}" opacity="${k === 2 ? 0.25 : 0.85}"/><path d="M${x + 6} 24h28M${x + 20} 12v24" stroke="#000" stroke-opacity=".3" stroke-width="3"/>`;
+      return `<rect x="${x}" y="6" width="50" height="36" fill="${k === 0 ? A : k === 1 ? B : '#000'}" opacity="${k === 2 ? 0.22 : 0.82}"/><path d="M${x + 8} 24h34M${x + 25} 10v28" stroke="#000" stroke-opacity=".25" stroke-width="2.5"/><path d="M${x + 12} 14l26 20M${x + 12} 34l26-20" stroke="#000" stroke-opacity=".12" stroke-width="1.5"/>`;
     }).join(""),
-    motif: `<path d="M40 30h40v28H52v28h40v28H64v28h40v28" fill="none" stroke="${A}" stroke-width="9" stroke-linejoin="miter"/><path d="M120 30h40v28h-28v28h40" fill="none" stroke="${B}" stroke-width="9" opacity=".8"/>`,
-    glow: (a, b) => `radial-gradient(65% 55% at 90% 0%, ${a}29, transparent 70%), radial-gradient(55% 50% at 0% 100%, ${b}22, transparent 70%)`,
+    // Nkyinkyim: the zigzag path that bends around obstacles — drawn as two interlocking stepped lines, one in each accent, meeting at centre.
+    motif: `<path d="M36 28h36v24H48v24h36v24H60v24h36v24H72v24h36" fill="none" stroke="${A}" stroke-width="8" stroke-linejoin="miter" stroke-linecap="square"/><path d="M116 28h36v24h-24v24h36v24h-24v24h36" fill="none" stroke="${B}" stroke-width="8" stroke-linejoin="miter" opacity=".85"/><circle cx="100" cy="100" r="6" fill="${A}"/>`,
+    glow: (a, b) => `radial-gradient(62% 52% at 88% 0%, ${a}2a, transparent 66%), radial-gradient(52% 48% at 0% 100%, ${b}24, transparent 66%), linear-gradient(175deg, transparent 55%, ${a}07 100%)`,
   },
   neon: {
-    about: "East and Southeast Asia's nights: seigaiha waves on cloth and tile, neon tubes over the karaoke rooms, the lantern's round light.",
+    about: "East and Southeast Asia's nights: seigaiha waves layered on fabric and tile, neon signage reflected in wet pavement after rain, the paper lantern's warm glow above a karaoke doorway — light as welcome.",
     font: { family: "Unbounded", weights: "500;600;700", stack: '"Unbounded", "Inter", system-ui, sans-serif' },
+    // Seigaiha: three concentric arcs per cell, overlapping like scales — the auspicious wave pattern on kimono and ceramics, here tighter and more rhythmic.
     pattern: {
-      size: 40,
-      opacity: 0.14,
-      svg: `${[18, 13, 8].map((r) => `<path d="M${20 - r} 40a${r} ${r} 0 0 1 ${r * 2} 0M${-r} 20a${r} ${r} 0 0 1 ${r * 2} 0M${40 - r} 20a${r} ${r} 0 0 1 ${r * 2} 0" fill="none" stroke="${r === 18 ? A : B}" stroke-width="1.2"/>`).join("")}`,
+      size: 36,
+      opacity: 0.13,
+      svg: `${[16, 11, 6].map((r) => `<path d="M${18 - r} 36a${r} ${r} 0 0 1 ${r * 2} 0M${-r} 18a${r} ${r} 0 0 1 ${r * 2} 0M${36 - r} 18a${r} ${r} 0 0 1 ${r * 2} 0" fill="none" stroke="${r === 16 ? A : B}" stroke-width="${r === 16 ? 1.2 : 0.9}"/>`).join("")}<circle cx="18" cy="18" r="1.2" fill="${B}" opacity=".5"/>`,
     },
-    divider: `<path d="M0 24C150 4 250 44 400 24S650 4 800 24 1050 44 1200 24" fill="none" stroke="${A}" stroke-width="3"/><path d="M0 30C150 10 250 50 400 30S650 10 800 30 1050 50 1200 30" fill="none" stroke="${B}" stroke-width="1.5" opacity=".7"/>`,
-    motif: `<g fill="none" stroke-width="3">${[80, 62, 44, 26].map((r, i) => `<path d="M${100 - r} 160a${r} ${r} 0 0 1 ${r * 2} 0" stroke="${i % 2 ? B : A}"/>`).join("")}</g><circle cx="100" cy="64" r="26" fill="${A}" opacity=".85"/>`,
-    glow: (a, b) => `radial-gradient(60% 50% at 85% 0%, ${a}2b, transparent 70%), radial-gradient(55% 50% at 5% 100%, ${b}26, transparent 70%)`,
+    // Two sine waves offset in phase — the neon tube's hum made visible, one bright (the sign), one dimmer (its reflection).
+    divider: `<path d="M0 22C120 6 220 38 360 22S580 6 720 22 940 38 1080 22 1200 22" fill="none" stroke="${A}" stroke-width="2.5" stroke-linecap="round"/><path d="M0 28C120 12 220 44 360 28S580 12 720 28 940 44 1080 28 1200 28" fill="none" stroke="${B}" stroke-width="1.2" opacity=".6" stroke-linecap="round"/><circle cx="600" cy="25" r="2.5" fill="${A}" opacity=".7"/>`,
+    // Paper lantern: concentric arcs rising from a base (the lantern's ribs), topped by a full circle (the light itself) — warm, round, welcoming.
+    motif: `<g fill="none" stroke-width="2.5">${[76, 58, 40, 22].map((r, i) => `<path d="M${100 - r} 158a${r} ${r} 0 0 1 ${r * 2} 0" stroke="${i % 2 ? B : A}" stroke-linecap="round"/>`).join("")}</g><circle cx="100" cy="62" r="28" fill="${A}" opacity=".8"/><circle cx="100" cy="62" r="12" fill="${B}" opacity=".6"/>`,
+    glow: (a, b) => `radial-gradient(58% 48% at 85% 0%, ${a}2d, transparent 66%), radial-gradient(52% 48% at 5% 100%, ${b}28, transparent 66%), linear-gradient(180deg, transparent 65%, ${b}08 100%)`,
   },
   studio: {
     about: "The studio itself: the slats of an acoustic diffuser, the ticks of a VU meter, its needle.",
@@ -137,40 +146,58 @@ export const LOOKS: Record<SkinId, Look> = {
     glow: (a, b) => `radial-gradient(60% 50% at 85% 0%, ${a}1f, transparent 70%), radial-gradient(50% 45% at 0% 100%, ${b}17, transparent 70%)`,
   },
   oasis: {
-    about: "The Middle East and North Africa: the eight-pointed star of zellige and girih tiling, the arches of the courtyard, lamplight.",
+    about: "The Middle East and North Africa: zellige tilework's eight-pointed star born from two overlapping squares, the horseshoe arch framing a courtyard, mashrabiya lattice filtering lamplight into geometric shadow — precision as hospitality.",
     font: { family: "Reem Kufi", weights: "500;600;700", stack: '"Reem Kufi", "Inter", system-ui, sans-serif' },
-    pattern: {
-      size: 60,
-      opacity: 0.16,
-      svg: `<g fill="none" stroke="${A}" stroke-width="1.2"><rect x="16" y="16" width="28" height="28"/><rect x="16" y="16" width="28" height="28" transform="rotate(45 30 30)"/></g><path d="M0 0L16 16M60 0L44 16M0 60L16 44M60 60L44 44" stroke="${B}" stroke-width="1"/><circle cx="30" cy="30" r="3" fill="${B}"/>`,
-    },
-    divider: Array.from({ length: 20 }, (_, i) => `<path d="M${i * 60} 48V26Q${i * 60} 6 ${i * 60 + 30} 2Q${i * 60 + 60} 6 ${i * 60 + 60} 26V48" fill="none" stroke="${i % 2 ? B : A}" stroke-width="1.6"/>`).join(""),
-    motif: `<g fill="none" stroke="${A}" stroke-width="3"><rect x="45" y="45" width="110" height="110"/><rect x="45" y="45" width="110" height="110" transform="rotate(45 100 100)"/></g><g fill="none" stroke="${B}" stroke-width="2"><rect x="70" y="70" width="60" height="60"/><rect x="70" y="70" width="60" height="60" transform="rotate(45 100 100)"/></g><circle cx="100" cy="100" r="9" fill="${A}"/>`,
-    glow: (a, b) => `radial-gradient(60% 50% at 85% 0%, ${a}26, transparent 70%), radial-gradient(55% 50% at 0% 100%, ${b}22, transparent 70%)`,
-  },
-  monsoon: {
-    about: "South Asia's celebrations: rangoli drawn at the door, the toran of marigolds over it, the mandala's rings.",
-    font: { family: "Rozha One", weights: "400", stack: '"Rozha One", Georgia, serif', weight: 400, track: "-0.01em" },
+    // Zellige star: two squares rotated 45° with connecting diagonals — the fundamental unit of Islamic geometric tiling, drawn at human scale.
     pattern: {
       size: 52,
-      opacity: 0.16,
-      svg: `<g transform="translate(26 26)">${Array.from({ length: 8 }, (_, i) => `<ellipse rx="3" ry="8" cy="-9" transform="rotate(${i * 45})" fill="none" stroke="${A}" stroke-width="1.2"/>`).join("")}<circle r="2.5" fill="${B}"/></g><circle cx="0" cy="0" r="2" fill="${B}"/><circle cx="52" cy="0" r="2" fill="${B}"/><circle cx="0" cy="52" r="2" fill="${B}"/><circle cx="52" cy="52" r="2" fill="${B}"/>`,
+      opacity: 0.15,
+      svg: `<g fill="none" stroke="${A}" stroke-width="1.1"><rect x="12" y="12" width="28" height="28"/><rect x="12" y="12" width="28" height="28" transform="rotate(45 26 26)"/></g><path d="M0 0L12 12M52 0L40 12M0 52L12 40M52 52L40 40" stroke="${B}" stroke-width=".9"/><circle cx="26" cy="26" r="2.5" fill="${B}" opacity=".8"/>`,
     },
-    divider: `<path d="M0 6H1200" stroke="${A}" stroke-width="1.5"/>${Array.from({ length: 40 }, (_, i) => `<circle cx="${i * 30 + 15}" cy="12" r="7" fill="${i % 2 ? B : A}"/>${i % 2 ? "" : `<path d="M${i * 30 + 15} 20q-6 12 0 22q6-10 0-22z" fill="${A}" opacity=".7"/>`}`).join("")}`,
-    motif: `<g transform="translate(100 100)" fill="none">${Array.from({ length: 12 }, (_, i) => `<ellipse rx="12" ry="40" cy="-46" transform="rotate(${i * 30})" stroke="${A}" stroke-width="2"/>`).join("")}${Array.from({ length: 8 }, (_, i) => `<ellipse rx="7" ry="20" cy="-22" transform="rotate(${i * 45 + 22.5})" stroke="${B}" stroke-width="2"/>`).join("")}<circle r="8" fill="${B}"/></g>`,
-    glow: (a, b) => `radial-gradient(65% 55% at 90% 0%, ${a}2b, transparent 70%), radial-gradient(55% 50% at 0% 100%, ${b}26, transparent 70%)`,
+    // Horseshoe arches in alternating accents — the rhythmic arcade of a riad courtyard, each arch a doorway between inside and out.
+    divider: Array.from({ length: 16 }, (_, i) => {
+      const x = i * 75;
+      return `<path d="M${x} 48V28Q${x} 8 ${x + 37.5} 3Q${x + 75} 8 ${x + 75} 28V48" fill="none" stroke="${i % 2 ? B : A}" stroke-width="1.5"/><circle cx="${x + 37.5}" cy="14" r="2" fill="${i % 2 ? A : B}" opacity=".5"/>`;
+    }).join(""),
+    // Eight-pointed star: outer square and rotated inner square with a smaller echo inside — the zellige master's compass-and-straightedge construction, centred and still.
+    motif: `<g fill="none" stroke="${A}" stroke-width="2.8"><rect x="42" y="42" width="116" height="116"/><rect x="42" y="42" width="116" height="116" transform="rotate(45 100 100)"/></g><g fill="none" stroke="${B}" stroke-width="1.8"><rect x="68" y="68" width="64" height="64"/><rect x="68" y="68" width="64" height="64" transform="rotate(45 100 100)"/></g><circle cx="100" cy="100" r="8" fill="${A}" opacity=".9"/>`,
+    glow: (a, b) => `radial-gradient(58% 48% at 85% 0%, ${a}28, transparent 66%), radial-gradient(52% 48% at 0% 100%, ${b}24, transparent 66%), linear-gradient(175deg, transparent 58%, ${a}06 100%)`,
   },
-  pacific: {
-    about: "Oceania: the triangles of tapa and siapo bark cloth, the curl of the breaking wave, the unfolding fern frond.",
-    font: { family: "Sora", weights: "500;600;700", stack: '"Sora", "Inter", system-ui, sans-serif' },
+  monsoon: {
+    about: "South Asia's celebrations: rangoli drawn at the threshold each morning, the toran of marigolds strung above the door, the mandala's concentric rings — geometry as blessing, colour as welcome.",
+    font: { family: "Rozha One", weights: "400", stack: '"Rozha One", Georgia, serif', weight: 400, track: "-0.01em" },
+    // Rangoli petals radiating from a centre dot, with corner dots marking the tile's edges — the daily drawing at the doorstep, remade each morning.
     pattern: {
       size: 48,
-      opacity: 0.16,
-      svg: `<path d="M0 12l6-10 6 10 6-10 6 10 6-10 6 10 6-10 6 10" fill="none" stroke="${A}" stroke-width="1.3"/><path d="M0 24h48" stroke="${B}" stroke-width="1"/><path d="M8 34h8v8h-8zM32 34h8v8h-8z" fill="none" stroke="${A}" stroke-width="1.2"/><circle cx="24" cy="38" r="2" fill="${B}"/>`,
+      opacity: 0.15,
+      svg: `<g transform="translate(24 24)">${Array.from({ length: 8 }, (_, i) => `<ellipse rx="2.5" ry="7" cy="-8" transform="rotate(${i * 45})" fill="none" stroke="${A}" stroke-width="1.1"/>`).join("")}<circle r="2.2" fill="${B}"/></g><circle cx="0" cy="0" r="1.8" fill="${B}" opacity=".7"/><circle cx="48" cy="0" r="1.8" fill="${B}" opacity=".7"/><circle cx="0" cy="48" r="1.8" fill="${B}" opacity=".7"/><circle cx="48" cy="48" r="1.8" fill="${B}" opacity=".7"/>`,
     },
-    divider: `${Array.from({ length: 12 }, (_, i) => `<path d="M${i * 100} 46c20-30 60-40 80-18c-14-6-30 0-30 14c0 10 12 12 18 6" fill="none" stroke="${i % 2 ? B : A}" stroke-width="2.4" stroke-linecap="round"/>`).join("")}<path d="M0 47h1200" stroke="${A}" stroke-width="1"/>`,
-    motif: `<path d="M100 180V120c0-50 50-70 70-40c16 24-6 52-30 40c-16-8-12-30 4-30" fill="none" stroke="${A}" stroke-width="6" stroke-linecap="round"/><path d="M100 150c-30-10-50-40-30-60c14-14 34 0 26 14" fill="none" stroke="${B}" stroke-width="4" stroke-linecap="round"/>`,
-    glow: (a, b) => `radial-gradient(60% 50% at 88% 0%, ${a}29, transparent 70%), radial-gradient(55% 50% at 0% 100%, ${b}22, transparent 70%)`,
+    // Marigold toran: round blossoms on a horizontal thread, with leaf-shaped pendants between every other flower — the garland that marks a celebration.
+    divider: `<path d="M0 8H1200" stroke="${A}" stroke-width="1.2"/>${Array.from({ length: 32 }, (_, i) => {
+      const x = i * 37.5 + 18.75;
+      return `<circle cx="${x}" cy="14" r="6.5" fill="${i % 2 ? B : A}" opacity=".85"/>${i % 2 ? "" : `<path d="M${x} 22q-5 10 0 18q5-8 0-18z" fill="${A}" opacity=".6"/>`}`;
+    }).join("")}`,
+    // Mandala: twelve outer petals and eight inner ones, with a filled centre — the sacred geometry drawn in rice flour, here as a still emblem.
+    motif: `<g transform="translate(100 100)" fill="none">${Array.from({ length: 12 }, (_, i) => `<ellipse rx="10" ry="36" cy="-42" transform="rotate(${i * 30})" stroke="${A}" stroke-width="1.8"/>`).join("")}${Array.from({ length: 8 }, (_, i) => `<ellipse rx="6" ry="18" cy="-20" transform="rotate(${i * 45 + 22.5})" stroke="${B}" stroke-width="1.8"/>`).join("")}<circle r="7" fill="${B}" opacity=".9"/></g>`,
+    glow: (a, b) => `radial-gradient(62% 52% at 88% 0%, ${a}2c, transparent 66%), radial-gradient(52% 48% at 0% 100%, ${b}28, transparent 66%), linear-gradient(175deg, transparent 58%, ${a}06 100%)`,
+  },
+  pacific: {
+    about: "Oceania: tapa and siapo bark cloth stamped with ancestral triangles, the koru of the unfurling fern frond, the ocean's rhythm in every line — patterns that carry genealogy and place.",
+    font: { family: "Sora", weights: "500;600;700", stack: '"Sora", "Inter", system-ui, sans-serif' },
+    // Tapa cloth: zigzag ridges with diamond motifs between them — the beaten bark cloth of Tonga and Samoa, each triangle a mark of lineage.
+    pattern: {
+      size: 44,
+      opacity: 0.15,
+      svg: `<path d="M0 10l5.5-8 5.5 8 5.5-8 5.5 8 5.5-8 5.5 8 5.5-8 5.5 8" fill="none" stroke="${A}" stroke-width="1.2" stroke-linejoin="round"/><path d="M0 22h44" stroke="${B}" stroke-width=".9"/><path d="M8 30h7v7h-7zM29 30h7v7h-7z" fill="none" stroke="${A}" stroke-width="1.1"/><circle cx="22" cy="33.5" r="1.8" fill="${B}" opacity=".8"/>`,
+    },
+    // Breaking wave curls in alternating accents — the Pacific swell seen from shore, each wave a rhythm the body knows before the mind names it.
+    divider: `${Array.from({ length: 10 }, (_, i) => {
+      const x = i * 120;
+      return `<path d="M${x} 44c18-28 54-36 72-16c-12-5-26 0-26 12c0 9 10 10 16 5" fill="none" stroke="${i % 2 ? B : A}" stroke-width="2.2" stroke-linecap="round"/>`;
+    }).join("")}<path d="M0 46h1200" stroke="${A}" stroke-width=".8" opacity=".5"/>`,
+    // Koru: the silver fern frond unfurling — a spiral that carries new life, growth and peace, drawn as two interlocking curves in the skin's accents.
+    motif: `<path d="M100 176V118c0-46 46-64 64-36c14 22-6 48-28 36c-14-7-10-28 4-28" fill="none" stroke="${A}" stroke-width="5.5" stroke-linecap="round"/><path d="M100 146c-28-9-46-36-28-54c12-12 30 0 24 12" fill="none" stroke="${B}" stroke-width="3.5" stroke-linecap="round"/><circle cx="100" cy="176" r="3" fill="${A}" opacity=".6"/>`,
+    glow: (a, b) => `radial-gradient(58% 48% at 86% 0%, ${a}2a, transparent 66%), radial-gradient(52% 48% at 0% 100%, ${b}24, transparent 66%), linear-gradient(180deg, transparent 68%, ${b}07 100%)`,
   },
 };
 
