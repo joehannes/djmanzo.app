@@ -15,6 +15,7 @@
   import { region, skin } from "../region.svelte";
   import { i18n } from "../i18n.svelte";
   import { BOOTH } from "../i18n/booth";
+  import { boothSkin } from "./booth-skins";
   import { HOME } from "../i18n/home";
   import { bankOf, bankReady, OCCASIONS, VOICE, type BankId } from "./sounds";
   import { booth, turn, centre, press, hush, buildAndDrop, record, play, fold, bend, effect as beatEffect, preload, FX_KINDS, type FxKind } from "./booth.svelte";
@@ -22,6 +23,8 @@
   import Fader from "./Fader.svelte";
 
   const w = $derived(BOOTH[i18n.lang]);
+  /** The current skin's booth personality: shape, texture, knob style, LCD font, shadow. */
+  const bskin = $derived(boothSkin(skin().id));
   /** A label in capitals, as the hardware prints them, by the language's own rules. */
   const caps = (s: string) => s.toLocaleUpperCase(i18n.lang);
   const names = $derived(HOME[i18n.lang].stems.names);
@@ -142,7 +145,25 @@
   const nextFx = (step: number) => beatEffect({ kind: FX_KINDS[(FX_KINDS.indexOf(booth.fx.kind) + step + FX_KINDS.length) % FX_KINDS.length] });
 </script>
 
-<section class="booth" id="booth-console" data-booth style:--pulse={pulse} style:--beat={`${beatLength}s`} aria-label={w.open.replace(/^\S+\s/, "")}>
+<section
+  class="booth {bskin.ornament}"
+  id="booth-console"
+  data-booth
+  data-skin={skin().id}
+  style:--pulse={pulse}
+  style:--beat={`${beatLength}s`}
+  style:--booth-radius={bskin.radius}
+  style:--booth-border-width={bskin.borderWidth}
+  style:--booth-border-style={bskin.borderStyle}
+  style:--booth-texture={bskin.texture}
+  style:--booth-shadow={bskin.shadow}
+  style:--booth-glow={bskin.glowIntensity}
+  style:--lcd-bg={bskin.lcdBg}
+  style:--lcd-ink={bskin.lcdInk}
+  style:--lcd-font={bskin.lcdFont}
+  style:--platter-scale={bskin.platterScale}
+  aria-label={w.open.replace(/^\S+\s/, "")}
+>
   <p class="lead small">{w.lead}</p>
 
   <div class="console">
@@ -327,12 +348,11 @@
     grid-template-columns: minmax(300px, 1.05fr) minmax(290px, 0.95fr) minmax(300px, 1.1fr);
     gap: 10px;
     padding: 10px;
-    border-radius: 18px;
-    background: linear-gradient(180deg, #0d0d10, #070709);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.06),
-      0 24px 60px -24px #000,
-      0 0 calc(var(--pulse, 0) * 70px) calc(var(--pulse, 0) * -12px) color-mix(in srgb, var(--accent) 55%, transparent);
+    border-radius: var(--booth-radius, 18px);
+    border: var(--booth-border-width, 1px) var(--booth-border-style, solid) var(--hw-edge);
+    background: var(--booth-texture, none), linear-gradient(180deg, #0d0d10, #070709);
+    box-shadow: var(--booth-shadow, inset 0 1px 0 rgb(255 255 255 / 0.06), 0 24px 60px -24px #000),
+      0 0 calc(var(--pulse, 0) * 70px * var(--booth-glow, 0.5)) calc(var(--pulse, 0) * -12px) color-mix(in srgb, var(--accent) 55%, transparent);
   }
   .unit {
     position: relative;
@@ -340,10 +360,11 @@
     align-content: start;
     gap: 12px;
     padding: 16px 14px 14px;
-    border-radius: 12px;
-    border: 1px solid var(--hw-edge);
-    /* Brushed metal, with its four screws. */
+    border-radius: var(--booth-radius, 12px);
+    border: var(--booth-border-width, 1px) var(--booth-border-style, solid) var(--hw-edge);
+    /* Brushed metal, with its four screws — texture overlaid per skin. */
     background:
+      var(--booth-texture, none),
       radial-gradient(circle at 9px 9px, #3a3a40 0 2.5px, #111 3px, transparent 3.5px),
       radial-gradient(circle at calc(100% - 9px) 9px, #3a3a40 0 2.5px, #111 3px, transparent 3.5px),
       radial-gradient(circle at 9px calc(100% - 9px), #3a3a40 0 2.5px, #111 3px, transparent 3.5px),
@@ -362,10 +383,10 @@
     color: var(--hw-print);
   }
   .lcd {
-    font-family: var(--mono, monospace);
+    font-family: var(--lcd-font, var(--mono, monospace));
     font-variant-numeric: tabular-nums;
-    color: var(--lcd);
-    text-shadow: 0 0 6px color-mix(in srgb, var(--lcd) 55%, transparent);
+    color: var(--lcd-ink, var(--lcd));
+    text-shadow: 0 0 6px color-mix(in srgb, var(--lcd-ink, var(--lcd)) 55%, transparent);
     background: linear-gradient(180deg, #06101a, #050a10);
     border-radius: 5px;
     box-shadow:

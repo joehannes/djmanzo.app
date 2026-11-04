@@ -21,6 +21,20 @@ export type Mode = "tap" | "repeat" | "loop";
 export type FxKind = "echo" | "space" | "flanger" | "crush" | "gate";
 export const FX_KINDS: FxKind[] = ["echo", "space", "flanger", "crush", "gate"];
 
+/** A hot cue point: a position in seconds that can be jumped to instantly. */
+export interface HotCue {
+  id: number;
+  time: number;
+  label: string;
+}
+
+/** A loop region: in/out points in seconds, active or not. */
+export interface LoopRegion {
+  inPoint: number | null;
+  outPoint: number | null;
+  active: boolean;
+}
+
 export const booth = $state({
   open: false,
   bank: "region" as BankId | "voice",
@@ -37,7 +51,75 @@ export const booth = $state({
   /** The last pad that sounded, and when, so it can light up. */
   hit: { id: "", at: 0 },
   voice: { state: "none" as "none" | "asking" | "recording" | "ready" | "denied" | "unsupported", seconds: 0, pitch: 0 },
+  /** Hot cue points (up to 8), set by pressing a hot cue pad at the current position. */
+  hotCues: [] as HotCue[],
+  /** Active loop region for the current track. */
+  loop: { inPoint: null, outPoint: null, active: false } as LoopRegion,
+  /** Waveform zoom level (1 = full track, higher = more detail). */
+  waveZoom: 1,
+  /** Whether the YouTube crate is driving playback instead of the deck loop. */
+  youtubeActive: false,
 });
+
+// --- Hot Cues & Loops ------------------------------------------------------------------------
+
+/** Set a hot cue at the given time (seconds). Max 8 cues. */
+export function setHotCue(time: number, label?: string) {
+	if (booth.hotCues.length >= 8) return;
+	const id = booth.hotCues.length > 0 ? Math.max(...booth.hotCues.map((c) => c.id)) + 1 : 1;
+	booth.hotCues = [...booth.hotCues, { id, time, label: label ?? `CUE ${id}` }];
+}
+
+/** Jump to a hot cue by its id. Returns the time in seconds, or null if not found. */
+export function jumpToHotCue(id: number): number | null {
+	const cue = booth.hotCues.find((c) => c.id === id);
+	return cue?.time ?? null;
+}
+
+/** Remove a hot cue by its id. */
+export function clearHotCue(id: number) {
+	booth.hotCues = booth.hotCues.filter((c) => c.id !== id);
+}
+
+/** Set the loop in-point at the given time. */
+export function setLoopIn(time: number) {
+	booth.loop.inPoint = time;
+	// Auto-activate if out-point already exists and is after in-point.
+	if (booth.loop.outPoint !== null && booth.loop.outPoint > time) {
+		booth.loop.active = true;
+	}
+}
+
+/** Set the loop out-point at the given time. Activates the loop if in-point exists. */
+export function setLoopOut(time: number) {
+	booth.loop.outPoint = time;
+	if (booth.loop.inPoint !== null && time > booth.loop.inPoint) {
+		booth.loop.active = true;
+	}
+}
+
+/** Toggle the active loop on/off. */
+export function toggleLoop() {
+	if (booth.loop.inPoint !== null && booth.loop.outPoint !== null) {
+		booth.loop.active = !booth.loop.active;
+	}
+}
+
+/** Clear the loop region entirely. */
+export function clearLoop() {
+	booth.loop = { inPoint: null, outPoint: null, active: false };
+}
+
+/** Set waveform zoom level (1–16). */
+export function setWaveZoom(level: number) {
+	booth.waveZoom = Math.max(1, Math.min(16, level));
+}
+
+/** Mark YouTube as the active playback source (disables deck loop). */
+export function setYoutubeActive(active: boolean) {
+	booth.youtubeActive = active;
+	if (active && hasEngine()) stopDeck();
+}
 
 // --- Knobs -----------------------------------------------------------------------------------
 
