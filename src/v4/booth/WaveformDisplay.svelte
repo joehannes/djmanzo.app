@@ -14,8 +14,8 @@
   import { crate } from "../crate/crate.svelte";
 
   let container: HTMLDivElement;
-  let ws: WaveSurfer | null = null;
-  let regions: RegionsPlugin | null = null;
+  let ws: InstanceType<typeof WaveSurfer> | null = null;
+  let regions: InstanceType<typeof RegionsPlugin> | null = null;
 
   const s = $derived(skin());
 
@@ -34,7 +34,7 @@
   function syncCues() {
     if (!regions) return;
     // Clear existing cue markers.
-    regions.getRegions().filter((r) => r.id.startsWith("cue-")).forEach((r) => r.remove());
+    regions.getRegions().filter((r: { id: string }) => r.id.startsWith("cue-")).forEach((r: { remove: () => void }) => r.remove());
     // Add markers for each hot cue.
     for (const cue of booth.hotCues) {
       regions.addRegion({
@@ -44,7 +44,7 @@
         color: `${s.tokens.accent}88`,
         drag: false,
         resize: false,
-        content: document.createTextNode(cue.label),
+        content: Object.assign(document.createElement("span"), { textContent: cue.label, className: "cue-label" }),
       });
     }
   }
@@ -52,7 +52,7 @@
   /** Sync loop region to the waveform. */
   function syncLoop() {
     if (!regions) return;
-    regions.getRegions().filter((r) => r.id === "loop-region").forEach((r) => r.remove());
+    regions.getRegions().filter((r: { id: string }) => r.id === "loop-region").forEach((r: { remove: () => void }) => r.remove());
     if (booth.loop.inPoint !== null && booth.loop.outPoint !== null) {
       regions.addRegion({
         id: "loop-region",
@@ -67,7 +67,7 @@
 
   onMount(() => {
     regions = RegionsPlugin.create();
-    const timeline = TimelinePlugin.create({ height: 16, fontSize: 9 });
+    const timeline = TimelinePlugin.create({ height: 16 });
     const zoom = ZoomPlugin.create();
 
     ws = WaveSurfer.create({
@@ -88,7 +88,7 @@
     ws.on("interaction", () => ws?.play());
 
     // Region click: jump to hot cue.
-    regions.on("region-clicked", (region, e) => {
+    regions.on("region-clicked", (region: { id: string }, e: MouseEvent) => {
       e.stopPropagation();
       if (region.id.startsWith("cue-")) {
         const id = parseInt(region.id.replace("cue-", ""));
@@ -98,7 +98,7 @@
     });
 
     // Region drag/update: update loop points.
-    regions.on("region-updated", (region) => {
+    regions.on("region-updated", (region: { id: string; start: number; end: number }) => {
       if (region.id === "loop-region") {
         setLoopIn(region.start);
         setLoopOut(region.end);

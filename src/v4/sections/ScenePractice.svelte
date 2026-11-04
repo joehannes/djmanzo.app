@@ -95,7 +95,7 @@
             <span class="genre-chip" data-scene-genre>
               <span class="emoji" aria-hidden="true">{g.emoji}</span>
               <span class="name">{g.name}</span>
-              {#if g.bpm}<span class="bpm mono">{g.bpm.min}–{g.bpm.max}</span>{/if}
+              {#if g.bpm}<span class="bpm mono">{g.bpm[0]}–{g.bpm[1]}</span>{/if}
             </span>
           {/each}
         </div>
