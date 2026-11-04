@@ -38,31 +38,45 @@ const B = "%B%";
 
 export const LOOKS: Record<SkinId, Look> = {
   club: {
-    about: "Warehouse and rave flyers: the LED grid, laser fans and the speaker stack's cone.",
+    about: "Warehouse and rave flyers: the LED grid, laser fans and the speaker stack's cone — the geometry of a room built for sound.",
     font: { family: "Space Grotesk", weights: "500;600;700", stack: '"Space Grotesk", "Inter", system-ui, sans-serif' },
-    pattern: { size: 40, opacity: 0.13, svg: `<path d="M0 .5H40M.5 0V40" stroke="${A}" stroke-width="1"/><path d="M18 20h4M20 18v4" stroke="${B}" stroke-width="1.4"/>` },
-    divider: `<g stroke="${A}" stroke-width="1" opacity=".7">${Array.from({ length: 25 }, (_, i) => `<path d="M600 48L${i * 50} 0"/>`).join("")}</g><path d="M0 47.5H1200" stroke="${B}" stroke-width="1"/>`,
-    motif: `<g fill="none" stroke="${A}">${[90, 72, 54, 36].map((r, i) => `<circle cx="100" cy="100" r="${r}" stroke-width="${1 + i}" opacity="${0.35 + i * 0.15}"/>`).join("")}<circle cx="100" cy="100" r="14" fill="${B}" stroke="none"/></g>`,
-    glow: (a, b) => `radial-gradient(60% 50% at 85% 0%, ${a}22, transparent 70%), radial-gradient(50% 50% at 0% 100%, ${b}1f, transparent 70%)`,
+    // The grid is tighter, with crosshairs at each intersection — the floor plan of a warehouse where every beam carries weight.
+    pattern: {
+      size: 32,
+      opacity: 0.14,
+      svg: `<path d="M0 .5H32M.5 0V32" stroke="${A}" stroke-width=".8"/><path d="M16 14v4M14 16h4" stroke="${B}" stroke-width="1.6"/><rect x="14" y="14" width="4" height="4" fill="none" stroke="${A}" stroke-width=".5" opacity=".5"/>`,
+    },
+    // Laser fans radiate from two vanishing points — left and right — converging at the centre horizon, as they do in a real booth.
+    divider: `<g stroke="${A}" stroke-width=".8" opacity=".6">${Array.from({ length: 18 }, (_, i) => {
+      const x = i * 67 + 33;
+      return `<path d="M0 48L${x} 0"/><path d="M1200 48L${x} 0"/>`;
+    }).join("")}</g><path d="M0 47.5H1200" stroke="${B}" stroke-width="1.2"/><circle cx="600" cy="24" r="3" fill="${B}" opacity=".9"/>`,
+    // Concentric rings with a pulsing core — the speaker cone seen from the front, its dust cap catching the light.
+    motif: `<g fill="none" stroke="${A}">${[88, 70, 52, 34].map((r, i) => `<circle cx="100" cy="100" r="${r}" stroke-width="${1.2 + i * 0.6}" opacity="${0.3 + i * 0.12}" stroke-dasharray="${i % 2 ? '4 6' : 'none'}"/>`).join("")}<circle cx="100" cy="100" r="16" fill="${B}" stroke="none" opacity=".85"/><circle cx="100" cy="100" r="6" fill="${A}" stroke="none"/>`,
+    glow: (a, b) => `radial-gradient(55% 45% at 85% 0%, ${a}26, transparent 65%), radial-gradient(45% 45% at 0% 100%, ${b}22, transparent 65%), linear-gradient(180deg, transparent 60%, ${a}08 100%)`,
   },
   tropical: {
-    about: "The Caribbean and Latin America: gingerbread fretwork on wooden houses, papel picado over the street, the sun of the Taíno petroglyphs.",
+    about: "The Caribbean and Latin America: papel picado cutwork strung across the street, the Taíno sun from the petroglyphs, gingerbread fretwork on wooden houses — ornament that celebrates, never overwhelms.",
     font: { family: "Bricolage Grotesque", weights: "500;600;700;800", stack: '"Bricolage Grotesque", "Inter", system-ui, sans-serif' },
+    // Papel picado scallops with diamond cutouts — the folded tissue paper hung at weddings and colmados, each flag a small celebration.
     pattern: {
-      size: 56,
-      opacity: 0.16,
-      svg: `<path d="M0 14a7 7 0 0 0 14 0a7 7 0 0 0 14 0a7 7 0 0 0 14 0a7 7 0 0 0 14 0" fill="none" stroke="${A}" stroke-width="1.4"/><path d="M28 34l5 6-5 6-5-6z" fill="${B}"/><circle cx="7" cy="40" r="1.6" fill="${A}"/><circle cx="49" cy="40" r="1.6" fill="${A}"/>`,
+      size: 48,
+      opacity: 0.15,
+      svg: `<path d="M0 12a6 6 0 0 0 12 0a6 6 0 0 0 12 0a6 6 0 0 0 12 0a6 6 0 0 0 12 0" fill="none" stroke="${A}" stroke-width="1.2"/><path d="M24 28l4 5-4 5-4-5z" fill="${B}" opacity=".9"/><circle cx="6" cy="36" r="1.4" fill="${A}"/><circle cx="42" cy="36" r="1.4" fill="${A}"/><path d="M12 20h24" stroke="${A}" stroke-width=".5" opacity=".4"/>`,
     },
-    divider: `<path d="M0 6Q600 22 1200 6" fill="none" stroke="${A}" stroke-width="1.2"/>${Array.from({ length: 24 }, (_, i) => {
-      const x = i * 50 + 6;
-      const y = 6 + 16 * Math.sin(((x + 19) / 1200) * Math.PI) ** 1;
-      return `<path d="M${x} ${y}h38l-4 30h-30z" fill="${i % 2 ? B : A}" opacity=".85"/><circle cx="${x + 19}" cy="${y + 12}" r="4" fill="#000" opacity=".35"/><path d="M${x + 10} ${y + 22}h18" stroke="#000" stroke-opacity=".35" stroke-width="3"/>`;
+    // Scalloped flags hang from a curved wire — each one a different colour, as they do over a Dominican street at dusk.
+    divider: `<path d="M0 8Q600 20 1200 8" fill="none" stroke="${A}" stroke-width="1"/>${Array.from({ length: 20 }, (_, i) => {
+      const x = i * 60 + 10;
+      const y = 8 + 12 * Math.sin(((x + 30) / 1200) * Math.PI);
+      return `<path d="M${x} ${y}h40l-5 28h-30z" fill="${i % 3 === 0 ? B : i % 3 === 1 ? A : '#000'}" opacity="${i % 3 === 2 ? 0.2 : 0.8}"/><circle cx="${x + 20}" cy="${y + 10}" r="3.5" fill="#000" opacity=".3"/><path d="M${x + 12} ${y + 18}h16" stroke="#000" stroke-opacity=".25" stroke-width="2.5"/>`;
     }).join("")}`,
-    motif: `<g fill="none" stroke="${A}" stroke-width="5" stroke-linecap="round"><circle cx="100" cy="100" r="40"/><path d="M100 78a22 22 0 1 1-20 30a12 12 0 1 1 22-10"/>${Array.from({ length: 12 }, (_, i) => {
+    // The Taíno sun: twelve rays alternating long and short, with the spiral of the coquí frog's shell at its heart — the island's oldest symbol of life and rhythm.
+    motif: `<g fill="none" stroke="${A}" stroke-width="4" stroke-linecap="round"><circle cx="100" cy="100" r="36"/><path d="M100 76a24 24 0 1 1-22 32a13 13 0 1 1 24-11"/>${Array.from({ length: 12 }, (_, i) => {
       const t = (i / 12) * Math.PI * 2;
-      return `<path d="M${100 + Math.cos(t) * 54} ${100 + Math.sin(t) * 54}L${100 + Math.cos(t) * (i % 2 ? 72 : 84)} ${100 + Math.sin(t) * (i % 2 ? 72 : 84)}" stroke="${i % 2 ? B : A}"/>`;
-    }).join("")}</g>`,
-    glow: (a, b) => `radial-gradient(70% 60% at 90% 0%, ${a}2e, transparent 70%), radial-gradient(60% 50% at 0% 90%, ${b}24, transparent 70%)`,
+      const len = i % 2 ? 68 : 82;
+      return `<path d="M${100 + Math.cos(t) * 50} ${100 + Math.sin(t) * 50}L${100 + Math.cos(t) * len} ${100 + Math.sin(t) * len}" stroke="${i % 2 ? B : A}" stroke-width="${i % 2 ? 3 : 4}"/>`;
+    }).join("")}</g><circle cx="100" cy="100" r="5" fill="${B}"/>`,
+    glow: (a, b) => `radial-gradient(65% 55% at 88% 0%, ${a}2c, transparent 68%), radial-gradient(55% 48% at 0% 92%, ${b}26, transparent 68%), linear-gradient(170deg, transparent 50%, ${a}06 100%)`,
   },
   urban: {
     about: "Block-party flyers and record sleeves: halftone dots, the equaliser's bars, a record on the turntable.",
