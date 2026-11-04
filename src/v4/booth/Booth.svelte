@@ -21,6 +21,7 @@
   import { booth, turn, centre, press, hush, buildAndDrop, record, play, fold, bend, effect as beatEffect, preload, FX_KINDS, type FxKind } from "./booth.svelte";
   import Knob from "./Knob.svelte";
   import Fader from "./Fader.svelte";
+  import WaveformDisplay from "./WaveformDisplay.svelte";
 
   const w = $derived(BOOTH[i18n.lang]);
   /** The current skin's booth personality: shape, texture, knob style, LCD font, shadow. */
@@ -210,6 +211,7 @@
       <div class="beats" aria-hidden="true">
         {#each [0, 1, 2, 3] as b (b)}<span class:on={beat === b} class:one={b === 0}></span>{/each}
       </div>
+      <WaveformDisplay />
       <div class="moves" role="group">
         <button class="hw move" onclick={() => (deck.playing ? brake() : ensurePlaying())} disabled={deck.source !== "loop" && deck.playing} data-move="brake"><i class="led"></i>{w.moves.brake}</button>
         <button class="hw move" onclick={() => (deck.playing ? rewind() : ensurePlaying())} disabled={deck.source !== "loop" && deck.playing} data-move="rewind"><i class="led"></i>{w.moves.rewind}</button>
