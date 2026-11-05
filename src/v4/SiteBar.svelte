@@ -18,6 +18,7 @@
   import { choice, chooseSystem, start as startChoice } from "./dlchoice.svelte";
   import { restore, setSounds, sounds } from "./sfx.svelte";
   import { LANG_INFO, chooseLanguage, i18n, pickerLanguages, startLanguage, t, type Lang } from "./i18n.svelte";
+  import { crate } from "./crate/crate.svelte";
   import { aboutOf, countryName, regionOf } from "./i18n/looks";
   import { JOURNEY } from "./i18n/journey";
   import OsIcon from "./OsIcon.svelte";
@@ -267,6 +268,30 @@
     </div>
 
     <div class="right" bind:this={rightEl}>
+      <!-- Global YouTube player controls: play/pause from anywhere -->
+      {#if crate.playing || crate.queue.length > 0}
+        <button
+          class="player-btn"
+          aria-pressed={!!crate.playing}
+          title={crate.playing ? "Pause player" : "Resume player"}
+          aria-label={crate.playing ? "Pause player" : "Resume player"}
+          onclick={() => {
+            if (crate.playing) {
+              crate.stop();
+            } else if (crate.queue.length > 0) {
+              const idx = crate.queueIndex >= 0 ? crate.queueIndex : 0;
+              crate.play(crate.queue[idx]);
+            }
+          }}
+          data-player-global
+        >
+          {#if crate.playing}
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>
+          {:else}
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          {/if}
+        </button>
+      {/if}
       <button
         class="sound-btn"
         aria-pressed={sounds.on}
@@ -354,6 +379,37 @@
 
 <style>
   /* The island's round keys: the sound, the look and the language. */
+  .player-btn {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--accent);
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      color 0.2s,
+      box-shadow 0.2s,
+      background-color 0.2s;
+  }
+  .player-btn:hover {
+    background: color-mix(in srgb, var(--accent) 22%, transparent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  .player-btn[aria-pressed="true"] {
+    color: var(--accent);
+    border-color: var(--accent);
+    animation: player-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes player-pulse {
+    0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+    50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 10%, transparent); }
+  }
   .sound-btn {
     display: grid;
     place-items: center;

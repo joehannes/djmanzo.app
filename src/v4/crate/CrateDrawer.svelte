@@ -21,16 +21,28 @@
     setYoutubeActive(!!crate.playing);
   });
 
-  // Scroll behaviour: save position when crate opens, scroll to booth;
-  // restore saved position when crate closes.
+  // Scroll behaviour: save position when crate opens, scroll so the player
+  // (top of booth) is visible at the top of viewport; restore on close.
+  // If playing, keep player in view even if crate hides lower booth areas.
   let savedScrollY = $state<number | null>(null);
   $effect(() => {
     if (crate.open) {
       savedScrollY = window.scrollY;
+      const player = document.querySelector("[data-yt-player]");
       const booth = document.getElementById("booth-console");
-      if (booth) booth.scrollIntoView({ behavior: "smooth", block: "center" });
+      const target = player ?? booth;
+      if (target) {
+        // Scroll so player/top-of-booth is near top of viewport, accounting for fixed navbar
+        const barHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--bar") || "60");
+        const rect = target.getBoundingClientRect();
+        const scrollTo = window.scrollY + rect.top - barHeight - 12;
+        window.scrollTo({ top: Math.max(0, scrollTo), behavior: "smooth" });
+      }
     } else if (savedScrollY !== null) {
-      requestAnimationFrame(() => window.scrollTo({ top: savedScrollY!, behavior: "smooth" }));
+      // Only restore if player is NOT playing — if playing, stay near the player
+      if (!crate.playing) {
+        requestAnimationFrame(() => window.scrollTo({ top: savedScrollY!, behavior: "smooth" }));
+      }
       savedScrollY = null;
     }
   });
@@ -49,15 +61,28 @@
 
   <!-- Drawer body: playlist and search only — video is in the booth -->
   <div class="drawer">
-    <!-- Now playing indicator -->
-    {#if crate.playing}
+    <!-- Now playing indicator with play/pause -->
+    {#if crate.playing || crate.queue.length > 0}
       <div class="now-playing">
-        <span class="eq"><span></span><span></span><span></span></span>
-        <span class="np-title">{crate.currentTrack?.title ?? ""}</span>
-        <span class="np-artist dim">{crate.currentTrack?.artist ?? ""}</span>
+        <button class="play-pause-btn" onclick={() => {
+          if (crate.playing) {
+            crate.stop();
+          } else if (crate.queue.length > 0) {
+            const idx = crate.queueIndex >= 0 ? crate.queueIndex : 0;
+            crate.play(crate.queue[idx]);
+          }
+        }} aria-label={crate.playing ? "Pause" : "Play"}>
+          {#if crate.playing}
+            <span class="eq"><span></span><span></span><span></span></span>
+          {:else}
+            <span class="play-icon">▶</span>
+          {/if}
+        </button>
+        <span class="np-title">{crate.currentTrack?.title ?? (crate.queue.length ? crate.queue[0].title : "")}</span>
+        <span class="np-artist dim">{crate.currentTrack?.artist ?? (crate.queue.length ? crate.queue[0].artist : "")}</span>
         <div class="transport">
           <button class="ctrl sm" onclick={() => crate.prev()} title="Previous">⏮</button>
-          <button class="ctrl sm" onclick={() => crate.stop()} title="Stop">⏹</button>
+          <button class="ctrl sm stop" onclick={() => crate.stop()} title="Stop">⏹</button>
           <button class="ctrl sm" onclick={() => crate.next()} title="Next">⏭</button>
         </div>
       </div>
@@ -249,32 +274,51 @@
     overflow-y: auto;
   }
 
-  /* Now playing bar */
+  /* Now playing bar — compact with play/pause */
   .now-playing {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px var(--gutter);
+    gap: 8px;
+    padding: 7px var(--gutter);
     border-bottom: 1px solid var(--line);
     background: color-mix(in srgb, var(--accent) 6%, var(--surface));
   }
-  .np-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .np-artist { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .transport { display: flex; gap: 4px; margin-left: auto; flex: none; }
-  .ctrl.sm {
-    width: 30px;
-    height: 30px;
+  .play-pause-btn {
+    flex: none;
+    width: 26px;
+    height: 26px;
     border: 1px solid var(--line);
-    border-radius: 6px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+    color: var(--accent);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: all 0.15s;
+  }
+  .play-pause-btn:hover {
+    background: color-mix(in srgb, var(--accent) 24%, var(--surface));
+    border-color: var(--accent);
+  }
+  .play-icon { font-size: 9px; margin-left: 2px; }
+  .np-title { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+  .np-artist { font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+  .transport { display: flex; gap: 3px; margin-left: auto; flex: none; }
+  .ctrl.sm {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
     background: var(--surface);
     color: var(--text);
-    font-size: 13px;
+    font-size: 11px;
     cursor: pointer;
     display: grid;
     place-items: center;
     transition: background-color 0.15s, border-color 0.15s;
   }
   .ctrl.sm:hover { background: var(--raised); border-color: var(--accent); }
+  .ctrl.sm.stop:hover { border-color: #ff4444; color: #ff6666; }
 
   /* Search */
   .search-row { padding: 10px var(--gutter); }

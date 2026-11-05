@@ -170,10 +170,10 @@
   style:--platter-scale={bskin.platterScale}
   aria-label={w.open.replace(/^\S+\s/, "")}
 >
-  <p class="lead small">{w.lead}</p>
-
-  <!-- YouTube player bar: top-right of booth when crate is playing -->
+  <!-- YouTube player: top control region of the booth, Winamp-style -->
   <YoutubePlayer />
+
+  <p class="lead small">{w.lead}</p>
 
   <div class="console">
     <!-- The turntable -->

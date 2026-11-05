@@ -42,6 +42,21 @@ export interface BoothSkin {
   shadow: string;
   /** Accent glow intensity (0–1). */
   glowIntensity: number;
+  // --- Player-specific Winamp-style structural tokens ---
+  /** Player chassis shape: "rect" | "rounded" | "pill" | "notched". */
+  playerShape: "rect" | "rounded" | "pill" | "notched";
+  /** Player border treatment: "thin" | "thick" | "double" | "inset" | "bevel". */
+  playerBorder: "thin" | "thick" | "double" | "inset" | "bevel";
+  /** Player texture overlay (CSS gradient/pattern, distinct from main booth texture). */
+  playerTexture: string;
+  /** Video window shape: "rect" | "rounded" | "circle" | "arch". */
+  videoShape: "rect" | "rounded" | "circle" | "arch";
+  /** Transport button shape: "rect" | "round" | "diamond" | "pill". */
+  transportShape: "rect" | "round" | "diamond" | "pill";
+  /** Title bar style: "flat" | "raised" | "recessed" | "gradient". */
+  titleBarStyle: "flat" | "raised" | "recessed" | "gradient";
+  /** Player shadow character. */
+  playerShadow: string;
 }
 
 const SKINS: Record<SkinId, BoothSkin> = {
@@ -61,6 +76,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-grid",
     shadow: "0 8px 32px -8px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)",
     glowIntensity: 0.6,
+    playerShape: "rect",
+    playerBorder: "thin",
+    playerTexture: "repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(56,225,198,0.03) 2px, rgba(56,225,198,0.03) 3px)",
+    videoShape: "rect",
+    transportShape: "rect",
+    titleBarStyle: "flat",
+    playerShadow: "0 2px 12px -2px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.04)",
   },
   tropical: {
     radius: "16px",
@@ -78,6 +100,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-scallop",
     shadow: "0 12px 40px -10px rgba(180,80,20,0.4), inset 0 2px 0 rgba(255,255,255,0.08)",
     glowIntensity: 0.5,
+    playerShape: "rounded",
+    playerBorder: "double",
+    playerTexture: "radial-gradient(ellipse at 10% 90%, rgba(255,200,87,0.06), transparent 50%)",
+    videoShape: "rounded",
+    transportShape: "pill",
+    titleBarStyle: "gradient",
+    playerShadow: "0 6px 24px -6px rgba(180,80,20,0.35), inset 0 2px 0 rgba(255,255,255,0.06)",
   },
   urban: {
     radius: "4px",
@@ -95,6 +124,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-halftone",
     shadow: "0 4px 20px -4px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.04)",
     glowIntensity: 0.7,
+    playerShape: "rect",
+    playerBorder: "thick",
+    playerTexture: "repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,59,71,0.04) 3px, rgba(255,59,71,0.04) 4px)",
+    videoShape: "rect",
+    transportShape: "diamond",
+    titleBarStyle: "raised",
+    playerShadow: "0 2px 16px -2px rgba(255,59,71,0.2), inset 0 0 0 1px rgba(255,255,255,0.06)",
   },
   afro: {
     radius: "12px",
@@ -112,6 +148,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-kente",
     shadow: "0 10px 36px -8px rgba(120,80,20,0.5), inset 0 2px 0 rgba(255,255,255,0.06)",
     glowIntensity: 0.5,
+    playerShape: "rounded",
+    playerBorder: "bevel",
+    playerTexture: "repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(242,177,52,0.05) 4px, rgba(242,177,52,0.05) 6px), repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(47,191,113,0.04) 4px, rgba(47,191,113,0.04) 6px)",
+    videoShape: "rounded",
+    transportShape: "round",
+    titleBarStyle: "raised",
+    playerShadow: "0 6px 28px -6px rgba(120,80,20,0.4), inset 0 2px 0 rgba(255,255,255,0.08)",
   },
   neon: {
     radius: "20px",
@@ -129,6 +172,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-seigaiha",
     shadow: "0 0 40px -10px rgba(255,79,216,0.3), 0 0 80px -20px rgba(79,210,255,0.2), inset 0 1px 0 rgba(255,255,255,0.1)",
     glowIntensity: 0.9,
+    playerShape: "pill",
+    playerBorder: "inset",
+    playerTexture: "linear-gradient(135deg, rgba(255,79,216,0.08), transparent 40%, rgba(79,210,255,0.06))",
+    videoShape: "arch",
+    transportShape: "pill",
+    titleBarStyle: "gradient",
+    playerShadow: "0 0 30px -8px rgba(255,79,216,0.25), 0 0 60px -16px rgba(79,210,255,0.15), inset 0 1px 0 rgba(255,255,255,0.08)",
   },
   oasis: {
     radius: "8px",
@@ -146,6 +196,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-zellige",
     shadow: "0 8px 28px -6px rgba(20,60,50,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
     glowIntensity: 0.4,
+    playerShape: "notched",
+    playerBorder: "double",
+    playerTexture: "conic-gradient(from 45deg at 50% 50%, rgba(46,196,182,0.06) 0deg, transparent 25%, rgba(233,185,73,0.05) 50%, transparent 75%)",
+    videoShape: "arch",
+    transportShape: "diamond",
+    titleBarStyle: "recessed",
+    playerShadow: "0 4px 20px -4px rgba(20,60,50,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
   },
   monsoon: {
     radius: "14px",
@@ -163,6 +220,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-rangoli",
     shadow: "0 12px 40px -10px rgba(180,60,20,0.4), inset 0 2px 0 rgba(255,255,255,0.07)",
     glowIntensity: 0.5,
+    playerShape: "rounded",
+    playerBorder: "bevel",
+    playerTexture: "radial-gradient(circle at 50% 0%, rgba(255,159,28,0.08), transparent 40%), radial-gradient(circle at 50% 100%, rgba(224,33,138,0.06), transparent 40%)",
+    videoShape: "rounded",
+    transportShape: "round",
+    titleBarStyle: "gradient",
+    playerShadow: "0 8px 32px -8px rgba(180,60,20,0.35), inset 0 2px 0 rgba(255,255,255,0.06)",
   },
   pacific: {
     radius: "18px",
@@ -180,6 +244,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-tapa",
     shadow: "0 10px 32px -8px rgba(20,80,70,0.5), inset 0 1px 0 rgba(255,255,255,0.08)",
     glowIntensity: 0.5,
+    playerShape: "pill",
+    playerBorder: "thin",
+    playerTexture: "repeating-linear-gradient(0deg, transparent, transparent 6px, rgba(45,212,191,0.04) 6px, rgba(45,212,191,0.04) 8px)",
+    videoShape: "rounded",
+    transportShape: "pill",
+    titleBarStyle: "flat",
+    playerShadow: "0 6px 24px -6px rgba(20,80,70,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
   },
   studio: {
     radius: "10px",
@@ -197,6 +268,13 @@ const SKINS: Record<SkinId, BoothSkin> = {
     ornament: "ornament-none",
     shadow: "0 8px 24px -6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
     glowIntensity: 0.4,
+    playerShape: "rect",
+    playerBorder: "thin",
+    playerTexture: "linear-gradient(180deg, rgba(255,181,71,0.04), transparent)",
+    videoShape: "rect",
+    transportShape: "rect",
+    titleBarStyle: "flat",
+    playerShadow: "0 4px 16px -4px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)",
   },
 };
 
