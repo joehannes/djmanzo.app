@@ -1,5 +1,5 @@
 <!--
-  Winamp-inspired YouTube player: sits in the top control region of the booth.
+  Winamp-inspired YouTube player v2: sits in the top control region of the booth.
   Each skin gives it a structurally distinct shape, texture, border treatment,
   and button style — not just colour swaps. The video frame is integrated as
   part of the player chassis, and transport controls feel like physical hardware.
@@ -7,6 +7,8 @@
   Playback bug fix: stableVideoId only updates when the actual video ID changes,
   preventing iframe recreation on unrelated reactive updates. The iframe src
   uses a key derived from stableVideoId to force navigation on track change.
+
+  BUILD_BUST: 2026-11-05T14:55:00Z
 -->
 <script lang="ts">
   import { crate } from "../crate/crate.svelte";
@@ -124,30 +126,54 @@
       </div>
     </div>
   {:else}
-    <div class="yt-empty">
-      <span class="empty-icon">♫</span>
-      <span class="mono empty-text">{caps("Select a track")}</span>
+    <!-- Empty state: still shows full Winamp-styled chassis with skin-specific shape/border/texture -->
+    <div class="title-bar mono">
+      <span class="title-text dim">{caps("No Track Selected")}</span>
       {#if activeGenre}
-        <span class="genre-hint dim mono">{activeGenre.emoji} {activeGenre.name}</span>
+        <span class="genre-tag">{activeGenre.emoji}</span>
       {/if}
+    </div>
+    <div class="video-window empty-video">
+      <div class="empty-display">
+        <span class="empty-icon">♫</span>
+        <span class="mono empty-text">{caps("Select a track from the Crate")}</span>
+        {#if activeGenre}
+          <span class="genre-hint dim mono">{activeGenre.emoji} {activeGenre.name}</span>
+        {/if}
+      </div>
+    </div>
+    <div class="transport-strip" role="group" aria-label="Transport">
+      <button class="hw-btn prev" onclick={() => crate.prev()} title="Previous" aria-label="Previous" disabled={!crate.queue.length}>
+        <span class="btn-icon">⏮</span>
+      </button>
+      <button class="hw-btn stop" onclick={() => crate.stop()} title="Stop" aria-label="Stop" disabled={!crate.playing}>
+        <span class="btn-icon">⏹</span>
+      </button>
+      <button class="hw-btn next" onclick={() => crate.next()} title="Next" aria-label="Next" disabled={!crate.queue.length}>
+        <span class="btn-icon">⏭</span>
+      </button>
+      <div class="track-info mono">
+        <span class="info-title dim">{caps("Idle")}</span>
+      </div>
     </div>
   {/if}
 </div>
 
 <style>
-  /* === BASE CHASSIS === */
+  /* === BASE CHASSIS (Winamp-inspired structural design) === */
   .yt-player {
     display: flex;
     flex-direction: column;
     gap: 0;
     max-width: 520px;
     margin-left: auto;
-    background: linear-gradient(180deg, #1a1a1f, #111114);
-    background-image: var(--player-texture, none), linear-gradient(180deg, #1a1a1f, #111114);
+    background: linear-gradient(180deg, #1e1e24, #131318);
+    background-image: var(--player-texture, none), linear-gradient(180deg, #1e1e24, #131318);
     box-shadow: var(--player-shadow, 0 4px 20px rgb(0 0 0 / 0.6));
     overflow: hidden;
     position: relative;
     transition: all 0.2s ease;
+    border: 2px solid var(--hw-edge, #3a3a40);
   }
 
   /* === SHAPE VARIANTS (Winamp-style structural differences) === */
@@ -287,6 +313,37 @@
     color: var(--accent, #ff8a2a);
     pointer-events: none;
     text-transform: uppercase;
+  }
+
+  /* Empty video placeholder — matches active video-window shape per skin */
+  .empty-video {
+    display: grid;
+    place-items: center;
+  }
+  .empty-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--dim, #555);
+    text-align: center;
+  }
+  .empty-icon {
+    font-size: 28px;
+    opacity: 0.35;
+  }
+  .empty-text {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  .genre-hint {
+    font-size: 10px;
+    margin-top: 2px;
+  }
+  .hw-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
   }
 
   /* === TRANSPORT STRIP === */
